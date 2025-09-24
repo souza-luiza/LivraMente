@@ -43,7 +43,7 @@ Para aprender mais sobre Next.js, dê uma olhada nos seguintes recursos:
 
 Você pode checar o [repositório do Next.js no GitHub](https://github.com/vercel/next.js) - seu feedback e contribuições são bem-vindas!
 
-## Deploy no Vercel
+## Deployment no Vercel
 
 A forma mais fácil de fazer deploy do seu app Next.js é usando a [Plataforma da Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) dos criadores do Next.js.
 
