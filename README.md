@@ -1,6 +1,8 @@
 <!-- [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3MvknvtX) -->
 
 # Livramente - Uma rede social de livros
+<img width="521" height="101" alt="Frame 95" src="https://github.com/user-attachments/assets/943d2d65-2c8b-409e-add7-b56682b900c3" />
+
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
 
