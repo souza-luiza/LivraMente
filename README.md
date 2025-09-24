@@ -1,6 +1,6 @@
 <!-- [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3MvknvtX) -->
 
-# Livramente - Uma rede social de livros
+# Livramente - A rede social dos leitores brasileiros
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
 
@@ -32,3 +32,26 @@ es-unifesp-2025-2-grupo-alpha/
 └── README.md                           
 # Documentação principal do projeto
 ```
+
+### 📝 Descrição dos Componentes
+
+- **automations/**: Seção dedicada aos testes automatizados
+- **documentation/**: Documentação completa incluindo designs do Figma e PDFs de estudos realizados
+- **livraback/**: Backend da aplicação (estrutura a ser feita)
+- **livrafront/**: Frontend em Next.js 15 com TypeScript e Tailwind CSS
+
+## 💻 Pré-requisitos (até o momento)
+
+- Node.js (versão 18 ou superior)
+- npm ou yarn
+- Git
+
+## 👥 Equipe
+
+- **Enzo de Almeida Belfort Rizzi Di Chiara** - [@EnzoBelfort](https://github.com/EnzoBelfort)
+- **João Pedro da Silva Zampoli** - [@JoaoPedroZampoli](https://github.com/JoaoPedroZampoli)
+- **Isabele de Lima Nascimento** - [@isabele7](https://github.com/isabele7)
+- **Letícia Akemi Ikemoto** - [@akemiikemoto](https://github.com/akemiikemoto)
+- **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
+- **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
+- **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
