@@ -15,4 +15,20 @@ O Livramente consiste em ser uma rede social criada por leitores para amantes de
 
 
 ## 🏗️ Estrutura de Projeto
-Ainda a ser definida
+```
+es-unifesp-2025-2-grupo-alpha/
+├── automations/                        
+# Testes automatizados
+|
+├── documentation/         
+# Documentação do projeto
+|
+├── livraback/                          
+# Backend da aplicação
+|
+├── livrafront/                         
+# Frontend da aplicação (Next.js)
+|
+└── README.md                           
+# Documentação principal do projeto
+```
