@@ -1,7 +1,7 @@
 <!-- [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3MvknvtX) -->
 
 # Livramente - A rede social dos leitores brasileiros
-<img width="521" height="101" alt="Frame 95" src="https://github.com/user-attachments/assets/943d2d65-2c8b-409e-add7-b56682b900c3" />
+<img width="1800" height="234" alt="banner-readme" src="https://github.com/user-attachments/assets/0167a5ad-2194-4ead-b57e-13cf8aaca00e" />
 
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
