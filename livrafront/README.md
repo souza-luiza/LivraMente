@@ -5,7 +5,18 @@
 
 ## Como começar?
 
-Primeiramente, rode o servidor/ambiente de desenvolvimento:
+Primeiramente, instale o projeto (caso já não tenha feito)
+```bash
+npm install
+# ou
+yarn install
+# ou
+pnpm install
+# ou
+bun install
+```
+
+Em seguida, rode o servidor/ambiente de desenvolvimento:
 
 ```bash
 npm run dev
