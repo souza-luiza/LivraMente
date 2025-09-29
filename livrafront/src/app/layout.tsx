@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins, Judson } from "next/font/google";
-// @ts-ignore
+// @ts-expect-error
 import "./globals.css";
 
 const geistSans = Geist({
