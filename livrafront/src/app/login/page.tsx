@@ -1,9 +1,6 @@
-//import './feed.css'
-
 // app/login/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-//import styles from "./LoginPage.module.css";
 import styles from "./login.module.css";
 
 
@@ -11,7 +8,7 @@ export default function LoginPage() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        
+
         {/* Lado Esquerdo */}
         <div className={styles.left}>
           <Image
@@ -28,8 +25,15 @@ export default function LoginPage() {
         {/* Lado Direito */}
         <div className={styles.right}>
           <form className={styles.form}>
-            
+
             <div className={styles.field}>
+              <Image
+                src="/images/at-sign.svg"
+                alt="Ícone de email"
+                width={24}
+                height={24}
+                className={styles.inputIcon}
+              />
               <label htmlFor="email" className="sr-only">
                 Email ou nome de usuário
               </label>
@@ -43,7 +47,16 @@ export default function LoginPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="password" className="sr-only">Senha</label>
+              <Image
+                src="/images/lock.svg"
+                alt="Ícone de cadeado"
+                width={24}
+                height={24}
+                className={styles.inputIcon}
+              />
+              <label htmlFor="password" className="sr-only">
+                Senha
+              </label>
               <input
                 id="password"
                 name="password"
@@ -53,15 +66,44 @@ export default function LoginPage() {
               />
             </div>
 
-            <Link href="/esqueci-minha-senha" className={styles.forgot}>
-              Esqueci minha senha
-            </Link>
+            <div className={styles.forgotContainer}>
+              <Link href="/esqueci-minha-senha" className={styles.forgot}>
+                Esqueci minha senha...
+              </Link>
+            </div>
 
-            <button type="submit" className={styles.button}>
+            <button
+              type="button" className={`${styles.socialButton} ${styles.accessButton}`}>
               Acessar
             </button>
 
-            <p className={styles.signupText}>Não tem uma conta?</p>
+            <div className={styles.separator}>
+              <div className={styles.line} />
+              <span className={styles.text}>ou</span>
+              <div className={styles.line} />
+            </div>
+
+            {/* Google Login */}
+            <button
+              type="button"
+              className={`${styles.socialButton} ${styles.googleButton}`}
+            >
+              <Image src="/logos/google-logo.png" alt="Google Logo" width={26} height={26} />
+              <span>Fazer login com Google</span>
+            </button>
+
+            {/* Apple Login */}
+            <button
+              type="button"
+              className={`${styles.socialButton} ${styles.appleButton}`}
+            >
+              <Image src="/logos/apple-logo.png" alt="Apple Logo" width={24} height={24} />
+              <span>Fazer login com Apple</span>
+            </button>
+
+            <p className={styles.signupText}>
+              Não tem uma conta?
+            </p>
             <Link href="/register" className={styles.signup}>
               Inscreva-se
             </Link>
