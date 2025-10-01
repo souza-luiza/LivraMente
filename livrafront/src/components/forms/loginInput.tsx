@@ -25,10 +25,9 @@ export function LoginInput({ id, name, type, placeholder,
         value={value}
         onChange={onChange}
         required={required}
-        style={{ fontFamily: 'var(--font-poppins)' }}
         className={cn(
           "w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2",
-          "transition-all duration-200 ease-in-out",
+          "transition-all duration-200 ease-in-out font-sans", // ← usa --font-sans (Poppins)
           "hover:border-green-400 focus:border-green-600",
           "placeholder:text-gray-400 text-gray-900 shadow-sm hover:shadow-md",
           error 
@@ -37,8 +36,7 @@ export function LoginInput({ id, name, type, placeholder,
         )}
       />
       {error && (
-        <p className="text-red-500 text-sm mt-1 font-medium" 
-           style={{ fontFamily: 'var(--font-poppins)' }}>
+        <p className="text-red-500 text-sm mt-1 font-medium font-sans"> {/* ← usa font-sans */}
           {error}
         </p>
       )}
