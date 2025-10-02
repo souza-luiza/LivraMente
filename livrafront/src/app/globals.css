@@ -5,6 +5,37 @@
   --foreground: #171717;
   --font-poppins: 'Poppins', sans-serif;
   --font-judson: 'Judson', serif;
+
+  --body-1-font-size:   20px;
+  --body-1-line-height: 28px;
+
+  --body-2-font-size:   16px;
+  --body-2-line-height: 22px;
+
+  --body-3-font-size:   12px;
+  --body-3-line-height: 16px;
+
+  --heading-1-font-size:   60px;
+  --heading-1-line-height: 72px;
+
+  --heading-2-font-size:   48px;
+  --heading-2-line-height: 56px;
+
+  --heading-3-font-size:   40px;
+  --heading-3-line-height: 48px;
+
+  --heading-4-font-size:   32px;
+  --heading-4-line-height: 40px;
+
+  --heading-5-font-size:   24px;
+  --heading-5-line-height: 28px;
+
+  --heading-6-font-size:   20px;
+  --heading-6-line-height: 24px;
+
+  --regular-font-weight:  400;
+  --semibold-font-weight: 600;
+  --bold-font-weight:     800;
 }
 
 @theme inline {
@@ -23,8 +54,103 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-poppins);
-  text-align: left;
+  background:   var(--background);
+  color:        var(--foreground);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+p .body-1 {
+  font-size:    var(--body-1-font-size);
+  line-height:  var(--body-1-line-height);
+}
+
+p .body-2 {
+  font-size:    var(--body-2-font-size);
+  line-height:  var(--body-2-line-height);
+}
+
+p .body-3 {
+  font-size:    var(--body-3-font-size);
+  line-height:  var(--body-3-line-height);
+}
+
+p .regular {
+  font-weight:      var(--regular-font-weight);
+  text-decoration:  none;
+  font-family:      var(--font-poppins);
+  font-style:       normal;
+}
+
+p .underline {
+  font-weight:      var(--regular-font-weight);
+  text-decoration:  underline;
+  font-family:      var(--font-poppins);
+  font-style:       normal;
+}
+
+p .semibold {
+  font-weight:      var(--semibold-font-weight);
+  text-decoration:  none;
+  font-family:      var(--font-poppins);
+  font-style:       normal;
+}
+
+p .quotation {
+  font-weight:      var(--regular-font-weight);
+  text-decoration:  none;
+  font-family:      var(--font-judson);
+  font-style:       italic;
+}
+
+h1 {
+  font-size:    var(--heading-1-font-size);
+  line-height:  var(--heading-1-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+h2 {
+  font-size:    var(--heading-2-font-size);
+  line-height:  var(--heading-2-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+h3 {
+  font-size:    var(--heading-3-font-size);
+  line-height:  var(--heading-3-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+h4 {
+  font-size:    var(--heading-4-font-size);
+  line-height:  var(--heading-4-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+h5 {
+  font-size:    var(--heading-5-font-size);
+  line-height:  var(--heading-5-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+h6 {
+  font-size:    var(--heading-6-font-size);
+  line-height:  var(--heading-6-line-height);
+  font-weight:  var(--bold-font-weight);
+  font-family:  var(--font-poppins);
+  text-align:   left;
+}
+
+.underline:not(p) {
+  text-decoration:  underline;
 }
