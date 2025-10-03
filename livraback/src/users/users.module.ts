@@ -6,7 +6,8 @@ import { User, UserSchema } from './entities/user.entity';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])], // name acessa o nome da classe como string
-  controllers: [UsersController],
+  //controllers: [UsersController], //rota usada somente para devs
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}
