@@ -8,23 +8,27 @@ import { Model } from 'mongoose';
 @Injectable()
 export class UsersService {
 
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {} // dentro dessa variavel tem todos os metodos do mongo
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {} // dentro dessa variavel tem todos os metodos do mongo
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     const user = new this.userModel(createUserDto); // insere variaveis no modelo
-    return user.save(); // salva usuario
+    return await user.save(); // salva usuario
   }
 
-  findAll() {
-    return this.userModel.find(); // retorna lista
+  async findAll() {
+    return await this.userModel.find().exec(); // retorna lista
   }
 
-  findOne(id: string) { // id do mongo eh uma string
-    return this.userModel.findById(id);
+  async findOne(id: string) { // id do mongo eh uma string
+    return await this.userModel.findById(id).exec();
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this.userModel.findByIdAndUpdate(
+  async getByEmail(email: string) {
+    return await this.userModel.findOne({ email }).exec();
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return await this.userModel.findByIdAndUpdate(
       {
         _id: id, // procurar objeto por id (mongo por padrao cria id com _)
       }, 
@@ -37,8 +41,8 @@ export class UsersService {
     );
   }
 
-  remove(id: string) {
-    return this.userModel.deleteOne({
+  async remove(id: string) {
+    return await this.userModel.deleteOne({
       _id: id,
     }).exec(); // para executar operacao
   }
