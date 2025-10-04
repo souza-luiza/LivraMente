@@ -24,7 +24,7 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should call authService.signUp and return acessToken', async () => {
+  it('should call authService.signUp and return accessToken', async () => {
     const dto: CreateUserDto = {
       email: 'teste@teste.com',
       name: 'Teste',

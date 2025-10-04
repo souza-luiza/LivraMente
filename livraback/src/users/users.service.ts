@@ -37,6 +37,7 @@ export class UsersService {
       },
       {
         new: true, // alterar no banco de dados
+        runValidators: true, // validação do schema no update
       },
     );
   }
