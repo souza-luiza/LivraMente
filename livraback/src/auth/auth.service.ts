@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { promisify } from 'util';
 
 const scrypt = promisify(_scrypt);
@@ -32,6 +32,6 @@ export class AuthService {
     });
 
     const payload = { username: user.email, sub: user._id };
-    return { acessToken: this.jwtService.sign(payload) }; //transforma payload em token JWT
+    return { accessToken: this.jwtService.sign(payload) }; //transforma payload em token JWT
   }
 }
