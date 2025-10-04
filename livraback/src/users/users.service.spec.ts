@@ -100,9 +100,8 @@ describe('UsersService', () => {
   it('should update a user and return the updated user', async () => {
     const updateUserDto = { name: 'Updated Name' };
 
-    mockUserModel.findByIdAndUpdate.mockResolvedValue({
-      ...mockUser,
-      ...updateUserDto,
+    mockUserModel.findByIdAndUpdate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
     });
 
     const result = await service.update('user-id', updateUserDto);
@@ -110,7 +109,7 @@ describe('UsersService', () => {
     expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
       { _id: 'user-id' },
       { $set: updateUserDto },
-      { new: true },
+      { new: true, runValidators: true },
     );
     expect(result).toEqual({ ...mockUser, ...updateUserDto });
   });

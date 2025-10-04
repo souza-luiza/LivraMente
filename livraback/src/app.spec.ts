@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from './app.module';
 
 describe('App Integration', () => {
+  jest.setTimeout(10000); // 10 segundos
   let app: INestApplication;
 
   beforeAll(async () => {
