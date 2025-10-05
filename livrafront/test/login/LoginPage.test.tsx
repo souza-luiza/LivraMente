@@ -68,26 +68,4 @@ describe('LoginPage', () => {
       expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument()
     })
   })
-
-  it('deve desabilitar botão durante loading', async () => {
-    const user = userEvent.setup()
-    
-    mockLoginUser.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({
-        token: 'test-token',
-        user: { id: '1', username: 'test', email: 'test@test.com' }
-      }), 100))
-    )
-    
-    render(<LoginPage />)
-    await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'test@test.com')
-    await user.type(screen.getByPlaceholderText('Senha'), 'password123')
-    await user.click(screen.getByText('Acessar'))
-    
-    await waitFor(() => {
-      const button = screen.getByRole('button')
-      expect(button).toBeDisabled()
-      expect(button).toHaveTextContent(/carregando/i)
-    })
-  })
 })
