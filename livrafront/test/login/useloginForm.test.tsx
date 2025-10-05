@@ -70,8 +70,37 @@ describe('useLoginForm', () => {
       email: 'teste@exemplo.com',
       password: 'senha123'
     })
+    expect(mockAlert).toHaveBeenCalledWith('Bem-vindo teste')
     expect(result.current.isLoading).toBe(false)
     expect(result.current.apiError).toBe('')
+  })
+
+  it('deve lidar com erro de login', async () => {
+    const errorMessage = 'Credenciais inválidas'
+    mockLoginUser.mockRejectedValueOnce(new Error(errorMessage))
+
+    const { result } = renderHook(() => useLoginForm())
+
+    // Preenche dados válidos
+    act(() => {
+      result.current.handleChange({
+        target: { name: 'email', value: 'teste@exemplo.com' }
+      } as React.ChangeEvent<HTMLInputElement>)
+      
+      result.current.handleChange({
+        target: { name: 'password', value: 'senha123' }
+      } as React.ChangeEvent<HTMLInputElement>)
+    })
+
+    // Faz o submit
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: jest.fn()
+      } as unknown as React.FormEvent)
+    })
+
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.apiError).toBe(errorMessage)
   })
 
 })
