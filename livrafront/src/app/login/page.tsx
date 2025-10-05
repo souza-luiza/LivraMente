@@ -3,7 +3,6 @@
 import React from 'react';
 import { useLoginForm } from "@/forms/useLoginForm"; 
 import Link from 'next/link';
-import './input-icons.css';
 
 export default function LoginPage() {
   const { 
