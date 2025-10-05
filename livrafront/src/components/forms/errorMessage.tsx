@@ -1,7 +1,7 @@
 /*Componente para exibir mensagens de erro da API*/
 
 interface ErrorMessageProps {
-  message: string
+  message?: string
 }
 
 export function ErrorMessage({ message }: ErrorMessageProps) {
