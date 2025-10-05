@@ -3,11 +3,30 @@
 import React from 'react';
 import { useLoginForm } from "@/forms/useLoginForm"; 
 import Link from 'next/link';
+import './input-icons.css';
 
 export default function LoginPage() {
   const { 
     formData, errors, isLoading, apiError, handleChange, handleSubmit 
   } = useLoginForm()
+
+  // Containers para manter os ícones estáveis
+  const iconContainerStyle = {
+    position: 'absolute' as const,
+    left: '20px',
+    top: '26px', 
+    transform: 'translateY(-50%)',
+    zIndex: 10,
+    pointerEvents: 'none' as const,
+    width: '24px',
+    height: '24px'
+  }
+
+  const iconStyle = {
+    width: '24px',
+    height: '24px',
+    display: 'block' as const
+  }
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-gray-100 p-4 font-['Poppins']">
@@ -28,7 +47,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md rounded-[1.25rem] border border-[#8E572A] bg-[#CADDBF] p-8 sm:p-12 lg:w-1/2 lg:max-w-none">
           <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-4">
             
-            {/* Erro da API - mensagem */}
+            {/* Erro da API */}
             {apiError && (
               <div className="w-full p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
                 {apiError}
@@ -36,12 +55,14 @@ export default function LoginPage() {
             )}
 
             {/* Email Input */}
-            <div className="relative w-full">
-              <img
-                src="/images/at-sign.svg"
-                alt="Ícone de email"
-                className="pointer-events-none absolute left-5 top-1/2 z-10 -translate-y-1/2 transform w-[1.5rem] h-[1.5rem]"
-              />
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={iconContainerStyle}>
+                <img
+                  src="/images/at-sign.svg"
+                  alt="Ícone de email"
+                  style={iconStyle}
+                />
+              </div>
               <label htmlFor="email" className="sr-only">
                 Email ou nome de usuário
               </label>
@@ -52,23 +73,38 @@ export default function LoginPage() {
                 placeholder="Email ou nome de usuário"
                 value={formData.email}
                 onChange={handleChange}
-                className={`h-[3.25rem] w-full rounded-[1.25rem] border bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E] ${
-                  errors.email ? 'border-red-400' : 'border-[#E0E0D6]'
-                }`}
+                style={{
+                  height: '52px',
+                  width: '100%',
+                  borderRadius: '20px',
+                  border: errors.email ? '1px solid #f87171' : '1px solid #E0E0D6',
+                  backgroundColor: '#FFFDF7',
+                  paddingLeft: '48px',
+                  paddingRight: '20px',
+                  fontSize: '16px',
+                  color: '#A57955',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #7BAA5E'}
+                onBlur={(e) => e.target.style.boxShadow = 'none'}
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600"> {errors.email}</p>
+                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>
+                  {errors.email}
+                </p>
               )}
             </div>
 
             {/* Password Input and Forgot Link */}
             <div className="flex w-full flex-col items-end gap-1">
-              <div className="relative w-full">
-                <img
-                  src="/images/lock.svg"
-                  alt="Ícone de cadeado"
-                  className="pointer-events-none absolute left-5 top-1/2 z-10 -translate-y-1/2 transform w-[1.5rem] h-[1.5rem]"
-                />
+              <div style={{ position: 'relative', width: '100%' }}>
+                <div style={iconContainerStyle}>
+                  <img
+                    src="/images/lock.svg"
+                    alt="Ícone de cadeado"
+                    style={iconStyle}
+                  />
+                </div>
                 <label htmlFor="password" className="sr-only">Senha</label>
                 <input
                   id="password"
@@ -77,12 +113,25 @@ export default function LoginPage() {
                   placeholder="Senha"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`h-[3.25rem] w-full rounded-[1.25rem] border bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E] ${
-                    errors.password ? 'border-red-400' : 'border-[#E0E0D6]'
-                  }`}
+                  style={{
+                    height: '52px',
+                    width: '100%',
+                    borderRadius: '20px',
+                    border: errors.password ? '1px solid #f87171' : '1px solid #E0E0D6',
+                    backgroundColor: '#FFFDF7',
+                    paddingLeft: '48px',
+                    paddingRight: '20px',
+                    fontSize: '16px',
+                    color: '#A57955',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #7BAA5E'}
+                  onBlur={(e) => e.target.style.boxShadow = 'none'}
                 />
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600"> {errors.password}</p>
+                  <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>
+                    {errors.password}
+                  </p>
                 )}
               </div>
               <Link href="/esqueci-minha-senha" className="text-sm font-medium text-[#BB9A7F] hover:underline">
@@ -140,4 +189,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
