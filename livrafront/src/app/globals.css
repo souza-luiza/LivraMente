@@ -123,42 +123,42 @@
   --medium-padding: 20px;
   --large-padding:  24px;
 
-  /* Corner Radius */
-  --no-corner-radius:     0px;
-  --small-corner-radius:  4px;
-  --medium-corner-radius: 8px;
-  --large-corner-radius:  12px;
+  /* Border Radius */
+  --no-border-radius:     0px;
+  --small-border-radius:  4px;
+  --medium-border-radius: 8px;
+  --large-border-radius:  12px;
 
   /* Border Width */
-  --no-border-radius:     0px;
-  --small-border-radius:  1px;
-  --medium-border-radius: 2px;
-  --large-border-radius:  4px;
+  --no-border-width:      0px;
+  --small-border-width:   1px;
+  --medium-border-width:  2px;
+  --large-border-width:   4px;
 
 }
 
 /* Temas Padrão */
-.theme-light-neutral {
+.light-neutral {
   background: var(--background);
   color: var(--secondary-800);
 }
 
-.theme-light-green {
+.light-green {
   background: var(--primary-300);
   color: var(--primary-800);
 }
 
-.theme-dark-green {
+.dark-green {
   background: var(--primary-700);
   color: var(--primary-100);
 }
 
-.theme-light-brown {
+.light-brown {
   background: var(--secondary-100);
   color: var(--secondary-700);
 }
 
-.theme-dark-brown {
+.dark-brown {
   background: var(--secondary-700);
   color: var(--secondary-100);
 }
@@ -175,43 +175,43 @@ body {
   text-align:   left;
 }
 
-p .body-1 {
+p.body-1 {
   font-size:    var(--body-1-font-size);
   line-height:  var(--body-1-line-height);
 }
 
-p .body-2 {
+p.body-2 {
   font-size:    var(--body-2-font-size);
   line-height:  var(--body-2-line-height);
 }
 
-p .body-3 {
+p.body-3 {
   font-size:    var(--body-3-font-size);
   line-height:  var(--body-3-line-height);
 }
 
-p .regular {
+p.regular {
   font-weight:      var(--regular-font-weight);
   text-decoration:  none;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p .underline {
+p.underline {
   font-weight:      var(--regular-font-weight);
   text-decoration:  underline;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p .semibold {
+p.semibold {
   font-weight:      var(--semibold-font-weight);
   text-decoration:  none;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p .quotation {
+p.quotation {
   font-weight:      var(--regular-font-weight);
   text-decoration:  none;
   font-family:      var(--font-judson);
@@ -268,4 +268,32 @@ h6 {
 
 .underline:not(p) {
   text-decoration:  underline;
+}
+
+button {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: auto;
+  max-width: 180px;
+  margin: 0px;
+  border-width: var(--no-border-width);
+  flex-direction: row;
+  gap: 8px;
+  display: inline-flex;
+}
+  
+button.small {
+  padding: 8px var(--small-padding);
+  border-radius: var(--small-border-radius);
+}
+
+button.medium {
+  padding: 8px var(--medium-padding);
+  border-radius: var(--medium-border-radius);
+}
+
+button.large {
+  padding: 8px var(--large-padding);
+  border-radius: var(--large-border-radius);
 }
