@@ -52,9 +52,9 @@ export function useLoginForm() {
       
     } catch (error) {
       if (error instanceof ZodError) {
-        const fieldErrors: any = {}
+        const fieldErrors: {email?: string, password?: string} = {}
         error.issues.forEach((issue) => {
-          const field = issue.path[0] as string
+          const field = issue.path[0] as 'email' | 'password'
           fieldErrors[field] = issue.message
         })
         setErrors(fieldErrors)
