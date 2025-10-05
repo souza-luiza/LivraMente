@@ -1,18 +1,16 @@
 /* Validação do formato dos dados de 
    login enviados no formulário */
-
 import { z } from 'zod'
 
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Esse campo é obrigatório')
-    .email('Email deve ter formato válido')
-    .trim(),
-    
+    .min(1, '* Email é obrigatório')
+    .email('Formato de email inválido'),
+  
   password: z
     .string()
-    .min(1, 'Esse campo é obrigatório')
+    .min(1, '* Senha é obrigatória')
     .min(6, 'Senha deve ter pelo menos 6 caracteres')
 })
 

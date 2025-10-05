@@ -1,6 +1,14 @@
+'use client'
+
 import React from 'react';
+import { useLoginForm } from "@/forms/useLoginForm"; 
+import Link from 'next/link';
 
 export default function LoginPage() {
+  const { 
+    formData, errors, isLoading, apiError, handleChange, handleSubmit 
+  } = useLoginForm()
+
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-gray-100 p-4 font-['Poppins']">
       <div className="flex w-full max-w-screen-xl flex-col items-center justify-center gap-12 lg:flex-row">
@@ -18,7 +26,14 @@ export default function LoginPage() {
 
         {/* Right Side */}
         <div className="w-full max-w-md rounded-[1.25rem] border border-[#8E572A] bg-[#CADDBF] p-8 sm:p-12 lg:w-1/2 lg:max-w-none">
-          <form className="flex w-full flex-col items-center gap-4">
+          <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-4">
+            
+            {/* Erro da API - mensagem */}
+            {apiError && (
+              <div className="w-full p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                {apiError}
+              </div>
+            )}
 
             {/* Email Input */}
             <div className="relative w-full">
@@ -35,8 +50,15 @@ export default function LoginPage() {
                 name="email"
                 type="text"
                 placeholder="Email ou nome de usuário"
-                className="h-[3.25rem] w-full rounded-[1.25rem] border border-[#E0E0D6] bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E]"
+                value={formData.email}
+                onChange={handleChange}
+                className={`h-[3.25rem] w-full rounded-[1.25rem] border bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E] ${
+                  errors.email ? 'border-red-400' : 'border-[#E0E0D6]'
+                }`}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600"> {errors.email}</p>
+              )}
             </div>
 
             {/* Password Input and Forgot Link */}
@@ -53,20 +75,28 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   placeholder="Senha"
-                  className="h-[3.25rem] w-full rounded-[1.25rem] border border-[#E0E0D6] bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E]"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`h-[3.25rem] w-full rounded-[1.25rem] border bg-[#FFFDF7] pl-12 pr-5 text-base text-[#A57955] placeholder:text-[#A57955] focus:outline-none focus:ring-2 focus:ring-[#7BAA5E] ${
+                    errors.password ? 'border-red-400' : 'border-[#E0E0D6]'
+                  }`}
                 />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600"> {errors.password}</p>
+                )}
               </div>
-              <a href="/esqueci-minha-senha" className="text-sm font-medium text-[#BB9A7F] hover:underline">
+              <Link href="/esqueci-minha-senha" className="text-sm font-medium text-[#BB9A7F] hover:underline">
                 Esqueci minha senha...
-              </a>
+              </Link>
             </div>
 
             {/* Access Button */}
             <button
               type="submit"
-              className="mt-2 flex h-[3.25rem] w-full items-center justify-center rounded-[1.25rem] border border-[#4D6F39] bg-[#7BAA5E] text-base font-medium text-gray-50 shadow-md transition-colors hover:bg-[#6b9951]"
+              disabled={isLoading}
+              className="mt-2 flex h-[3.25rem] w-full items-center justify-center rounded-[1.25rem] border border-[#4D6F39] bg-[#7BAA5E] text-base font-medium text-gray-50 shadow-md transition-colors hover:bg-[#6b9951] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Acessar
+              {isLoading ? 'Carregando...' : 'Acessar'}
             </button>
 
             {/* Separator */}
@@ -99,9 +129,9 @@ export default function LoginPage() {
               <span className="text-base text-[#BB9A7F]">
                 Não tem uma conta?
               </span>
-              <a href="/register" className="text-base font-semibold text-[#7BAA5E] hover:underline">
+              <Link href="/register" className="text-base font-semibold text-[#7BAA5E] hover:underline">
                 Inscreva-se
-              </a>
+              </Link>
             </div>
 
           </form>

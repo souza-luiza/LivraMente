@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
-import LoginForm from '@/forms/LoginForm'
+import LoginPage from '@/app/login/page'
 import { loginUser } from '@/services/auth'
 
 jest.mock('@/services/auth')
@@ -21,7 +21,7 @@ jest.mock('next/link', () => {
   )
 })
 
-describe('loginForm', () => {
+describe('LoginPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -39,7 +39,7 @@ describe('loginForm', () => {
     }
     
     mockLoginUser.mockResolvedValueOnce(mockResponse)
-    render(<LoginForm />)
+    render(<LoginPage />)
     
     await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'teste@exemplo.com')
     await user.type(screen.getByPlaceholderText('Senha'), 'senha123')
@@ -59,7 +59,7 @@ describe('loginForm', () => {
     const user = userEvent.setup()
     mockLoginUser.mockRejectedValueOnce(new Error('Credenciais inválidas'))
     
-    render(<LoginForm />)
+    render(<LoginPage />)
     await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'wrong@email.com')
     await user.type(screen.getByPlaceholderText('Senha'), 'wrongpass')
     await user.click(screen.getByText('Acessar'))
@@ -79,7 +79,7 @@ describe('loginForm', () => {
       }), 100))
     )
     
-    render(<LoginForm />)
+    render(<LoginPage />)
     await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'test@test.com')
     await user.type(screen.getByPlaceholderText('Senha'), 'password123')
     await user.click(screen.getByText('Acessar'))
