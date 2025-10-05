@@ -7,7 +7,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown";
 }
 
-export default function Button({ text, icon, size, colorScheme }: ButtonProps) {
+export default function Button({ text, icon, size, colorScheme, ...props }: ButtonProps) {
 
     const textStyles: Record<"small" | "medium" | "large", string> = {
         small:  "text-h6",
@@ -22,7 +22,13 @@ export default function Button({ text, icon, size, colorScheme }: ButtonProps) {
     };
 
     return (
-        <button className={`${size} ${colorScheme}`}>
+        <button className={`${size} ${colorScheme}
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black`}
+                {...props}
+        >
             <span className={`${textStyles[size]}`}>
                 {text}
             </span>
