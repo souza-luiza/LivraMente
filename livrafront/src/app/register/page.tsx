@@ -104,7 +104,7 @@ export default function RegisterPage() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl"><Image src="/images/Open_Book.svg" alt="Ícone de Livro" width={24} height={24} /></span> {/*TODO: Definir biblioteca de ícones*/}
+                <span className="text-2xl text-white/90"><Image src="/images/Open_Book_White.svg" alt="Ícone de Livro" width={24} height={24} /></span> {/*TODO: Definir biblioteca de ícones*/}
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Acompanhar a sua leitura</h3>
@@ -114,7 +114,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl"><Image src="/images/Users.svg" alt="Ícone de Usuários" width={24} height={24} /></span>
+                <span className="text-2xl text-white/90"><Image src="/images/Users_White.svg" alt="Ícone de Usuários" width={24} height={24} /></span>
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Conecte-se e interaja</h3>
@@ -124,7 +124,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl"><Image src="/images/Books.svg" alt="Ícone de Livros" width={24} height={24} /></span>
+                <span className="text-2xl text-white/90"><Image src="/images/Books_White.svg" alt="Ícone de Livros" width={24} height={24} /></span>
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Avalie livros e receba recomendações</h3>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl"><Image src="/images/Star.svg" alt="Ícone de Estrela" width={24} height={24} /></span>
+                <span className="text-2xl text-white/90"><Image src="/images/Star_White.svg" alt="Ícone de Estrela" width={24} height={24} /></span>
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Ganhe XP e participe de competições</h3>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
           {/* Header Mobile */}
           <div className="text-center lg:hidden">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              📚 Livramente
+              Livramente
             </h1>
             <p className="text-gray-600">
               A rede social dos leitores brasileiros
