@@ -1,49 +1,166 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Black and White */
+  --foreground: #000000;
+  --background: #FFFFFF;
+
+  /* Primary Color Palette */
+  --primary-100: #E5EEDF;
+  --primary-200: #CADDBF;
+  --primary-300: #B0CC9E;
+  --primary-400: #95BB7E;
+  --primary-500: #7BAA5E;
+  --primary-600: #5C8046;
+  --primary-700: #3D552F;
+  --primary-800: #1F2A17;
+
+  /* Secondary Color Palette */
+  --secondary-100: #E8DDD4;
+  --secondary-200: #D2BCAA;
+  --secondary-300: #BB9A7F;
+  --secondary-400: #A57955;
+  --secondary-500: #8E572A; 
+  --secondary-600: #6A411F;
+  --secondary-700: #472B15;
+  --secondary-800: #23160A;
+
+  /* Tertiary Color Palette */
+  --tertiary-100: #F1D4C3;
+  --tertiary-200: #E3A988;
+  --tertiary-300: #D67F4D;
+  --tertiary-400: #C85412;
+  --tertiary-500: #AC3A14;
+  --tertiary-600: #812C0F;
+  --tertiary-700: #561D0A;
+  --tertiary-800: #2B0F05;
+
+  /* Success Color Palette */
+  --success-100: #E8F4DC;
+  --success-200: #D8EBC5;
+  --success-300: #B1D78A;
+  --success-400: #8BC551;
+  --success-500: #64B117;
+  --success-600: #4B8511;
+  --success-700: #32580B;
+  --success-800: #192C06;
+
+  /* Error Color Palette */
+  --error-100: #F4E1DC;
+  --error-200: #EBCCC5;
+  --error-300: #D89A8B;
+  --error-400: #C56851;
+  --error-500: #B13617;
+  --error-600: #8D3019;
+  --error-700: #682A1B;
+  --error-800: #42231C;
+
+  /* Warning Color Palette */
+  --warning-100: #FBEDDF;
+  --warning-200: #F8E1C9;
+  --warning-300: #F0C392;
+  --warning-400: #EAA65D;
+  --warning-500: #E28726;
+  --warning-600: #AA661D;
+  --warning-700: #714413;
+  --warning-800: #39220A;
+
+  /* Information Color Palette */
+  --information-100: #E4ECF9;
+  --information-200: #D2DFF4;
+  --information-300: #A5BFE9;
+  --information-400: #79A0DF;
+  --information-500: #4D80D4;
+  --information-600: #39609F;
+  --information-700: #26406A;
+  --information-800: #132035;
+
+  /* Neutral Color Palette */
+  --neutral-100: #ECEDEE;
+  --neutral-200: #D0D1D4;
+  --neutral-300: #A1A4AA;
+  --neutral-400: #737780;
+  --neutral-500: #444955;
+  --neutral-600: #333740;
+  --neutral-700: #22252B;
+  --neutral-800: #111215;
+
+  /* Fontes */
   --font-poppins: 'Poppins', sans-serif;
   --font-judson: 'Judson', serif;
 
+  /* Standard Font Sizes */
   --body-1-font-size:   20px;
-  --body-1-line-height: 28px;
-
   --body-2-font-size:   16px;
-  --body-2-line-height: 22px;
-
   --body-3-font-size:   12px;
-  --body-3-line-height: 16px;
 
   --heading-1-font-size:   60px;
-  --heading-1-line-height: 72px;
-
   --heading-2-font-size:   48px;
-  --heading-2-line-height: 56px;
-
   --heading-3-font-size:   40px;
-  --heading-3-line-height: 48px;
-
   --heading-4-font-size:   32px;
-  --heading-4-line-height: 40px;
-
   --heading-5-font-size:   24px;
-  --heading-5-line-height: 28px;
-
   --heading-6-font-size:   20px;
+  
+  /* Standard Line Heights */
+  --body-1-line-height: 28px;
+  --body-2-line-height: 22px;
+  --body-3-line-height: 16px;
+
+  --heading-1-line-height: 72px;
+  --heading-2-line-height: 56px;
+  --heading-3-line-height: 48px;
+  --heading-4-line-height: 40px;
+  --heading-5-line-height: 28px;
   --heading-6-line-height: 24px;
 
+  /* Standard Font Weights */
   --regular-font-weight:  400;
   --semibold-font-weight: 600;
   --bold-font-weight:     800;
+
+  /* Standard Padding Values */
+  --small-padding:  16px;
+  --medium-padding: 20px;
+  --large-padding:  24px;
+
+  /* Corner Radius */
+  --no-corner-radius:     0px;
+  --small-corner-radius:  4px;
+  --medium-corner-radius: 8px;
+  --large-corner-radius:  12px;
+
+  /* Border Width */
+  --no-border-radius:     0px;
+  --small-border-radius:  1px;
+  --medium-border-radius: 2px;
+  --large-border-radius:  4px;
+
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins);
-  --font-serif: var(--font-judson);
-  --font-mono: var(--font-geist-mono);
+/* Temas Padrão */
+.theme-light-neutral {
+  background: var(--background);
+  color: var(--secondary-800);
+}
+
+.theme-light-green {
+  background: var(--primary-300);
+  color: var(--primary-800);
+}
+
+.theme-dark-green {
+  background: var(--primary-700);
+  color: var(--primary-100);
+}
+
+.theme-light-brown {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.theme-dark-brown {
+  background: var(--secondary-700);
+  color: var(--secondary-100);
 }
 
 @media (prefers-color-scheme: light) {
@@ -54,8 +171,6 @@
 }
 
 body {
-  background:   var(--background);
-  color:        var(--foreground);
   font-family:  var(--font-poppins);
   text-align:   left;
 }
