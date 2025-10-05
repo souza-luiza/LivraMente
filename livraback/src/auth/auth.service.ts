@@ -34,4 +34,22 @@ export class AuthService {
     const payload = { username: user.email, sub: user._id };
     return { accessToken: this.jwtService.sign(payload) }; //transforma payload em token JWT
   }
+
+  async signIn(email: string, password: string) {
+    const user = await this.usersService.getByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Credenciais inválidas');
+    }
+
+    const [salt, storedHash] = user.password.split('.');
+    const hash = (await scrypt(password, salt, 32)) as Buffer;
+
+    if (storedHash !== hash.toString('hex')) {
+      throw new BadRequestException('Credenciais inválidas');
+    }
+
+    console.log('Signed in', user);
+    const payload = { username: user.email, sub: user._id };
+    return { accessToken: this.jwtService.sign(payload) };
+  }
 }
