@@ -140,27 +140,27 @@
 /* Temas Padrão */
 .light-neutral {
   background: var(--background);
-  color: var(--secondary-800);
+  color:      var(--secondary-800);
 }
 
 .light-green {
   background: var(--primary-300);
-  color: var(--primary-800);
+  color:      var(--primary-800);
 }
 
 .dark-green {
   background: var(--primary-700);
-  color: var(--primary-100);
+  color:      var(--primary-100);
 }
 
 .light-brown {
   background: var(--secondary-100);
-  color: var(--secondary-700);
+  color:      var(--secondary-700);
 }
 
 .dark-brown {
   background: var(--secondary-700);
-  color: var(--secondary-100);
+  color:      var(--secondary-100);
 }
 
 @media (prefers-color-scheme: light) {
@@ -218,7 +218,7 @@ p.quotation {
   font-style:       italic;
 }
 
-h1 {
+.text-h1 {
   font-size:    var(--heading-1-font-size);
   line-height:  var(--heading-1-line-height);
   font-weight:  var(--bold-font-weight);
@@ -226,7 +226,7 @@ h1 {
   text-align:   left;
 }
 
-h2 {
+.text-h2 {
   font-size:    var(--heading-2-font-size);
   line-height:  var(--heading-2-line-height);
   font-weight:  var(--bold-font-weight);
@@ -234,7 +234,7 @@ h2 {
   text-align:   left;
 }
 
-h3 {
+.text-h3 {
   font-size:    var(--heading-3-font-size);
   line-height:  var(--heading-3-line-height);
   font-weight:  var(--bold-font-weight);
@@ -242,7 +242,7 @@ h3 {
   text-align:   left;
 }
 
-h4 {
+.text-h4 {
   font-size:    var(--heading-4-font-size);
   line-height:  var(--heading-4-line-height);
   font-weight:  var(--bold-font-weight);
@@ -250,7 +250,7 @@ h4 {
   text-align:   left;
 }
 
-h5 {
+.text-h5 {
   font-size:    var(--heading-5-font-size);
   line-height:  var(--heading-5-line-height);
   font-weight:  var(--bold-font-weight);
@@ -258,7 +258,7 @@ h5 {
   text-align:   left;
 }
 
-h6 {
+.text-h6 {
   font-size:    var(--heading-6-font-size);
   line-height:  var(--heading-6-line-height);
   font-weight:  var(--bold-font-weight);
@@ -271,29 +271,27 @@ h6 {
 }
 
 button {
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-width: auto;
-  max-width: 180px;
-  margin: 0px;
-  border-width: var(--no-border-width);
-  flex-direction: row;
-  gap: 8px;
-  display: inline-flex;
+  flex-direction:   column;
+  justify-content:  center;
+  align-items:      center;
+  margin:           0px;
+  border-width:     var(--no-border-width);
+  flex-direction:   row;
+  gap:              8px;
+  display:          inline-flex;
 }
   
 button.small {
-  padding: 8px var(--small-padding);
-  border-radius: var(--small-border-radius);
+  padding:        8px var(--small-padding);
+  border-radius:  var(--small-border-radius);
 }
 
 button.medium {
-  padding: 8px var(--medium-padding);
-  border-radius: var(--medium-border-radius);
+  padding:        8px var(--medium-padding);
+  border-radius:  var(--medium-border-radius);
 }
 
 button.large {
-  padding: 8px var(--large-padding);
-  border-radius: var(--large-border-radius);
+  padding:        8px var(--large-padding);
+  border-radius:  var(--large-border-radius);
 }

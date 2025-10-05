@@ -10,9 +10,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export default function Button({ text, icon, size, colorScheme }: ButtonProps) {
 
     const textStyles: Record<"small" | "medium" | "large", string> = {
-        small:  "h6",
-        medium: "h4",
-        large:  "h2",
+        small:  "text-h6",
+        medium: "text-h4",
+        large:  "text-h2",
     };
 
     const iconSizes: Record<"small" | "medium" | "large", string> = {
