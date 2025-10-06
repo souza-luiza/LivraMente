@@ -68,10 +68,8 @@ export default function Button({
                 />
                 </svg>
             )}
-            {<>
-                <span className={`${textStyles[size]}`}> {text} </span>
-                <span className={`${iconSizes[size]}`}> {icon} </span>
-            </>}
+            <span className={`${textStyles[size]}`}> {text} </span>
+            <span className={`${iconSizes[size]}`}> {icon} </span>
         </button>
         </>
     );
