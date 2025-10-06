@@ -21,18 +21,24 @@ export default function Button({
     const textStyles: Record<"small" | "medium" | "large", string> = {
         small:  "text-h6",
         medium: "text-h4",
-        large:  "text-h2",
-    };
+        large:  "text-h2"
+    }
 
     const iconSizes: Record<"small" | "medium" | "large", string> = {
-        small:  "w-4 h-4",
-        medium: "w-6 h-6",
-        large:  "w-10 h-10",
-    };
+        small:  "icon-small",
+        medium: "icon-medium",
+        large:  "icon-large"
+    }
+
+    const boxSize: Record<"small" | "medium" | "large", string> = {
+        small:  "small-box",
+        medium: "medium-box",
+        large:  "large-box"
+    }
 
     return (
         <>
-        <button className={`${size} ${colorScheme}
+        <button className={`${boxSize[size]} ${colorScheme}
                 active:opacity-95
                 hover:opacity-90 hover:cursor-pointer
                 disabled:opacity-70 disabled:cursor-not-allowed

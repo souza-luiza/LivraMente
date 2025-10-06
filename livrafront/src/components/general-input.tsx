@@ -6,9 +6,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string
   helperText?: string
   variant?: 'default' | 'outline' | 'filled'
-  inputSize?: 'sm' | 'md' | 'lg'
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
+  inputSize?: 'small' | 'medium' | 'large'
+  colorScheme?: string
   fullWidth?: boolean
 }
 
@@ -17,9 +16,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   error,
   helperText,
   variant = 'default',
-  inputSize = 'md',
-  leftIcon,
-  rightIcon,
+  inputSize = 'medium',
+  colorScheme = 'light-neutral',
   fullWidth = false,
   className,
   id,
@@ -38,10 +36,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   const variants = {
     default: [
       'border border-gray-300 bg-white',
-      'focus:ring-blue-500 focus:border-blue-500',
+      'focus:ring-green-900 focus:green-900',
       'hover:border-gray-400'
     ],
-    outline: [
+    outline: [  
       'border-2 border-gray-300 bg-transparent',
       'focus:ring-blue-500 focus:border-blue-500',
       'hover:border-gray-400'
@@ -53,80 +51,62 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
     ]
   }
 
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm rounded-md',
-    md: 'px-3 py-2 text-base rounded-lg',
-    lg: 'px-4 py-3 text-lg rounded-lg'
+  const textStyle: Record<'small' | 'medium' | 'large', string> = {
+    small:  'text-b3',
+    medium: 'text-b2',
+    large:  'text-b1'
   }
 
-  const iconSizes = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6'
+  const boxSize: Record<'small' | 'medium' | 'large', string> = {
+    small:  "small-box",
+    medium: "medium-box",
+    large:  "large-box"
   }
+
+  const auxTextStyle = "text-b3";
+
+  const labelStyle = "body-semibold";
 
   const inputClasses = cn(
     baseClasses,
     variants[variant],
-    sizes[inputSize],
-    leftIcon && 'pl-10',
-    rightIcon && 'pr-10',
+    boxSize[inputSize],  
+    textStyle[inputSize],
     fullWidth ? 'w-full' : 'w-auto',
     error && 'border-red-500 focus:ring-red-500 focus:border-red-500',
     className
   )
 
   return (
-    <div className={cn('relative', fullWidth && 'w-full')}>
+    <div className={`relative ${fullWidth && 'w-full'}`}>
       {/* Label */}
       {label && (
         <label 
           htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className={`${labelStyle} ${textStyle[inputSize]}`}
         >
           {label}
         </label>
       )}
 
       {/* Input Container */}
-      <div className="relative">
-        {/* Left Icon */}
-        {leftIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <div className={cn('text-gray-400', iconSizes[inputSize])}>
-              {leftIcon}
-            </div>
-          </div>
-        )}
-
-        {/* Input */}
-        <input
-          ref={ref}
-          id={inputId}
-          className={inputClasses}
-          {...props}
-        />
-
-        {/* Right Icon */}
-        {rightIcon && (
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <div className={cn('text-gray-400', iconSizes[inputSize])}>
-              {rightIcon}
-            </div>
-          </div>
-        )}
-      </div>
+      <input
+        ref={ref}
+        id={inputId}
+        className={`${inputClasses} ${colorScheme} ${baseClasses.join(' ')}`}
+        {...props}
+      />
 
       {/* Error Message */}
       {error && (
-        <p className="mt-1 text-sm text-red-600">
+        <p className={`${auxTextStyle} text-red-600 mt-1`}>
           {error}
         </p>
       )}
 
       {/* Helper Text */}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">
+        <p className={`${auxTextStyle} text-gray-500 mt-1`}>
           {helperText}
         </p>
       )}

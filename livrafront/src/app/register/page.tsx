@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Button from '@/components/button'
-import Input from '@/components/input'
+import Input from '@/components/general-input'
 import Image from 'next/image'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 
@@ -183,7 +183,7 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-2">
               {/* Nome */}
               <Input
                 label="Nome de Usuário"
@@ -195,7 +195,6 @@ export default function RegisterPage() {
                 error={errors.name}
                 placeholder="Seu nome de usuário"
                 fullWidth
-                className="focus:ring-green-700 focus:border-green-700"
               />
 
               {/* Email */}
@@ -209,7 +208,6 @@ export default function RegisterPage() {
                 error={errors.email}
                 placeholder="seu@email.com"
                 fullWidth
-                className="focus:ring-green-700 focus:border-green-700"
               />
 
               {/* Senha */}
@@ -224,7 +222,6 @@ export default function RegisterPage() {
                 placeholder="Mínimo 6 caracteres"
                 helperText="Use pelo menos 6 caracteres com letras e números"
                 fullWidth
-                className="focus:ring-green-700 focus:border-green-700"
               />
 
               {/* Confirmar Senha */}
@@ -238,11 +235,10 @@ export default function RegisterPage() {
                 error={errors.confirmPassword}
                 placeholder="Confirme sua senha"
                 fullWidth
-                className="focus:ring-green-700 focus:border-green-700"
               />
 
               {/* Botão de Submit */}
-              <div className="flex justify-center">
+              <div className="flex justify-center mt-4">
                 <Button
                   type="submit"
                   text={false ? 'Carregando...' : 'Próximo Passo'}
@@ -256,7 +252,7 @@ export default function RegisterPage() {
             </form>
 
             {/* Link para Login */}
-            <div className="mt-6 text-center">
+            <div className="mt-2 text-center">
               <p className="text-sm text-gray-600">
                 Já possui uma conta?{' '}
                 <Link 

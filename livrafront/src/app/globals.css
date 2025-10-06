@@ -171,31 +171,34 @@
   }
 }
 
+/* Estilos de Texto */
 .text-b1 {
-  font-family:  var(--font-poppins);
-  text-align:   left;
-  font-size:    var(--body-1-font-size);
-  line-height:  var(--body-1-line-height);
+  font-family:      var(--font-poppins);
+  text-align:       left;
+  font-size:        var(--body-1-font-size);
+  line-height:      var(--body-1-line-height);
+  font-weight:      var(--regular-font-weight);
+  text-decoration:  none;
+  font-style:       normal;
 }
 
 .text-b2 {
-  font-family:  var(--font-poppins);
-  text-align:   left;
-  font-size:    var(--body-2-font-size);
-  line-height:  var(--body-2-line-height);
+  font-family:      var(--font-poppins);
+  text-align:       left;
+  font-size:        var(--body-2-font-size);
+  line-height:      var(--body-2-line-height);
+  font-weight:      var(--regular-font-weight);
+  text-decoration:  none;
+  font-style:       normal;
 }
 
 .text-b3 {
-  font-family:  var(--font-poppins);
-  text-align:   left;
-  font-size:    var(--body-3-font-size);
-  line-height:  var(--body-3-line-height);
-}
-
-.body-regular {
+  font-family:      var(--font-poppins);
+  text-align:       left;
+  font-size:        var(--body-3-font-size);
+  line-height:      var(--body-3-line-height);
   font-weight:      var(--regular-font-weight);
   text-decoration:  none;
-  font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
@@ -272,6 +275,7 @@
   text-decoration:  underline;
 }
 
+/* Buttons & Inputs*/
 button {
   flex-direction:   column;
   justify-content:  center;
@@ -282,18 +286,29 @@ button {
   gap:              8px;
   display:          inline-flex;
 }
+
+input {
+  flex-direction:   column;
+  justify-content:  center;
+  align-items:      center;
+  margin:           0px;
+  border-width:     var(--small-border-width);
+  flex-direction:   row;
+  gap:              8px;
+  display:          inline-flex;
+}
   
-button.small {
+.small-box {
   padding:        8px var(--small-padding);
   border-radius:  var(--small-border-radius);
 }
 
-button.medium {
+.medium-box {
   padding:        8px var(--medium-padding);
   border-radius:  var(--medium-border-radius);
 }
 
-button.large {
+.large-box {
   padding:        8px var(--large-padding);
   border-radius:  var(--large-border-radius);
 }
@@ -311,4 +326,19 @@ button.textless-medium {
 button.textless-large {
   padding:        var(--small-padding);
   border-radius:  var(--large-border-radius);
+}
+
+.icon-small {
+  width:  16px;
+  height: 16px;
+}
+
+.icon-medium {
+  width:  24px;
+  height: 24px;
+}
+
+.icon-large {
+  width:  40px;
+  height: 40px;
 }

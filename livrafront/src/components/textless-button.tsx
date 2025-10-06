@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   tooltip?: string;
 }
 
-export default function Button({
+export default function TextlessButton({
     icon, 
     size, 
     colorScheme, 

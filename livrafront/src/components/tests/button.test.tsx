@@ -30,10 +30,11 @@ describe('Button Component', () => {
 
     it('applies correct size classes', () => {
       const { rerender } = render(<Button {...defaultProps} size="small" />)
-      expect(screen.getByRole('button')).toHaveClass('small')
+      // Button now uses box-style size classes (e.g. small-box)
+      expect(screen.getByRole('button')).toHaveClass('small-box')
 
       rerender(<Button {...defaultProps} size="large" />)
-      expect(screen.getByRole('button')).toHaveClass('large')
+      expect(screen.getByRole('button')).toHaveClass('large-box')
     })
 
     it('applies correct text size classes based on button size', () => {
