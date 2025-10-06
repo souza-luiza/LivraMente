@@ -1,7 +1,8 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema({ _id: false })
+// Subdocumento (_id: false)
+@Schema({ _id: false })         
 class Perfil {
   @Prop({ required: true })
   tipo_perfil: string;
@@ -20,28 +21,19 @@ class Estante {
 }
 
 @Schema({ _id: false })
-class Readlist {
-  @Prop({ required: true })
-  nome_readlist: string;
-
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Livro' }], default: [] })
-  livros: Types.ObjectId[];
-}
-
-@Schema({ _id: false })
 class Gamificacao {
   @Prop({ default: 1 })
   nivel: number;
 
   @Prop({ default: 0 })
   XP: number;
+
+  @Prop()
+  XP_proximo_nivel?: number;
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class User extends Document {
-  @Prop({ required: true })
-  nome: string;
-
   @Prop({ unique: true, required: true })
   username: string;
 
@@ -57,8 +49,9 @@ export class User extends Document {
   @Prop({ type: Estante, required: false })
   estante?: Estante;
 
-  @Prop({ type: [Readlist], default: [] })
-  readlists: Readlist[];
+  // Relacionamento com Readlist
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
+  readlists: Types.ObjectId[];
 
   @Prop({ type: Gamificacao, required: false })
   gamificação?: Gamificacao;
