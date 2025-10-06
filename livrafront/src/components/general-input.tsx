@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   const variants = {
     default: [
       'border border-gray-300 bg-white',
-      'focus:ring-green-900 focus:green-900',
+      'focus:ring-green-900 focus:border-green-900',
       'hover:border-gray-400'
     ],
     outline: [  
