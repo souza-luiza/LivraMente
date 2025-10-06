@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/input'
 import Image from 'next/image'
+import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -241,14 +242,17 @@ export default function RegisterPage() {
               />
 
               {/* Botão de Submit */}
-              <Button
-                type="submit"
-                fullWidth
-                loading={false}
-                className="bg-green-800 hover:bg-green-700 focus:ring-green-700 mt-6"
-              >
-                {false ? 'Carregando...' : 'Próximo Passo'}
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  type="submit"
+                  text={false ? 'Carregando...' : 'Próximo Passo'}
+                  icon={<ArrowRightIcon />}
+                  size="small"
+                  colorScheme="dark-green"
+                  loading={false}
+                >
+                </Button>
+              </div>
             </form>
 
             {/* Link para Login */}

@@ -119,9 +119,10 @@
   --bold-font-weight:     800;
 
   /* Standard Padding Values */
-  --small-padding:  16px;
-  --medium-padding: 20px;
-  --large-padding:  24px;
+  --extra-small-padding:  12px;
+  --small-padding:        16px;
+  --medium-padding:       20px;
+  --large-padding:        24px;
 
   /* Border Radius */
   --no-border-radius:     0px;
@@ -170,48 +171,49 @@
   }
 }
 
-body {
+.text-b1 {
   font-family:  var(--font-poppins);
   text-align:   left;
-}
-
-p.body-1 {
   font-size:    var(--body-1-font-size);
   line-height:  var(--body-1-line-height);
 }
 
-p.body-2 {
+.text-b2 {
+  font-family:  var(--font-poppins);
+  text-align:   left;
   font-size:    var(--body-2-font-size);
   line-height:  var(--body-2-line-height);
 }
 
-p.body-3 {
+.text-b3 {
+  font-family:  var(--font-poppins);
+  text-align:   left;
   font-size:    var(--body-3-font-size);
   line-height:  var(--body-3-line-height);
 }
 
-p.regular {
+.body-regular {
   font-weight:      var(--regular-font-weight);
   text-decoration:  none;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p.underline {
+.body-underline {
   font-weight:      var(--regular-font-weight);
   text-decoration:  underline;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p.semibold {
+.body-semibold {
   font-weight:      var(--semibold-font-weight);
   text-decoration:  none;
   font-family:      var(--font-poppins);
   font-style:       normal;
 }
 
-p.quotation {
+.body-quotation {
   font-weight:      var(--regular-font-weight);
   text-decoration:  none;
   font-family:      var(--font-judson);
@@ -266,7 +268,7 @@ p.quotation {
   text-align:   left;
 }
 
-.underline:not(p) {
+.heading-underline {
   text-decoration:  underline;
 }
 
@@ -293,5 +295,20 @@ button.medium {
 
 button.large {
   padding:        8px var(--large-padding);
+  border-radius:  var(--large-border-radius);
+}
+
+button.textless-small {
+  padding:        var(--extra-small-padding);
+  border-radius:  var(--small-border-radius);
+}
+
+button.textless-medium {
+  padding:        var(--small-padding);
+  border-radius:  var(--medium-border-radius);
+}
+
+button.textless-large {
+  padding:        var(--small-padding);
   border-radius:  var(--large-border-radius);
 }

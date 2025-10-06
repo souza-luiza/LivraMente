@@ -1,27 +1,27 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  text: ReactNode;      
   icon: ReactNode;
   size: "small" | "medium" | "large";
   colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown";
   loading?: boolean;
+  tooltip?: string;
 }
 
-export default function Button({ 
-    text, 
+export default function Button({
     icon, 
     size, 
     colorScheme, 
-    loading = false, 
-    disabled, 
+    loading = false,
+    tooltip,
+    disabled,
     ...props 
 }: ButtonProps) {
-
-    const textStyles: Record<"small" | "medium" | "large", string> = {
-        small:  "text-h6",
-        medium: "text-h4",
-        large:  "text-h2",
+    
+    const textlessSizes: Record<"small" | "medium" | "large", string> = {
+        small:  "textless-small",
+        medium: "textless-medium",
+        large:  "textless-large",
     };
 
     const iconSizes: Record<"small" | "medium" | "large", string> = {
@@ -31,12 +31,12 @@ export default function Button({
     };
 
     return (
-        <>
-        <button className={`${size} ${colorScheme}
+        <div className="relative flex justify-center group">
+        <button className={`${textlessSizes[size]} ${colorScheme}
                 active:opacity-95
                 hover:opacity-90 hover:cursor-pointer
                 disabled:opacity-70 disabled:cursor-not-allowed
-                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black`}
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black`}
                 disabled={disabled || loading}
                 {...props}
         >
@@ -63,10 +63,14 @@ export default function Button({
                 </svg>
             )}
             {<>
-                <span className={`${textStyles[size]}`}> {text} </span>
                 <span className={`${iconSizes[size]}`}> {icon} </span>
             </>}
         </button>
-        </>
+        {tooltip != undefined && (
+            <div data-testid="tooltip" className={`absolute left-full ml-1 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity duration-100`}>
+                {tooltip}
+            </div>
+        )}
+        </div>
     );
 }

@@ -1,0 +1,168 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button Component Snapshot Tests matches snapshot with default props 1`] = `
+<button
+  class="medium light-green
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+>
+  <span
+    class="text-h4"
+  >
+     
+    Click me
+     
+  </span>
+  <span
+    class="w-6 h-6"
+  >
+     
+    <span
+      data-testid="test-icon"
+    >
+      🎯
+    </span>
+     
+  </span>
+</button>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with different color schemes 1`] = `
+<button
+  class="medium dark-brown
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+>
+  <span
+    class="text-h4"
+  >
+     
+    Click me
+     
+  </span>
+  <span
+    class="w-6 h-6"
+  >
+     
+    <span
+      data-testid="test-icon"
+    >
+      🎯
+    </span>
+     
+  </span>
+</button>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with different sizes 1`] = `
+<button
+  class="large light-green
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+>
+  <span
+    class="text-h2"
+  >
+     
+    Click me
+     
+  </span>
+  <span
+    class="w-10 h-10"
+  >
+     
+    <span
+      data-testid="test-icon"
+    >
+      🎯
+    </span>
+     
+  </span>
+</button>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with disabled state 1`] = `
+<button
+  class="medium light-green
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+  disabled=""
+>
+  <span
+    class="text-h4"
+  >
+     
+    Click me
+     
+  </span>
+  <span
+    class="w-6 h-6"
+  >
+     
+    <span
+      data-testid="test-icon"
+    >
+      🎯
+    </span>
+     
+  </span>
+</button>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with loading state 1`] = `
+<button
+  class="medium light-green
+                active:opacity-95
+                hover:opacity-90 hover:cursor-pointer
+                disabled:opacity-70 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+  disabled=""
+>
+  <svg
+    class="animate-spin h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      class="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      stroke-width="4"
+    />
+    <path
+      class="opacity-75"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      fill="currentColor"
+    />
+  </svg>
+  <span
+    class="text-h4"
+  >
+     
+    Click me
+     
+  </span>
+  <span
+    class="w-6 h-6"
+  >
+     
+    <span
+      data-testid="test-icon"
+    >
+      🎯
+    </span>
+     
+  </span>
+</button>
+`;
