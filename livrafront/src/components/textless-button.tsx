@@ -62,9 +62,7 @@ export default function TextlessButton({
                 />
                 </svg>
             )}
-            {<>
-                <span className={`${iconSizes[size]}`}> {icon} </span>
-            </>}
+            <span className={`${iconSizes[size]}`}> {icon} </span>
         </button>
         {tooltip != undefined && (
             <div data-testid="tooltip" className={`absolute left-full ml-1 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity duration-100`}>
