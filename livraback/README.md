@@ -79,4 +79,9 @@ schemas/
 ├── user.schema.ts        → User (subdocumentos Perfil, Estante, Gamificação)
 ├── readlist.schema.ts    → Readlist 
 ├── livro.schema.ts       → Livro
-└── autor.schema.ts       → Autor
+├── autor.schema.ts       → Autor
+├── post.schema.ts        → Postagem
+├── comentario.schema.ts  → Comentario
+├── comuidade.schema.ts   → Comunidade
+├── quiz.schema.ts        → Quiz
+└── resenha.schema.ts     → Resenha

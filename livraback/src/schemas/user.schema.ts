@@ -58,6 +58,10 @@ export class User extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   amigos: Types.ObjectId[];
+
+  // Postagens do usuário
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Post' }], default: [] })
+  posts: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
