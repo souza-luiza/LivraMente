@@ -82,6 +82,6 @@ schemas/
 ├── autor.schema.ts       → Autor
 ├── post.schema.ts        → Postagem
 ├── comentario.schema.ts  → Comentario
-├── comuidade.schema.ts   → Comunidade
+├── comunidade.schema.ts  → Comunidade
 ├── quiz.schema.ts        → Quiz
 └── resenha.schema.ts     → Resenha

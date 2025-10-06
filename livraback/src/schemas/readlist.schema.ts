@@ -6,7 +6,7 @@ export class Readlist extends Document {
   @Prop({ required: true })
   nome: string;
 
-  @Prop({default: false})
+  @Prop({ default: false })
   favorito: boolean;
   
   @Prop({ default: false })

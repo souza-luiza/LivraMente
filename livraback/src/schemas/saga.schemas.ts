@@ -16,7 +16,7 @@ export class Saga extends Document {
   generos: string[];
 
   // Referência aos livros na saga
-  @Prop({ type: [Types.ObjectId], ref: 'Livro' })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Livro' }], default: [] })
   livros: Types.ObjectId[];
 }
 
