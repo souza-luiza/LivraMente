@@ -37,7 +37,6 @@ export default function Button({
     }
 
     return (
-        <>
         <button className={`${boxSize[size]} ${colorScheme}
                 active:opacity-95
                 hover:opacity-90 hover:cursor-pointer
@@ -71,6 +70,5 @@ export default function Button({
             <span className={`${textStyles[size]}`}> {text} </span>
             <span className={`${iconSizes[size]}`}> {icon} </span>
         </button>
-        </>
     );
 }
