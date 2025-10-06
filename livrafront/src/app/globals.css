@@ -277,7 +277,6 @@
 
 /* Buttons & Inputs*/
 button {
-  flex-direction:   column;
   justify-content:  center;
   align-items:      center;
   margin:           0px;
@@ -288,7 +287,6 @@ button {
 }
 
 input {
-  flex-direction:   column;
   justify-content:  center;
   align-items:      center;
   margin:           0px;
