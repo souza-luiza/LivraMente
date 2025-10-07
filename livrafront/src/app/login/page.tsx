@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLoginForm } from "@/forms/useLoginForm"; 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const { 
@@ -33,10 +34,13 @@ export default function LoginPage() {
 
         {/* Left Side */}
         <div className="flex w-full flex-col items-center justify-center text-center lg:w-1/2">
-          <img
+          <Image
             src="/logos/livramente-logo-verde.png"
             alt="Logo"
-            className="h-auto w-2/3 max-w-[24rem] max-h-[24rem]"
+            className="h-auto w-2/3"
+            width={384}
+            height={384}
+            priority
           />
           <h1 className="text-5xl font-semibold text-[#4C7235]">LivraMente</h1>
           <p className="text-2xl text-[#4C7235]">A rede dos leitores brasileiros</p>
@@ -56,10 +60,12 @@ export default function LoginPage() {
             {/* Email Input */}
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={iconContainerStyle}>
-                <img
+                <Image
                   src="/images/at-sign.svg"
                   alt="Ícone de email"
                   style={iconStyle}
+                  width={24}
+                  height={24}
                 />
               </div>
               <label htmlFor="email" className="sr-only">
@@ -98,10 +104,12 @@ export default function LoginPage() {
             <div className="flex w-full flex-col items-end gap-1">
               <div style={{ position: 'relative', width: '100%' }}>
                 <div style={iconContainerStyle}>
-                  <img
+                  <Image
                     src="/images/lock.svg"
                     alt="Ícone de cadeado"
                     style={iconStyle}
+                    width={24}
+                    height={24}
                   />
                 </div>
                 <label htmlFor="password" className="sr-only">Senha</label>
@@ -159,7 +167,7 @@ export default function LoginPage() {
               type="button"
               className="flex h-[3.25rem] w-full items-center justify-center gap-3 rounded-[1.25rem] border border-[#4285f4] bg-gray-50 text-base font-medium text-[#4285F4] shadow-md transition-colors hover:bg-gray-200"
             >
-              <img src="/logos/google-logo.png" alt="Google Logo" width={26} height={26} />
+              <Image src="/logos/google-logo.png" alt="Google Logo" width={26} height={26} />
               <span>Fazer login com Google</span>
             </button>
 
@@ -168,7 +176,7 @@ export default function LoginPage() {
               type="button"
               className="flex h-[3.25rem] w-full items-center justify-center gap-3 rounded-[1.25rem] border border-[#313131] bg-gray-50 text-base font-medium text-[#494949] shadow-md transition-colors hover:bg-gray-200"
             >
-              <img src="/logos/apple-logo.png" alt="Apple Logo" width={24} height={24} />
+              <Image src="/logos/apple-logo.png" alt="Apple Logo" width={24} height={24} />
               <span>Fazer login com Apple</span>
             </button>
 
