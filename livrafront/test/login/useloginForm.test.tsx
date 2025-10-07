@@ -1,18 +1,32 @@
 import { renderHook, act } from '@testing-library/react'
+import { useRouter } from 'next/navigation'
 import { useLoginForm } from '@/forms/useLoginForm'
 import { loginUser } from '@/services/auth'
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
+
 jest.mock('@/services/auth')
 const mockLoginUser = loginUser as jest.MockedFunction<typeof loginUser>
-const mockAlert = jest.fn()
-Object.defineProperty(window, 'alert', {
-  writable: true,
-  value: mockAlert,
+const mockPush = jest.fn()
+
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock
 })
 
 describe('useLoginForm', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+    })
   })
 
   it('deve inicializar com valores padrão', () => {
@@ -48,7 +62,6 @@ describe('useLoginForm', () => {
     mockLoginUser.mockResolvedValueOnce(mockResponse)
     const { result } = renderHook(() => useLoginForm())
 
-    // Preenche dados válidos
     act(() => {
       result.current.handleChange({
         target: { name: 'email', value: 'teste@exemplo.com' }
@@ -59,7 +72,6 @@ describe('useLoginForm', () => {
       } as React.ChangeEvent<HTMLInputElement>)
     })
 
-    // Faz o submit
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: jest.fn()
@@ -70,18 +82,16 @@ describe('useLoginForm', () => {
       email: 'teste@exemplo.com',
       password: 'senha123'
     })
-    expect(mockAlert).toHaveBeenCalledWith('Bem-vindo teste')
     expect(result.current.isLoading).toBe(false)
     expect(result.current.apiError).toBe('')
   })
 
-  it('deve lidar com erro de login', async () => {
-    const errorMessage = 'Credenciais inválidas'
-    mockLoginUser.mockRejectedValueOnce(new Error(errorMessage))
-
+  it('deve lidar com erro da API quando login falha', async () => {
+    const apiError = new Error('Credenciais inválidas')
+    mockLoginUser.mockRejectedValueOnce(apiError)
+    
     const { result } = renderHook(() => useLoginForm())
 
-    // Preenche dados válidos
     act(() => {
       result.current.handleChange({
         target: { name: 'email', value: 'teste@exemplo.com' }
@@ -92,15 +102,102 @@ describe('useLoginForm', () => {
       } as React.ChangeEvent<HTMLInputElement>)
     })
 
-    // Faz o submit
     await act(async () => {
       await result.current.handleSubmit({
         preventDefault: jest.fn()
       } as unknown as React.FormEvent)
     })
 
+    expect(mockLoginUser).toHaveBeenCalledWith({
+      email: 'teste@exemplo.com',
+      password: 'senha123'
+    })
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.apiError).toBe(errorMessage)
+    expect(result.current.apiError).toBe('Credenciais inválidas') 
+    expect(result.current.errors).toEqual({}) 
   })
 
+  it('deve salvar token e user no localStorage após login', async () => {
+    const mockResponse = {
+      token: 'real-token-123',
+      user: { id: '1', username: 'test', email: 'test@test.com' }
+    }
+
+    mockLoginUser.mockResolvedValueOnce(mockResponse)
+    const { result } = renderHook(() => useLoginForm())
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: 'email', value: 'test@test.com' }
+      } as React.ChangeEvent<HTMLInputElement>)
+      
+      result.current.handleChange({
+        target: { name: 'password', value: 'password123' }
+      } as React.ChangeEvent<HTMLInputElement>)
+    })
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: jest.fn()
+      } as unknown as React.FormEvent)
+    })
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'real-token-123')
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockResponse.user))
+  })
+
+  it('deve redirecionar para página principal/feed após login', async () => {
+    const mockResponse = {
+      token: 'token-123',
+      user: { id: '1', username: 'test', email: 'test@test.com' }
+    }
+
+    mockLoginUser.mockResolvedValueOnce(mockResponse)
+    const { result } = renderHook(() => useLoginForm())
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: 'email', value: 'test@test.com' }
+      } as React.ChangeEvent<HTMLInputElement>)
+      
+      result.current.handleChange({
+        target: { name: 'password', value: 'password123' }
+      } as React.ChangeEvent<HTMLInputElement>)
+    })
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: jest.fn()
+      } as unknown as React.FormEvent)
+    })
+
+    expect(mockPush).toHaveBeenCalledWith('/main')
+  })
+
+  it('deve tratar erro de credenciais inválidas', async () => {
+    const error401 = new Error('Credenciais inválidas')
+    mockLoginUser.mockRejectedValueOnce(error401)
+    
+    const { result } = renderHook(() => useLoginForm())
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: 'email', value: 'wrong@test.com' }
+      } as React.ChangeEvent<HTMLInputElement>)
+      
+      result.current.handleChange({
+        target: { name: 'password', value: 'wrongpass' }
+      } as React.ChangeEvent<HTMLInputElement>)
+    })
+
+    await act(async () => {
+      await result.current.handleSubmit({
+        preventDefault: jest.fn()
+      } as unknown as React.FormEvent)
+    })
+
+    expect(result.current.apiError).toBe('Credenciais inválidas')
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(localStorageMock.setItem).not.toHaveBeenCalled()
+  })
 })
