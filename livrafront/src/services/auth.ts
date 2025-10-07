@@ -3,17 +3,29 @@
 import { LoginFormData, LoginResponse } from '@/types/auth'
 
 export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  // Se a autenticação tiver sucesso, retorna token e dados do usuário
-  if (data.email === 'test@test.com' && data.password === '123456') {
-    return {
-      token: 'fake-token',
-      user: { 
-        id: '1', 
-        email: data.email, 
-        username: 'usuarioteste'
+  try {
+    // Fazer requisição POST para o endpoint de login
+    const response = await fetch('http://localhost:3001/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: data.email,
+        senha: data.password  
+      }),
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Credenciais inválidas')
       }
+      if (response.status === 500) {
+        throw new Error('Erro interno do servidor')
+      }
+      throw new Error('Erro na requisição')
     }
-  }
-  throw new Error('Informações de login inválidas')
+
+    const result = await response.json()
+
 }
