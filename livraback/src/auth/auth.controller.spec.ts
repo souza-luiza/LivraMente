@@ -27,9 +27,9 @@ describe('AuthController', () => {
 
   it('should call authService.signUp and return accessToken', async () => {
     const dto: CreateUserDto = {
+      username: 'Teste',
       email: 'teste@teste.com',
-      name: 'Teste',
-      password: '123456',
+      senha: '123456',
     };
 
     const mockToken = { accessToken: 'mock-token' };
