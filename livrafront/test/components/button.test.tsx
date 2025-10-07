@@ -1,11 +1,11 @@
 // components/tests/button.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Button from '../button'
-import LogoIcon from '../icons/LogoIcon'
+import Button from '../../src/components/button'
+import LogoIcon from '../../src/components/icons/LogoIcon'
 
 // Replace the real SVG logo with a tiny stable placeholder for tests/snapshots
-jest.mock('../icons/LogoIcon', () => ({
+jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
   default: function DummyLogo() {
     return <span data-testid="test-icon">🎯</span>

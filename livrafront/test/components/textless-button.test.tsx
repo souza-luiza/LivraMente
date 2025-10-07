@@ -1,11 +1,11 @@
 // components/textless-button.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import TextlessButton from '../textless-button'
-import LogoIcon from '../icons/LogoIcon'
+import TextlessButton from '../../src/components/textless-button'
+import LogoIcon from '../../src/components/icons/LogoIcon'
 
 // Replace the real SVG logo with a tiny stable placeholder for tests/snapshots
-jest.mock('../icons/LogoIcon', () => ({
+jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
   default: function DummyLogo() {
     return <span data-testid="test-icon">🎯</span>
@@ -42,14 +42,14 @@ describe('TextlessButton Component', () => {
 
     it('applies correct icon size classes based on button size', () => {
       const { rerender } = render(<TextlessButton {...defaultProps} size="small" />)
-      const iconWrapper = screen.getByTestId('test-icon').parentElement
-      expect(iconWrapper).toHaveClass('w-4', 'h-4')
+  const iconWrapper = screen.getByTestId('test-icon').parentElement
+  expect(iconWrapper).toHaveClass('w-4 h-4')
 
       rerender(<TextlessButton {...defaultProps} size="medium" />)
-      expect(iconWrapper).toHaveClass('w-6', 'h-6')
+  expect(iconWrapper).toHaveClass('w-6 h-6')
 
       rerender(<TextlessButton {...defaultProps} size="large" />)
-      expect(iconWrapper).toHaveClass('w-10', 'h-10')
+  expect(iconWrapper).toHaveClass('w-10 h-10')
     })
 
     it('applies correct color scheme classes', () => {

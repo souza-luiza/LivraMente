@@ -1,52 +1,52 @@
 // components/sidebar.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Sidebar from '../sidebar'
+import Sidebar from '../../src/components/sidebar'
 
 // Mock the icons and button component
-jest.mock('../icons/LogoIcon', () => ({
+jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
   default: function MockLogoIcon() {
     return <svg data-testid="logo-icon">Logo</svg>
   },
 }))
 
-jest.mock('../icons/HomeIcon', () => ({
+jest.mock('../../src/components/icons/HomeIcon', () => ({
   __esModule: true,
   default: function MockHomeIcon() {
     return <svg data-testid="home-icon">Home</svg>
   },
 }))
 
-jest.mock('../icons/ProfileIcon', () => ({
+jest.mock('../../src/components/icons/ProfileIcon', () => ({
   __esModule: true,
   default: function MockProfileIcon() {
     return <svg data-testid="profile-icon">Profile</svg>
   },
 }))
 
-jest.mock('../icons/NotificationsIcon', () => ({
+jest.mock('../../src/components/icons/NotificationsIcon', () => ({
   __esModule: true,
   default: function MockNotificationsIcon() {
     return <svg data-testid="notifications-icon">Notifications</svg>
   },
 }))
 
-jest.mock('../icons/SettingsIcon', () => ({
+jest.mock('../../src/components/icons/SettingsIcon', () => ({
   __esModule: true,
   default: function MockSettingsIcon() {
     return <svg data-testid="settings-icon">Settings</svg>
   },
 }))
 
-jest.mock('../icons/LogoutIcon', () => ({
+jest.mock('../../src/components/icons/LogoutIcon', () => ({
   __esModule: true,
   default: function MockLogoutIcon() {
     return <svg data-testid="logout-icon">Logout</svg>
   },
 }))
 
-jest.mock('../textless-button', () => ({
+jest.mock('../../src/components/textless-button', () => ({
   __esModule: true,
   default: function MockButton({ icon, tooltip, onClick }: any) {
     return (
@@ -209,7 +209,7 @@ describe('Sidebar Component', () => {
       const mockOnClick = jest.fn()
       
       // Override the mock to include onClick
-      jest.doMock('../textless-button', () => ({
+      jest.doMock('../../src/components/textless-button', () => ({
         __esModule: true,
         default: function MockButton({ icon, tooltip, onClick }: any) {
           return (
