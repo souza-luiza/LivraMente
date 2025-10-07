@@ -2,18 +2,48 @@
 
 import { LoginFormData, LoginResponse } from '@/types/auth'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+
 export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  // Se a autenticação tiver sucesso, retorna token e dados do usuário
-  if (data.email === 'test@test.com' && data.password === '123456') {
+  try {
+    // Fazer requisição POST para o endpoint de login
+    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: data.email,
+        senha: data.password  
+      }),
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Credenciais inválidas')
+      }
+      if (response.status === 500) {
+        throw new Error('Erro interno do servidor')
+      }
+      throw new Error('Erro na requisição')
+    }
+
+    const result = await response.json()
+    
+    // Backend retorna token
     return {
-      token: 'fake-token',
+      token: result.accessToken,
       user: { 
-        id: '1', 
-        email: data.email, 
-        username: 'usuarioteste'
+        id: 'user-id', 
+        username: data.email,
+        email: data.email 
       }
     }
+
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error('Erro de rede')
   }
-  throw new Error('Informações de login inválidas')
 }
