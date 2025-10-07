@@ -200,4 +200,61 @@ describe('useLoginForm', () => {
     expect(mockPush).not.toHaveBeenCalled()
     expect(localStorageMock.setItem).not.toHaveBeenCalled()
   })
+
+it('deve mostrar erros de validação no submit com dados inválidos', async () => {
+  const { result } = renderHook(() => useLoginForm())
+  await act(async () => {
+    await result.current.handleSubmit({
+      preventDefault: jest.fn()
+    } as unknown as React.FormEvent)
+  })
+  expect(result.current.errors.email).toBeDefined()
+  expect(result.current.errors.password).toBeDefined()
+  expect(result.current.isLoading).toBe(false)
+})
+it('deve mostrar erro de email inválido no submit', async () => {
+  const { result } = renderHook(() => useLoginForm())
+  act(() => {
+    result.current.handleChange({
+      target: { name: 'email', value: 'test@example.com' } 
+    } as React.ChangeEvent<HTMLInputElement>)
+    
+    result.current.handleChange({
+      target: { name: 'password', value: 'validpassword123' }
+    } as React.ChangeEvent<HTMLInputElement>)
+  })
+
+  act(() => {
+    result.current.formData.email = 'email-invalido' 
+    result.current.formData.password = 'ab' 
+  })
+
+  await act(async () => {
+    await result.current.handleSubmit({
+      preventDefault: jest.fn()
+    } as unknown as React.FormEvent)
+  })
+
+  expect(result.current.errors.email).toBeDefined()
+  expect(result.current.errors.password).toBeDefined() 
+  expect(mockLoginUser).not.toHaveBeenCalled()
+})
+it('deve limpar erro quando campo se torna válido', () => {
+  const { result } = renderHook(() => useLoginForm())
+  act(() => {
+    result.current.handleChange({
+      target: { name: 'email', value: 'email-invalido' }
+    } as React.ChangeEvent<HTMLInputElement>)
+  })
+
+  expect(result.current.errors.email).toBeDefined()
+
+  act(() => {
+    result.current.handleChange({
+      target: { name: 'email', value: 'email@valido.com' }
+    } as React.ChangeEvent<HTMLInputElement>)
+  })
+
+  expect(result.current.errors.email).toBeUndefined() 
+})
 })
