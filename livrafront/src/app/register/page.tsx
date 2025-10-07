@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/general-input'
@@ -8,6 +9,8 @@ import Image from 'next/image'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 
 export default function RegisterPage() {
+  const router = useRouter()
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -72,12 +75,32 @@ export default function RegisterPage() {
     return Object.values(newErrors).every(error => error === '')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (validateForm()) {
-      // TODO: Implementar lógica de registro
-      console.log('Dados de registro:', formData)
+    if (!validateForm()) return
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        // redirecionamento para página de sucesso
+        router.push('/register/success')
+      } else if (response.status === 400) {
+        const data = await response.json()
+        setErrors(prev => ({
+          ...prev,
+          email: data.message || 'Dados inválidos'
+        }))
+      } else {
+        alert('Erro inesperado. Tente novamente mais tarde.')
+      }
+    } catch (error) {
+      alert('Falha ao conectar com o servidor.')
     }
   }
 
