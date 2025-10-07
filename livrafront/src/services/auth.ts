@@ -27,5 +27,21 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
     }
 
     const result = await response.json()
+    
+    // Backend retorna token
+    return {
+      token: result.accessToken,
+      user: { 
+        id: 'user-id', 
+        username: data.email,
+        email: data.email 
+      }
+    }
 
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    throw new Error('Erro de rede')
+  }
 }
