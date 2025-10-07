@@ -10,6 +10,7 @@ describe('AuthService', () => {
   // Mocks simples dos serviços que o AuthService usa
   const mockUsersService = {
     getByEmail: jest.fn(),
+    getByUsername: jest.fn(),
     create: jest.fn(),
   };
   const mockJwtService = {
@@ -43,26 +44,42 @@ describe('AuthService', () => {
 
     await expect(
       service.signUp({
+        username: "oi",
         email: "teste@test.com",
-        name: "oi",
-        password: "123456",
+        senha: "123456",
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('should throw error when username is in use', async () => {
+    // Email está livre
+    mockUsersService.getByEmail.mockResolvedValue(null);
+    // Username já está em uso
+    mockUsersService.getByUsername.mockResolvedValue({ id: '456', username: 'oi' });
+
+    await expect(
+      service.signUp({
+        username: "oi",
+        email: "teste@test.com",
+        senha: "123456",
       }),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('should create user and return token', async () => {
     mockUsersService.getByEmail.mockResolvedValue(null); // nao existe usuario com email
+    mockUsersService.getByUsername.mockResolvedValue(null); // nao existe usuario com username
     mockUsersService.create.mockResolvedValue({
       _id: 'user-id',
+      username: 'teste',
       email: 'teste@test.com',
-      password: 'hashed-password',
-      name: 'teste',
+      senha: 'hashed-password',
     });
 
     const result = await service.signUp({
+      username: 'teste',
       email: 'teste@test.com',
-      name: 'teste',
-      password: '123456',
+      senha: '123456',
     });
 
     expect(result).toHaveProperty('accessToken');
