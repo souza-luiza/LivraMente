@@ -71,3 +71,17 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Estrutura do esquemas do Banco de Dados
+
+schemas/
+├── index.ts              → Exporta todos os schemas
+├── user.schema.ts        → User (subdocumentos Perfil, Estante, Gamificação)
+├── readlist.schema.ts    → Readlist 
+├── livro.schema.ts       → Livro
+├── autor.schema.ts       → Autor
+├── post.schema.ts        → Postagem
+├── comentario.schema.ts  → Comentario
+├── comunidade.schema.ts  → Comunidade
+├── quiz.schema.ts        → Quiz
+└── resenha.schema.ts     → Resenha
