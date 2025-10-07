@@ -3,15 +3,14 @@ import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import LoginPage from '@/app/login/page'
 import { loginUser } from '@/services/auth'
+import { useRouter } from 'next/navigation' 
 
 jest.mock('@/services/auth')
 const mockLoginUser = loginUser as jest.MockedFunction<typeof loginUser>
-
-const mockAlert = jest.fn()
-Object.defineProperty(window, 'alert', {
-  writable: true,
-  value: mockAlert,
-})
+const mockPush = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
 
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -24,6 +23,9 @@ jest.mock('next/link', () => {
 describe('LoginPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+    })
   })
 
   afterAll(() => {
@@ -51,7 +53,9 @@ describe('LoginPage', () => {
         password: 'senha123'
       })
     })
-    expect(mockAlert).toHaveBeenCalledWith('Bem-vindo teste')
+    
+    // Verificar redirecionamento ao invés de alert
+    expect(mockPush).toHaveBeenCalledWith('/main')
   })
 
   //Teste de login com credenciais inválidas
@@ -67,5 +71,27 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument()
     })
+  })
+  it('deve fazer login e redirecionar para página principal/feed', async () => {
+    const user = userEvent.setup()
+    const mockResponse = {
+      token: 'integration-token',
+      user: { id: '1', username: 'integration', email: 'integration@test.com' }
+    }
+    
+    mockLoginUser.mockResolvedValueOnce(mockResponse)
+    render(<LoginPage />)
+    
+    await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'integration@test.com')
+    await user.type(screen.getByPlaceholderText('Senha'), 'password123')
+    await user.click(screen.getByText('Acessar'))
+    
+    await waitFor(() => {
+      expect(mockLoginUser).toHaveBeenCalledWith({
+        email: 'integration@test.com',
+        password: 'password123'
+      })
+    })
+    expect(mockPush).toHaveBeenCalledWith('/main')
   })
 })
