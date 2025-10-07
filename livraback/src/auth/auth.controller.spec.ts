@@ -43,7 +43,7 @@ describe('AuthController', () => {
   it('should call authService.signIn and return accessToken', async () => {
     const loginDto = {
       email: 'teste@teste.com',
-      password: '123456',
+      senha: '123456',
     };
 
     const mockToken = { accessToken: 'mock-token' };

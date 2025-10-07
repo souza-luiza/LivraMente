@@ -42,14 +42,14 @@ export class AuthService {
   }
 
   async signIn(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const { email, senha } = loginDto;
     const user = await this.usersService.getByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const [salt, storedHash] = user.password.split('.');
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
+    const [salt, storedHash] = user.senha.split('.');
+    const hash = (await scrypt(senha, salt, 32)) as Buffer;
 
     const storedBuffer = Buffer.from(storedHash, 'hex');
 

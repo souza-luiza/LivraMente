@@ -5,6 +5,7 @@ export class CreateUserDto { // objeto com informações que queremos salvar
     @IsString()
     username: string;
 
+    @IsNotEmpty()
     @IsEmail()
     email: string;
 

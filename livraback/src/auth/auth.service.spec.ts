@@ -96,27 +96,27 @@ describe('AuthService', () => {
     mockUsersService.getByEmail.mockResolvedValue({
       _id: 'user-id',
       email: 'teste@test.com',
-      password: storedPassword,
+      senha: storedPassword,
     });
 
     await expect(
-      service.signIn({ email: 'teste@test.com', password: wrongPassword }),
+      service.signIn({ email: 'teste@test.com', senha: wrongPassword }),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('should return accessToken if credentials are valid', async () => {
-    const password = '123456';
+    const senha = '123456';
     const salt = 'saltteste';
-    const hash = scryptSync(password, salt, 32).toString('hex');
+    const hash = scryptSync(senha, salt, 32).toString('hex');
     const storedPassword = `${salt}.${hash}`;
 
     mockUsersService.getByEmail.mockResolvedValue({
       _id: 'user-id',
       email: 'teste@test.com',
-      password: storedPassword,
+      senha: storedPassword,
     });
 
-    const result = await service.signIn({ email: 'teste@test.com', password });
+    const result = await service.signIn({ email: 'teste@test.com', senha });
 
     expect(result).toHaveProperty('accessToken');
     expect(mockJwtService.sign).toHaveBeenCalled();
@@ -126,14 +126,14 @@ describe('AuthService', () => {
     mockUsersService.getByEmail.mockResolvedValue(null);
 
     await expect(
-      service.signIn({ email: 'naoexiste@teste.com', password: 'qualquer' }),
+      service.signIn({ email: 'naoexiste@teste.com', senha: 'qualquer' }),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('should throw UnauthorizedException if stored hash length differs from computed hash length', async () => {
-    const password = '123456';
+    const senha = '123456';
     const salt = 'saltteste';
-    const hash = scryptSync(password, salt, 32).toString('hex');
+    const hash = scryptSync(senha, salt, 32).toString('hex');
 
     // Simula um hash malformado (ex: truncado)
     const malformedStoredHash = hash.slice(0, 60);
@@ -142,11 +142,11 @@ describe('AuthService', () => {
     mockUsersService.getByEmail.mockResolvedValue({
       _id: 'user-id',
       email: 'teste@test.com',
-      password: storedPassword,
+      senha: storedPassword,
     });
 
     await expect(
-      service.signIn({ email: 'teste@test.com', password }),
+      service.signIn({ email: 'teste@test.com', senha }),
     ).rejects.toThrow(UnauthorizedException);
   });
 });
