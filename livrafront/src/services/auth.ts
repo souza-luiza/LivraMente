@@ -2,10 +2,12 @@
 
 import { LoginFormData, LoginResponse } from '@/types/auth'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+
 export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
   try {
     // Fazer requisição POST para o endpoint de login
-    const response = await fetch('http://localhost:3001/auth/signin', {
+    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
