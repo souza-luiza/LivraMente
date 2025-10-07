@@ -8,7 +8,8 @@ describe('AuthController', () => {
 
   // Mock do AuthService
   const mockAuthService = {
-    signUp: jest.fn()
+    signUp: jest.fn(),
+    signIn: jest.fn()
   }
 
   beforeEach(async () => {
@@ -36,6 +37,21 @@ describe('AuthController', () => {
     const result = await controller.signUp(dto);
 
     expect(mockAuthService.signUp).toHaveBeenCalledWith(dto);
+    expect(result).toEqual(mockToken);
+  });
+
+  it('should call authService.signIn and return accessToken', async () => {
+    const loginDto = {
+      email: 'teste@teste.com',
+      password: '123456',
+    };
+
+    const mockToken = { accessToken: 'mock-token' };
+    mockAuthService.signIn = jest.fn().mockResolvedValue(mockToken);
+
+    const result = await controller.signIn(loginDto);
+
+    expect(mockAuthService.signIn).toHaveBeenCalledWith(loginDto);
     expect(result).toEqual(mockToken);
   });
 });

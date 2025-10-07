@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { BadRequestException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { scryptSync } from 'crypto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -68,4 +69,48 @@ describe('AuthService', () => {
     expect(result).toHaveProperty('accessToken');
     expect(mockJwtService.sign).toHaveBeenCalled();
   });
+
+  it('should throw error if password is incorrect on signIn', async () => {
+    const fakePassword = '123456';
+    const salt = 'saltteste';
+    const fakeHash = scryptSync(fakePassword, salt, 32).toString('hex');
+    const storedPassword = `${salt}.${fakeHash}`;
+
+    mockUsersService.getByEmail.mockResolvedValue({
+      _id: 'user-id',
+      email: 'teste@test.com',
+      password: storedPassword,
+    });
+
+    await expect(
+      service.signIn({ email: 'teste@test.com', password: 'senhaerrada' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('should return accessToken if credentials are valid', async () => {
+    const password = '123456';
+    const salt = 'saltteste';
+    const hash = scryptSync(password, salt, 32).toString('hex');
+    const storedPassword = `${salt}.${hash}`;
+
+    mockUsersService.getByEmail.mockResolvedValue({
+      _id: 'user-id',
+      email: 'teste@test.com',
+      password: storedPassword,
+    });
+
+    const result = await service.signIn({ email: 'teste@test.com', password });
+
+    expect(result).toHaveProperty('accessToken');
+    expect(mockJwtService.sign).toHaveBeenCalled();
+  });
+
+  it('should throw BadRequestException if user not found on signIn', async () => {
+    mockUsersService.getByEmail.mockResolvedValue(null); // simula usuário não encontrado
+
+    await expect(
+      service.signIn({ email: 'naoexiste@teste.com', password: 'qualquer' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
 });
