@@ -37,7 +37,7 @@ export default function LoginPage() {
           <Image
             src="/logos/livramente-logo-verde.png"
             alt="Logo"
-            className="h-auto w-2/3 max-w-[24rem] max-h-[24rem]"
+            className="h-auto w-2/3"
             width={384}
             height={384}
             priority
