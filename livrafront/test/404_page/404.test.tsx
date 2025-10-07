@@ -96,6 +96,6 @@ describe('NotFoundPage', () => {
         const { container } = render(<NotFoundPage />);
         
         const mainDiv = container.firstChild;
-        expect(mainDiv).toHaveClass('min-h-screen', 'flex');
+        expect(mainDiv).toHaveClass('min-h-screen flex');
     });
 });
