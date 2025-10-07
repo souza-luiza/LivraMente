@@ -15,6 +15,8 @@ O Livramente consiste em ser uma rede social criada por leitores para amantes de
 - Conectar-se com amigos e outros leitores
 - Criação de Listas Personalizadas (ReadLists)
 
+Acesso em: https://livramente.vercel.app/
+
 
 ## 🏗️ Estrutura de Projeto
 ```
