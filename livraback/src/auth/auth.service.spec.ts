@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { scryptSync } from 'crypto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -10,6 +11,7 @@ describe('AuthService', () => {
   // Mocks simples dos serviços que o AuthService usa
   const mockUsersService = {
     getByEmail: jest.fn(),
+    getByUsername: jest.fn(),
     create: jest.fn(),
   };
   const mockJwtService = {
@@ -37,35 +39,114 @@ describe('AuthService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should throw error when email is in use', async () => {
-    // Simula que o usuário já existe
-    mockUsersService.getByEmail.mockResolvedValue({ id: '123', email: 'teste@test.com' }); // controla o que funcao ira retornar quando chamada
+  it('should throw BadRequestException when email is in use', async () => {
+    mockUsersService.getByEmail.mockResolvedValue({ id: '123', email: 'teste@test.com' });
 
     await expect(
       service.signUp({
+        username: "oi",
         email: "teste@test.com",
-        name: "oi",
-        password: "123456",
+        senha: "123456",
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('should throw error when username is in use', async () => {
+    // Email está livre
+    mockUsersService.getByEmail.mockResolvedValue(null);
+    // Username já está em uso
+    mockUsersService.getByUsername.mockResolvedValue({ id: '456', username: 'oi' });
+
+    await expect(
+      service.signUp({
+        username: "oi",
+        email: "teste@test.com",
+        senha: "123456",
       }),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('should create user and return token', async () => {
     mockUsersService.getByEmail.mockResolvedValue(null); // nao existe usuario com email
+    mockUsersService.getByUsername.mockResolvedValue(null); // nao existe usuario com username
     mockUsersService.create.mockResolvedValue({
       _id: 'user-id',
+      username: 'teste',
       email: 'teste@test.com',
-      password: 'hashed-password',
-      name: 'teste',
+      senha: 'hashed-password',
     });
 
     const result = await service.signUp({
+      username: 'teste',
       email: 'teste@test.com',
-      name: 'teste',
-      password: '123456',
+      senha: '123456',
     });
 
     expect(result).toHaveProperty('accessToken');
     expect(mockJwtService.sign).toHaveBeenCalled();
+  });
+
+  it('should throw UnauthorizedException if password is incorrect on signIn', async () => {
+    const correctPassword = '123456';
+    const wrongPassword = 'senhaerrada';
+    const salt = 'saltteste';
+    const correctHash = scryptSync(correctPassword, salt, 32).toString('hex');
+    const storedPassword = `${salt}.${correctHash}`;
+
+    mockUsersService.getByEmail.mockResolvedValue({
+      _id: 'user-id',
+      email: 'teste@test.com',
+      senha: storedPassword,
+    });
+
+    await expect(
+      service.signIn({ email: 'teste@test.com', senha: wrongPassword }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should return accessToken if credentials are valid', async () => {
+    const senha = '123456';
+    const salt = 'saltteste';
+    const hash = scryptSync(senha, salt, 32).toString('hex');
+    const storedPassword = `${salt}.${hash}`;
+
+    mockUsersService.getByEmail.mockResolvedValue({
+      _id: 'user-id',
+      email: 'teste@test.com',
+      senha: storedPassword,
+    });
+
+    const result = await service.signIn({ email: 'teste@test.com', senha });
+
+    expect(result).toHaveProperty('accessToken');
+    expect(mockJwtService.sign).toHaveBeenCalled();
+  });
+
+  it('should throw UnauthorizedException if user not found on signIn', async () => {
+    mockUsersService.getByEmail.mockResolvedValue(null);
+
+    await expect(
+      service.signIn({ email: 'naoexiste@teste.com', senha: 'qualquer' }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should throw UnauthorizedException if stored hash length differs from computed hash length', async () => {
+    const senha = '123456';
+    const salt = 'saltteste';
+    const hash = scryptSync(senha, salt, 32).toString('hex');
+
+    // Simula um hash malformado (ex: truncado)
+    const malformedStoredHash = hash.slice(0, 60);
+    const storedPassword = `${salt}.${malformedStoredHash}`;
+
+    mockUsersService.getByEmail.mockResolvedValue({
+      _id: 'user-id',
+      email: 'teste@test.com',
+      senha: storedPassword,
+    });
+
+    await expect(
+      service.signIn({ email: 'teste@test.com', senha }),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });

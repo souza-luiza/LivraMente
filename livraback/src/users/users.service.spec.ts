@@ -8,9 +8,9 @@ describe('UsersService', () => {
 
   const mockUser = {
     _id: 'user-id',
+    username: 'Test User',
     email: 'test@test.com',
-    name: 'Test User',
-    password: 'hashedpassword',
+    senha: 'hashedpassword',
   };
 
   const mockSave = jest.fn().mockResolvedValue(mockUser);
@@ -53,9 +53,9 @@ describe('UsersService', () => {
 
   it('should create and save a user', async () => {
     const createUserDto = {
+      username: 'Test',
       email: 'test@test.com',
-      name: 'Test',
-      password: '123456',
+      senha: '123456',
     };
 
     const result = await service.create(createUserDto);
@@ -97,8 +97,19 @@ describe('UsersService', () => {
     expect(result).toEqual(mockUser);
   });
 
+  it('should return a user by username', async () => {
+    mockUserModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(mockUser),
+    });
+
+    const result = await service.getByUsername('Test');
+
+    expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: 'Test' });
+    expect(result).toEqual(mockUser);
+  });
+
   it('should update a user and return the updated user', async () => {
-    const updateUserDto = { name: 'Updated Name' };
+    const updateUserDto = { username: 'Updated Name' };
 
     mockUserModel.findByIdAndUpdate.mockReturnValue({
       exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
