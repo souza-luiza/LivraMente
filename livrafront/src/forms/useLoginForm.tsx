@@ -1,9 +1,14 @@
+'use client'
+
 import { useState } from 'react'
+import { useRouter } from 'next/navigation' 
+import { ZodError } from 'zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { loginUser } from '@/services/auth'
-import { ZodError } from 'zod'
 
 export function useLoginForm() {
+  const router = useRouter() 
+  
   // Dados do formulário e mensagens de erro
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState<{email?: string, password?: string}>({})
@@ -47,8 +52,11 @@ export function useLoginForm() {
       
       // Se passou na validação, fazer o login
       const response = await loginUser(formData)
-      alert(`Bem-vindo ${response.user.username}`)
-      console.log('Token recebido:', response.token)
+
+      localStorage.setItem('token', response.token)
+      localStorage.setItem('user', JSON.stringify(response.user))
+      
+      router.push('/main')
       
     } catch (error) {
       if (error instanceof ZodError) {
