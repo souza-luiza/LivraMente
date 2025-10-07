@@ -39,4 +39,31 @@ describe('serviço de autenticação', () => {
     await expect(loginUser({ email: 'wrong', password: 'wrong' }))
       .rejects.toThrow('Credenciais inválidas')
   })
+it('deve tratar erro 500', async () => {
+  ;(fetch as jest.Mock).mockResolvedValue({
+    ok: false,
+    status: 500
+  })
+
+  await expect(loginUser({ email: 'test', password: 'test' }))
+    .rejects.toThrow('Erro interno do servidor')
+})
+
+it('deve tratar outros erros HTTP', async () => {
+  ;(fetch as jest.Mock).mockResolvedValue({
+    ok: false,
+    status: 400
+  })
+
+  await expect(loginUser({ email: 'test', password: 'test' }))
+    .rejects.toThrow('Erro na requisição')
+})
+
+it('deve tratar erro genérico (não Error)', async () => {
+  ;(fetch as jest.Mock).mockRejectedValue('String error')
+
+  await expect(loginUser({ email: 'test', password: 'test' }))
+    .rejects.toThrow('Erro de rede')
+})
+
 })
