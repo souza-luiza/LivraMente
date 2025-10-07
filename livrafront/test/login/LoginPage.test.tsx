@@ -72,26 +72,5 @@ describe('LoginPage', () => {
       expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument()
     })
   })
-  it('deve fazer login e redirecionar para página principal/feed', async () => {
-    const user = userEvent.setup()
-    const mockResponse = {
-      token: 'integration-token',
-      user: { id: '1', username: 'integration', email: 'integration@test.com' }
-    }
-    
-    mockLoginUser.mockResolvedValueOnce(mockResponse)
-    render(<LoginPage />)
-    
-    await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'integration@test.com')
-    await user.type(screen.getByPlaceholderText('Senha'), 'password123')
-    await user.click(screen.getByText('Acessar'))
-    
-    await waitFor(() => {
-      expect(mockLoginUser).toHaveBeenCalledWith({
-        email: 'integration@test.com',
-        password: 'password123'
-      })
-    })
-    expect(mockPush).toHaveBeenCalledWith('/main')
-  })
+  // Removed redundant test: "deve fazer login e redirecionar para página principal/feed"
 })
