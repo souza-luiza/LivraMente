@@ -65,4 +65,27 @@ describe('RegisterPage', () => {
 
     alertSpy.mockRestore()
   })
+
+  it('redireciona após cadastro bem-sucedido', async () => {
+    // mock: fetch retorna 201 (sinal de sucesso E que algo foi criado)
+  (global.fetch as jest.Mock).mockResolvedValueOnce({
+    ok: true,
+    status: 201,
+    json: async () => ({ message: 'Usuário criado com sucesso!' }),
+  })
+
+  const pushMock = jest.fn()
+  ;(useRouter as jest.Mock).mockReturnValue({ push: pushMock })
+
+  render(<RegisterPage />)
+
+  await userEvent.type(screen.getByPlaceholderText('Seu nome de usuário'), 'loren')
+  await userEvent.type(screen.getByPlaceholderText('seu@email.com'), 'loren@test.com')
+  await userEvent.type(screen.getByPlaceholderText('Mínimo 6 caracteres'), '123456')
+  await userEvent.type(screen.getByPlaceholderText('Confirme sua senha'), '123456')
+
+  await userEvent.click(screen.getByRole('button', { name: /Próximo Passo/i }))
+
+  await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/register/success'))
+  })
 })
