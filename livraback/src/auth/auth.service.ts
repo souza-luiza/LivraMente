@@ -4,6 +4,7 @@ import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { promisify } from 'util';
+import { LoginDto } from './dto/login.dto';
 
 const scrypt = promisify(_scrypt);
 
@@ -35,7 +36,8 @@ export class AuthService {
     return { accessToken: this.jwtService.sign(payload) }; //transforma payload em token JWT
   }
 
-  async signIn(email: string, password: string) {
+  async signIn(loginDto: LoginDto) {
+    const { email, password } = loginDto;
     const user = await this.usersService.getByEmail(email);
     if (!user) {
       throw new BadRequestException('Credenciais inválidas');
@@ -48,8 +50,7 @@ export class AuthService {
       throw new BadRequestException('Credenciais inválidas');
     }
 
-    console.log('Signed in', user);
-    const payload = { username: user.email, sub: user._id };
+    const payload = { email: user.email, sub: user._id };
     return { accessToken: this.jwtService.sign(payload) };
   }
 }
