@@ -10,6 +10,7 @@ import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -146,6 +147,17 @@ export default function RegisterPage() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Telefone é obrigatório'
+    } else {
+      try {
+        // Tenta validar o telefone com o código do país usando o libphonenumber-js
+        const isValid = isValidPhoneNumber(formData.phone, formData.country as any)
+        
+        if (!isValid) {
+          newErrors.phone = 'Número de telefone inválido para o país selecionado'
+        }
+      } catch (error) {
+        newErrors.phone = 'Formato de telefone inválido'
+      }
     }
 
     setErrors(newErrors)
