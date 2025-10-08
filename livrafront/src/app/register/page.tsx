@@ -6,20 +6,28 @@ import Button from '@/components/button'
 import Input from '@/components/general-input'
 import Image from 'next/image'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
+import DateInput from '@/components/date-input'
+import CountrySelect from '@/components/select-country'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    birthDate: '',
+    country: '',
+    phone: ''
   })
   
   const [errors, setErrors] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    birthDate: '',
+    country: '',
+    phone: ''
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,12 +46,29 @@ export default function RegisterPage() {
     }
   }
 
-  const validateForm = () => {
+  const handleCountryChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      country: value
+    }))
+    
+    if (errors.country) {
+      setErrors(prev => ({
+        ...prev,
+        country: ''
+      }))
+    }
+  }
+
+  const validateStep1 = () => {
     const newErrors = {
       name: '',
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      birthDate: '',
+      country: '',
+      phone: ''
     }
 
     if (!formData.name.trim()) {
@@ -69,17 +94,72 @@ export default function RegisterPage() {
     }
 
     setErrors(newErrors)
-    return Object.values(newErrors).every(error => error === '')
+    return !newErrors.name && !newErrors.email && !newErrors.password && !newErrors.confirmPassword
+  }
+
+  const validateStep2 = () => {
+    const newErrors = {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      birthDate: '',
+      country: '',
+      phone: ''
+    }
+
+    if (!formData.birthDate) {
+      newErrors.birthDate = 'Data de nascimento é obrigatória'
+    } else {
+      const birthDate = new Date(formData.birthDate)
+      const today = new Date()
+      var age = today.getFullYear() - birthDate.getFullYear()
+      const monthDiff = today.getMonth() - birthDate.getMonth()
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--
+      }
+      if (age < 13) {
+        newErrors.birthDate = 'Você deve ter pelo menos 13 anos'
+      }
+    }
+
+    if (!formData.country.trim()) {
+      newErrors.country = 'País é obrigatório'
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Telefone é obrigatório'
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phone)) {
+      newErrors.phone = 'Telefone inválido'
+    }
+
+    setErrors(newErrors)
+    return !newErrors.birthDate && !newErrors.country && !newErrors.phone
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (validateForm()) {
-      // TODO: Implementar lógica de registro
-      console.log('Dados de registro:', formData)
+    if (validateStep1()) {
+      setStep(2)
     }
   }
+
+  const handlePreviousStep = () => {
+    setStep(1)
+  }
+
+  const handleOnSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (validateStep2()) {
+      // Submeter dados para o backend
+      console.log('Dados do formulário:', formData)
+    }
+  }
+
+  const [step, setStep] = useState(1)
 
   return (
     <div className="min-h-screen flex">
@@ -179,77 +259,143 @@ export default function RegisterPage() {
                 Cadastre-se!
               </h2>
               <p className="text-gray-600 text-center mt-2">
-                Junte-se à nossa comunidade de leitores
+                {step === 1 ? 'Junte-se à nossa comunidade de leitores' : 'Informações adicionais'}
               </p>
+              <div className="flex justify-center mt-4 space-x-2">
+                <div className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-green-700' : 'bg-gray-300'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-green-700' : 'bg-gray-300'}`}></div>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-2">
-              {/* Nome */}
-              <Input
-                label="Nome de Usuário"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                error={errors.name}
-                placeholder="Seu nome de usuário"
-                fullWidth
-              />
+            {/* Etapa 1 */}
+            {step === 1 && (
+              <form onSubmit={handleSubmit} className="space-y-2">
+                {/* Nome */}
+                <Input
+                  label="Nome de Usuário"
+                  name="name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  error={errors.name}
+                  placeholder="Seu nome de usuário"
+                  fullWidth
+                />
 
-              {/* Email */}
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                error={errors.email}
-                placeholder="seu@email.com"
-                fullWidth
-              />
+                {/* Email */}
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  error={errors.email}
+                  placeholder="seu@email.com"
+                  fullWidth
+                />
 
-              {/* Senha */}
-              <Input
-                label="Senha"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleInputChange}
-                error={errors.password}
-                placeholder="Mínimo 6 caracteres"
-                helperText="Use pelo menos 6 caracteres com letras e números"
-                fullWidth
-              />
+                {/* Senha */}
+                <Input
+                  label="Senha"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  error={errors.password}
+                  placeholder="Mínimo 6 caracteres"
+                  helperText="Use pelo menos 6 caracteres com letras e números"
+                  fullWidth
+                />
 
-              {/* Confirmar Senha */}
-              <Input
-                label="Confirmar Senha"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                error={errors.confirmPassword}
-                placeholder="Confirme sua senha"
-                fullWidth
-              />
+                {/* Confirmar Senha */}
+                <Input
+                  label="Confirmar Senha"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  error={errors.confirmPassword}
+                  placeholder="Confirme sua senha"
+                  fullWidth
+                />
 
-              {/* Botão de Submit */}
-              <div className="flex justify-center mt-4">
-                <Button
-                  type="submit"
-                  text={false ? 'Carregando...' : 'Próximo Passo'}
-                  icon={<ArrowRightIcon />}
-                  size="small"
-                  colorScheme="dark-green"
-                  loading={false}
-                >
-                </Button>
-              </div>
-            </form>
+                {/* Botão de Submit */}
+                <div className="flex justify-center mt-4">
+                  <Button
+                    type="submit"
+                    text={false ? 'Carregando...' : 'Próximo Passo'}
+                    icon={<Image src="/icons/chevronLeft.svg" alt="Seta para Direita" className='transform rotate-180' width={16} height={16} />}
+                    size="small"
+                    colorScheme="dark-green"
+                    loading={false}
+                  >
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* Etapa 2 */}
+            {step === 2 && (
+              <form onSubmit={handleOnSubmit} className="space-y-2">
+                {/* Data de Nascimento */}
+                <DateInput
+                  label="Data de Nascimento"
+                  name="birthDate"
+                  required
+                  value={formData.birthDate}
+                  onChange={handleInputChange}
+                  error={errors.birthDate}
+                  max={new Date().toISOString().split('T')[0]}
+                  fullWidth
+                />
+
+                {/* País */}
+                <CountrySelect
+                  label="País"
+                  required
+                  value={formData.country}
+                  onChange={handleCountryChange}
+                  error={errors.country}
+                  fullWidth
+                />
+
+                {/* Telefone */}
+                <Input
+                  label="Telefone"
+                  name="phone"
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  error={errors.phone}
+                  fullWidth
+                />
+
+                {/* Botões Voltar e Submit */}
+                <div className="flex justify-between mt-4">
+                  <Button
+                    type="button"
+                    text="Voltar"
+                    icon={<Image src="/icons/chevronLeft_darkGreen.svg" alt="Seta para Esquerda" width={16} height={16} />}
+                    size="small"
+                    colorScheme="light-green"
+                    onClick={handlePreviousStep}
+                  />
+                  <Button
+                    type="submit"
+                    text="Finalizar Cadastro"
+                    size="small"
+                    colorScheme="dark-green"
+                    loading={false}
+                    icon={<Image src="/icons/register.svg" alt="Ícone de Cadastro" width={16} height={16} />}
+                  />
+                </div>
+              </form>
+            )}
 
             {/* Link para Login */}
             <div className="mt-2 text-center">
