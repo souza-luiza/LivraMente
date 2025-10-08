@@ -10,7 +10,7 @@ import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
-import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
