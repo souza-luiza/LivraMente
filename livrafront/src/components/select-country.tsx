@@ -41,16 +41,16 @@ export default function CountrySelect({
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags')
+    fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags,translations')
       .then(res => res.json())
       .then(data => {
         const formattedCountries = data
           .map((country: any) => ({
-            name: country.name.common,
+            name: country.translations?.por?.common || country.name.common,
             code: country.cca2,
             flag: country.flags.svg || country.flags.png
           }))
-          .sort((a: Country, b: Country) => a.name.localeCompare(b.name))
+          .sort((a: Country, b: Country) => a.name.localeCompare(b.name, 'pt-BR'))
         
         setCountries(formattedCountries)
         setLoading(false)

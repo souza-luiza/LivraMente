@@ -148,6 +148,13 @@ export default function RegisterPage() {
     }
   }
 
+  const handleNextStep = () => {
+    if (validateStep1()) {
+      setDirection('forward')
+      setStep(2)
+    }
+  }
+
   const handlePreviousStep = () => {
     setDirection('backward')
     setStep(1)
@@ -163,7 +170,7 @@ export default function RegisterPage() {
       opacity: 1
     },
     exit: (direction: 'forward' | 'backward') => ({
-      x: direction === 'forward' ? 20 : -20,
+      x: direction === 'forward' ? -20 : 20,
       opacity: 0
     })
   }
@@ -281,8 +288,34 @@ export default function RegisterPage() {
                 {step === 1 ? 'Junte-se à nossa comunidade de leitores' : 'Informações adicionais'}
               </p>
               <div className="flex justify-center mt-4 space-x-2">
-                <div className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-green-700' : 'bg-gray-300'}`}></div>
-                <div className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-green-700' : 'bg-gray-300'}`}></div>
+                <motion.div 
+                  onClick={() => { handlePreviousStep() }} 
+                  className={`h-2 rounded-full ${step === 1 ? 'bg-green-700' : 'bg-gray-300'}`} 
+                  style={{ cursor: 'pointer' }}
+                  animate={{
+                    width: step === 1 ? 20 : 12,
+                    backgroundColor: step === 1 ? '#2F855A' : '#D1D5DB'
+                  }}
+                  transition={{ 
+                    duration: 0.3,
+                    ease: "easeInOut"
+                  }}  
+                >
+                </motion.div>
+                <motion.div 
+                  onClick={() => { handleNextStep() }} 
+                  className={`h-2 rounded-full ${step === 2 ? 'bg-green-700' : 'bg-gray-300'}`} 
+                  style={{ cursor: 'pointer' }}
+                  animate={{
+                    width: step === 2 ? 20 : 12,
+                    backgroundColor: step === 2 ? '#2F855A' : '#D1D5DB'
+                  }}
+                  transition={{ 
+                    duration: 0.3,
+                    ease: "easeInOut"
+                  }}  
+                >  
+                </motion.div>
               </div>
             </div>
 
