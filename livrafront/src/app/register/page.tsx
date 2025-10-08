@@ -9,6 +9,7 @@ import DateInput from '@/components/date-input'
 import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
+import PhoneInputComponent from '@/components/phone-input'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -57,6 +58,20 @@ export default function RegisterPage() {
       setErrors(prev => ({
         ...prev,
         country: ''
+      }))
+    }
+  }
+
+  const handlePhoneChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      phone: value
+    }))
+    
+    if (errors.phone) {
+      setErrors(prev => ({
+        ...prev,
+        phone: ''
       }))
     }
   }
@@ -131,8 +146,6 @@ export default function RegisterPage() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Telefone é obrigatório'
-    } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phone)) {
-      newErrors.phone = 'Telefone inválido'
     }
 
     setErrors(newErrors)
@@ -436,13 +449,11 @@ export default function RegisterPage() {
                   />
 
                   {/* Telefone */}
-                  <Input
+                  <PhoneInputComponent
                     label="Telefone"
-                    name="phone"
-                    type="tel"
                     required
                     value={formData.phone}
-                    onChange={handleInputChange}
+                    onChange={handlePhoneChange}
                     error={errors.phone}
                     fullWidth
                   />
