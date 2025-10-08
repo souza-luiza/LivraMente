@@ -174,7 +174,7 @@ describe('RegisterPage', () => {
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Senha deve ter pelo menos 8 caracteres')).toBeInTheDocument()
+        expect(screen.getByText('Senha deve ter pelo menos 6 caracteres')).toBeInTheDocument()
       })
     })
 

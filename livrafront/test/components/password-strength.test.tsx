@@ -33,18 +33,18 @@ describe('PasswordStrength', () => {
 
   it('displays all password requirements', () => {
     render(<PasswordStrength password="" />);
-    expect(screen.getByText('Mínimo 8 caracteres')).toBeInTheDocument();
+    expect(screen.getByText('Mínimo 6 caracteres')).toBeInTheDocument();
     expect(screen.getByText('Letras maiúsculas e minúsculas')).toBeInTheDocument();
     expect(screen.getByText('Números')).toBeInTheDocument();
     expect(screen.getByText('Caracteres especiais')).toBeInTheDocument();
   });
 
-  it('checks minimum 8 characters requirement', () => {
-    const { rerender } = render(<PasswordStrength password="Abc12!" />);
-    expect(screen.getByText('Mínimo 8 caracteres').className).toContain('text-gray-500');
+  it('checks minimum 6 characters requirement', () => {
+    const { rerender } = render(<PasswordStrength password="Abc1!" />);
+    expect(screen.getByText('Mínimo 6 caracteres').className).toContain('text-gray-500');
     
     rerender(<PasswordStrength password="Abc12!@#" />);
-    expect(screen.getByText('Mínimo 8 caracteres').className).toContain('text-green-700');
+    expect(screen.getByText('Mínimo 6 caracteres').className).toContain('text-green-700');
   });
 
   it('checks uppercase and lowercase requirement', () => {
