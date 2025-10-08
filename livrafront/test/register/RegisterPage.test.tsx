@@ -74,7 +74,6 @@ describe('RegisterPage', () => {
     json: async () => ({ message: 'Usuário criado com sucesso!' }),
   })
 
-  const pushMock = jest.fn()
   ;(useRouter as jest.Mock).mockReturnValue({ push: pushMock })
 
   render(<RegisterPage />)
