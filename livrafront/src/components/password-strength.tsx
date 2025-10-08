@@ -8,7 +8,7 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
   const calculateStrength = (pwd: string): number => {
     let strength = 0
     
-    if (pwd.length >= 8) strength++
+    if (pwd.length >= 6) strength++
     if (pwd.length >= 12) strength++
     if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++
     if (/\d/.test(pwd)) strength++
@@ -44,7 +44,7 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
         />
       </div>
       <div className="mt-2 space-y-1">
-        <CheckItem text="Mínimo 8 caracteres" checked={password.length >= 8} />
+        <CheckItem text="Mínimo 6 caracteres" checked={password.length >= 6} />
         <CheckItem text="Letras maiúsculas e minúsculas" checked={/[a-z]/.test(password) && /[A-Z]/.test(password)} />
         <CheckItem text="Números" checked={/\d/.test(password)} />
         <CheckItem text="Caracteres especiais" checked={/[^a-zA-Z\d]/.test(password)} />

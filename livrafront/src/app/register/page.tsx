@@ -100,8 +100,8 @@ export default function RegisterPage() {
 
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Senha deve ter pelo menos 8 caracteres'
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Senha deve ter pelo menos 6 caracteres'
     }
 
     if (!formData.confirmPassword) {
@@ -392,8 +392,8 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     error={errors.password}
-                    placeholder="Mínimo 8 caracteres"
-                    // helperText="Use pelo menos 8 caracteres com letras e números"
+                    placeholder="Mínimo 6 caracteres"
+                    // helperText="Use pelo menos 6 caracteres com letras e números"
                     fullWidth
                   />
                   <PasswordStrength password={formData.password} />
