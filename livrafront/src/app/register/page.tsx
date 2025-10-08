@@ -11,8 +11,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
 import { isValidPhoneNumber } from 'libphonenumber-js'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {
+  const router = useRouter()
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -200,14 +203,38 @@ export default function RegisterPage() {
     })
   }
 
-  const handleOnSubmit = (e: React.FormEvent) => {
+  const handleOnSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (validateStep2()) {
-      // Submeter dados para o backend
-      console.log('Dados do formulário:', formData)
+    if (!validateStep2()) return
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        // redirecionamento para página de sucesso
+        router.push('/register/success')
+      } else if (response.status === 400) {
+        const data = await response.json()
+        const msg = data.message || 'Dados inválidos'
+
+        setErrors(prev => ({
+          ...prev,
+          email: msg.includes('Email') ? msg : prev.email,
+          name: msg.includes('usuário') ? msg : prev.name,
+        }))
+      } else {
+        alert('Erro inesperado. Tente novamente mais tarde.')
+      }
+    } catch (error) {
+      alert('Falha ao conectar com o servidor.')
     }
   }
+  
 
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
