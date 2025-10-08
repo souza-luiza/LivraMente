@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/button';
 import { useRouter } from 'next/navigation';
+import ErrorIcon from '@/components/icons/ErrorIcon';
+import HomeIcon from '@/components/icons/HomeIcon';
+import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 
 export default function NotFoundPage() {
     const router = useRouter();
@@ -18,7 +21,7 @@ export default function NotFoundPage() {
             <div className="hidden lg:flex lg:w-full relative" style={{ backgroundColor: '#E5EEDF' }}>
                 <div className="flex flex-col justify-center items-center w-full p-12 text-black">
                     <Link href="/">
-                        <Image src="/logos/LivraMenteErrorPreto.svg" alt="Logo" width={250} height={250} className="mb-4"/>
+                        <ErrorIcon size={120} fill="#1F2A17" className="mb-4" />
                     </Link>
                     <h1 className="text-4xl font-bold mb-4">Oops!</h1>
                     <p className="text-lg mb-8">A página que você está procurando não foi encontrada.</p>
@@ -29,7 +32,7 @@ export default function NotFoundPage() {
                                 text="Página Inicial"
                                 colorScheme="dark-green"
                                 size="small"
-                                icon={<span><Image src="/icons/homeFilledWhite.svg" alt="Ícone de casa" width={48} height={48} /></span>}
+                                icon={<HomeIcon />}
                             />
                         </Link>
                         <Button 
@@ -37,7 +40,7 @@ export default function NotFoundPage() {
                             text="Voltar"
                             colorScheme="dark-green"
                             size="small"
-                            icon={<span><Image src="/icons/chevronLeft.svg" alt="Ícone de seta" width={48} height={48} /></span>}
+                            icon={<ArrowLeftIcon />}
                         />
                     </div>
                 </div>

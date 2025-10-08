@@ -3,15 +3,15 @@ import { ButtonHTMLAttributes, ReactNode } from 'react'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   text: ReactNode;      
   icon: ReactNode;
-  size: "small" | "medium" | "large";
-  colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown";
+  size?: "small" | "medium" | "large";
+  colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown" | "light-neutral";
   loading?: boolean;
 }
 
 export default function Button({ 
     text, 
     icon, 
-    size, 
+    size='medium', 
     colorScheme, 
     loading = false, 
     disabled, 

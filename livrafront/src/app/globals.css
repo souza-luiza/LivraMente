@@ -174,7 +174,6 @@
 /* Estilos de Texto */
 .text-b1 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-1-font-size);
   line-height:      var(--body-1-line-height);
   font-weight:      var(--regular-font-weight);
@@ -184,7 +183,6 @@
 
 .text-b2 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-2-font-size);
   line-height:      var(--body-2-line-height);
   font-weight:      var(--regular-font-weight);
@@ -194,7 +192,6 @@
 
 .text-b3 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-3-font-size);
   line-height:      var(--body-3-line-height);
   font-weight:      var(--regular-font-weight);
@@ -228,7 +225,6 @@
   line-height:  var(--heading-1-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h2 {
@@ -236,7 +232,6 @@
   line-height:  var(--heading-2-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h3 {
@@ -244,7 +239,6 @@
   line-height:  var(--heading-3-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h4 {
@@ -252,7 +246,6 @@
   line-height:  var(--heading-4-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h5 {
@@ -260,7 +253,6 @@
   line-height:  var(--heading-5-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h6 {
@@ -268,7 +260,6 @@
   line-height:  var(--heading-6-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .heading-underline {
@@ -327,8 +318,8 @@ button.textless-large {
 }
 
 .icon-small {
-  width:  16px;
-  height: 16px;
+  width:  20px;
+  height: 20px;
 }
 
 .icon-medium {
