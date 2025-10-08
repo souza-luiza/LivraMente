@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        nome: data.name,
+        username: data.name,
         email: data.email,
         senha: data.password,
       }),
