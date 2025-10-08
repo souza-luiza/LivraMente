@@ -20,10 +20,17 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok) {
       const errorData = await backendResponse.json().catch(() => ({}))
+      const message =
+        typeof errorData.message === 'string'
+          ? errorData.message
+          : Array.isArray(errorData.message)
+          ? errorData.message.join(', ')
+          : 'Erro ao registrar usuário no backend.'
+
       return NextResponse.json(
         {
           ok: false,
-          message: errorData.message || 'Erro ao registrar usuário no backend.',
+          message,
         },
         { status: backendResponse.status }
       )

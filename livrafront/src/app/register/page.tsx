@@ -92,9 +92,12 @@ export default function RegisterPage() {
         router.push('/register/success')
       } else if (response.status === 400) {
         const data = await response.json()
+        const msg = data.message || 'Dados inválidos'
+        
         setErrors(prev => ({
           ...prev,
-          email: data.message || 'Dados inválidos'
+          email: msg.includes('Email') ? msg : prev.email,
+          name: msg.includes('usuário') ? msg : prev.name,
         }))
       } else {
         alert('Erro inesperado. Tente novamente mais tarde.')
