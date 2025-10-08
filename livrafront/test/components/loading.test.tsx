@@ -39,8 +39,8 @@ describe('LoadingPage', () => {
   it('has the spinning animation element', () => {
     render(<LoadingPage />)
     
-    // Find the spinning border element by its unique animation class
-    const spinningElement = document.querySelector('.animate-\\[spin_1\\.5s_ease-in-out_infinite\\]')
+    // Find the spinning border element by its data-testid
+    const spinningElement = screen.getByTestId('spinning-element')
     expect(spinningElement).toBeInTheDocument()
     expect(spinningElement).toHaveClass('absolute w-48 h-48 border-16 border-[#B0CC9E] border-t-[#5C8046] rounded-full')
   })
