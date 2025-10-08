@@ -5,9 +5,10 @@ import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/general-input'
 import Image from 'next/image'
-import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 import DateInput from '@/components/date-input'
 import CountrySelect from '@/components/select-country'
+import { motion, AnimatePresence } from 'framer-motion'
+import PasswordStrength from '@/components/password-strength'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -83,8 +84,8 @@ export default function RegisterPage() {
 
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres'
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Senha deve ter pelo menos 8 caracteres'
     }
 
     if (!formData.confirmPassword) {
@@ -142,12 +143,29 @@ export default function RegisterPage() {
     e.preventDefault()
     
     if (validateStep1()) {
+      setDirection('forward')
       setStep(2)
     }
   }
 
   const handlePreviousStep = () => {
+    setDirection('backward')
     setStep(1)
+  }
+
+  const variants = {
+    enter: (direction: 'forward' | 'backward') => ({
+      x: direction === 'forward' ? 20 : -20,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: 'forward' | 'backward') => ({
+      x: direction === 'forward' ? 20 : -20,
+      opacity: 0
+    })
   }
 
   const handleOnSubmit = (e: React.FormEvent) => {
@@ -160,6 +178,7 @@ export default function RegisterPage() {
   }
 
   const [step, setStep] = useState(1)
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
 
   return (
     <div className="min-h-screen flex">
@@ -267,148 +286,169 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Etapa 1 */}
-            {step === 1 && (
-              <form onSubmit={handleSubmit} className="space-y-2">
-                {/* Nome */}
-                <Input
-                  label="Nome de Usuário"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  error={errors.name}
-                  placeholder="Seu nome de usuário"
-                  fullWidth
-                />
+            <AnimatePresence mode="wait" custom={direction}>
+              {/* Etapa 1 */}
+              {step === 1 && (
+                <motion.form 
+                  key="step1" 
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleSubmit} 
+                  className="space-y-2 min-h-[400px] flex flex-col justify-center">
+                  {/* Nome */}
+                  <Input
+                    label="Nome de Usuário"
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    error={errors.name}
+                    placeholder="Seu nome de usuário"
+                    fullWidth
+                  />
 
-                {/* Email */}
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  error={errors.email}
-                  placeholder="seu@email.com"
-                  fullWidth
-                />
+                  {/* Email */}
+                  <Input
+                    label="Email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    error={errors.email}
+                    placeholder="seu@email.com"
+                    fullWidth
+                  />
 
-                {/* Senha */}
-                <Input
-                  label="Senha"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  error={errors.password}
-                  placeholder="Mínimo 6 caracteres"
-                  helperText="Use pelo menos 6 caracteres com letras e números"
-                  fullWidth
-                />
+                  {/* Senha */}
+                  <Input
+                    label="Senha"
+                    name="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    error={errors.password}
+                    placeholder="Mínimo 8 caracteres"
+                    // helperText="Use pelo menos 8 caracteres com letras e números"
+                    fullWidth
+                  />
+                  <PasswordStrength password={formData.password} />
 
-                {/* Confirmar Senha */}
-                <Input
-                  label="Confirmar Senha"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  error={errors.confirmPassword}
-                  placeholder="Confirme sua senha"
-                  fullWidth
-                />
+                  {/* Confirmar Senha */}
+                  <Input
+                    label="Confirmar Senha"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    error={errors.confirmPassword}
+                    placeholder="Confirme sua senha"
+                    fullWidth
+                  />
 
-                {/* Botão de Submit */}
-                <div className="flex justify-center mt-4">
-                  <Button
-                    type="submit"
-                    text={false ? 'Carregando...' : 'Próximo Passo'}
-                    icon={<Image src="/icons/chevronLeft.svg" alt="Seta para Direita" className='transform rotate-180' width={16} height={16} />}
-                    size="small"
-                    colorScheme="dark-green"
-                    loading={false}
+                  {/* Botão de Submit */}
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      type="submit"
+                      text={false ? 'Carregando...' : 'Próximo Passo'}
+                      icon={<Image src="/icons/chevronLeft.svg" alt="Seta para Direita" className='transform rotate-180' width={16} height={16} />}
+                      size="small"
+                      colorScheme="dark-green"
+                      loading={false}
+                    >
+                    </Button>
+                  </div>
+                </motion.form>
+              )}
+
+              {/* Etapa 2 */}
+              {step === 2 && (
+                <motion.form 
+                  key="step2" 
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleOnSubmit} 
+                  className="space-y-2 min-h-[400px] items-center flex flex-col justify-center">
+                  {/* Data de Nascimento */}
+                  <DateInput
+                    label="Data de Nascimento"
+                    name="birthDate"
+                    required
+                    value={formData.birthDate}
+                    onChange={handleInputChange}
+                    error={errors.birthDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    fullWidth
+                  />
+
+                  {/* País */}
+                  <CountrySelect
+                    label="País"
+                    required
+                    value={formData.country}
+                    onChange={handleCountryChange}
+                    error={errors.country}
+                    fullWidth
+                  />
+
+                  {/* Telefone */}
+                  <Input
+                    label="Telefone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    error={errors.phone}
+                    fullWidth
+                  />
+
+                  {/* Botões Voltar e Submit */}
+                  <div className="flex justify-between mt-6 w-full">
+                    <Button
+                      type="button"
+                      text="Voltar"
+                      icon={<Image src="/icons/chevronLeft_darkGreen.svg" alt="Seta para Esquerda" width={16} height={16} />}
+                      size="small"
+                      colorScheme="light-green"
+                      onClick={handlePreviousStep}
+                    />
+                    <Button
+                      type="submit"
+                      text="Finalizar Cadastro"
+                      size="small"
+                      colorScheme="dark-green"
+                      loading={false}
+                      icon={<Image src="/icons/register.svg" alt="Ícone de Cadastro" width={16} height={16} />}
+                    />
+                  </div>
+                </motion.form>
+              )}
+              </AnimatePresence>
+
+              {/* Link para Login */}
+              <div className="mt-2 text-center">
+                <p className="text-sm text-gray-600">
+                  Já possui uma conta?{' '}
+                  <Link 
+                    href="/login" 
+                    className="text-green-700 hover:text-green-700 font-medium"
                   >
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {/* Etapa 2 */}
-            {step === 2 && (
-              <form onSubmit={handleOnSubmit} className="space-y-2">
-                {/* Data de Nascimento */}
-                <DateInput
-                  label="Data de Nascimento"
-                  name="birthDate"
-                  required
-                  value={formData.birthDate}
-                  onChange={handleInputChange}
-                  error={errors.birthDate}
-                  max={new Date().toISOString().split('T')[0]}
-                  fullWidth
-                />
-
-                {/* País */}
-                <CountrySelect
-                  label="País"
-                  required
-                  value={formData.country}
-                  onChange={handleCountryChange}
-                  error={errors.country}
-                  fullWidth
-                />
-
-                {/* Telefone */}
-                <Input
-                  label="Telefone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  error={errors.phone}
-                  fullWidth
-                />
-
-                {/* Botões Voltar e Submit */}
-                <div className="flex justify-between mt-4">
-                  <Button
-                    type="button"
-                    text="Voltar"
-                    icon={<Image src="/icons/chevronLeft_darkGreen.svg" alt="Seta para Esquerda" width={16} height={16} />}
-                    size="small"
-                    colorScheme="light-green"
-                    onClick={handlePreviousStep}
-                  />
-                  <Button
-                    type="submit"
-                    text="Finalizar Cadastro"
-                    size="small"
-                    colorScheme="dark-green"
-                    loading={false}
-                    icon={<Image src="/icons/register.svg" alt="Ícone de Cadastro" width={16} height={16} />}
-                  />
-                </div>
-              </form>
-            )}
-
-            {/* Link para Login */}
-            <div className="mt-2 text-center">
-              <p className="text-sm text-gray-600">
-                Já possui uma conta?{' '}
-                <Link 
-                  href="/login" 
-                  className="text-green-700 hover:text-green-700 font-medium"
-                >
-                  Faça login
-                </Link>
-              </p>
-            </div>
+                    Faça login
+                  </Link>
+                </p>
+              </div>
           </div>
 
           {/* Footer */}
