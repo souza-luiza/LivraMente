@@ -10,9 +10,9 @@ describe('UsersController', () => {
 
   const mockUser = {
     _id: 'user-id',
+    username: 'Test User',
     email: 'test@test.com',
-    name: 'Test User',
-    password: 'hashedpassword',
+    senha: 'hashedpassword',
   };
 
   const mockUsersService = {
@@ -49,9 +49,9 @@ describe('UsersController', () => {
   describe('create', () => {
     it('should create a user', async () => {
       const dto: CreateUserDto = {
+        username: 'Test User',
         email: 'test@test.com',
-        name: 'Test User',
-        password: '123456',
+        senha: '123456',
       };
 
       const result = await controller.create(dto);
@@ -78,7 +78,7 @@ describe('UsersController', () => {
 
   describe('update', () => {
     it('should update a user', async () => {
-      const dto: UpdateUserDto = { name: 'Updated' };
+      const dto: UpdateUserDto = { username: 'Updated' };
       const result = await controller.update('user-id', dto);
       expect(usersService.update).toHaveBeenCalledWith('user-id', dto);
       expect(result).toEqual({ ...mockUser, name: 'Updated' });

@@ -1,20 +1,63 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from './app.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getModelToken } from '@nestjs/mongoose';
 
-describe('App Integration', () => {
-  jest.setTimeout(10000); // 10 segundos
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+describe('App Integration with Mocks', () => {
   let app: INestApplication;
 
+  // Mock ConfigService (simulando variáveis do .env)
+  const mockConfigService = {
+    getOrThrow: (key: string) => {
+      const testEnv = {
+        DB_URL: 'mongodb://localhost:27017/testdb',
+        JWT_SECRET: 'my-super-secret',
+      };
+      if (testEnv[key]) return testEnv[key];
+      throw new Error(`Config key ${key} not mocked`);
+    },
+    get: (key: string) => {
+      const testEnv = {
+        DB_URL: 'mongodb://localhost:27017/testdb',
+        JWT_SECRET: 'my-super-secret',
+      };
+      return testEnv[key] || null;
+    },
+  };
+
+  // Mock do model User
+  const mockUserModel = {
+    find: jest.fn().mockResolvedValue([]),
+    findOne: jest.fn().mockResolvedValue(null),
+    create: jest.fn().mockImplementation((dto) => Promise.resolve({ _id: 'mockId', ...dto })),
+  };
+
   beforeAll(async () => {
+    jest.setTimeout(10000);
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        UsersModule,
+        AuthModule,
+      ],
+      controllers: [AppController],
+      providers: [AppService],
+    })
+      .overrideProvider(ConfigService)
+      .useValue(mockConfigService)
+      .overrideProvider(getModelToken('User'))
+      .useValue(mockUserModel)
+      .compile();
 
     app = moduleFixture.createNestApplication();
 
-    // Configura os pipes igual ao main.ts
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -31,8 +74,6 @@ describe('App Integration', () => {
   });
 
   it('should respond to GET /', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200);
+    return request(app.getHttpServer()).get('/').expect(200);
   });
 });
