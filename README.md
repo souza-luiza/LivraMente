@@ -53,8 +53,8 @@ es-unifesp-2025-2-grupo-alpha/
 ## 👥 Equipe
 
 - **Enzo de Almeida Belfort Rizzi Di Chiara** - [@EnzoBelfort](https://github.com/EnzoBelfort)
-- **João Pedro da Silva Zampoli** - [@JoaoPedroZampoli](https://github.com/JoaoPedroZampoli)
 - **Isabele de Lima Nascimento** - [@isabele7](https://github.com/isabele7)
+- **João Pedro da Silva Zampoli** - [@JoaoPedroZampoli](https://github.com/JoaoPedroZampoli)
 - **Letícia Akemi Ikemoto** - [@akemiikemoto](https://github.com/akemiikemoto)
 - **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
