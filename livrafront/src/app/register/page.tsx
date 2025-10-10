@@ -12,7 +12,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-import { useRouter } from 'next/navigation'
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 
