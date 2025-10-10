@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/general-input'
@@ -169,7 +170,7 @@ export default function RegisterPage() {
     return !newErrors.birthDate && !newErrors.country && !newErrors.phone
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (validateStep1()) {
