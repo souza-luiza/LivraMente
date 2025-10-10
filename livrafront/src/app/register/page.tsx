@@ -12,6 +12,8 @@ import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useRouter } from 'next/navigation'
+import ToastNotification from '@/components/toast-notification'
+import { toast } from 'react-toastify'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -226,15 +228,15 @@ export default function RegisterPage() {
           ...prev,
           email: msg.includes('Email') ? msg : prev.email,
           name: msg.includes('usuário') ? msg : prev.name,
-        }))
+        }));
+        toast.error(msg);
       } else {
-        alert('Erro inesperado. Tente novamente mais tarde.')
+        toast.error('Erro inesperado. Tente novamente mais tarde.')
       }
     } catch (error) {
-      alert('Falha ao conectar com o servidor.')
+      toast.error('Falha ao conectar com o servidor.')
     }
   }
-  
 
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
@@ -549,6 +551,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      <ToastNotification />
     </div>
   )
 }

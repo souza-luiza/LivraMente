@@ -1,0 +1,8 @@
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const ToastNotification = () => {
+  return <ToastContainer position="top-right" autoClose={5000} />
+}
+
+export default ToastNotification
