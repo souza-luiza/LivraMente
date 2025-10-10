@@ -305,28 +305,86 @@ describe('RegisterPage', () => {
       })
     })
 
-    it('submits form when all fields are valid', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-      
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      })
+    ) as jest.Mock
+
+    it('envia o formulário com dados válidos e redireciona', async () => {
       render(<RegisterPage />)
+
+      // Preencher e avançar step 1
       await fillStep1AndAdvance()
 
-      const validDate = new Date()
-      validDate.setFullYear(validDate.getFullYear() - 20)
-      const dateString = validDate.toISOString().split('T')[0]
+      // Step 2
+      const thirteenYearsAgo = new Date()
+      thirteenYearsAgo.setFullYear(thirteenYearsAgo.getFullYear() - 13)
+      const birthDate = thirteenYearsAgo.toISOString().split('T')[0]
 
-      fireEvent.change(screen.getByLabelText(/Data de Nascimento/i), { target: { name: 'birthDate', value: dateString } })
-      fireEvent.change(screen.getByLabelText(/País/i), { target: { value: 'BR' } })
-      fireEvent.change(screen.getByLabelText(/Telefone/i), { target: { value: '+5511999999999' } })
-      
+      fireEvent.change(screen.getByLabelText(/Data de Nascimento/i), {
+        target: { name: 'birthDate', value: birthDate },
+      })
+      fireEvent.change(screen.getByLabelText(/País/i), {
+        target: { value: 'BR' },
+      })
+      fireEvent.change(screen.getByLabelText(/Telefone/i), {
+        target: { value: '+5511999999999' },
+      })
+
       const submitButton = screen.getByText(/Finalizar Cadastro/i)
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Dados do formulário:', expect.any(Object))
+        expect(global.fetch).toHaveBeenCalledWith('/api/register', expect.anything())
+      })
+    })
+
+    it('exibe erro se o email já estiver em uso', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: async () => ({ message: 'Email em uso' }),
       })
 
-      consoleSpy.mockRestore()
+      render(<RegisterPage />)
+      await fillStep1AndAdvance()
+
+      // Preenche campos obrigatórios da etapa 2 para permitir submissão
+      fireEvent.change(screen.getByLabelText(/Data de Nascimento/i), { target: { name: 'birthDate', value: '2000-01-01' } })
+      fireEvent.change(screen.getByLabelText(/País/i), { target: { value: 'BR' } })
+      fireEvent.change(screen.getByLabelText(/Telefone/i), { target: { value: '+5511999999999' } })
+
+      const submitButton = screen.getByText(/Finalizar Cadastro/i)
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Email em uso')).toBeInTheDocument() //toast
+      })
+    })
+
+    it('exibe erro se o nome de usuário já estiver em uso', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: async () => ({ message: 'Nome de usuário em uso' }),
+      })
+
+      render(<RegisterPage />)
+      await fillStep1AndAdvance()
+
+      // Preenche campos obrigatórios da etapa 2 para permitir submissão
+      fireEvent.change(screen.getByLabelText(/Data de Nascimento/i), { target: { name: 'birthDate', value: '2000-01-01' } })
+      fireEvent.change(screen.getByLabelText(/País/i), { target: { value: 'BR' } })
+      fireEvent.change(screen.getByLabelText(/Telefone/i), { target: { value: '+5511999999999' } })
+
+      const submitButton = screen.getByText(/Finalizar Cadastro/i)
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Nome de usuário em uso')).toBeInTheDocument() //toast
+      })
     })
   })
 
