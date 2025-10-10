@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
-import { useLoginForm } from '@/forms/useLoginForm'
+import { useLoginForm } from '@/hooks/useLoginForm'
 import { loginUser } from '@/services/auth'
 
 jest.mock('next/navigation', () => ({
