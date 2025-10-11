@@ -1,5 +1,7 @@
 // jest.setup.js
 import '@testing-library/jest-dom'
+import fetchMock from 'jest-fetch-mock'
+fetchMock.enableMocks()
 
 // Global mock for React 18 act warnings
 const originalError = console.error
