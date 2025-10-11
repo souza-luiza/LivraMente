@@ -22,6 +22,22 @@ interface CountrySelectProps {
   required?: boolean
 }
 
+interface CountryApiResponse {
+  name: {
+    common: string
+  }
+  cca2: string
+  flags: {
+    svg?: string
+    png: string
+  }
+  translations?: {
+    por?: {
+      common: string
+    }
+  }
+}
+
 export default function CountrySelect({
   label,
   error,
@@ -43,9 +59,9 @@ export default function CountrySelect({
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags,translations')
       .then(res => res.json())
-      .then(data => {
+      .then((data: CountryApiResponse[]) => {
         const formattedCountries = data
-          .map((country: any) => ({
+          .map((country: CountryApiResponse) => ({
             name: country.translations?.por?.common || country.name.common,
             code: country.cca2,
             flag: country.flags.svg || country.flags.png

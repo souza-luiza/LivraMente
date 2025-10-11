@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import PhoneInput from 'react-phone-number-input'
 import pt from 'react-phone-number-input/locale/pt-BR.json'
 import 'react-phone-number-input/style.css'

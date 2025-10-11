@@ -11,7 +11,7 @@ import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
-import { isValidPhoneNumber } from 'libphonenumber-js'
+import { CountryCode, isValidPhoneNumber } from 'libphonenumber-js'
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 
@@ -155,7 +155,7 @@ export default function RegisterPage() {
     } else {
       try {
         // Tenta validar o telefone com o código do país usando o libphonenumber-js
-        const isValid = isValidPhoneNumber(formData.phone, formData.country as any)
+        const isValid = isValidPhoneNumber(formData.phone, formData.country as CountryCode)
         
         if (!isValid) {
           newErrors.phone = 'Número de telefone inválido para o país selecionado'
