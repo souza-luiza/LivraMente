@@ -25,6 +25,17 @@ export class Readlist extends Document {
   // Referência aos livros na readlist
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Livro' }], default: [] })
   livros: Types.ObjectId[];
+
+  // Curtidas
+  @Prop({ default: 0 })
+  curtidas?: number;
+
+  // Dia de criação e última edição
+  @Prop()
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
 }
 
 export const ReadlistSchema = SchemaFactory.createForClass(Readlist);

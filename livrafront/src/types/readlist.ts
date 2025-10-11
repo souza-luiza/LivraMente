@@ -1,12 +1,17 @@
 export interface Readlist {
-  _id?: string;
+  _id: string;
   nome: string;
-  favorito?: boolean;
-  publica?: boolean;
+  favorito: boolean;
+  publica: boolean;
   descricao?: string;
   capa_url?: string;
-  criador: string;
-  livros: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  criador: {
+    _id: string;
+    username?: string;
+  };
+  livros: Array<string | { _id: string; nome?: string }>;
+  contribuidores?: Array<{ _id: string; username?: string }>;
+  curtidas?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
