@@ -61,7 +61,7 @@ export default function LoginPage() {
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={iconContainerStyle}>
                 <Image
-                  src="/images/at-sign.svg"
+                  src="/icons/at-sign.svg"
                   alt="Ícone de email"
                   style={iconStyle}
                   width={24}
@@ -105,7 +105,7 @@ export default function LoginPage() {
               <div style={{ position: 'relative', width: '100%' }}>
                 <div style={iconContainerStyle}>
                   <Image
-                    src="/images/lock.svg"
+                    src="/icons/lock.svg"
                     alt="Ícone de cadeado"
                     style={iconStyle}
                     width={24}
