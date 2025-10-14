@@ -88,7 +88,8 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: 'var(--primary-600)' }}>
         <div className="flex flex-col justify-center items-center w-full p-12 text-white">
           {/* Logo/Marca */}
-          <div className="text-center mb-16">
+          <div className="flex flex-col items-center text-white text-center mb-8">
+            <LogoIcon size={160} fill="white" className="mb-2" />
             <h1 className="text-h1">
               LivraMente
             </h1>
@@ -98,7 +99,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Benefícios */}
-          <div className="space-y-6 max-w-md">
+          <div className="space-y-4 w-fit">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                 <span className="text-2xl">📖</span> {/*TODO: Definir biblioteca de ícones*/}
@@ -160,18 +161,12 @@ export default function RegisterPage() {
           </div>
 
           {/* Formulário */}
-          <div className="bg-white p-8 rounded-xl shadow-lg">
+          <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-lg">
             <div className="mb-6">
-              <div className="flex justify-center">
-                <LogoIcon
-                size={80}
-                className="mb-4"
-                />
-              </div>
               <h2 className="text-b1 body-semibold text-center text-gray-900">
                 Cadastre-se!
               </h2>
-              <p className="text-b3 text-center text-gray-600 mt-2">
+              <p className="text-b3 text-center text-gray-600 mt-1">
                 Junte-se à nossa comunidade de leitores
               </p>
             </div>
@@ -186,7 +181,7 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleInputChange}
                 error={errors.name}
-                placeholder="Seu nome de usuário"
+                placeholder="@gatanoturna"
                 fullWidth
               />
 
@@ -199,7 +194,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 error={errors.email}
-                placeholder="seu@email.com"
+                placeholder="kemi@gata.miau"
                 fullWidth
               />
 
@@ -212,7 +207,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleInputChange}
                 error={errors.password}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                 helperText="Use pelo menos 6 caracteres com letras e números"
                 fullWidth
               />
@@ -226,17 +221,17 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 error={errors.confirmPassword}
-                placeholder="Confirme sua senha"
+                placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                 fullWidth
               />
 
               {/* Botão de Submit */}
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-4 mb-4">
                 <Button
                   type="submit"
                   text={false ? 'Carregando...' : 'Próximo Passo'}
                   icon={<ArrowRightIcon />}
-                  size="small"
+                  size="medium"
                   colorScheme="dark-green"
                   loading={false}
                 >
@@ -244,32 +239,31 @@ export default function RegisterPage() {
               </div>
             </form>
 
+            <div className="max-w-[300px] text-b3 text-center text-gray-600 mb-4">
+                <p>
+                  Ao criar uma conta, você concorda com nossos{' '}
+                  <Link href="/terms" className="body-semibold text-[#3D552F] hover:underline">
+                    Termos de Uso
+                  </Link>{' '}
+                  e{' '}
+                  <Link href="/privacy" className="body-semibold text-[#3D552F] hover:underline">
+                    Política de Privacidade
+                  </Link>
+                </p>
+            </div>
+
             {/* Link para Login */}
-            <div className="text-b3 text-center mt-2">
+            <div className="text-b3 text-center">
               <p className=" text-gray-600">
-                Já possui uma conta?{' '}
+                Já tem uma conta?{' '}
                 <Link 
                   href="/login" 
-                  className="body-semibold text-green-700 hover:text-green-700"
+                  className="body-semibold text-[#3D552F] hover:underline"
                 >
                   Faça login
                 </Link>
               </p>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-b3 text-center text-gray-500">
-            <p>
-              Ao criar uma conta, você concorda com nossos{' '}
-              <Link href="/terms" className="text-green-600 hover:underline">
-                Termos de Uso
-              </Link>{' '}
-              e{' '}
-              <Link href="/privacy" className="text-green-600 hover:underline">
-                Política de Privacidade
-              </Link>
-            </p>
           </div>
         </div>
       </div>

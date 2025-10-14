@@ -119,10 +119,10 @@
   --bold-font-weight:     800;
 
   /* Standard Padding Values */
-  --extra-small-padding:  12px;
-  --small-padding:        16px;
-  --medium-padding:       20px;
-  --large-padding:        24px;
+  --xsmall-padding:       12px;
+  --small-padding:        12px;
+  --medium-padding:       16px;
+  --large-padding:        20px;
 
   /* Border Radius */
   --no-border-radius:     0px;
@@ -288,7 +288,7 @@ input {
 }
   
 .small-box {
-  padding:        8px var(--small-padding);
+  padding:        4px var(--small-padding);
   border-radius:  var(--small-border-radius);
 }
 
@@ -303,7 +303,7 @@ input {
 }
 
 button.textless-small {
-  padding:        var(--extra-small-padding);
+  padding:        var(--xsmall-padding);
   border-radius:  var(--small-border-radius);
 }
 
@@ -318,16 +318,16 @@ button.textless-large {
 }
 
 .icon-small {
+  width:  16px;
+  height: 16px;
+}
+
+.icon-medium {
   width:  20px;
   height: 20px;
 }
 
-.icon-medium {
+.icon-large {
   width:  24px;
   height: 24px;
-}
-
-.icon-large {
-  width:  40px;
-  height: 40px;
 }
