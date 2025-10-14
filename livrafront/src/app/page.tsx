@@ -9,7 +9,7 @@ import Button from '@/components/button';
 export default function HomePage() {
     return(
         <div className="min-h-screen flex">
-            <div className="hidden lg:flex lg:w-full relative" style={{ backgroundColor: '#E5EEDF' }}>
+            <div className="lg:flex lg:w-full relative" style={{ backgroundColor: '#E5EEDF' }}>
                 <div className="flex flex-col justify-center items-center w-full p-12 text-black">
                     <Link href="/">
                         <Image src="/logo-vetorizada.svg" alt="Logo" width={150} height={150} className="mb-4"/>
