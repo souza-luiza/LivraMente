@@ -164,12 +164,13 @@
   color:      var(--secondary-100);
 }
 
-@media (prefers-color-scheme: light) {
+/* TODO: Checar se realmente não muda nada no site ao retirar */
+/* @media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 /* Estilos de Texto */
 .text-b1 {

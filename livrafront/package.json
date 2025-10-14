@@ -17,11 +17,16 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.22",
+    "jest-fetch-mock": "^3.0.3",
+    "libphonenumber-js": "^1.12.23",
+    "lightningcss": "^1.28.2",
     "next": "15.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-phone-number-input": "^3.4.12",
+    "react-toastify": "^11.0.5",
     "tailwind-merge": "^3.3.1",
-    "lightningcss": "^1.28.2",
     "zod": "^4.1.12"
   },
   "devDependencies": {
