@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/general-input'
-import Image from 'next/image'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 import LogoIcon from '@/components/icons/LogoIcon'
 import OpenBookIcon from '@/components/icons/OpenBookIcon'
@@ -20,6 +19,8 @@ import PhoneInputComponent from '@/components/phone-input'
 import { CountryCode, isValidPhoneNumber } from 'libphonenumber-js'
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
+import FolderIcon from '@/components/icons/FolderIcon'
+import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -327,7 +328,7 @@ export default function RegisterPage() {
 
           {/* Formulário */}
           <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-lg">
-            <div className="mb-6">
+            <div className="mb-2">
               <h2 className="text-b1 body-semibold text-center text-gray-900">
                 Cadastre-se!
               </h2>
@@ -388,7 +389,7 @@ export default function RegisterPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     error={errors.name}
-                    placeholder="Seu nome de usuário"
+                    placeholder="gatanoturna"
                     fullWidth
                   />
 
@@ -401,7 +402,7 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     error={errors.email}
-                    placeholder="seu@email.com"
+                    placeholder="kemi@gata.miau"
                     fullWidth
                   />
 
@@ -414,11 +415,13 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     error={errors.password}
-                    placeholder="Mínimo 6 caracteres"
-                    // helperText="Use pelo menos 6 caracteres com letras e números"
+                    placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                     fullWidth
                   />
-                  <PasswordStrength password={formData.password} />
+
+                  <div className="text-b3 text-[#1F2A17]">
+                    <PasswordStrength password={formData.password} />
+                  </div>
 
                   {/* Confirmar Senha */}
                   <Input
@@ -429,17 +432,17 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     error={errors.confirmPassword}
-                    placeholder="Confirme sua senha"
+                    placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                     fullWidth
                   />
 
                   {/* Botão de Submit */}
-                  <div className="flex justify-center mt-4">
+                  <div className="flex justify-center mt-1">
                     <Button
                       type="submit"
                       text={false ? 'Carregando...' : 'Próximo Passo'}
-                      icon={<Image src="/icons/chevronLeft.svg" alt="Seta para Direita" className='transform rotate-180' width={16} height={16} />}
-                      size="small"
+                      icon={<ArrowRightIcon />}
+                      size="medium"
                       colorScheme="dark-green"
                       loading={false}
                     >
@@ -459,7 +462,7 @@ export default function RegisterPage() {
                   exit="exit"
                   transition={{ duration: 0.3 }}
                   onSubmit={handleOnSubmit} 
-                  className="space-y-2 min-h-[400px] items-center flex flex-col justify-center">
+                  className="space-y-2 max-h-[400px] items-center flex flex-col justify-center">
                   {/* Data de Nascimento */}
                   <DateInput
                     label="Data de Nascimento"
@@ -493,43 +496,34 @@ export default function RegisterPage() {
                   />
 
                   {/* Botões Voltar e Submit */}
-                  <div className="flex justify-between mt-6 w-full">
-                    <Button
-                      type="button"
-                      text="Voltar"
-                      icon={<Image src="/icons/chevronLeft_darkGreen.svg" alt="Seta para Esquerda" width={16} height={16} />}
-                      size="small"
-                      colorScheme="light-green"
-                      onClick={handlePreviousStep}
-                    />
-                    <Button
-                      type="submit"
-                      text="Finalizar Cadastro"
-                      size="small"
-                      colorScheme="dark-green"
-                      loading={false}
-                      icon={<Image src="/icons/register.svg" alt="Ícone de Cadastro" width={16} height={16} />}
-                    />
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    <div>
+                      <Button
+                        type="button"
+                        text="Voltar"
+                        icon={<ArrowLeftIcon />}
+                        size="medium"
+                        colorScheme="light-green"
+                        onClick={handlePreviousStep}
+                      />
+                    </div>
+                    <div>
+                      <Button
+                        type="submit"
+                        text="Finalizar Cadastro"
+                        size="medium"
+                        colorScheme="dark-green"
+                        loading={false}
+                        icon={<FolderIcon />}
+                      />
+                    </div>
                   </div>
                 </motion.form>
               )}
               </AnimatePresence>
 
-              <div className="max-w-[300px] text-b3 text-center text-gray-600 mb-4">
-                <p>
-                  Ao criar uma conta, você concorda com nossos{' '}
-                  <Link href="/terms" className="body-semibold text-[#3D552F] hover:underline">
-                    Termos de Uso
-                  </Link>{' '}
-                  e{' '}
-                  <Link href="/privacy" className="body-semibold text-[#3D552F] hover:underline">
-                    Política de Privacidade
-                  </Link>
-                </p>
-              </div>
-
               {/* Link para Login */}
-              <div className="text-b3 text-center">
+              <div className="text-b3 text-center mt-2">
                 <p className=" text-gray-600">
                   Já tem uma conta?{' '}
                   <Link 
