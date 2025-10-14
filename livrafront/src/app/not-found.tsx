@@ -21,26 +21,26 @@ export default function NotFoundPage() {
             <div className="hidden lg:flex lg:w-full relative" style={{ backgroundColor: '#E5EEDF' }}>
                 <div className="flex flex-col justify-center items-center w-full p-12 text-black">
                     <Link href="/">
-                        <ErrorIcon size={120} fill="#1F2A17" className="mb-4" />
+                        <ErrorIcon size={120} fill="#1F2A17" className="mb-4" aria-label="Logo" role="img" />
                     </Link>
                     <h1 className="text-4xl font-bold mb-4">Oops!</h1>
                     <p className="text-lg mb-8">A página que você está procurando não foi encontrada.</p>
                     <div className="flex flex-col justify-center items-center w-full p-4 gap-2 text-black">
                         <p className="text-lg mb-4">Código de Erro: 404</p>
-                        <Link href="/">
-                            <Button 
-                                text="Página Inicial"
-                                colorScheme="dark-green"
-                                size="small"
-                                icon={<HomeIcon />}
-                            />
-                        </Link>
+                            <Link href="/">
+                                <Button 
+                                    text="Página Inicial"
+                                    colorScheme="dark-green"
+                                    size="small"
+                                    icon={<HomeIcon aria-label="Ícone de casa" role="img" />}
+                                />
+                            </Link>
                         <Button 
                             onClick={handleGoBack}
                             text="Voltar"
                             colorScheme="dark-green"
                             size="small"
-                            icon={<ArrowLeftIcon />}
+                            icon={<ArrowLeftIcon aria-label="Ícone de seta" role="img" />}
                         />
                     </div>
                 </div>

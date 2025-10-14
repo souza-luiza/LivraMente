@@ -23,8 +23,8 @@ export default function LoginPage() {
       <div className="flex min-h-screen">
         {/* Left Side */} 
         <div className="flex-1 bg-[#5C8046]">
-          <div className="flex flex-col items-center justify-center h-full text-white">
-            <LogoIcon size={160} fill="white" className="mb-2" />
+          <div className="flex flex-col items-center justify-center h-full text-[#E5EEDF]">
+            <LogoIcon size={160} fill="#E5EEDF" className="mb-2" />
             <h1 className="text-h1">
               LivraMente
             </h1>
@@ -51,7 +51,7 @@ export default function LoginPage() {
                 Entre no Livra!
               </h2>
               <p className="text-b3 text-center text-gray-600 mt-1">
-                Acesse uma conta já existente
+                Acesse sua conta
               </p>
             </div>
 

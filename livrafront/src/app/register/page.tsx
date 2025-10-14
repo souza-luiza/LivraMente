@@ -7,6 +7,10 @@ import Input from '@/components/general-input'
 import Image from 'next/image'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 import LogoIcon from '@/components/icons/LogoIcon'
+import OpenBookIcon from '@/components/icons/OpenBookIcon'
+import CommunityIcon from '@/components/icons/CommunityIcon'
+import LibraryIcon from '@/components/icons/LibraryIcon'
+import StarIcon from '@/components/icons/StarIcon'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -83,13 +87,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <main role="main" className="min-h-screen flex">
       {/* Lado Esquerdo - Verde */}
       <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: 'var(--primary-600)' }}>
         <div className="flex flex-col justify-center items-center w-full p-12 text-white">
           {/* Logo/Marca */}
-          <div className="flex flex-col items-center text-white text-center mb-8">
-            <LogoIcon size={160} fill="white" className="mb-2" />
+          <div className="flex flex-col items-center text-[#E5EEDF] text-center mb-8">
+            <LogoIcon size={160} fill="#E5EEDF" className="mb-2" />
             <h1 className="text-h1">
               LivraMente
             </h1>
@@ -99,10 +103,10 @@ export default function RegisterPage() {
           </div>
 
           {/* Benefícios */}
-          <div className="space-y-4 w-fit">
+          <div className="space-y-4 w-fit text-[#E5EEDF]">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📖</span> {/*TODO: Definir biblioteca de ícones*/}
+                <OpenBookIcon size={24} fill="#E5EEDF" />
               </div>
               <div className="text-b2">
                 <h3 className="body-semibold">Acompanhe sua leitura</h3>
@@ -112,7 +116,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">👥</span>
+                <CommunityIcon size={24} fill="#E5EEDF" />
               </div>
               <div className="text-b2">
                 <h3 className="body-semibold">Conecte-se e interaja</h3>
@@ -122,7 +126,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📚</span>
+                <LibraryIcon size={24} fill="#E5EEDF" />
               </div>
               <div className="text-b2">
                 <h3 className="body-semibold">Avalie livros e receba recomendações</h3>
@@ -132,7 +136,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl">⭐</span>
+                <StarIcon size={24} fill="#E5EEDF" />
               </div>
               <div className="text-b2">
                 <h3 className="body-semibold">Ganhe XP e participe de competições</h3>
@@ -267,6 +271,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
