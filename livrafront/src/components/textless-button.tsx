@@ -1,4 +1,6 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react'
+"use client";
+import { ButtonHTMLAttributes, ReactNode, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
@@ -17,6 +19,7 @@ export default function TextlessButton({
     disabled,
     ...props 
 }: ButtonProps) {
+    const [isHovered, setIsHovered] = useState(false);
     
     const textlessSizes: Record<"small" | "medium" | "large", string> = {
         small:  "textless-small",
@@ -27,7 +30,7 @@ export default function TextlessButton({
     const iconSizes: Record<"small" | "medium" | "large", string> = {
         small:  "w-4 h-4",
         medium: "w-6 h-6",
-        large:  "w-10 h-10",
+        large:  "w-8 h-8",
     };
 
     return (
@@ -39,6 +42,9 @@ export default function TextlessButton({
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black`}
                 disabled={disabled || loading}
                 {...props}
+
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
         >
             {loading && (
                 <svg 
@@ -65,9 +71,21 @@ export default function TextlessButton({
             <span className={`${iconSizes[size]}`}> {icon} </span>
         </button>
         {tooltip != undefined && (
-            <div data-testid="tooltip" className={`absolute left-full ml-1 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] opacity-0 group-hover:opacity-100 transition-opacity duration-100`}>
-                {tooltip}
-            </div>
+            <AnimatePresence>
+                {isHovered && (
+                    <motion.div 
+                        data-testid="tooltip" 
+                        className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
+                        role="tooltip"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {tooltip}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         )}
         </div>
     );
