@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ReadlistsModule } from './readlists/readlists.module';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
@@ -38,6 +39,14 @@ describe('App Integration with Mocks', () => {
     create: jest.fn().mockImplementation((dto) => Promise.resolve({ _id: 'mockId', ...dto })),
   };
 
+  // Mock do model Readlist
+  const mockReadlistModel = {
+    find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
+    findOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
+    findOneAndUpdate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
+    deleteOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue({ deletedCount: 1 }) }),
+  };
+
   beforeAll(async () => {
     jest.setTimeout(10000);
 
@@ -46,6 +55,7 @@ describe('App Integration with Mocks', () => {
         ConfigModule.forRoot({ isGlobal: true }),
         UsersModule,
         AuthModule,
+        ReadlistsModule,
       ],
       controllers: [AppController],
       providers: [AppService],
@@ -54,6 +64,8 @@ describe('App Integration with Mocks', () => {
       .useValue(mockConfigService)
       .overrideProvider(getModelToken('User'))
       .useValue(mockUserModel)
+      .overrideProvider(getModelToken('Readlist'))
+      .useValue(mockReadlistModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
