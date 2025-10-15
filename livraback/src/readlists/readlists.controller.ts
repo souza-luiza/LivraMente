@@ -23,6 +23,10 @@ export class ReadlistsController {
         description: 'Readlist criada com sucesso',
         type: CreateReadlistDto
     })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
     async create(@CurrentUser() user: CurrentUserDto, @Body() createReadlistDto: CreateReadlistDto) {
         return this.readlistsService.create(user.userId, createReadlistDto);
     }
@@ -35,6 +39,10 @@ export class ReadlistsController {
     @ApiResponse({
         status: 200,
         description: 'Lista de readlists retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
     })
     async findAll(@CurrentUser() user: CurrentUserDto) {
         return this.readlistsService.findAll(user.userId);
@@ -53,6 +61,14 @@ export class ReadlistsController {
         status: 404,
         description: 'Readlist não encontrada'
     })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
     async findOne(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
         return this.readlistsService.findOne(user.userId, id);
     }
@@ -70,6 +86,14 @@ export class ReadlistsController {
         status: 404,
         description: 'Readlist não encontrada'
     })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
     async update(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Body() updateReadlistDto: UpdateReadlistDto) {
         return this.readlistsService.update(user.userId, id, updateReadlistDto);
     }
@@ -86,6 +110,14 @@ export class ReadlistsController {
     @ApiResponse({
         status: 404,
         description: 'Readlist não encontrada'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
     })
     async remove(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
         return this.readlistsService.remove(user.userId, id);
