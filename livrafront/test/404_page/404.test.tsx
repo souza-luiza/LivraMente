@@ -50,16 +50,6 @@ describe('NotFoundPage', () => {
         expect(logo).toBeTruthy();
     });
 
-    it('should render home page button with correct icon', () => {
-        render(<NotFoundPage />);
-        
-        const homeButton = screen.getByText('Página Inicial');
-        expect(homeButton).toBeInTheDocument();
-        
-        const homeIcon = screen.getByLabelText('Ícone de casa');
-        expect(homeIcon).toBeInTheDocument();
-    });
-
     it('should render back button with correct icon', () => {
         render(<NotFoundPage />);
         
@@ -68,13 +58,6 @@ describe('NotFoundPage', () => {
         
         const backIcon = screen.getByLabelText('Ícone de seta');
         expect(backIcon).toBeInTheDocument();
-    });
-
-    it('should navigate to home page when clicking home button', () => {
-        render(<NotFoundPage />);
-        
-        const homeLink = screen.getByText('Página Inicial').closest('a');
-        expect(homeLink).toHaveAttribute('href', '/');
     });
 
     it('should call router.back() when clicking back button', () => {

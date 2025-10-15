@@ -2,12 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Button from '@/components/button';
-import { useRouter } from 'next/navigation';
 import LoginIcon from '@/components/icons/LoginIcon';
 import LogoIcon from '@/components/icons/LogoIcon';
-import FolderIcon from '@/components/icons/FolderIcon';
+import Edit3Icon from '@/components/icons/Edit3Icon';
 
 export default function HomePage() {
     return(
@@ -27,10 +25,10 @@ export default function HomePage() {
                     <div className="flex flex-row justify-center items-center w-full p-4 gap-2">
                         <Link href="/register">
                             <Button 
-                                text="Cadastre-se"
+                                text="Cadastrar"
                                 colorScheme="dark-green"
                                 size="medium"
-                                icon={<FolderIcon />}
+                                icon={<Edit3Icon />}
                             />
                         </Link>
                         <Link href="/login">

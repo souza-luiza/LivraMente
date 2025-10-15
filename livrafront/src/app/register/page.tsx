@@ -19,8 +19,8 @@ import PhoneInputComponent from '@/components/phone-input'
 import { CountryCode, isValidPhoneNumber } from 'libphonenumber-js'
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
-import FolderIcon from '@/components/icons/FolderIcon'
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon'
+import Edit3Icon from '@/components/icons/Edit3Icon'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -514,7 +514,7 @@ export default function RegisterPage() {
                         size="medium"
                         colorScheme="dark-green"
                         loading={false}
-                        icon={<FolderIcon />}
+                        icon={<Edit3Icon />}
                       />
                     </div>
                   </div>
