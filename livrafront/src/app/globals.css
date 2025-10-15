@@ -119,10 +119,10 @@
   --bold-font-weight:     800;
 
   /* Standard Padding Values */
-  --extra-small-padding:  12px;
-  --small-padding:        16px;
-  --medium-padding:       20px;
-  --large-padding:        24px;
+  --xsmall-padding:       12px;
+  --small-padding:        12px;
+  --medium-padding:       16px;
+  --large-padding:        20px;
 
   /* Border Radius */
   --no-border-radius:     0px;
@@ -175,7 +175,6 @@
 /* Estilos de Texto */
 .text-b1 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-1-font-size);
   line-height:      var(--body-1-line-height);
   font-weight:      var(--regular-font-weight);
@@ -185,7 +184,6 @@
 
 .text-b2 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-2-font-size);
   line-height:      var(--body-2-line-height);
   font-weight:      var(--regular-font-weight);
@@ -195,7 +193,6 @@
 
 .text-b3 {
   font-family:      var(--font-poppins);
-  text-align:       left;
   font-size:        var(--body-3-font-size);
   line-height:      var(--body-3-line-height);
   font-weight:      var(--regular-font-weight);
@@ -229,7 +226,6 @@
   line-height:  var(--heading-1-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h2 {
@@ -237,7 +233,6 @@
   line-height:  var(--heading-2-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h3 {
@@ -245,7 +240,6 @@
   line-height:  var(--heading-3-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h4 {
@@ -253,7 +247,6 @@
   line-height:  var(--heading-4-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h5 {
@@ -261,7 +254,6 @@
   line-height:  var(--heading-5-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .text-h6 {
@@ -269,7 +261,6 @@
   line-height:  var(--heading-6-line-height);
   font-weight:  var(--bold-font-weight);
   font-family:  var(--font-poppins);
-  text-align:   left;
 }
 
 .heading-underline {
@@ -298,7 +289,7 @@ input {
 }
   
 .small-box {
-  padding:        8px var(--small-padding);
+  padding:        4px var(--small-padding);
   border-radius:  var(--small-border-radius);
 }
 
@@ -313,7 +304,7 @@ input {
 }
 
 button.textless-small {
-  padding:        var(--extra-small-padding);
+  padding:        var(--xsmall-padding);
   border-radius:  var(--small-border-radius);
 }
 
@@ -333,11 +324,11 @@ button.textless-large {
 }
 
 .icon-medium {
-  width:  24px;
-  height: 24px;
+  width:  20px;
+  height: 20px;
 }
 
 .icon-large {
-  width:  40px;
-  height: 40px;
+  width:  24px;
+  height: 24px;
 }

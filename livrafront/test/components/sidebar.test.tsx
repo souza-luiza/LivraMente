@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Sidebar from '../../src/components/sidebar'
 
-// Mock the icons and button component
 jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
   default: function MockLogoIcon() {
@@ -76,7 +75,7 @@ describe('Sidebar Component', () => {
       expect(sidebar).toHaveClass('inline-block')
       expect(sidebar).toHaveClass('light-green')
       expect(sidebar).toHaveClass('w-[80px]')
-      expect(sidebar).toHaveClass('h-[800px]')
+      expect(sidebar).toHaveClass('h-fill')
       expect(sidebar).toHaveClass('rounded-[12px]')
     })
 
@@ -108,9 +107,7 @@ describe('Sidebar Component', () => {
       const flexContainer = container.firstChild
       expect(flexContainer).toHaveClass('flex flex-col justify-between h-full')
       
-      // Should have top section and bottom section
   const sections = container.querySelectorAll('div > div > div')
-  // layout should have at least top and bottom sections
   expect(sections.length).toBeGreaterThanOrEqual(2)
     })
   })
@@ -119,7 +116,6 @@ describe('Sidebar Component', () => {
     it('renders buttons with correct Portuguese tooltips', () => {
       render(<Sidebar />)
       
-  // There are two 'Início' buttons (logo + home); assert at least one exists
   expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
       expect(screen.getByTestId('button-perfil')).toBeInTheDocument()
       expect(screen.getByTestId('button-notificações')).toBeInTheDocument()
@@ -141,7 +137,7 @@ describe('Sidebar Component', () => {
       
       const buttons = screen.getAllByRole('button')
       buttons.forEach(button => {
-        expect(button).toHaveClass('mock-button') // This would have light-green in real implementation
+        expect(button).toHaveClass('mock-button')
       })
     })
 
@@ -164,17 +160,15 @@ describe('Sidebar Component', () => {
     it('uses large size for all buttons', () => {
       render(<Sidebar />)
       
-      // In the real implementation, all buttons should have size="large"
       const buttons = screen.getAllByRole('button')
-      expect(buttons).toHaveLength(6) // Logo + 4 top + 1 bottom
+      expect(buttons).toHaveLength(6)
     })
   })
 
   describe('Accessibility', () => {
     it('has proper semantic structure', () => {
       render(<Sidebar />)
-      
-      // Sidebar should be accessible as navigation or complementary landmark
+    
       const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
       expect(sidebar).toBeInTheDocument()
     })
@@ -188,16 +182,12 @@ describe('Sidebar Component', () => {
       
       expect(firstButton).toHaveFocus()
       
-      // Test tab navigation
       await user.tab()
-      // Should move to next button
     })
 
     it('has sufficient color contrast (visual test implication)', () => {
       render(<Sidebar />)
       
-      // This would typically be tested with visual regression tools
-      // or accessibility testing libraries like axe-core
       const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
       expect(sidebar).toBeInTheDocument()
     })
@@ -208,7 +198,6 @@ describe('Sidebar Component', () => {
       const user = userEvent.setup()
       const mockOnClick = jest.fn()
       
-      // Override the mock to include onClick
       jest.doMock('../../src/components/textless-button', () => ({
         __esModule: true,
         default: function MockButton({ icon, tooltip, onClick }: any) {
@@ -229,7 +218,6 @@ describe('Sidebar Component', () => {
   const homeButton = screen.getAllByTestId('button-início')[1]
   await user.click(homeButton)
       
-      // In a real test, you would test the actual click handlers
       expect(homeButton).toBeInTheDocument()
     })
 
@@ -239,9 +227,7 @@ describe('Sidebar Component', () => {
       
       const profileButton = screen.getByTestId('button-perfil')
       
-      // Hover should show tooltip (if implemented in the mock)
       await user.hover(profileButton)
-      // Tooltip visibility would be tested in integration tests
     })
   })
 
@@ -251,14 +237,13 @@ describe('Sidebar Component', () => {
       
       const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
       expect(sidebar).toHaveClass('w-[80px]')
-      // Fixed width should not change on different screen sizes
     })
 
     it('has fixed height for consistent layout', () => {
       render(<Sidebar />)
       
       const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toHaveClass('h-[800px]')
+      expect(sidebar).toHaveClass('h-fill')
     })
   })
 
@@ -286,7 +271,7 @@ describe('Sidebar Component', () => {
       render(<Sidebar />)
       
       const buttons = screen.getAllByRole('button')
-      expect(buttons).toHaveLength(6) // Should always have exactly 6 buttons
+      expect(buttons).toHaveLength(6)
     })
 
     it('has logout button separated at bottom', () => {
@@ -320,7 +305,6 @@ describe('Sidebar Component', () => {
       render(<Sidebar />)
       
       const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      // If shadows are added later, test for them here
       expect(sidebar).toBeInTheDocument()
     })
   })

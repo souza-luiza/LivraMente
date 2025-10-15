@@ -43,9 +43,9 @@ describe('LoginPage', () => {
     mockLoginUser.mockResolvedValueOnce(mockResponse)
     render(<LoginPage />)
     
-    await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'teste@exemplo.com')
-    await user.type(screen.getByPlaceholderText('Senha'), 'senha123')
-    await user.click(screen.getByText('Acessar'))
+  await user.type(screen.getByLabelText('E-mail'), 'teste@exemplo.com')
+  await user.type(screen.getByLabelText('Senha'), 'senha123')
+    await user.click(screen.getByText('Entrar'))
     
     await waitFor(() => {
       expect(mockLoginUser).toHaveBeenCalledWith({
@@ -64,9 +64,9 @@ describe('LoginPage', () => {
     mockLoginUser.mockRejectedValueOnce(new Error('Credenciais inválidas'))
     
     render(<LoginPage />)
-    await user.type(screen.getByPlaceholderText('Email ou nome de usuário'), 'wrong@email.com')
-    await user.type(screen.getByPlaceholderText('Senha'), 'wrongpass')
-    await user.click(screen.getByText('Acessar'))
+  await user.type(screen.getByLabelText('E-mail'), 'wrong@email.com')
+  await user.type(screen.getByLabelText('Senha'), 'wrongpass')
+  await user.click(screen.getByText('Entrar'))
     
     await waitFor(() => {
       expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument()
