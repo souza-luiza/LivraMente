@@ -11,7 +11,7 @@ export interface Readlist {
   };
   livros: Array<string | { _id: string; nome?: string }>;
   contribuidores?: Array<{ _id: string; username?: string }>;
-  curtidas?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  favoritadoPor?: string[]; 
 }
