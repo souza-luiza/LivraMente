@@ -14,7 +14,7 @@ import { JwtStrategy } from './jwt.strategy';
     inject: [ConfigService],
     useFactory: (config: ConfigService) => ({
       secret: config.getOrThrow('JWT_SECRET'),
-      signOptions: { expiresIn: '60s' }, // ajustar dps para 7d/1d
+      signOptions: { expiresIn: '1d' },
     }),
   })],
   controllers: [AuthController],
