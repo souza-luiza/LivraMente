@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Readlist } from '../types/readlist';
-import { getUserReadlists } from '../services/readlists';
 
-export function useReadlistsList(userId: string) {
-  // Estado para armazenar as readlists do usuário
+export function useReadlistsList(identifier: string, isUsername: boolean = false) {
   const [readlists, setReadlists] = useState<Readlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,11 +10,27 @@ export function useReadlistsList(userId: string) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    getUserReadlists(userId)
-      .then(setReadlists)
-      .catch((err) => setError(err.message || 'Erro ao buscar readlists'))
-      .finally(() => setLoading(false));
-  }, [userId]);
+    let endpoint = '';
+    if (isUsername) {
+      endpoint = `/readlists/user/${identifier}`;
+    } else {
+      endpoint = `/readlists`;
+    }
+    fetch(endpoint)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setReadlists(data);
+        } else {
+          setReadlists([]);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Erro ao buscar readlists do usuário.');
+        setLoading(false);
+      });
+  }, [identifier, isUsername]);
 
   return { readlists, loading, error };
 }
