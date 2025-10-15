@@ -4,14 +4,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   text: ReactNode;      
   icon: ReactNode;
   size: "small" | "medium" | "large";
-  colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown";
+  colorScheme: "light-green" | "dark-green" | "light-brown" | "dark-brown"  | "light-neutral";
   loading?: boolean;
 }
 
 export default function Button({ 
     text, 
     icon, 
-    size, 
+    size='medium', 
     colorScheme, 
     loading = false, 
     disabled, 
@@ -19,21 +19,21 @@ export default function Button({
 }: ButtonProps) {
 
     const textStyles: Record<"small" | "medium" | "large", string> = {
-        small:  "text-h6",
-        medium: "text-h4",
-        large:  "text-h2"
+        small:  "text-b2 body-semibold",
+        medium: "text-h6",
+        large:  "text-h4"
     }
 
     const iconSizes: Record<"small" | "medium" | "large", string> = {
-        small:  "icon-small",
-        medium: "icon-medium",
-        large:  "icon-large"
+        small:      "icon-small",
+        medium:     "icon-medium",
+        large:      "icon-large"
     }
 
     const boxSize: Record<"small" | "medium" | "large", string> = {
-        small:  "small-box",
-        medium: "medium-box",
-        large:  "large-box"
+        small:      "small-box",
+        medium:     "medium-box",
+        large:      "large-box"
     }
 
     return (

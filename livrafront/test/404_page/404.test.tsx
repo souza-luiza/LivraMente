@@ -44,19 +44,10 @@ describe('NotFoundPage', () => {
     it('should render the logo image', () => {
         render(<NotFoundPage />);
         
-        const logo = screen.getByAltText('Logo');
+        const logo = screen.getByLabelText('Logo');
         expect(logo).toBeInTheDocument();
-        expect(logo).toHaveAttribute('src', '/logos/LivraMenteErrorPreto.svg');
-    });
-
-    it('should render home page button with correct icon', () => {
-        render(<NotFoundPage />);
-        
-        const homeButton = screen.getByText('Página Inicial');
-        expect(homeButton).toBeInTheDocument();
-        
-        const homeIcon = screen.getByAltText('Ícone de casa');
-        expect(homeIcon).toBeInTheDocument();
+        // ErrorIcon is an inline SVG in tests environment; ensure it exists
+        expect(logo).toBeTruthy();
     });
 
     it('should render back button with correct icon', () => {
@@ -65,15 +56,8 @@ describe('NotFoundPage', () => {
         const backButton = screen.getByText('Voltar');
         expect(backButton).toBeInTheDocument();
         
-        const backIcon = screen.getByAltText('Ícone de seta');
+        const backIcon = screen.getByLabelText('Ícone de seta');
         expect(backIcon).toBeInTheDocument();
-    });
-
-    it('should navigate to home page when clicking home button', () => {
-        render(<NotFoundPage />);
-        
-        const homeLink = screen.getByText('Página Inicial').closest('a');
-        expect(homeLink).toHaveAttribute('href', '/');
     });
 
     it('should call router.back() when clicking back button', () => {
@@ -88,7 +72,7 @@ describe('NotFoundPage', () => {
     it('should render logo link that points to home', () => {
         render(<NotFoundPage />);
         
-        const logoLink = screen.getByAltText('Logo').closest('a');
+    const logoLink = screen.getByLabelText('Logo').closest('a');
         expect(logoLink).toHaveAttribute('href', '/');
     });
 

@@ -2,35 +2,41 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Button from '@/components/button';
-// import { useRouter } from 'next/navigation';
+import LoginIcon from '@/components/icons/LoginIcon';
+import LogoIcon from '@/components/icons/LogoIcon';
+import Edit3Icon from '@/components/icons/Edit3Icon';
 
 export default function HomePage() {
     return(
         <div className="min-h-screen flex">
-            <div className="lg:flex lg:w-full relative" style={{ backgroundColor: '#E5EEDF' }}>
-                <div className="flex flex-col justify-center items-center w-full p-12 text-black">
-                    <Link href="/">
-                        <Image src="/logo-vetorizada.svg" alt="Logo" width={150} height={150} className="mb-4"/>
-                    </Link>
-                    <h1 className="text-4xl font-bold mb-4">LivraMente</h1>
-                    <p className="text-lg mb-8">Página Provisória</p>
-                    <div className="flex flex-row justify-center items-center w-full p-4 gap-2 text-black">
+            <div className="hidden lg:flex lg:w-full relative" style={{ backgroundColor: '#CADDBF' }}>
+                <div className="flex flex-col justify-center items-center w-full p-12">
+                    <div className="flex flex-col items-center text-[#1F2A17]">
+                        <LogoIcon size={160} fill="#1F2A17" className="mb-2" />
+                        <h1 className="text-h1">
+                            LivraMente
+                        </h1>
+                        <p className="text-b1 body-semibold">
+                            A rede dos leitores brasileiros
+                        </p>
+                    </div>
+                    <p className="text-b2 mt-8 mb-4">Página Inicial Provisória</p>
+                    <div className="flex flex-row justify-center items-center w-full p-4 gap-2">
                         <Link href="/register">
                             <Button 
-                                text="Registre-se"
+                                text="Cadastrar"
                                 colorScheme="dark-green"
-                                size="small"
-                                icon={<span><Image src="/icons/register.svg" alt="Ícone de casa" width={48} height={48} /></span>}
+                                size="medium"
+                                icon={<Edit3Icon />}
                             />
                         </Link>
                         <Link href="/login">
                             <Button 
-                                text="Login"
+                                text="Entrar"
                                 colorScheme="dark-green"
-                                size="small"
-                                icon={<span><Image src="/icons/enter.svg" alt="Ícone de casa" width={48} height={48} /></span>}
+                                size="medium"
+                                icon={<LoginIcon />}
                             />
                         </Link>
                     </div>

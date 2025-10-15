@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event'
 import Button from '../../src/components/button'
 import LogoIcon from '../../src/components/icons/LogoIcon'
 
-// Replace the real SVG logo with a tiny stable placeholder for tests/snapshots
 jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
   default: function DummyLogo() {
@@ -30,7 +29,6 @@ describe('Button Component', () => {
 
     it('applies correct size classes', () => {
       const { rerender } = render(<Button {...defaultProps} size="small" />)
-      // Button now uses box-style size classes (e.g. small-box)
       expect(screen.getByRole('button')).toHaveClass('small-box')
 
       rerender(<Button {...defaultProps} size="large" />)
@@ -39,13 +37,13 @@ describe('Button Component', () => {
 
     it('applies correct text size classes based on button size', () => {
       const { rerender } = render(<Button {...defaultProps} size="small" />)
-      expect(screen.getByText('Click me')).toHaveClass('text-h6')
+      expect(screen.getByText('Click me')).toHaveClass('text-b2 body-semibold')
 
       rerender(<Button {...defaultProps} size="medium" />)
-      expect(screen.getByText('Click me')).toHaveClass('text-h4')
+      expect(screen.getByText('Click me')).toHaveClass('text-h6')
 
       rerender(<Button {...defaultProps} size="large" />)
-      expect(screen.getByText('Click me')).toHaveClass('text-h2')
+      expect(screen.getByText('Click me')).toHaveClass('text-h4')
     })
 
     it('applies correct color scheme classes', () => {
@@ -131,7 +129,6 @@ describe('Button Component', () => {
       
       const button = screen.getByRole('button')
       expect(button.querySelector('svg.animate-spin')).toBeInTheDocument()
-      // Original icon should still be in DOM but loading spinner takes precedence visually
       expect(screen.getByTestId('test-icon')).toBeInTheDocument()
     })
   })
@@ -216,7 +213,6 @@ describe('Button Component', () => {
       
       const button = screen.getByRole('button')
       expect(button).toBeInTheDocument()
-      // Button should still render without crashing
     })
 
     it('handles ReactNode text correctly', () => {
@@ -231,7 +227,6 @@ describe('Button Component', () => {
       
       const button = screen.getByRole('button')
       expect(button).toBeInTheDocument()
-      // Should render without text content
     })
   })
 })
