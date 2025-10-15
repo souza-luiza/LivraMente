@@ -1,10 +1,10 @@
-import { InputHTMLAttributes, forwardRef } from 'react'
+import React, { InputHTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/utils/cn'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
-  helperText?: string
+  helperText?: React.ReactNode
   variant?: 'default' | 'outline' | 'filled'
   inputSize?: 'small' | 'medium' | 'large'
   colorScheme?: string
