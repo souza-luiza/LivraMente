@@ -46,7 +46,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div className="mb-6">
+            <div className="mb-6 mt-4">
               <h2 className="text-b1 body-semibold text-center text-gray-900">
                 Entre no Livra!
               </h2>
@@ -82,9 +82,6 @@ export default function LoginPage() {
                 onChange={handleChange}
                 fullWidth
                 error={errors.password}
-                helperText={<Link href="/esqueci-minha-senha">
-                              Esqueci minha senha...
-                            </Link>}
               />
             </div>
 
@@ -100,6 +97,11 @@ export default function LoginPage() {
               />
             </div>
 
+            <div className="flex flex-row items-baseline gap-1 mb-2">
+              <Link href="/esqueci-minha-senha" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+                Esqueci minha senha
+              </Link>
+            </div>
             {/* Sign-up Link */}
             <div className="flex flex-row items-baseline gap-1">
               <span className="text-b3 text-gray-900">

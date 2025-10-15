@@ -21,7 +21,7 @@ Acesso em: https://livramente.vercel.app/
 ## 🏗️ Estrutura de Projeto
 ```
 es-unifesp-2025-2-grupo-alpha/
-├── automations/                        
+├── .github/workflows/                        
 # Testes automatizados
 |
 ├── documentation/         
