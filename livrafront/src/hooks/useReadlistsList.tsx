@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Readlist } from '../types/readlist';
 
-export function useReadlistsList(identifier: string, isUsername: boolean = false) {
+export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas' = 'criadas') {
   const [readlists, setReadlists] = useState<Readlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar readlists a partir do ID do usuário 
   useEffect(() => {
     setLoading(true);
     setError(null);
     let endpoint = '';
-    if (isUsername) {
-      endpoint = `/readlists/user/${identifier}`;
+    if (type === 'favoritadas') {
+      endpoint = `/api/readlists/favorited/${userId}`;
     } else {
-      endpoint = `/readlists`;
+      endpoint = `/api/readlists/user/${userId}`;
     }
     fetch(endpoint)
       .then((res) => res.json())
@@ -30,7 +29,7 @@ export function useReadlistsList(identifier: string, isUsername: boolean = false
         setError('Erro ao buscar readlists do usuário.');
         setLoading(false);
       });
-  }, [identifier, isUsername]);
+  }, [userId, type]);
 
   return { readlists, loading, error };
 }

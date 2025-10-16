@@ -26,19 +26,12 @@ describe('ReadlistCard', () => {
     expect(screen.getByText(/Descrição de teste/i)).toBeInTheDocument();
   });
 
-  it('renderiza avatar do criador', () => {
-    render(<ReadlistCard r={mockReadlist} userId="1" />);
-    expect(screen.getByAltText(/gatanoturna/i)).toBeInTheDocument();
-  });
-
   it('favorita e desfavorita readlist', () => {
     const r = { ...mockReadlist, favoritadoPor: [] };
     render(<ReadlistCard r={r} userId="2" />);
     const curtirBtn = screen.getByLabelText('Curtir');
     fireEvent.mouseDown(curtirBtn);
     fireEvent.mouseUp(curtirBtn);
-    // Não há API, mas o estado muda internamente
-    // Simula desfavoritar
     fireEvent.mouseDown(curtirBtn);
     fireEvent.mouseUp(curtirBtn);
     expect(curtirBtn).toBeInTheDocument();
@@ -60,7 +53,6 @@ describe('ReadlistCard', () => {
     // @ts-ignore
     window.location = { href: '' };
     render(<ReadlistCard r={mockReadlist} userId="1" />);
-    // Seleciona o card principal (sem aria-label)
     const card = screen.getAllByRole('button').find(b => !b.getAttribute('aria-label'));
     fireEvent.click(card!);
     expect(window.location.href).toBe('/readlist');

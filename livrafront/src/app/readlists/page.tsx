@@ -39,29 +39,19 @@ export default function UserReadlistsPage() {
     }
   }, [pageUserId, loggedUserId]);
 
-  const { readlists, loading, error } = useReadlistsList(pageUserId);
-  const [modalOpen, setModalOpen] = useState(false);
-  const { handleCreateReadlist } = useCreateReadlist(loggedUserId);
-
   const isMyPage = loggedUserId === pageUserId;
   type TabType = 'minhas' | 'favoritas';
   const [activeTab, setActiveTab] = useState<TabType>('minhas');
-  const [favoritedReadlists, setFavoritedReadlists] = useState<typeof readlists>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const { handleCreateReadlist } = useCreateReadlist(loggedUserId);
 
-  useEffect(() => {
-    if (isMyPage && activeTab === 'favoritas') {
-      fetch(`/api/readlists/favorited/${loggedUserId}`)
-        .then(res => res.json())
-        .then(data => setFavoritedReadlists(data))
-        .catch(() => setFavoritedReadlists([]));
-    }
-  }, [isMyPage, activeTab, loggedUserId]);
+  // Usar hook com tipo correto para cada tab
+  const { readlists, loading, error } = useReadlistsList(pageUserId, isMyPage ? (activeTab === 'minhas' ? 'criadas' : 'favoritadas') : 'criadas');
 
+  // Se não for minha página, mostrar só públicas
   const filteredReadlists = isMyPage
-    ? activeTab === 'minhas'
-      ? readlists // todas criadas por mim (privadas e públicas)
-      : favoritedReadlists // públicas de outros usuários que o usuário favoritou
-    : readlists.filter(r => r.publica); // só públicas de outro usuário
+    ? readlists
+    : readlists.filter(r => r.publica);
 
   return (
     <div className="flex min-h-screen m-0 bg-[#f8fafc]">
