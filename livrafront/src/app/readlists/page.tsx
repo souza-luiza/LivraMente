@@ -86,7 +86,7 @@ export default function UserReadlistsPage() {
           <div className="flex items-center gap-6 mb-4">
             <Button
               type="button"
-              text={<span className="font-extrabold text-b1" data-testid="criar-readlist-btn">Criar Readlist</span>}
+              text={"Criar readlist"}
               icon={<PlusCheckboxIcon />}
               size="medium"
               colorScheme="light-green"
@@ -133,7 +133,7 @@ export default function UserReadlistsPage() {
         )}
         {/* Cards de readlists */}
         {filteredReadlists.length > 0 && (
-          <div className="flex flex-col gap-6 w-full mt-2">
+          <div className="flex flex-col gap-1 w-full mt-8">
             {filteredReadlists.map((r) => (
               <ReadlistCard key={r._id} r={{...r, favorito: activeTab === 'favoritas' ? true : r.favorito, nome: activeTab === 'favoritas' ? 'Favoritada' : r.nome }} userId={loggedUserId} />
             ))}

@@ -1,5 +1,7 @@
 import { Readlist } from '../types/readlist';
 import { useState } from 'react';
+import EditIcon from './icons/EditIcon';
+import Button from './button';
 
 export function ReadlistCard({ r, userId }: { r: Readlist, userId: string }) {
   const isMine = r.criador?._id === userId;
@@ -45,17 +47,19 @@ export function ReadlistCard({ r, userId }: { r: Readlist, userId: string }) {
     >
       {/* Editar para isMine, ícones para outros */}
       {isMine && (
-        <button
-          className="absolute left-6 top-6 px-3 py-1 text-b3 font-semibold bg-[var(--primary-300)] text-[var(--primary-700)] rounded shadow"
-          style={{ fontSize: '0.95rem', zIndex: 2 }}
-          aria-label="Editar"
-          onClick={e => {
-            e.stopPropagation();
-            window.location.href = `/readlist/editar/${r._id}`;
-          }}
-        >
-          Editar
-        </button>
+        <div style={{ position: 'absolute', left: 24, top: 24, zIndex: 2 }}>
+          <Button
+            text="Editar"
+            icon={<EditIcon />}
+            size="small"
+            colorScheme="light-green"
+            aria-label="Editar"
+            onClick={e => {
+              e.stopPropagation();
+              window.location.href = `/readlist/editar/${r._id}`;
+            }}
+          />
+        </div>
       )}
       {!isMine && (
         <div style={{ position: 'absolute', top: 24, right: 32, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -123,7 +127,7 @@ export function ReadlistCard({ r, userId }: { r: Readlist, userId: string }) {
             src={r.capa_url && r.capa_url.trim() !== '' ? r.capa_url : '/kemi-teste.jpg'}
             alt={r.criador?.username ?? 'desconhecido'}
             className="rounded-full object-cover"
-            style={{ width: 38, height: 38, minWidth: 38, marginLeft: 2 }}
+            style={{ width: 60, height: 60, minWidth: 38, marginLeft: 2 }}
           />
           <span className="text-b2 font-semibold" style={{ color: 'var(--secondary-800)' }}>{r.criador?.username ?? 'desconhecido'}</span>
         </div>
