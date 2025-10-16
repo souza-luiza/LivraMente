@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Sidebar from '@/components/sidebar';
-import { b } from 'framer-motion/client';
 
 export default function ReadlistPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isLiked, setIsLiked] = useState(false);
+  const [isShared, setIsShared] = useState(false);
+  const livrosPorPagina = 42;
 
   const readlist = {
     title: "Livros 2025",
@@ -14,7 +16,7 @@ export default function ReadlistPage() {
       username: "gatanoturna",
       avatar: "/kemi-teste.jpg"
     },
-    description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+    description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
     progress: {
       read: 20,
       total: 28,
@@ -25,7 +27,7 @@ export default function ReadlistPage() {
       { id: 1, title: "Jantar Secreto", year: "2016", pages: "416 pags", rating: 5, cover: "/kemi-teste.jpg" },
       { id: 2, title: "A Empregada", year: "2018", pages: "208 pags", rating: 5, cover: "/kemi-teste.jpg" },
       { id: 3, title: "Recursão", year: "2020", pages: "300 pags", rating: 5, cover: "/kemi-teste.jpg" },
-      ...Array(42).fill(null).map((_, i) => ({ 
+      ...Array(livrosPorPagina).fill(null).map((_, i) => ({
         id: i + 4, 
         title: `Livro ${i + 4}`, 
         year: "2023", 
@@ -44,7 +46,7 @@ export default function ReadlistPage() {
       </div>
 
       {/* Conteúdo Principal */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--large-padding)' }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--large-padding)', maxWidth: '1500px', paddingLeft: '200px'}}>
         {/* SEÇÃO 1: Barra de Pesquisa */}
         <div style={{ marginBottom: 'var(--large-padding)' }}>
           <div 
@@ -98,22 +100,38 @@ export default function ReadlistPage() {
                 transition: 'all 0.3s ease'
               }}
               aria-label="Curtir"
+              onClick={() => setIsLiked(!isLiked)}
               onMouseEnter={(e) => {
-                const svg = e.currentTarget.querySelector('svg');
-                if (svg) {
-                  svg.style.fill = 'var(--primary-400)';
-                  svg.style.color = 'var(--primary-600)';
+                if (!isLiked) {
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) {
+                    svg.style.fill = 'var(--primary-400)';
+                    svg.style.color = 'var(--primary-600)';
+                  }
                 }
               }}
               onMouseLeave={(e) => {
-                const svg = e.currentTarget.querySelector('svg');
-                if (svg) {
-                  svg.style.fill = 'none';
-                  svg.style.color = 'var(--primary-600)';
+                if (!isLiked) {
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) {
+                    svg.style.fill = 'none';
+                    svg.style.color = 'var(--primary-600)';
+                  }
                 }
               }}
             >
-              <svg className="icon-large" style={{ height: '50px', width: '50px', color: 'var(--primary-600)', transition: 'all 0.3s ease' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg 
+                className="icon-large" 
+                style={{ 
+                  height: '50px', 
+                  width: '50px', 
+                  color: 'var(--primary-600)', 
+                  fill: isLiked ? 'var(--primary-600)' : 'none',
+                  transition: 'all 0.3s ease' 
+                }} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </button>
@@ -125,22 +143,38 @@ export default function ReadlistPage() {
                 transition: 'all 0.3s ease'
               }}
               aria-label="Compartilhar"
+              onClick={() => setIsShared(!isShared)}
               onMouseEnter={(e) => {
-                const svg = e.currentTarget.querySelector('svg');
-                if (svg) {
-                  svg.style.fill = 'var(--primary-400)';
-                  svg.style.color = 'var(--primary-600)';
+                if (!isShared) {
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) {
+                    svg.style.fill = 'var(--primary-400)';
+                    svg.style.color = 'var(--primary-600)';
+                  }
                 }
               }}
               onMouseLeave={(e) => {
-                const svg = e.currentTarget.querySelector('svg');
-                if (svg) {
-                  svg.style.fill = 'none';
-                  svg.style.color = 'var(--primary-600)';
+                if (!isShared) {
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) {
+                    svg.style.fill = 'none';
+                    svg.style.color = 'var(--primary-600)';
+                  }
                 }
               }}
             >
-              <svg className="icon-large" style={{ height: '50px', width: '50px', color: 'var(--primary-600)', transition: 'all 0.3s ease' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg 
+                className="icon-large" 
+                style={{ 
+                  height: '50px', 
+                  width: '50px', 
+                  color: 'var(--primary-600)', 
+                  fill: isShared ? 'var(--primary-600)' : 'none',
+                  transition: 'all 0.3s ease' 
+                }} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
             </button>
@@ -201,13 +235,13 @@ export default function ReadlistPage() {
 
         {/* SEÇÃO 3: Container agrupado */}
         <div className="flex gap-6" style={{ alignItems: 'flex-start' }}>
-          {/* Container principal com margin-right */}
+          {/* Container principal */}
           <div 
             className="light-neutral flex-1"
             style={{ 
               borderRadius: 'var(--large-border-radius)',
-              marginRight: '350px',
-              padding: '0px'
+              padding: '0px',
+              position: 'relative'
             }}
           >
             {/* Descrição */}
@@ -215,7 +249,8 @@ export default function ReadlistPage() {
               style={{ 
                 marginBottom: '0px',
                 paddingBottom: 'var(--large-padding)',
-                borderBottom: '1px solid var(--secondary-600)'
+                borderBottom: '1px solid var(--secondary-600)',
+                maxWidth: '946px'
               }}
             >
               <p className="text-b2" style={{ color: 'var(--secondary-800)' }}>
@@ -223,11 +258,69 @@ export default function ReadlistPage() {
               </p>
             </div>
 
+            {/* Indicador de Progresso - Position Absolute */}
+            <div 
+              className="light-brown"
+              style={{ 
+                backgroundColor: 'var(--secondary-200)',
+                borderRadius: 'var(--large-border-radius)',
+                padding: 'var(--medium-padding)',
+                width: '300px',
+                position: 'absolute',
+                top: '0px',
+                right: '0px'
+              }}
+            >
+              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--extra-small-padding)' }}>
+                <div>
+                  <p className="text-b1" style={{ 
+                    color: 'var(--secondary-800)',
+                    marginBottom: '2px'
+                  }}>
+                    Você já leu
+                  </p>
+                  <p className="text-b1" style={{ 
+                    color: 'var(--secondary-800)'
+                  }}>
+                    {readlist.progress.read} de {readlist.progress.total}
+                  </p>
+                </div>
+                <p className="text-h3 body-semibold" style={{ 
+                  color: 'var(--secondary-800)'
+                }}>
+                  {readlist.progress.percentage}%
+                </p>
+              </div>
+
+              {/* Barra de Progresso */}
+              <div 
+                style={{ 
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: 'var(--secondary-100)',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  marginTop: 'var(--extra-small-padding)'
+                }}
+              >
+                <div 
+                  style={{ 
+                    width: `${readlist.progress.percentage}%`,
+                    height: '100%',
+                    backgroundColor: 'var(--secondary-400)',
+                    borderRadius: '4px',
+                    transition: 'width 0.3s ease-in-out'
+                  }}
+                />
+              </div>
+            </div>
+
           {/* Controles de Visualização */}
           <div className="flex justify-end" style={{ 
             gap: 'var(--extra-small-padding)',
             marginBottom: 'var(--large-padding)',
-            marginTop: 'var(--large-padding)'
+            marginTop: 'var(--large-padding)',
+            width: '946px'
           }}>
             <button 
               className="textless-medium"
@@ -260,7 +353,7 @@ export default function ReadlistPage() {
           {/* Visualização Condicional */}
           {viewMode === 'grid' ? (
             /* Grid de Livros */
-            <div className="grid grid-cols-7" style={{ gap: 'var(--small-padding)' }}>
+            <div className="grid grid-cols-6" style={{ gap: 'var(--small-padding)', maxWidth: '946px' }}>
               {readlist.books.map((book, index) => (
                 <div 
                   key={book.id}
@@ -369,62 +462,6 @@ export default function ReadlistPage() {
           </div>
           {/* Fim do container principal */}
 
-          {/* Indicador de Progresso */}
-          <div 
-            className="light-brown"
-            style={{ 
-              backgroundColor: 'var(--secondary-200)',
-              borderRadius: 'var(--large-border-radius)',
-              padding: 'var(--medium-padding)',
-              width: '300px',
-              position: 'absolute',
-              right: 'var(--large-padding)',
-              top: '442px'
-            }}
-          >
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--extra-small-padding)' }}>
-              <div>
-                <p className="text-b1" style={{ 
-                  color: 'var(--secondary-800)',
-                  marginBottom: '2px'
-                }}>
-                  Você já leu
-                </p>
-                <p className="text-b1" style={{ 
-                  color: 'var(--secondary-800)'
-                }}>
-                  {readlist.progress.read} de {readlist.progress.total}
-                </p>
-              </div>
-              <p className="text-h3 body-semibold" style={{ 
-                color: 'var(--secondary-800)'
-              }}>
-                {readlist.progress.percentage}%
-              </p>
-            </div>
-
-            {/* Barra de Progresso */}
-            <div 
-              style={{ 
-                width: '100%',
-                height: '8px',
-                backgroundColor: 'var(--secondary-100)',
-                borderRadius: '4px',
-                overflow: 'hidden',
-                marginTop: 'var(--extra-small-padding)'
-              }}
-            >
-              <div 
-                style={{ 
-                  width: `${readlist.progress.percentage}%`,
-                  height: '100%',
-                  backgroundColor: 'var(--secondary-400)',
-                  borderRadius: '4px',
-                  transition: 'width 0.3s ease-in-out'
-                }}
-              />
-            </div>
-          </div>
         </div>
         {/* Fim do container agrupado */}
 
