@@ -73,15 +73,13 @@ export default function ReadlistPage() {
         </div>
 
         {/* SEÇÃO 2: Header da Readlist */}
-        <div 
+        <div
           className="light-green"
-          style={{ 
-            backgroundColor: 'var(--primary-200)',  
+          style={{
+            backgroundColor: 'var(--primary-200)',
             height: '320px',
-            paddingTop: 'calc(var(--large-padding) + 60px)',  
-            paddingBottom: 'calc(var(--large-padding) + 30px)',
+            padding: 'calc(var(--large-padding) + 60px) var(--large-padding) calc(var(--large-padding) + 30px) var(--large-padding)',
             borderRadius: 'var(--large-border-radius)',
-            padding: 'var(--large-padding)',
             marginBottom: 'var(--large-padding)',
             position: 'relative'
           }}
@@ -386,7 +384,7 @@ export default function ReadlistPage() {
             </div>
           ) : (
             /* List View */
-            <div className="flex flex-col" style={{ gap: 'var(--medium-padding)' }}>
+            <div className="flex flex-col" style={{ gap: 'var(--medium-padding)', maxWidth: '946px' }}>
               {readlist.books.map((book) => (
                 <div 
                   key={book.id}
