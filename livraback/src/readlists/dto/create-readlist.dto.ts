@@ -3,7 +3,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl } from "class-valida
 
 export class CreateReadlistDto {
     @ApiProperty({ description: 'Nome da readlist'} )
-    @IsNotEmpty() // nao pode estar vazio o nome?
+    @IsNotEmpty()
     @IsString()
     nome: string;
 
