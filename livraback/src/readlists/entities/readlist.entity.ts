@@ -27,6 +27,10 @@ export class Readlist {
   // Referência aos livros na readlist
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Livro' }], default: [] })
   livros: Types.ObjectId[];
+
+  // Array de userIds que curtiram a readlist
+  @Prop({ type: [String], default: [] })
+  curtidaPor?: string[];
 }
 
 export const ReadlistSchema = SchemaFactory.createForClass(Readlist);
