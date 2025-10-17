@@ -16,6 +16,8 @@ describe('ReadlistsController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    addLivro: jest.fn(),
+    removeLivro: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -38,7 +40,7 @@ describe('ReadlistsController', () => {
   });
 
   describe('create', () => {
-    it('should call service.create with correct parameters', async () => {
+    it('should call service.create', async () => {
       const dto: CreateReadlistDto = { nome: 'Minha Readlist' };
       const result = { id: '1', ...dto };
       mockReadlistsService.create.mockResolvedValue(result);
@@ -61,7 +63,7 @@ describe('ReadlistsController', () => {
   });
 
   describe('findOne', () => {
-    it('should return a single readlist by id', async () => {
+    it('should return a single readlist', async () => {
       const result = { id: '1', nome: 'RL1' };
       mockReadlistsService.findOne.mockResolvedValue(result);
 
@@ -90,6 +92,28 @@ describe('ReadlistsController', () => {
 
       const response = await controller.remove(mockUser, '1');
       expect(service.remove).toHaveBeenCalledWith(mockUser.userId, '1');
+      expect(response).toEqual(result);
+    });
+  });
+
+  describe('addLivro', () => {
+    it('should add a livro to readlist', async () => {
+      const result = { id: '1', livros: ['livro123'] };
+      mockReadlistsService.addLivro.mockResolvedValue(result);
+
+      const response = await controller.addLivro(mockUser, '1', 'livro123');
+      expect(service.addLivro).toHaveBeenCalledWith(mockUser.userId, '1', 'livro123');
+      expect(response).toEqual(result);
+    });
+  });
+
+  describe('removeLivro', () => {
+    it('should remove a livro from readlist', async () => {
+      const result = { id: '1', livros: [] };
+      mockReadlistsService.removeLivro.mockResolvedValue(result);
+
+      const response = await controller.removeLivro(mockUser, '1', 'livro123');
+      expect(service.removeLivro).toHaveBeenCalledWith(mockUser.userId, '1', 'livro123');
       expect(response).toEqual(result);
     });
   });

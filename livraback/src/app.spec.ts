@@ -13,7 +13,7 @@ import { ReadlistsModule } from './readlists/readlists.module';
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
 
-  // Mock ConfigService (simulando variáveis do .env)
+  // Mock ConfigService
   const mockConfigService = {
     getOrThrow: (key: string) => {
       const testEnv = {
@@ -36,19 +36,33 @@ describe('App Integration with Mocks', () => {
   const mockUserModel = {
     find: jest.fn().mockResolvedValue([]),
     findOne: jest.fn().mockResolvedValue(null),
-    create: jest.fn().mockImplementation((dto) => Promise.resolve({ _id: 'mockId', ...dto })),
+    create: jest.fn().mockImplementation((dto) => Promise.resolve({ _id: 'mockUserId', ...dto })),
+    findById: jest.fn().mockResolvedValue(null),
+    findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: 'mockUserId', readlists: ['readlist1'] }),
   };
 
-  // Mock do model Readlist
+  // ✅ Mock do model Readlist
   const mockReadlistModel = {
-    find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
-    findOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
-    findOneAndUpdate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }),
-    deleteOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue({ deletedCount: 1 }) }),
+    find: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    }),
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockReadlistId', nome: 'Atualizado' }),
+    }),
+    deleteOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+    }),
+    create: jest.fn().mockResolvedValue({ _id: 'mockReadlistId', nome: 'Nova Readlist' }),
+    prototype: {
+      save: jest.fn().mockResolvedValue({ _id: 'mockReadlistId', nome: 'Nova Readlist' }),
+    },
   };
 
   beforeAll(async () => {
-    jest.setTimeout(10000);
+    jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -85,7 +99,8 @@ describe('App Integration with Mocks', () => {
     await app.close();
   });
 
-  it('should respond to GET /', () => {
-    return request(app.getHttpServer()).get('/').expect(200);
+  it('should respond to GET /', async () => {
+    const response = await request(app.getHttpServer()).get('/');
+    expect(response.status).toBe(200);
   });
 });
