@@ -3,9 +3,11 @@ import { ReadlistsController } from './readlists.controller';
 import { ReadlistsService } from './readlists.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Readlist, ReadlistSchema } from './entities/readlist.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Readlist.name, schema: ReadlistSchema }])],
+  imports: [UsersModule,
+    MongooseModule.forFeature([{ name: Readlist.name, schema: ReadlistSchema }])],
   controllers: [ReadlistsController],
   providers: [ReadlistsService]
 })
