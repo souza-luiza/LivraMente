@@ -25,6 +25,7 @@ async function bootstrap() {
     .setTitle('API LivraMente')
     .setDescription('Documentação - API LivraMente')
     .setVersion('1.0')
+    .addBearerAuth() // adiciona suporte ao token JWT
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

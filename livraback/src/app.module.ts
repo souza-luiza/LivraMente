@@ -15,6 +15,7 @@ import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { Comunidade, ComunidadeSchema } from './schemas/comunidade.schemas';
+import { ReadlistsModule } from './readlists/readlists.module';
 
 @Module({
   imports: [
@@ -29,7 +30,6 @@ import { Comunidade, ComunidadeSchema } from './schemas/comunidade.schemas';
     MongooseModule.forFeature([
       { name: Livro.name, schema: LivroSchema },
       { name: Autor.name, schema: AutorSchema },
-      { name: Readlist.name, schema: ReadlistSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comentario.name, schema: ComentarioSchema },
       { name: Quiz.name, schema: QuizSchema },
@@ -38,6 +38,7 @@ import { Comunidade, ComunidadeSchema } from './schemas/comunidade.schemas';
     ]),
     UsersModule,
     AuthModule,
+    ReadlistsModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],
