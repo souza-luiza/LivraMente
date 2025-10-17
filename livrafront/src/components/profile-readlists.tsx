@@ -7,11 +7,19 @@ import NotificationsIcon from "./icons/NotificationsIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
 import Link from "next/link";
+import Readlist from "./readlist";
 
 export default function ProfileReadlists() {
     return (
-        <div className="w-full ">
-            
+        <div className="w-full grid grid-cols-4 gap-1">
+            <Readlist />
+            <Readlist />
+            <Readlist />
+            <Readlist />
+            <Readlist />
+            <Readlist />
+            <Readlist />
+            <Readlist />
         </div>
     )
 }
