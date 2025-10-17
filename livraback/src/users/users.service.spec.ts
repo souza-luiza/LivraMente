@@ -77,13 +77,27 @@ describe('UsersService', () => {
 
   it('should return a user by id', async () => {
     mockUserModel.findById.mockReturnValue({
-      exec: jest.fn().mockResolvedValue(mockUser),
+      select: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockUser),
+      }),
     });
 
     const result = await service.findOne('user-id');
 
     expect(mockUserModel.findById).toHaveBeenCalledWith('user-id');
     expect(result).toEqual(mockUser);
+  });
+
+  it('should throw NotFoundException if no user is found by id', async () => {
+    mockUserModel.findById.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null), // usuário não encontrado
+      }),
+    });
+
+    await expect(service.findOne('no-existing-user')).rejects.toThrow('Usuário não encontrado');
+
+    expect(mockUserModel.findById).toHaveBeenCalledWith('no-existing-user');
   });
 
   it('should return a user by email', async () => {

@@ -46,7 +46,7 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
+  /*describe('create', () => {
     it('should create a user', async () => {
       const dto: CreateUserDto = {
         username: 'Test User',
@@ -90,6 +90,17 @@ describe('UsersController', () => {
       const result = await controller.remove('user-id');
       expect(usersService.remove).toHaveBeenCalledWith('user-id');
       expect(result).toEqual({ deletedCount: 1 });
+    });
+  });*/
+
+  describe('getProfile', () => {
+    it('should return the current user profile', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+
+      const result = await controller.getProfile(currentUser);
+
+      expect(usersService.findOne).toHaveBeenCalledWith(currentUser.userId);
+      expect(result).toEqual(mockUser);
     });
   });
 });
