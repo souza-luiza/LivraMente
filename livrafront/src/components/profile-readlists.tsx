@@ -11,7 +11,7 @@ import Readlist from "./readlist";
 
 export default function ProfileReadlists() {
     return (
-        <div className="w-full grid grid-cols-4 gap-1">
+        <div className="w-full grid grid-cols-4 gap-4 relative">
             <Readlist />
             <Readlist />
             <Readlist />

@@ -24,7 +24,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
     }
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">
-            <Sidebar />
+            <Sidebar className="z-50" />
             <main className="flex-1 flex flex-col items-center p-4">
                 <div className="w-48 h-48 mb-4">
                     <ProfileIcon size={190} className="text-gray-400" />

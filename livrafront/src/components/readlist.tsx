@@ -3,11 +3,18 @@ import Link from "next/link";
 
 export default function Readlist({ id, title, author }: { id?: string; title?: string; author?: string }) {
     return(
-        <Link href={`/readlist/${id}`} className="w-fit items-center flex flex-col">
-            <Image src="Readlist.svg" alt="Capa da Readlist {title}" className="flex flex-col w-full p-2" width={160} height={160} />
-            <div className="justify-center items-center text-center pt-2">
-                <h4 className="text-b2 font-bold">{title || "Título da Readlist"}</h4>
-                <p className="text-b3 font-bold">{author || "Autor da Readlist"}</p>
+        <Link href={`/readlist/${id}`} className="w-full items-center flex flex-col pb-4">
+            <div className="relative w-full aspect-[4/4]">
+                <Image 
+                    src="/Readlist.svg" 
+                    alt={`Capa da Readlist ${title}`}
+                    fill
+                    className="object-cover rounded-lg"
+                />
+            </div>
+            <div className="justify-center items-center text-center pt-2 w-full">
+                <h4 className="text-h5 font-bold truncate">{title || "Título da Readlist"}</h4>
+                <p className="text-b2 font-semibold truncate">{author || "@Autor da Readlist"}</p>
             </div>
         </Link>
     )
