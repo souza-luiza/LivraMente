@@ -7,8 +7,7 @@ import ProfileIcon from "@/components/icons/ProfileIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
-import Readlist from "@/components/readlist";
-import Post from "@/components/post";
+import ProfilePosts from "@/components/profile-posts";
 
 interface UserProfilePageProps {
     params: Promise<{username: string}>;
@@ -16,7 +15,7 @@ interface UserProfilePageProps {
 
 export default async function UserProfilePage({ params }: UserProfilePageProps){
     const { username } = await params;
-    const pronouns = "ele/dele"; // Exemplo estático, substituir pela lógica real
+    const pronouns = "ele/dele"; // Exemplo estático, substituir pela lógica real quando implementar a API
     
     // Implementar a lógica para confirmar se usuário existe no banco de dados
     // Se não existir, chamar notFound()
@@ -35,20 +34,18 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
                 <Link href={`/edit-profile/${username}`}>
                     <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
                 </Link>
-                <div className="w-full h-fit flex justify-center items-center mt-8 gap-4">
-                    <div className="w-1/2 h-fit bg-white rounded-lg p-4 my-4">
+                <div className="w-full flex justify-center items-stretch mt-8 gap-4">
+                    <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
                         <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/readlists`}>Readlists<ArrowRightIcon width={24} height={24}/></Link>
-                        <ProfileReadlists />
+                        <div className="flex-1 overflow-y-auto">
+                            <ProfileReadlists />
+                        </div>
                     </div>
-                    <div className="w-1/2 my-4">
+                    <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
                         <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/posts`}>Postagens<ArrowRightIcon width={24} height={24}/></Link>
-                        <Post 
-                            id="1" 
-                            community="Jogos Vorazes" 
-                            author={username} 
-                            content={`Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. \n\nLorem Ipsum is simply dummy text of the printing and typesetting industry.`} 
-                            commentsCount={5} 
-                            likesCount={10} />
+                        <div className="flex-1 overflow-y-auto">
+                            <ProfilePosts username={username} />
+                        </div>
                     </div>
                 </div>
             </main>
