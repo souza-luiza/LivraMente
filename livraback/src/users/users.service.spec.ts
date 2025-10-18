@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -16,7 +17,7 @@ describe('UsersService', () => {
   const mockSave = jest.fn().mockResolvedValue(mockUser);
 
   const mockUserModel = {
-    // Métodos estáticos
+    // Métodos estáticos simulados do mongoose
     find: jest.fn(),
     findById: jest.fn(),
     findOne: jest.fn(),
@@ -91,13 +92,11 @@ describe('UsersService', () => {
   it('should throw NotFoundException if no user is found by id', async () => {
     mockUserModel.findById.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null), // usuário não encontrado
+        exec: jest.fn().mockResolvedValue(null),
       }),
     });
 
-    await expect(service.findOne('no-existing-user')).rejects.toThrow('Usuário não encontrado');
-
-    expect(mockUserModel.findById).toHaveBeenCalledWith('no-existing-user');
+    await expect(service.findOne('no-existing-user')).rejects.toThrow(NotFoundException);
   });
 
   it('should return a user by email', async () => {
@@ -122,21 +121,117 @@ describe('UsersService', () => {
     expect(result).toEqual(mockUser);
   });
 
-  it('should update a user and return the updated user', async () => {
-    const updateUserDto = { username: 'Updated Name' };
+  describe('update', () => {
+    it('should update a user and return the updated user', async () => {
+      const updateUserDto = { username: 'Updated Name' };
 
-    mockUserModel.findByIdAndUpdate.mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
+      // Simula que não há usuário com esse username (evita conflito)
+      mockUserModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      mockUserModel.findByIdAndUpdate.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
+        }),
+      });
+
+      const result = await service.update('user-id', updateUserDto);
+
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        { $set: updateUserDto },
+        { new: true, runValidators: true },
+      );
+      expect(result).toEqual({ ...mockUser, ...updateUserDto });
     });
 
-    const result = await service.update('user-id', updateUserDto);
+    it('should throw ConflictException if email is in use by another user', async () => {
+      const updateUserDto = { email: 'test@test.com' };
 
-    expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
-      { _id: 'user-id' },
-      { $set: updateUserDto },
-      { new: true, runValidators: true },
-    );
-    expect(result).toEqual({ ...mockUser, ...updateUserDto });
+      const otherUser = {
+        ...mockUser,
+        _id: {
+          toString: () => 'different-id',
+        },
+      } as any;
+
+      jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(otherUser);
+
+      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw BadRequestException if email is in use by the same user', async () => {
+      const updateUserDto = { email: 'test@test.com' };
+
+      const sameUser = {
+        ...mockUser,
+        _id: {
+          toString: () => 'user-id',
+        },
+      } as any;
+
+      jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(sameUser);
+
+      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ConflictException if username is in use by another user', async () => {
+      const updateUserDto = { username: 'Test User' };
+
+      const otherUser = {
+        ...mockUser,
+        _id: {
+          toString: () => 'different-id',
+        },
+      } as any;
+
+      jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(otherUser);
+
+      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw BadRequestException if username is in use by the same user', async () => {
+      const updateUserDto = { username: 'Test User' };
+
+      const sameUser = {
+        ...mockUser,
+        _id: {
+          toString: () => 'user-id',
+        },
+      } as any;
+
+      jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(sameUser);
+
+      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw NotFoundException if user is not found during update', async () => {
+      const updateUserDto = { username: 'anyusername' };
+
+      // Simula que não existe usuário com o username novo
+      mockUserModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      // Simula que findByIdAndUpdate não encontrou o usuário para atualizar
+      mockUserModel.findByIdAndUpdate.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
+      });
+
+      await expect(service.update('no-existing-id', updateUserDto)).rejects.toThrow(NotFoundException);
+
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        { _id: 'no-existing-id' },
+        { $set: updateUserDto },
+        { new: true, runValidators: true },
+      );
+    });
+
   });
 
   it('should delete a user', async () => {

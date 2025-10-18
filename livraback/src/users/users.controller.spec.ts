@@ -19,7 +19,7 @@ describe('UsersController', () => {
     create: jest.fn().mockResolvedValue(mockUser),
     findAll: jest.fn().mockResolvedValue([mockUser]),
     findOne: jest.fn().mockResolvedValue(mockUser),
-    update: jest.fn().mockResolvedValue({ ...mockUser, name: 'Updated' }),
+    update: jest.fn().mockResolvedValue({ ...mockUser, username: 'Updated' }),
     remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
   };
 
@@ -101,6 +101,18 @@ describe('UsersController', () => {
 
       expect(usersService.findOne).toHaveBeenCalledWith(currentUser.userId);
       expect(result).toEqual(mockUser);
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('should update the current user profile', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+      const updateUserDto: UpdateUserDto = { username: 'Updated' };
+
+      const result = await controller.updateProfile(currentUser, updateUserDto);
+
+      expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto);
+      expect(result).toEqual({ ...mockUser, username: 'Updated' });
     });
   });
 });
