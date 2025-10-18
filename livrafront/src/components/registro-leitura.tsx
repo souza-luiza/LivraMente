@@ -6,7 +6,6 @@ import CalendarIcon from './icons/CalendarIcon'
 import Input from './general-input'
 import Button from './button'
 import AddIcon from './icons/AddIcon'
-import { s } from 'framer-motion/client'
 import LogoIcon from './icons/LogoIcon'
 import RemoveIcon from './icons/RemoveIcon'
 import ErrorIcon from './icons/ErrorIcon'
@@ -84,8 +83,8 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
             // TODO: INTEGRAÇÃO COM A API
             // let xp = [REQUISIÇÃO PARA O BACK] --> cálculo do xp vai ser feito no back
             // mandar 0/1 para indicar páginas/minutos + quantidade de páginas/minutos
+            // setXp(xp)
 
-            setXp(xp)
             setStatus('success')
 
         } catch (error) {
@@ -96,8 +95,11 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     }
 
     const handleStepChange = () => {
-        formData.minutesRead = ''
-        formData.pagesRead = ''
+        setFormData(prev => ({
+            ...prev,
+            minutesRead: '',
+            pagesRead: ''
+        }))
         setStep(prev => (prev === 1 ? 2 : 1))
     }
 
@@ -105,7 +107,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
         <AnimatePresence>
             {show && status === 'idle' &&
             <motion.div 
-                key="registro-leitura"
+                key="registro-leitura-idle"
                 className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -244,7 +246,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
             {show && status === 'success' &&
             <motion.div 
-                key="registro-leitura"
+                key="registro-leitura-success"
                 className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -280,7 +282,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
             {show && status === 'error' &&
             <motion.div 
-                key="registro-leitura"
+                key="registro-leitura-error"
                 className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
