@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Sidebar from '@/components/sidebar';
+import SearchIcon from '@/components/icons/SearchIcon';
+import LikeIcon from '@/components/icons/LikeIcon';
+import ShareIcon from '@/components/icons/ShareIcon';
+import ListIcon from '@/components/icons/ListIcon';
+import GridIcon from '@/components/icons/GridIcon';
+import StarIcon from '@/components/icons/StarIcon';
 
 export default function ReadlistPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -41,7 +47,7 @@ export default function ReadlistPage() {
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Sidebar Fixa */}
-      <div className="sticky top-0 self-start" style={{ height: '100vh' }}>
+      <div className="sticky top-0 self-start" style={{ height: '100%' }}>
         <Sidebar />
       </div>
 
@@ -57,9 +63,7 @@ export default function ReadlistPage() {
               padding: '12px var(--large-padding)'
             }}
           >
-            <svg className="w-5 h-5" style={{ color: 'var(--primary-700)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <SearchIcon size={20} style={{ color: 'var(--primary-700)' }} />
             <input 
               type="text" 
               placeholder="Pesquisar em livros lidos"
@@ -99,39 +103,26 @@ export default function ReadlistPage() {
               }}
               aria-label="Curtir"
               onClick={() => setIsLiked(!isLiked)}
-              onMouseEnter={(e) => {
-                if (!isLiked) {
-                  const svg = e.currentTarget.querySelector('svg');
-                  if (svg) {
-                    svg.style.fill = 'var(--primary-400)';
-                    svg.style.color = 'var(--primary-600)';
-                  }
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isLiked) {
-                  const svg = e.currentTarget.querySelector('svg');
-                  if (svg) {
-                    svg.style.fill = 'none';
-                    svg.style.color = 'var(--primary-600)';
-                  }
-                }
-              }}
             >
-              <svg 
-                className="icon-large" 
+              <LikeIcon 
+                size={50}
                 style={{ 
-                  height: '50px', 
-                  width: '50px', 
                   color: 'var(--primary-600)', 
                   fill: isLiked ? 'var(--primary-600)' : 'none',
-                  transition: 'all 0.3s ease' 
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
                 }} 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
+                onMouseEnter={(e) => {
+                  if (!isLiked) {
+                    e.currentTarget.style.fill = 'var(--primary-400)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isLiked) {
+                    e.currentTarget.style.fill = 'none';
+                  }
+                }}
+              />
             </button>
             <button 
               className="textless-medium"
@@ -142,39 +133,24 @@ export default function ReadlistPage() {
               }}
               aria-label="Compartilhar"
               onClick={() => setIsShared(!isShared)}
-              onMouseEnter={(e) => {
-                if (!isShared) {
-                  const svg = e.currentTarget.querySelector('svg');
-                  if (svg) {
-                    svg.style.fill = 'var(--primary-400)';
-                    svg.style.color = 'var(--primary-600)';
-                  }
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isShared) {
-                  const svg = e.currentTarget.querySelector('svg');
-                  if (svg) {
-                    svg.style.fill = 'none';
-                    svg.style.color = 'var(--primary-600)';
-                  }
-                }
-              }}
             >
-              <svg 
-                className="icon-large" 
+              <ShareIcon 
+                size={50}
                 style={{ 
-                  height: '50px', 
-                  width: '50px', 
-                  color: 'var(--primary-600)', 
-                  fill: isShared ? 'var(--primary-600)' : 'none',
-                  transition: 'all 0.3s ease' 
-                }} 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
+                  color: isShared ? 'var(--primary-600)' : 'var(--primary-600)', 
+                  opacity: isShared ? 1 : 0.7,
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isShared) {
+                    e.currentTarget.style.opacity = '0.7';
+                  }
+                }}
+              />
             </button>
           </div>
 
@@ -329,9 +305,7 @@ export default function ReadlistPage() {
               }}
               aria-label="Visualização em lista"
             >
-              <svg className="icon-medium" style={{ color: 'var(--secondary-700)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <ListIcon size={24} style={{ color: 'var(--secondary-700)' }} />
             </button>
             <button 
               className="textless-medium"
@@ -342,9 +316,7 @@ export default function ReadlistPage() {
               }}
               aria-label="Visualização em grade"
             >
-              <svg className="icon-medium" style={{ color: 'var(--secondary-700)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
+              <GridIcon size={24} style={{ color: 'var(--secondary-700)' }} />
             </button>
           </div>
 
@@ -438,18 +410,14 @@ export default function ReadlistPage() {
                     {/* Estrelas de Avaliação */}
                     <div className="flex gap-1">
                       {Array(5).fill(null).map((_, i) => (
-                        <svg 
+                        <StarIcon 
                           key={i}
+                          size={24}
                           style={{ 
-                            width: '24px', 
-                            height: '24px',
                             fill: i < book.rating ? 'var(--warning-500)' : 'none',
-                            stroke: 'var(--warning-500)'
+                            color: 'var(--warning-500)'
                           }}
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
+                        />
                       ))}
                     </div>
                   </div>
