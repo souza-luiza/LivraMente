@@ -21,7 +21,7 @@ export default function Post({ id, community, author, content, commentsCount, li
             </div>
             <div className="mb-3 flex-1 overflow-hidden">
                 <p className="text-b2 whitespace-pre-line line-clamp-4 [&::-webkit-line-clamp]:content-['']">{content}</p>
-                <span className="text-b2 font-semibold text-green-600 hover:underline">Ver mais...</span>
+                <span className="text-b2 font-semibold hover:underline text-[var(--primary-700)]">Ver mais...</span>
             </div>
             <div className="flex gap-2">
                 <Button text={String(commentsCount || 0)} colorScheme="dark-green" size="small" icon={<CommentIcon />} />
