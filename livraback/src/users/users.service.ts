@@ -95,11 +95,11 @@ export class UsersService {
 
     let ganhoXP: number = 0; // XP ganho por leitura
 
-    if(opcao == 0) { // opcao de paginas lidas
+    if(opcao === 0) { // opcao de paginas lidas
       ganhoXP = qtd; // +1 XP por pagina
     }
-    else if (opcao == 1) { // opcao de minutos lidos
-      ganhoXP = qtd/2; // +1 XP por 2 minutos
+    else if (opcao === 1) { // opcao de minutos lidos
+      ganhoXP = Math.floor(qtd/2); // +1 XP por 2 minutos, arredondado para baixo
     }
 
     if(ganhoXP > 60) { // limite de XP diario
@@ -109,7 +109,7 @@ export class UsersService {
     user.gamificação.XP += ganhoXP;
 
     // Lógica para subir de nível
-    while (user.gamificação.XP >= user.gamificação.XP_proximo_nivel){ // se tem XP necessario para subir de nivel (while para multiplos level-ups)
+    while (user.gamificação.XP >= user.gamificação.XP_proximo_nivel) { // se tem XP necessario para subir de nivel (while para multiplos level-ups)
       user.gamificação.nivel += 1;
       user.gamificação.XP -= user.gamificação.XP_proximo_nivel;
       if (user.gamificação.nivel < 5)
