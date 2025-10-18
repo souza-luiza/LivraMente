@@ -23,6 +23,7 @@ describe('UsersService', () => {
     findOne: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     deleteOne: jest.fn(),
+    updateOne: jest.fn()
   };
 
   beforeEach(async () => {
@@ -232,6 +233,232 @@ describe('UsersService', () => {
       );
     });
 
+  });
+
+  describe('registroLeitura', () => {
+    const mockGamificacao = {
+      nivel: 1,
+      XP: 0,
+      XP_proximo_nivel: 100,
+    };
+
+    const baseUserWithGamification = {
+      ...mockUser,
+      gamificação: { ...mockGamificacao },
+    };
+
+    it('deve ganhar XP por páginas lidas, limitado a 60', async () => {
+      const userMock = {
+        ...baseUserWithGamification,
+        gamificação: { ...mockGamificacao },
+      };
+
+      // Mock do findOne usado dentro de registroLeitura
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 100); // 100 páginas -> 100 XP, mas limitado a 60
+
+      expect(result).toEqual({ ganhoXP: 60 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        { $set: { gamificação: expect.any(Object) } },
+      );
+    });
+
+    it('deve ganhar XP por minutos lidos, limitado a 60', async () => {
+      const userMock = {
+        ...baseUserWithGamification,
+        gamificação: { ...mockGamificacao },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 1, 200); // 200 minutos -> 100 XP -> limitado a 60
+
+      expect(result).toEqual({ ganhoXP: 60 });
+    });
+
+    it('deve subir de nível corretamente com XP suficiente', async () => {
+      const userMock = {
+        ...baseUserWithGamification,
+        gamificação: {
+          nivel: 1,
+          XP: 90,
+          XP_proximo_nivel: 100,
+        },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 20); // +20 XP => total 110 => sobe 1 nível
+
+      expect(result).toEqual({ ganhoXP: 20 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 2,
+              XP: 10, // 110 - 100
+              XP_proximo_nivel: 200, // nível < 5 => +100
+            },
+          },
+        },
+      );
+    });
+
+    it('deve inicializar gamificação se não existir', async () => {
+      const userMock = {
+        ...mockUser,
+        gamificação: undefined,
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 10); // +10 XP
+
+      expect(result).toEqual({ ganhoXP: 10 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 1,
+              XP: 10,
+              XP_proximo_nivel: 100,
+            },
+          },
+        },
+      );
+    });
+
+    it('deve subir múltiplos níveis se XP for suficiente', async () => {
+      const userMock = {
+        ...mockUser,
+        gamificação: {
+          nivel: 1,
+          XP: 95,
+          XP_proximo_nivel: 100,
+        },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 300); // 300 XP => limitado a 60 => total 155
+
+      // Sobe para nível 2 (100), sobra 55 XP
+      // XP_proximo_nivel vira 200
+
+      expect(result).toEqual({ ganhoXP: 60 });
+
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 2,
+              XP: 55,
+              XP_proximo_nivel: 200,
+            },
+          },
+        },
+      );
+    });
+
+    it('deve aumentar XP_proximo_nivel em 150 se nível entre 5 e 8', async () => {
+      const userMock = {
+        ...mockUser,
+        gamificação: {
+          nivel: 5,
+          XP: 490,
+          XP_proximo_nivel: 550,
+        },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 100); // ganhoXP = 60
+
+      expect(result).toEqual({ ganhoXP: 60 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 6,
+              XP: 0,
+              XP_proximo_nivel: 700, // 550 + 150
+            },
+          },
+        }
+      );
+    });
+
+    it('deve aumentar XP_proximo_nivel em 200 se nível entre 9 e 12', async () => {
+      const userMock = {
+        ...mockUser,
+        gamificação: {
+          nivel: 9,
+          XP: 1140,
+          XP_proximo_nivel: 1200,
+        },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 200); // ganhoXP = 60
+
+      expect(result).toEqual({ ganhoXP: 60 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 10,
+              XP: 0,
+              XP_proximo_nivel: 1400, // 1200 + 200
+            },
+          },
+        }
+      );
+    });
+
+    it('deve aumentar XP_proximo_nivel em 250 se nível >= 13', async () => {
+      const userMock = {
+        ...mockUser,
+        gamificação: {
+          nivel: 13,
+          XP: 1990,
+          XP_proximo_nivel: 2050,
+        },
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+      mockUserModel.updateOne.mockResolvedValueOnce({});
+
+      const result = await service.registroLeitura('user-id', 0, 100); // ganhoXP = 60
+
+      expect(result).toEqual({ ganhoXP: 60 });
+      expect(mockUserModel.updateOne).toHaveBeenCalledWith(
+        { _id: 'user-id' },
+        {
+          $set: {
+            gamificação: {
+              nivel: 14,
+              XP: 0, 
+              XP_proximo_nivel: 2300, 
+            },
+          },
+        }
+      );
+    });
   });
 
   it('should delete a user', async () => {

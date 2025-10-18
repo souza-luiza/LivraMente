@@ -21,6 +21,7 @@ describe('UsersController', () => {
     findOne: jest.fn().mockResolvedValue(mockUser),
     update: jest.fn().mockResolvedValue({ ...mockUser, username: 'Updated' }),
     remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+    registroLeitura: jest.fn().mockResolvedValue({ ganhoXP: 30 })
   };
 
   beforeEach(async () => {
@@ -113,6 +114,30 @@ describe('UsersController', () => {
 
       expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto);
       expect(result).toEqual({ ...mockUser, username: 'Updated' });
+    });
+  });
+
+  describe('registroLeitura', () => {
+    it('should register reading and return XP gained', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const dto = { opcao: 0, qtd: 30 }; // ex: 30 páginas -> 30 XP
+
+      const result = await controller.registroLeitura(currentUser, dto);
+
+      expect(usersService.registroLeitura).toHaveBeenCalledWith(currentUser.userId, dto.opcao, dto.qtd);
+      expect(result).toEqual({ ganhoXP: 30 });
+    });
+
+    it('should register reading by minutes and return XP gained (limited to 60)', async () => {
+      mockUsersService.registroLeitura.mockResolvedValueOnce({ ganhoXP: 25 }); // 50 minutos = 25 XP
+
+      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const dto = { opcao: 1, qtd: 50 };
+
+      const result = await controller.registroLeitura(currentUser, dto);
+
+      expect(usersService.registroLeitura).toHaveBeenCalledWith(currentUser.userId, dto.opcao, dto.qtd);
+      expect(result).toEqual({ ganhoXP: 25 });
     });
   });
 });
