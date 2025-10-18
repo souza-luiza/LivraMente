@@ -22,7 +22,7 @@ export class UsersController {
     description: 'Dados do usuário retornados com sucesso'
   })
   @ApiResponse({
-    status: 400,
+    status: 404,
     description: 'Usuário não encontrado'
   })
   @ApiResponse({
@@ -31,6 +31,36 @@ export class UsersController {
   })
   async getProfile(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findOne(user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  @ApiOperation({
+    summary: 'Atualiza os dados do usuário',
+    description: 'Atualiza os dados do usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados do usuário atualizados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Email ou nome de usuário em uso'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Email ou nome de usuário em uso pelo próprio usuário'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.userId, updateUserDto);
   }
 
   /*@Post()

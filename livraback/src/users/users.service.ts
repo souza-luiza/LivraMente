@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -34,7 +34,35 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return await this.userModel.findByIdAndUpdate(
+    const {email, username } = updateUserDto;
+
+    // Verifica se já existe user com msm email:
+    if(email) { // se quer atualizar email
+      const userComEmail = await this.getByEmail(email);
+      if(userComEmail) {
+        if(userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
+          throw new ConflictException('Email em uso');
+        }
+        else { // se a propria pessoa da requisicao esta usando o email
+          throw new BadRequestException('Email em uso por esta conta');
+        }
+      }
+    }
+
+    // Verifica se já existe user com msm username:
+    if(username) { // se quer atualizar username
+      const userComUsername = await this.getByUsername(username);
+      if(userComUsername) {
+        if(userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
+          throw new ConflictException('Nome de usuário em uso');
+        }
+        else { // se a propria pessoa da requisicao esta usando o username
+          throw new BadRequestException('Nome de usuário em uso por esta conta');
+        }
+      }
+    }
+
+    const updated = await this.userModel.findByIdAndUpdate(
       {
         _id: id, // procurar objeto por id (mongo por padrao cria id com _)
       }, 
@@ -45,7 +73,10 @@ export class UsersService {
         new: true, // alterar no banco de dados
         runValidators: true, // validação do schema no update
       },
-    ).exec();
+    ).select('-senha').exec();
+
+    if (!updated) throw new NotFoundException('Usuário não encontrado');
+    return updated;
   }
 
   async remove(id: string) {
