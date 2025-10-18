@@ -50,7 +50,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
         const today = new Date().toDateString()
 
-        // TODO: Rever, talvez registrar último acesso no banco?
+        // TODO: Rever, talvez registrar último acesso no banco para algo mais consistente?
         const lastAccess = localStorage.getItem('lastAccess')
 
         if (lastAccess !== today) {
@@ -81,17 +81,9 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
         try {
 
-            // Cálculo de XP baseado em páginas ou minutos lidos
-            let xp = formData.pagesRead ? parseInt(formData.pagesRead) : parseInt(formData.minutesRead) / 2
-
-            // Limite diário de XP por registro de leitura
-            const XP_LIMIT = 60;
-
-            if (xp > XP_LIMIT) {
-                xp = XP_LIMIT;
-            }
-
-            //  TODO: ATUALIZAR XP NO BANCO!!!!!!!!!
+            // TODO: INTEGRAÇÃO COM A API
+            // let xp = [REQUISIÇÃO PARA O BACK] --> cálculo do xp vai ser feito no back
+            // mandar 0/1 para indicar páginas/minutos + quantidade de páginas/minutos
 
             setXp(xp)
             setStatus('success')
