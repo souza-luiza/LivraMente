@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/button'
 import Input from '@/components/general-input'
-import Image from 'next/image'
+import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
+import LogoIcon from '@/components/icons/LogoIcon'
+import OpenBookIcon from '@/components/icons/OpenBookIcon'
+import CommunityIcon from '@/components/icons/CommunityIcon'
+import LibraryIcon from '@/components/icons/LibraryIcon'
+import StarIcon from '@/components/icons/StarIcon'
 import DateInput from '@/components/date-input'
 import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,6 +19,8 @@ import PhoneInputComponent from '@/components/phone-input'
 import { CountryCode, isValidPhoneNumber } from 'libphonenumber-js'
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
+import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon'
+import Edit3Icon from '@/components/icons/Edit3Icon'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -242,63 +249,59 @@ export default function RegisterPage() {
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
 
   return (
-    <div className="min-h-screen flex">
+    <main role="main" className="min-h-screen flex">
       {/* Lado Esquerdo - Verde */}
-      <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: '#5C8046' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: 'var(--primary-600)' }}>
         <div className="flex flex-col justify-center items-center w-full p-12 text-white">
           {/* Logo/Marca */}
-          <div className="text-center mb-8">
-            <h1 className="text-6xl font-bold mb-4">
-              Livramente
+          <div className="flex flex-col items-center text-[#E5EEDF] text-center mb-8">
+            <LogoIcon size={160} fill="#E5EEDF" className="mb-2" />
+            <h1 className="text-h1">
+              LivraMente
             </h1>
-            <p className="text-xl opacity-90 mb-8">
-              A rede social dos leitores brasileiros
+            <p className="text-b1 body-semibold">
+              A rede dos leitores brasileiros
             </p>
           </div>
 
           {/* Benefícios */}
-          <div className="space-y-6 max-w-md">
-            <div className="flex justify-center items-center space-x-4">
-              <div>
-                <h3 className="font-semibold text-lg text-center">Aqui você pode:</h3>
-              </div>
-            </div>
+          <div className="space-y-4 w-fit text-[#E5EEDF]">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white/90"><Image src="/images/Open_Book_White.svg" alt="Ícone de Livro" width={24} height={24} /></span> {/*TODO: Definir biblioteca de ícones*/}
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <OpenBookIcon size={24} fill="#E5EEDF" />
               </div>
-              <div>
-                <h3 className="font-semibold text-lg">Acompanhar a sua leitura</h3>
+              <div className="text-b2">
+                <h3 className="body-semibold">Acompanhe sua leitura</h3>
                 <p className="opacity-80">Registre seu progresso e metas</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white/90"><Image src="/images/Users_White.svg" alt="Ícone de Usuários" width={24} height={24} /></span>
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <CommunityIcon size={24} fill="#E5EEDF" />
               </div>
-              <div>
-                <h3 className="font-semibold text-lg">Conecte-se e interaja</h3>
+              <div className="text-b2">
+                <h3 className="body-semibold">Conecte-se e interaja</h3>
                 <p className="opacity-80">Encontre amigos e comunidades literárias</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white/90"><Image src="/images/Books_White.svg" alt="Ícone de Livros" width={24} height={24} /></span>
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <LibraryIcon size={24} fill="#E5EEDF" />
               </div>
-              <div>
-                <h3 className="font-semibold text-lg">Avalie livros e receba recomendações</h3>
+              <div className="text-b2">
+                <h3 className="body-semibold">Avalie livros e receba recomendações</h3>
                 <p className="opacity-80">Compartilhe suas opiniões e descubra novas leituras</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white/90"><Image src="/images/Star_White.svg" alt="Ícone de Estrela" width={24} height={24} /></span>
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <StarIcon size={24} fill="#E5EEDF" />
               </div>
-              <div>
-                <h3 className="font-semibold text-lg">Ganhe XP e participe de competições</h3>
+              <div className="text-b2">
+                <h3 className="body-semibold">Ganhe XP e participe de competições</h3>
                 <p className="opacity-80">Desafie seus amigos e suba de nível</p>
               </div>
             </div>
@@ -324,21 +327,12 @@ export default function RegisterPage() {
           </div>
 
           {/* Formulário */}
-          <div className="bg-white p-8 rounded-xl shadow-lg">
-            <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <Image 
-                  src="/logo-vetorizada.svg" 
-                  alt="Livramente Logo" 
-                  width={80} 
-                  height={80}
-                  className="mx-auto"
-                />
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-900 text-center">
+          <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-lg">
+            <div className="mb-2">
+              <h2 className="text-b1 body-semibold text-center text-gray-900">
                 Cadastre-se!
               </h2>
-              <p className="text-gray-600 text-center mt-2">
+              <p className="text-b3 text-center text-gray-600 mt-1">
                 {step === 1 ? 'Junte-se à nossa comunidade de leitores' : 'Informações adicionais'}
               </p>
               <div className="flex justify-center mt-4 space-x-2">
@@ -395,7 +389,7 @@ export default function RegisterPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     error={errors.name}
-                    placeholder="Seu nome de usuário"
+                    placeholder="gatanoturna"
                     fullWidth
                   />
 
@@ -408,7 +402,7 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     error={errors.email}
-                    placeholder="seu@email.com"
+                    placeholder="kemi@gata.miau"
                     fullWidth
                   />
 
@@ -421,11 +415,13 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     error={errors.password}
-                    placeholder="Mínimo 6 caracteres"
-                    // helperText="Use pelo menos 6 caracteres com letras e números"
+                    placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                     fullWidth
                   />
-                  <PasswordStrength password={formData.password} />
+
+                  <div className="text-b3 text-[#1F2A17]">
+                    <PasswordStrength password={formData.password} />
+                  </div>
 
                   {/* Confirmar Senha */}
                   <Input
@@ -436,17 +432,17 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     error={errors.confirmPassword}
-                    placeholder="Confirme sua senha"
+                    placeholder="⁕⁕⁕⁕⁕⁕⁕⁕⁕"
                     fullWidth
                   />
 
                   {/* Botão de Submit */}
-                  <div className="flex justify-center mt-4">
+                  <div className="flex justify-center mt-1">
                     <Button
                       type="submit"
                       text={false ? 'Carregando...' : 'Próximo Passo'}
-                      icon={<Image src="/icons/chevronLeft.svg" alt="Seta para Direita" className='transform rotate-180' width={16} height={16} />}
-                      size="small"
+                      icon={<ArrowRightIcon />}
+                      size="medium"
                       colorScheme="dark-green"
                       loading={false}
                     >
@@ -466,7 +462,7 @@ export default function RegisterPage() {
                   exit="exit"
                   transition={{ duration: 0.3 }}
                   onSubmit={handleOnSubmit} 
-                  className="space-y-2 min-h-[400px] items-center flex flex-col justify-center">
+                  className="space-y-2 max-h-[400px] items-center flex flex-col justify-center">
                   {/* Data de Nascimento */}
                   <DateInput
                     label="Data de Nascimento"
@@ -500,58 +496,49 @@ export default function RegisterPage() {
                   />
 
                   {/* Botões Voltar e Submit */}
-                  <div className="flex justify-between mt-6 w-full">
-                    <Button
-                      type="button"
-                      text="Voltar"
-                      icon={<Image src="/icons/chevronLeft_darkGreen.svg" alt="Seta para Esquerda" width={16} height={16} />}
-                      size="small"
-                      colorScheme="light-green"
-                      onClick={handlePreviousStep}
-                    />
-                    <Button
-                      type="submit"
-                      text="Finalizar Cadastro"
-                      size="small"
-                      colorScheme="dark-green"
-                      loading={false}
-                      icon={<Image src="/icons/register.svg" alt="Ícone de Cadastro" width={16} height={16} />}
-                    />
+                  <div className="flex flex-col items-center gap-1 mt-1">
+                    <div>
+                      <Button
+                        type="button"
+                        text="Voltar"
+                        icon={<ArrowLeftIcon />}
+                        size="medium"
+                        colorScheme="light-green"
+                        onClick={handlePreviousStep}
+                      />
+                    </div>
+                    <div>
+                      <Button
+                        type="submit"
+                        text="Finalizar Cadastro"
+                        size="medium"
+                        colorScheme="dark-green"
+                        loading={false}
+                        icon={<Edit3Icon />}
+                      />
+                    </div>
                   </div>
                 </motion.form>
               )}
               </AnimatePresence>
 
               {/* Link para Login */}
-              <div className="mt-2 text-center">
-                <p className="text-sm text-gray-600">
-                  Já possui uma conta?{' '}
+              <div className="text-b3 text-center mt-2">
+                <p className=" text-gray-600">
+                  Já tem uma conta?{' '}
                   <Link 
                     href="/login" 
-                    className="text-green-700 hover:text-green-700 font-medium"
+                    className="body-semibold text-[#3D552F] hover:underline"
                   >
                     Faça login
                   </Link>
                 </p>
               </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              Ao criar uma conta, você concorda com nossos{' '}
-              <Link href="/terms" className="text-green-600 hover:underline">
-                Termos de Uso
-              </Link>{' '}
-              e{' '}
-              <Link href="/privacy" className="text-green-600 hover:underline">
-                Política de Privacidade
-              </Link>
-            </p>
+            
           </div>
         </div>
       </div>
       <ToastNotification />
-    </div>
+    </main>
   )
 }

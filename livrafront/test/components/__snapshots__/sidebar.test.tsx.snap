@@ -2,7 +2,7 @@
 
 exports[`Sidebar Component Snapshot Tests matches sidebar snapshot 1`] = `
 <div
-  class="inline-block light-green w-[80px] h-[800px] pt-[15px] pb-[15px] m-4 rounded-[12px]"
+  class="inline-block light-green w-[80px] h-fill pt-[15px] pb-[15px] m-4 rounded-[12px]"
   data-testid="sidebar"
   role="complementary"
 >
@@ -112,7 +112,7 @@ exports[`Sidebar Component Snapshot Tests matches sidebar snapshot 1`] = `
 exports[`Sidebar Component Snapshot Tests matches snapshot with all buttons rendered 1`] = `
 <div>
   <div
-    class="inline-block light-green w-[80px] h-[800px] pt-[15px] pb-[15px] m-4 rounded-[12px]"
+    class="inline-block light-green w-[80px] h-fill pt-[15px] pb-[15px] m-4 rounded-[12px]"
     data-testid="sidebar"
     role="complementary"
   >

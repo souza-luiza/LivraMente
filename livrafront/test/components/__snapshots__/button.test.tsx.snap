@@ -9,7 +9,7 @@ exports[`Button Component Snapshot Tests matches snapshot with default props 1`]
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
 >
   <span
-    class="text-h4"
+    class="text-h6"
   >
      
     Click me
@@ -38,7 +38,7 @@ exports[`Button Component Snapshot Tests matches snapshot with different color s
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
 >
   <span
-    class="text-h4"
+    class="text-h6"
   >
      
     Click me
@@ -67,7 +67,7 @@ exports[`Button Component Snapshot Tests matches snapshot with different sizes 1
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
 >
   <span
-    class="text-h2"
+    class="text-h4"
   >
      
     Click me
@@ -97,7 +97,7 @@ exports[`Button Component Snapshot Tests matches snapshot with disabled state 1`
   disabled=""
 >
   <span
-    class="text-h4"
+    class="text-h6"
   >
      
     Click me
@@ -147,7 +147,7 @@ exports[`Button Component Snapshot Tests matches snapshot with loading state 1`]
     />
   </svg>
   <span
-    class="text-h4"
+    class="text-h6"
   >
      
     Click me
