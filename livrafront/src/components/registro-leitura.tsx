@@ -6,6 +6,10 @@ import CalendarIcon from './icons/CalendarIcon'
 import Input from './general-input'
 import Button from './button'
 import AddIcon from './icons/AddIcon'
+import { s } from 'framer-motion/client'
+import LogoIcon from './icons/LogoIcon'
+import RemoveIcon from './icons/RemoveIcon'
+import ErrorIcon from './icons/ErrorIcon'
 
 interface RegistroLeituraProps {
     isLoggedIn: boolean
@@ -14,24 +18,11 @@ interface RegistroLeituraProps {
 export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
 
-    const [show, setShow] = useState(true)
+    const [show, setShow] = useState(false)
 
-    // Verifica se o usuário está logado e se já registrou a leitura hoje
-    useEffect(() => {
-        if (!isLoggedIn) return
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-        const today = new Date().toDateString()
-
-        // Rever isso! Talvez registrar último acesso no banco?
-        const lastAccess = localStorage.getItem('lastAccess')
-
-        if (lastAccess !== today) {
-        setShow(true)
-        localStorage.setItem('lastAccess', today)
-        }
-    }, [isLoggedIn])
-
-    if (!show) return null
+    const [xp, setXp] = useState(0)
 
     const [formData, setFormData] = useState({
         pagesRead: '',
@@ -53,6 +44,23 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
     const hoje = formatter.format(new Date())
 
+    // Verifica se o usuário está logado e se já registrou a leitura hoje
+    useEffect(() => {
+        if (!isLoggedIn) return
+
+        const today = new Date().toDateString()
+
+        // TODO: Rever, talvez registrar último acesso no banco?
+        const lastAccess = localStorage.getItem('lastAccess')
+
+        if (lastAccess !== today) {
+        setShow(true)
+        localStorage.setItem('lastAccess', today)
+        }
+    }, [isLoggedIn])
+
+    if (!show) return null
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -68,9 +76,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
         }
     }
 
-    // Limite diário de XP por registro de leitura
-    const XP_LIMIT = 60;
-
     const handleOnSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -79,16 +84,22 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
             // Cálculo de XP baseado em páginas ou minutos lidos
             let xp = formData.pagesRead ? parseInt(formData.pagesRead) : parseInt(formData.minutesRead) / 2
 
+            // Limite diário de XP por registro de leitura
+            const XP_LIMIT = 60;
+
             if (xp > XP_LIMIT) {
                 xp = XP_LIMIT;
             }
 
-            // Atualizar XP no banco
+            //  TODO: ATUALIZAR XP NO BANCO!!!!!!!!!
 
-            // Se der tudo certo, estado sucesso
+            setXp(xp)
+            setStatus('success')
 
         } catch (error) {
+
             console.error('Falha ao conectar com o servidor.')
+            setStatus('error')
         }
     }
 
@@ -100,7 +111,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
     return (
         <AnimatePresence>
-            {show &&
+            {show && status === 'idle' &&
             <motion.div 
                 key="registro-leitura"
                 className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
@@ -235,6 +246,74 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                             form={step == 1 ? "pagesForm" : "minutesForm"}
                         />
                     </div>
+                </div>
+            </motion.div>
+            }
+
+            {show && status === 'success' &&
+            <motion.div 
+                key="registro-leitura"
+                className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1, ease: 'easeInOut' }}
+            >
+                <div className="flex flex-col items-center light-green p-[20px] rounded-[12px] gap-2">
+
+                    {/* Cabeçalho */}
+                    <div className="flex flex-col justify-center items-center text-[#1F2A17] gap-1">
+                        <LogoIcon size={40} fill="#1F2A17" />
+                        <h1 className="text-h5">Leitura registrada!</h1>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-h4 text-[#4B8511]">+{xp} XP</p>
+                        <p className="text-b2 text-[#1F2A17]">Volte amanhã para registrar seu progresso!</p>
+                    </div>
+
+                    {/* TODO: Barra de progresso */}
+
+                    {/* Botão para fechar */}
+                    <Button
+                        text="Fechar"
+                        icon={<RemoveIcon />}
+                        size="medium"
+                        colorScheme="dark-brown"
+                        onClick={() => setShow(false)}
+                    />
+                </div>
+            </motion.div>
+            }
+
+            {show && status === 'error' &&
+            <motion.div 
+                key="registro-leitura"
+                className="fixed inset-0 flex items-center justify-center bg-[#E5EEDF]/60 backdrop-blur-sm z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1, ease: 'easeInOut' }}
+            >
+                <div className="flex flex-col items-center light-green p-[20px] rounded-[12px] gap-4">
+
+                    <div className="flex flex-col justify-center items-center text-[#1F2A17] gap-4">    
+                        <ErrorIcon size={80} fill="#682A1B" />
+                        <div className="text-center gap-1">
+                            <h1 className="text-h5">Ocorreu um erro!</h1>
+                            <p className="text-b2">Tente novamente mais tarde.</p>
+                        </div>
+                    </div>
+
+                    {/* Botão para fechar */}
+                    <Button
+                        text="Fechar"
+                        icon={<RemoveIcon />}
+                        size="medium"
+                        colorScheme="dark-brown"
+                        onClick={() => setShow(false)}
+                    />
+
                 </div>
             </motion.div>
             }
