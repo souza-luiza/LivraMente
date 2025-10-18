@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { RegistroLeituraDto } from './dto/registro-leitura.dto';
 
 @Controller('users')
 export class UsersController {
@@ -61,6 +62,32 @@ export class UsersController {
   })
   async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(user.userId, updateUserDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/registro-leitura')
+  @ApiOperation({
+    summary: 'Registra leitura diária',
+    description: 'Altera XP do usuário autenticado de acordo com registro de leitura'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados de gamificação do usuário atualizados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Corpo da requisição inválido'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async registroLeitura(@CurrentUser() user: CurrentUserDto, @Body() registroLeituraDto: RegistroLeituraDto) {
+    return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
   /*@Post()

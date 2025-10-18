@@ -84,4 +84,46 @@ export class UsersService {
       _id: id,
     }).exec(); // para executar operacao
   }
+
+  async registroLeitura(id: string, opcao: number, qtd: number) {
+    const user = await this.findOne(id);
+    //if(!user) throw new NotFoundException('Usuário não encontrado'); isso ja eh verificado na funcao findOne
+
+    if(!user.gamificação) { // inicializa xp/nivel
+      user.gamificação = { nivel: 1, XP: 0, XP_proximo_nivel: 100 }
+    }
+
+    let ganhoXP: number = 0; // XP ganho por leitura
+
+    if(opcao == 0) { // opcao de paginas lidas
+      ganhoXP = qtd; // +1 XP por pagina
+    }
+    else if (opcao == 1) { // opcao de minutos lidos
+      ganhoXP = qtd/2; // +1 XP por 2 minutos
+    }
+
+    if(ganhoXP > 60) { // limite de XP diario
+      ganhoXP = 60;
+    }
+
+    user.gamificação.XP += ganhoXP;
+
+    // Lógica para subir de nível
+    while (user.gamificação.XP >= user.gamificação.XP_proximo_nivel){ // se tem XP necessario para subir de nivel (while para multiplos level-ups)
+      user.gamificação.nivel += 1;
+      user.gamificação.XP -= user.gamificação.XP_proximo_nivel;
+      if (user.gamificação.nivel < 5)
+        user.gamificação.XP_proximo_nivel += 100;
+      else if (user.gamificação.nivel < 9)
+        user.gamificação.XP_proximo_nivel += 150;
+      else if (user.gamificação.nivel < 13)
+        user.gamificação.XP_proximo_nivel += 200;
+      else {
+        user.gamificação.XP_proximo_nivel += 250;
+      }
+    }
+
+    await this.userModel.updateOne({ _id: id }, { $set: { gamificação: user.gamificação } });
+    return { ganhoXP };
+  }
 }
