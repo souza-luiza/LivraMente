@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
-import ProfileIcon from "@/components/icons/ProfileIcon";
+import ProfileIcon from "@/components/profile-icon";
 import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
@@ -27,7 +27,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
             <Sidebar />
             <main className="flex-1 flex flex-col items-center p-4">
                 <div className="w-48 h-48 mb-4">
-                    <ProfileIcon size={190} className="text-gray-400" />
+                    <ProfileIcon size={190} percentage={68} className="text-[var(--success-700)]" />
                 </div>
                 <h4 className="text-3xl font-bold pb-2 text-h5">@{username}</h4>
                 <p className="pb-4 text-b1 body-quotation">{pronouns}</p>
