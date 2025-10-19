@@ -4,10 +4,14 @@ import { ReadlistsService } from './readlists.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Readlist, ReadlistSchema } from './entities/readlist.entity';
 import { UsersModule } from '../users/users.module';
+import { User, UserSchema } from '../users/entities/user.entity';
 
 @Module({
   imports: [UsersModule,
-    MongooseModule.forFeature([{ name: Readlist.name, schema: ReadlistSchema }])],
+    MongooseModule.forFeature([
+      { name: Readlist.name, schema: ReadlistSchema },
+      { name: User.name, schema: UserSchema },
+    ])],
   controllers: [ReadlistsController],
   providers: [ReadlistsService]
 })
