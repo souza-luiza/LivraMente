@@ -9,7 +9,6 @@ import { AuthModule } from './auth/auth.module';
 // Importar todos os schemas
 import { Livro, LivroSchema } from './schemas/livro.schema';
 import { Autor, AutorSchema } from './schemas/autor.schema';
-import { Readlist, ReadlistSchema } from './schemas/readlist.schema';
 import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
