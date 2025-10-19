@@ -123,7 +123,7 @@ export class ReadlistsController {
         return this.readlistsService.remove(user.userId, id);
     }
 
-    @Get('/public/:userId')
+    @Get('public/:userId')
     @ApiOperation({ 
         summary: 'Lista readlists públicas de um usuário',
         description: 'Retorna todas readlists públicas de um usuário por ID para um usuário autenticado'
