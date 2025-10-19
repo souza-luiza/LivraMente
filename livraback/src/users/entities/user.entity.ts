@@ -30,8 +30,8 @@ class Gamificacao {
   @Prop({ default: 0 })
   XP: number;
 
-  @Prop()
-  XP_proximo_nivel?: number;
+  @Prop({ default: 100 }) // XP necessario para passar do nivel 1
+  XP_proximo_nivel: number;
 }
 
 @Schema({ timestamps: true })
