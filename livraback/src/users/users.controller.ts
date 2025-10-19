@@ -90,6 +90,84 @@ export class UsersController {
     return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/favoritar/:readlistId')
+  @ApiOperation({
+    summary: 'Favorita uma readlist pública',
+    description: 'Adiciona uma readlist pública na lista de favoritos do usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Readlist favoritada com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Readlist não encontrada'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Readlist não é pública ou é do próprio usuário'
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Readlist já favoritada'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async favoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
+    return this.usersService.favoritarReadlist(user.userId, readlistId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('me/favoritar/:readlistId')
+  @ApiOperation({
+    summary: 'Remove readlist dos favoritos',
+    description: 'Remove readlist dos favoritos do usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Readlist removida com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'ID inválido'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async desfavoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
+    return this.usersService.desfavoritarReadlist(user.userId, readlistId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/favoritar')
+  @ApiOperation({
+    summary: 'Retorna readlists favoritas',
+    description: 'Retorna readlists favoritas do usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Readlists favoritadas retornadas com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async findReadlistsFavoritas(@CurrentUser() user: CurrentUserDto) {
+    return this.usersService.findReadlistsFavoritas(user.userId);
+  }
+
   /*@Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
