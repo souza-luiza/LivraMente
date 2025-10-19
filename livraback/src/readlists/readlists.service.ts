@@ -101,6 +101,10 @@ export class ReadlistsService {
         }
     }
 
+    async findAllPublic(criadorId: string) {
+        return await this.readlistModel.find({ criador: criadorId, publica: true }).exec();
+    }
+
     async addLivro(criadorId: string, readlistId: string, livroId: string) {
         try {
             const updated = await this.readlistModel.findOneAndUpdate(

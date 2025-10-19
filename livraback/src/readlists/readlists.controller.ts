@@ -123,6 +123,23 @@ export class ReadlistsController {
         return this.readlistsService.remove(user.userId, id);
     }
 
+    @Get('/public/:userId')
+    @ApiOperation({ 
+        summary: 'Lista readlists públicas de um usuário',
+        description: 'Retorna todas readlists públicas de um usuário por ID para um usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Lista de readlists públicas retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async findAllPublic(@Param('userId') userId: string) {
+        return this.readlistsService.findAllPublic(userId);
+    }
+
     @Patch(':id/livros/:livroId')
     @ApiOperation({
         summary: 'Adiciona um livro na readlist',
