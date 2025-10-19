@@ -161,7 +161,7 @@ export class UsersService {
   }
 
   async findReadlistsFavoritas(userId: string) {
-    const user = await this.userModel.findById(userId).populate('readlists_favoritas').select('readlists_favoritas').select('-favorito').exec();
+    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito' }).select('readlists_favoritas').exec();
     if(!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
   }
