@@ -18,6 +18,7 @@ describe('ReadlistsController', () => {
     remove: jest.fn(),
     addLivro: jest.fn(),
     removeLivro: jest.fn(),
+    findAllPublic: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -114,6 +115,18 @@ describe('ReadlistsController', () => {
 
       const response = await controller.removeLivro(mockUser, '1', 'livro123');
       expect(service.removeLivro).toHaveBeenCalledWith(mockUser.userId, '1', 'livro123');
+      expect(response).toEqual(result);
+    });
+  });
+
+  describe('findAllPublic', () => {
+    it('should return all public readlists for a given userId', async () => {
+      const userId = 'otherUser456';
+      const result = [{ id: '1', nome: 'Readlist Pública', isPublic: true }];
+      mockReadlistsService.findAllPublic.mockResolvedValue(result);
+
+      const response = await controller.findAllPublic(userId);
+      expect(service.findAllPublic).toHaveBeenCalledWith(userId);
       expect(response).toEqual(result);
     });
   });

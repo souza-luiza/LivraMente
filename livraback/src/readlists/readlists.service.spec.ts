@@ -16,9 +16,9 @@ describe('ReadlistsService', () => {
     prototype: {
       save: mockSave,
     },
-    find: jest.fn().mockReturnValue({
+    find: jest.fn().mockImplementation((filter) => ({
       exec: jest.fn().mockResolvedValue([mockReadlist]),
-    }),
+    })),
     findOne: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue(mockReadlist),
     }),
@@ -168,6 +168,22 @@ describe('ReadlistsService', () => {
       );
       expect(result).toEqual({ ...mockReadlist, nome: 'Atualizado' });
     });
+
+    it('should throw NotFoundException if readlist not found', async () => {
+      mockReadlistModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.addLivro('user123', '1', 'livro123')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException on CastError', async () => {
+      mockReadlistModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue({ name: 'CastError' }),
+      });
+
+      await expect(service.addLivro('user123', 'invalid', 'livro123')).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('removeLivro', () => {
@@ -179,6 +195,30 @@ describe('ReadlistsService', () => {
         { new: true }
       );
       expect(result).toEqual({ ...mockReadlist, nome: 'Atualizado' });
+    });
+
+    it('should throw NotFoundException if readlist not found', async () => {
+      mockReadlistModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.removeLivro('user123', '1', 'livro123')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException on CastError', async () => {
+      mockReadlistModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue({ name: 'CastError' }),
+      });
+
+      await expect(service.removeLivro('user123', 'invalid', 'livro123')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('findAllPublic', () => {
+    it('should return all public readlists for a user', async () => {
+      const result = await service.findAllPublic('user123');
+      expect(mockReadlistModel.find).toHaveBeenCalledWith({ criador: 'user123', publica: true });
+      expect(result).toEqual([mockReadlist]);
     });
   });
 });
