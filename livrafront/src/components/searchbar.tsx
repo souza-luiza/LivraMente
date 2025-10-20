@@ -12,6 +12,12 @@ export default function SearchBar({ className, inputSize = 'medium', ...props }:
     large:  "large-box"
   };
 
+  const textStyle: Record<'small' | 'medium' | 'large', string> = {
+    small:  'text-b3',
+    medium: 'text-b2',
+    large:  'text-b1'
+  };
+  
   return (
     <div className={`relative w-full ${className}`}>
       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#95BB7E]">
@@ -20,7 +26,7 @@ export default function SearchBar({ className, inputSize = 'medium', ...props }:
 
       <input
         type="text"
-        className={`w-full pl-12 pr-4 bg-[#B0CC9E] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] ${boxSize[inputSize]}`}
+        className={`w-full pl-12 pr-4 bg-[#B0CC9E] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] ${boxSize[inputSize]} ${textStyle[inputSize]}`}
         {...props}
       />
     </div>
