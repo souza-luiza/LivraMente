@@ -164,17 +164,4 @@ export class ReadlistsService {
             throw error;
         }
     }
-    
-    // Busca readlists públicas de um usuário pelo username
-    async findPublicByUsername(username: string) {
-        // Importa o modelo User dinamicamente para evitar dependência circular
-        const userModel = this.readlistModel.db.model('User');
-        const user = await userModel.findOne({ username }).exec();
-        if (!user) return [];
-        return await this.readlistModel.find({ criador: user._id, publica: true }).exec();
-    }
-    // Busca readlists favoritedas por um usuário
-    async findFavoritedByUser(userId: string) {
-        return await this.readlistModel.find({ favoritadoPor: userId, publica: true }).exec();
-    }
 }
