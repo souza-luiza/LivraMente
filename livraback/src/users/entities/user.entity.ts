@@ -55,6 +55,9 @@ export class User {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
   readlists: Types.ObjectId[];
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
+  readlists_favoritas: Types.ObjectId[];
+
   @Prop({ type: Gamificacao, required: false })
   gamificação?: Gamificacao;
 
