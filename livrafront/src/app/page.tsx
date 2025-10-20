@@ -11,20 +11,16 @@ import CommunityIcon from '@/components/icons/CommunityIcon';
 
 export default function HomePage() {
     return(
-        <div className="w-screen h-screen flex flex-row bg-[#8E572A]">
+        <div className="w-screen h-screen flex flex-row bg-[#B0CC9E]">
+
             <div className="w-1/4 h-screen flex justify-start">
-                <div className="flex flex-row m-[8px] gap-[8px]">
-                    <LogoIcon size={30} fill="#23160A" />
-                    <p className="text-b1 body-quotation">
-                        LivraMente
-                    </p>
-                </div>
             </div>
-            <div className="w-1/2 h-screen flex flex-col justify-center items-center bg-[#E5EEDF40] gap-4">
+
+            <div className="w-1/2 h-screen flex flex-col justify-center items-center bg-[#FFFFFF] gap-4">
                     <motion.div 
-                    initial={{ opacity: 0, rotateY: 0 }}
-                    animate={{ opacity: 100, rotateY: 360 }} 
-                    transition={{ duration: 1.5, ease: "easeInOut" }} 
+                    initial={{ opacity: 0, rotateY: -180 }}
+                    animate={{ opacity: 1, rotateY: 0 }} 
+                    transition={{ duration: 0.8, ease: "easeInOut" }} 
                     className="flex flex-col items-center text-[#23160A]"
                     >
                         <LogoIcon size={160} fill="#23160A" />
@@ -38,11 +34,11 @@ export default function HomePage() {
                         </div>
                     </motion.div>
 
-                    <div className="flex flex-col justify-center items-center gap-2">
+                    <div className="flex flex-row justify-center items-center gap-1">
                         <Link href="/login">
                             <Button 
                                 text="Entrar"
-                                colorScheme="light-green"
+                                colorScheme="dark-brown"
                                 size="large"
                                 icon={<LoginIcon />}
                             />
@@ -50,23 +46,27 @@ export default function HomePage() {
                         <Link href="/register">
                             <Button 
                                 text="Cadastrar"
-                                colorScheme="light-green"
+                                colorScheme="dark-brown"
                                 size="large"
                                 icon={<Edit3Icon />}
                             />
                         </Link>
                     </div>
             </div>
+
             <div className="w-1/4 h-screen flex justify-end">
-                <div className="m-[8px]">
-                    <Button
-                        text="Sobre Nós"
-                        icon={<CommunityIcon />}
-                        colorScheme="dark-brown"
-                        size="small"
-                    />
+                <div className="m-[16px]">
+                    <Link href="/LivraTime" >
+                        <Button
+                            text="LivraTime"
+                            icon={<CommunityIcon />}
+                            colorScheme="dark-brown"
+                            size="medium"
+                        />
+                    </Link>
                 </div>
             </div>
+
         </div>
     )
 }
