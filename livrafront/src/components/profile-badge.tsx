@@ -1,6 +1,5 @@
 interface ProfileBadgeProps extends React.SVGProps<SVGSVGElement> {
   content: string | number;
-  width?: number;
   height?: number;
   backgroundColor?: string;
   textColor?: string;
@@ -8,12 +7,16 @@ interface ProfileBadgeProps extends React.SVGProps<SVGSVGElement> {
 
 export default function ProfileBadge({
   content,
-  width = 40,
-  height = 25,
+  height = 30,
   backgroundColor = "white",
   textColor = "black",
   ...props
 }: ProfileBadgeProps) {
+  const contentLength = String(content).length;
+  const baseWidth = height * 1.5;
+  const charWidth = height * 0.3;
+  const width = Math.max(baseWidth, charWidth * contentLength + height * 0.8);
+  
   const radius = height * 0.3;
   const tailWidth = width * 0.2;
   const tailHeight = height * 0.3;
