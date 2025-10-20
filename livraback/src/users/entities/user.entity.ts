@@ -30,8 +30,8 @@ class Gamificacao {
   @Prop({ default: 0 })
   XP: number;
 
-  @Prop()
-  XP_proximo_nivel?: number;
+  @Prop({ default: 100 }) // XP necessario para passar do nivel 1
+  XP_proximo_nivel: number;
 }
 
 @Schema({ timestamps: true })
@@ -54,6 +54,9 @@ export class User {
   // Relacionamento com Readlist
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
   readlists: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
+  readlists_favoritas: Types.ObjectId[];
 
   @Prop({ type: Gamificacao, required: false })
   gamificação?: Gamificacao;

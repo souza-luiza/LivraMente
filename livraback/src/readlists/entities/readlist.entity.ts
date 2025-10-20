@@ -8,7 +8,7 @@ export class Readlist {
   @Prop({ required: true })
   nome: string;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   favorito: boolean;
   
   @Prop({ default: false })

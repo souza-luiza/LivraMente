@@ -122,14 +122,4 @@ export class ReadlistsController {
     async remove(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
         return this.readlistsService.remove(user.userId, id);
     }
-    // Busca readlists públicas de um usuário pelo username
-    @Get('user/:username')
-    async findByUsername(@Param('username') username: string) {
-        return this.readlistsService.findPublicByUsername(username);
-    }
-    // Busca readlists favoritedas por um usuário
-    @Get('favorited/:userId')
-    async findFavoritedByUser(@Param('userId') userId: string) {
-        return this.readlistsService.findFavoritedByUser(userId);
-    }
 }
