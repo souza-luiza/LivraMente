@@ -47,12 +47,15 @@ export default function ReadlistPage() {
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Sidebar Fixa */}
-      <div className="sticky top-0 self-start" style={{ height: '100%' }}>
+      <div className="hidden lg:flex min-h-screen bg-[#E5EEDF]">
         <Sidebar />
       </div>
 
       {/* Conteúdo Principal */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: 'var(--large-padding)', maxWidth: '1500px', paddingLeft: '200px'}}>
+      <div 
+        className="flex-1 overflow-y-auto px-4 md:px-8 lg:px-[200px] py-8 md:py-12" 
+        style={{ maxWidth: '1500px' }}
+      >
         {/* SEÇÃO 1: Barra de Pesquisa */}
         <div style={{ marginBottom: 'var(--large-padding)' }}>
           <div 
@@ -60,6 +63,7 @@ export default function ReadlistPage() {
             style={{ 
               backgroundColor: 'var(--primary-300)',
               borderRadius: '999px',
+              minWidth: '1270px',
               padding: '12px var(--large-padding)'
             }}
           >
@@ -81,19 +85,19 @@ export default function ReadlistPage() {
           className="light-green"
           style={{
             backgroundColor: 'var(--primary-200)',
-            height: '320px',
-            padding: 'calc(var(--large-padding) + 60px) var(--large-padding) calc(var(--large-padding) + 30px) var(--large-padding)',
+            minHeight: '280px',
+            padding: 'calc(var(--large-padding) + 40px) var(--small-padding) var(--large-padding)',
             borderRadius: 'var(--large-border-radius)',
             marginBottom: 'var(--large-padding)',
-            position: 'relative'
+            position: 'relative',
+            minWidth: '1270px'
           }}
         >
           {/* Ícones de Ação */}
-          <div className="flex flex-col" style={{ 
+          <div className="flex flex-row md:flex-col gap-2 md:gap-0" style={{ 
             position: 'absolute',
             top: '10px',
-            right: '10px',
-            gap: '0px'
+            right: '10px'
           }}>
             <button 
               className="textless-medium"
@@ -154,17 +158,16 @@ export default function ReadlistPage() {
             </button>
           </div>
 
-          <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             {/* Imagem de Capa */}
             <div 
-              className="relative overflow-hidden flex-shrink-0"
+              className="relative overflow-hidden flex-shrink-0 mx-auto md:mx-0"
               style={{ 
-                width: '250px',
-                height: '230px',
+                width: '200px',
+                height: '180px',
                 borderRadius: 'var(--large-border-radius)',
-                marginTop: '-20px',    
-                marginLeft: '0px',    
-                marginBottom: '-30px' 
+                marginTop: '-10px',
+                marginBottom: '-20px'
               }}
             >
               <Image 
@@ -178,18 +181,18 @@ export default function ReadlistPage() {
             {/* Informações */}
             <div className="flex-1">
               <div>
-                <h1 className="text-h1" style={{ 
+                <h1 className="text-h1 text-center md:text-left" style={{ 
                   color: 'var(--secondary-700)',
                   marginBottom: 'var(--extra-small-padding)',
-                  marginTop: '73px',
-                  marginLeft: '15px'
+                  marginTop: '0px',
+                  marginLeft: '0px'
                 }}>
                   {readlist.title}
                 </h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-center md:justify-start">
                   <div 
                     className="relative rounded-full overflow-hidden"
-                    style={{ width: '55px', height: '55px', marginLeft: '15px' }}
+                    style={{ width: '45px', height: '45px' }}
                   >
                     <Image 
                       src={readlist.author.avatar}
@@ -214,37 +217,38 @@ export default function ReadlistPage() {
             className="light-neutral flex-1"
             style={{ 
               borderRadius: 'var(--large-border-radius)',
-              padding: '0px',
-              position: 'relative'
+              padding: '0px'
             }}
           >
-            {/* Descrição */}
+            {/* Descrição e Estatísticas */}
             <div 
+              className="flex flex-col lg:flex-row gap-6"
               style={{ 
                 marginBottom: '0px',
                 paddingBottom: 'var(--large-padding)',
                 borderBottom: '1px solid var(--secondary-600)',
-                maxWidth: '946px'
+                maxWidth: '946px',
+                alignItems: 'flex-start'
               }}
             >
-              <p className="text-b2" style={{ color: 'var(--secondary-800)' }}>
-                {readlist.description}
-              </p>
-            </div>
+              {/* Descrição */}
+              <div className="flex-1">
+                <p className="text-b2" style={{ minWidth: '946px', color: 'var(--secondary-800)' }}>
+                  {readlist.description}
+                </p>
+              </div>
 
-            {/* Indicador de Progresso - Position Absolute */}
-            <div 
-              className="light-brown"
-              style={{ 
-                backgroundColor: 'var(--secondary-200)',
-                borderRadius: 'var(--large-border-radius)',
-                padding: 'var(--medium-padding)',
-                width: '300px',
-                position: 'absolute',
-                top: '0px',
-                right: '0px'
-              }}
-            >
+              {/* Indicador de Progresso */}
+              <div 
+                className="light-brown w-full lg:w-auto"
+                style={{ 
+                  backgroundColor: 'var(--secondary-200)',
+                  borderRadius: 'var(--large-border-radius)',
+                  padding: 'var(--medium-padding)',
+                  minWidth: '300px',
+                  flexShrink: 0
+                }}
+              >
               <div className="flex items-center justify-between" style={{ marginBottom: 'var(--extra-small-padding)' }}>
                 <div>
                   <p className="text-b1" style={{ 
@@ -288,13 +292,15 @@ export default function ReadlistPage() {
                 />
               </div>
             </div>
+          </div>
 
           {/* Controles de Visualização */}
           <div className="flex justify-end" style={{ 
             gap: 'var(--extra-small-padding)',
             marginBottom: 'var(--large-padding)',
             marginTop: 'var(--large-padding)',
-            width: '946px'
+            maxWidth: '946px',
+            width: '100%'
           }}>
             <button 
               className="textless-medium"
@@ -323,7 +329,7 @@ export default function ReadlistPage() {
           {/* Visualização Condicional */}
           {viewMode === 'grid' ? (
             /* Grid de Livros */
-            <div className="grid grid-cols-6" style={{ gap: 'var(--small-padding)', maxWidth: '946px' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" style={{ gap: 'var(--small-padding)', maxWidth: '946px', width: '100%' }}>
               {readlist.books.map((book, index) => (
                 <div 
                   key={book.id}
@@ -356,11 +362,11 @@ export default function ReadlistPage() {
             </div>
           ) : (
             /* List View */
-            <div className="flex flex-col" style={{ gap: 'var(--medium-padding)', maxWidth: '946px' }}>
+            <div className="flex flex-col" style={{ gap: 'var(--medium-padding)', maxWidth: '946px', width: '100%' }}>
               {readlist.books.map((book) => (
                 <div 
                   key={book.id}
-                  className="flex gap-4 cursor-pointer"
+                  className="flex flex-col sm:flex-row gap-4 cursor-pointer"
                   style={{ 
                     padding: 'var(--small-padding)',
                     paddingLeft: '2px',
@@ -378,7 +384,7 @@ export default function ReadlistPage() {
                 >
                   {/* Capa do Livro */}
                   <div 
-                    className="relative overflow-hidden flex-shrink-0"
+                    className="relative overflow-hidden flex-shrink-0 mx-auto sm:mx-0"
                     style={{ 
                       width: '100px',
                       height: '120px',
@@ -394,7 +400,7 @@ export default function ReadlistPage() {
                   </div>
 
                   {/* Informações do Livro */}
-                  <div className="flex-1">
+                  <div className="flex-1 text-center sm:text-left">
                     <h3 className="text-b1 body-semibold" style={{ 
                       color: 'var(--secondary-800)',
                       marginBottom: '4px'
@@ -408,7 +414,7 @@ export default function ReadlistPage() {
                       {book.year} • {book.pages}
                     </p>
                     {/* Estrelas de Avaliação */}
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 justify-center sm:justify-start">
                       {Array(5).fill(null).map((_, i) => (
                         <StarIcon 
                           key={i}
