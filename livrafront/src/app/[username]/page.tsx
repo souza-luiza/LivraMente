@@ -16,7 +16,11 @@ interface UserProfilePageProps {
 
 export default async function UserProfilePage({ params }: UserProfilePageProps){
     const { username } = await params;
-    const pronouns = "ele/dele"; // Exemplo estático, substituir pela lógica real quando implementar a API
+    const userProfile = {
+        pronouns: "ele/dele", // Exemplo estático, substituir pela lógica real quando implementar a API
+        level: 15,
+        percentage: 67,
+    }
     
     // Implementar a lógica para confirmar se usuário existe no banco de dados
     // Se não existir, chamar notFound()
@@ -28,13 +32,13 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
             <Sidebar />
             <main className="flex-1 flex flex-col items-center p-4">
                 <div className="w-48 h-48 mb-4 relative">
-                    <ProfileIcon size={190} percentage={68} className="text-[var(--success-700)]" />
+                    <ProfileIcon size={190} percentage={userProfile.percentage} className="text-[var(--success-700)]" />
                     <div className="absolute top-0 right-0 -translate-y-0 translate-x-12">
-                        <ProfileBadge content="15000" width={60} height={30} />
+                        <ProfileBadge content={userProfile.level} width={60} height={30} />
                     </div>
                 </div>
                 <h4 className="text-3xl font-bold pb-2 text-h5">@{username}</h4>
-                <p className="pb-4 text-b1 body-quotation">{pronouns}</p>
+                <p className="pb-4 text-b1 body-quotation">{userProfile.pronouns}</p>
                 <Link href={`/edit-profile/${username}`}>
                     <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
                 </Link>
