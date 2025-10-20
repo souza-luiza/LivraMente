@@ -25,20 +25,20 @@ export default function LivraTime() {
   const [isHovered, setIsHovered] = useState(false)
 
   const team = [
-    { name: 'Enzo', img: EnzoImg, github: 'https://github.com/EnzoBelfort', linkedin: 'https://www.linkedin.com/in/enzobelfort'},
-    { name: 'Isabele', img: IsabeleImg, github: 'https://github.com/isabele7', linkedin: '' },
-    { name: 'Dr Zampoli', img: ZampoliImg, github: 'https://github.com/JoaoPedroZampoli', linkedin: 'https://www.linkedin.com/in/joaopedrozampoli' },
-    { name: 'Akemi', img: AkemiImg, github: 'https://github.com/akemiikemoto', linkedin: 'https://www.linkedin.com/in/leticia-akemi-ikemoto' },
-    { name: 'Loren', img: LorenImg, github: 'https://github.com/Loworen', linkedin: '' },
-    { name: 'MagaLu', img: LuImg, github: 'https://github.com/souza-luiza', linkedin: 'https://www.linkedin.com/in/luizadesouzaferreira' },
-    { name: 'Vivirgínia', img: ViviImg, github: 'https://github.com/parkvivi', linkedin: 'www.linkedin.com/in/viviane-park' } 
+    { name: 'Enzo',       img: EnzoImg,     github: 'https://github.com/EnzoBelfort',       linkedin: 'https://www.linkedin.com/in/enzobelfort'           },
+    { name: 'Isabele',    img: IsabeleImg,  github: 'https://github.com/isabele7',          linkedin: 'https://www.linkedin.com/in/isabele-nascimento'    },
+    { name: 'Dr Zampoli', img: ZampoliImg,  github: 'https://github.com/JoaoPedroZampoli',  linkedin: 'https://www.linkedin.com/in/joaopedrozampoli'      },
+    { name: 'Akemi',      img: AkemiImg,    github: 'https://github.com/akemiikemoto',      linkedin: 'https://www.linkedin.com/in/leticia-akemi-ikemoto' },
+    { name: 'Loren',      img: LorenImg,    github: 'https://github.com/Loworen',           linkedin: 'https://www.linkedin.com/in/loren-pe%C3%B1a-rodriguez-lorenzetto-616a13382/'                                                  },
+    { name: 'MagaLu',     img: LuImg,       github: 'https://github.com/souza-luiza',       linkedin: 'https://www.linkedin.com/in/luizadesouzaferreira'  },
+    { name: 'Vivirgínia', img: ViviImg,     github: 'https://github.com/parkvivi',          linkedin: 'https://www.linkedin.com/in/viviane-park'          }  
   ];
 
   return (
     <div className="h-screen w-screen flex flex-col">
 
       {/*Parte de Cima*/}
-      <div className="h-4/9 w-screen flex flex-row bg-[#FFFFFF]">
+      <div data-testid="top-section" className="h-4/9 w-screen flex flex-row bg-[#FFFFFF]">
 
         {/*Botão de Voltar*/}
         <div className="w-1/4 h-fill">
@@ -67,16 +67,16 @@ export default function LivraTime() {
                   initial={{ opacity: 0, rotateY: 90}}
                   animate={{ opacity: 1, rotateY: 0 }}
                   exit={{ opacity: 0, rotateY: -90 }}
-                  transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
                   style={{
                     perspective: 1000,
                     transformStyle: 'preserve-3d',
                   }}
                   className="flex flex-col items-center"
                 >
-                  <LogoIcon size={130} fill="#23160A" className="mb-1" />
-                  <h1 className="text-h1">LivraTime</h1>
-                  <p className="text-h5">O time dos leitores brasileiros</p>
+                  <LogoIcon size={120} fill="#23160A" className="mb-1" />
+                  <h1 className="text-h2">LivraTime</h1>
+                  <p className="text-b2 body-semibold">O time dos leitores brasileiros</p>
                 </motion.div>
               )}
 
@@ -86,7 +86,7 @@ export default function LivraTime() {
                   initial={{ opacity: 0, rotateY: -90 }}
                   animate={{ opacity: 1, rotateY: 0 }}
                   exit={{ opacity: 0, rotateY: 90 }}
-                  transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
                   style={{
                     perspective: 1000,
                     transformStyle: 'preserve-3d',
@@ -100,7 +100,6 @@ export default function LivraTime() {
                     nameStyle="text-h5"
                     initialScale={false}
                     hoverScale={false}
-                    
                   />
                 </motion.div>
               )}
@@ -132,7 +131,7 @@ export default function LivraTime() {
       </div>
 
       {/*Parte de Baixo*/}
-      <div className="h-5/9 w-screen flex flex-row items-center justify-center gap-[32px] bg-[#7BAA5E]">
+      <div data-testid="bottom-section" className="h-5/9 w-screen flex flex-row items-center justify-center gap-[32px] bg-[#B0CC9E]">
 
             {/*LivraTime*/}
             {team.map((member, i) => {

@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Url } from "next/dist/shared/lib/router/router";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 
-import TextlessButton from "./textless-button";
 import GitHubIcon from "./icons/GithubIcon";
 import LinkedinIcon from "./icons/LinkedinIcon";
 
@@ -19,7 +18,6 @@ interface TeamMemberProps {
     github?: Url
     linkedin?: Url
     buttonSize?: 'small' | 'medium' | 'large'
-    buttoColorScheme?: 'light-green' | 'dark-green' | 'light-brown' | 'dark-brown'
     hoverScale?: boolean
 }
 
@@ -33,9 +31,14 @@ export default function TeamMember({
     github,
     linkedin,
     buttonSize = "medium",
-    buttoColorScheme = "light-green",
     hoverScale = true
     }: TeamMemberProps) {
+
+    const iconSize: Record<"small" | "medium" | "large", number> = {
+        small:  24,
+        medium: 28,
+        large:  32
+    }
 
     return (
         <motion.div 
@@ -70,27 +73,23 @@ export default function TeamMember({
             </p>
 
             {/*Botões de Github e LinkedIn*/}
-            <div className="flex flex-row gap-1">
+            <div className="flex flex-row gap-3">
 
                 {/*Botão do Github*/}
                 {github &&
                     <Link href={github} target="_blank">
-                        <TextlessButton
-                            icon={<GitHubIcon />}
-                            size={buttonSize}
-                            colorScheme={buttoColorScheme}
-                        />
+                        <button className="cursor-pointer">
+                            <GitHubIcon size={iconSize[buttonSize]} fill={`${color}`} />
+                        </button>
                     </Link>
                 }
 
                 {/*Botão do LinkedIn*/}
                 {linkedin &&
                     <Link href={linkedin} target="_blank">
-                        <TextlessButton
-                            icon={<LinkedinIcon />}
-                            size={buttonSize}
-                            colorScheme={buttoColorScheme}
-                        />
+                        <button className="cursor-pointer">
+                            <LinkedinIcon size={iconSize[buttonSize]} fill={`${color}`} />
+                        </button>
                     </Link>
                 }
 
