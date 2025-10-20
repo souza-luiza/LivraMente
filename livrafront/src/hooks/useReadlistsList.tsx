@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Readlist } from '../types/readlist';
+import {
+  getPublicReadlists,
+  getOwnReadlists,
+  getFavoriteReadlists
+} from '../services/readlists';
 
 export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas' = 'criadas') {
   const [readlists, setReadlists] = useState<Readlist[]>([]);
@@ -9,26 +14,33 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
   useEffect(() => {
     setLoading(true);
     setError(null);
-    let endpoint = '';
-    if (type === 'favoritadas') {
-      endpoint = `/api/readlists/favorited/${userId}`;
-    } else {
-      endpoint = `/api/readlists/user/${userId}`;
-    }
-    fetch(endpoint)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setReadlists(data);
+
+    async function fetchReadlists() {
+      try {
+        let data: Readlist[] = [];
+        const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+        if (!loggedUserId) throw new Error('Usuário não autenticado');
+
+        if (userId === loggedUserId) {
+          if (type === 'favoritadas') {
+            data = await getFavoriteReadlists();
+          } else {
+            data = await getOwnReadlists();
+          }
         } else {
-          setReadlists([]);
+          data = await getPublicReadlists(userId);
         }
+        setReadlists(Array.isArray(data) ? data : []);
         setLoading(false);
-      })
-      .catch(() => {
-        setError('Erro ao buscar readlists do usuário.');
+      } catch (err: any) {
+        setError(err?.message || 'Erro ao buscar readlists do usuário.');
+        setReadlists([]);
         setLoading(false);
-      });
+      }
+    }
+
+    fetchReadlists();
+    return undefined;
   }, [userId, type]);
 
   return { readlists, loading, error };
