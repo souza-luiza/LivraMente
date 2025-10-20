@@ -103,13 +103,18 @@ export default function UserReadlistsPage() {
           </div>
         )}
         {/* Carregar botão de criação de readlist */}
-        {loading && <LoadingPage />}
         {isMyPage && activeTab === 'minhas' && (
           <CreateReadlist
             open={modalOpen}
             onClose={() => setModalOpen(false)}
             onCreate={handleCreateReadlist}
           />
+        )}
+        {/* Loading */}
+        {loading && (
+          <div className="flex flex-col gap-1 mt-12">
+            <LoadingPage />
+          </div>
         )}
         {/* Erro */}
         {!loading && filteredReadlists.length === 0 && (
@@ -122,8 +127,8 @@ export default function UserReadlistsPage() {
           </div>
         )}
         {/* Cards de readlists */}
-        {filteredReadlists.length > 0 && (
-          <div className="flex flex-col gap-1 w-full mt-8">
+        {!loading && filteredReadlists.length > 0 && (
+          <div className="flex flex-col gap-1 mt-8">
             {filteredReadlists.map((r) => (
               <ReadlistCard key={r._id} r={{...r, favorito: activeTab === 'favoritas' ? true : r.favorito, nome: activeTab === 'favoritas' ? 'Favoritada' : r.nome }} userId={loggedUserId} />
             ))}
