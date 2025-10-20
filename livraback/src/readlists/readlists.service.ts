@@ -5,13 +5,15 @@ import { Model } from 'mongoose';
 import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { User, UserDocument } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ReadlistsService {
 
     constructor(
         @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
-        @InjectModel(User.name) private readonly userModel: Model<UserDocument>
+        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+        private readonly usersService: UsersService,
     ) {}
 
     async create(criadorId: string, createReadlistDto: CreateReadlistDto) {
@@ -101,8 +103,11 @@ export class ReadlistsService {
         }
     }
 
-    async findAllPublic(criadorId: string) {
-        return await this.readlistModel.find({ criador: criadorId, publica: true }).exec();
+    async findAllPublic(username: string) {
+        const user = await this.usersService.getByUsername(username);
+        if (!user) throw new NotFoundException('Usuário não encontrado');
+        const resultado = await this.userModel.findById(user._id).populate({ path:'readlists', match: { publica: true }, select: '-favorito' }).exec();
+        return resultado?.readlists;
     }
 
     async addLivro(criadorId: string, readlistId: string, livroId: string) {
