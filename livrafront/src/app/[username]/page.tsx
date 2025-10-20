@@ -8,6 +8,7 @@ import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 import ProfilePosts from "@/components/profile-posts";
+import ProfileBadge from "@/components/profile-badge";
 
 interface UserProfilePageProps {
     params: Promise<{username: string}>;
@@ -26,8 +27,11 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
         <div className="min-h-screen flex bg-[#E5EEDF]">
             <Sidebar />
             <main className="flex-1 flex flex-col items-center p-4">
-                <div className="w-48 h-48 mb-4">
+                <div className="w-48 h-48 mb-4 relative">
                     <ProfileIcon size={190} percentage={68} className="text-[var(--success-700)]" />
+                    <div className="absolute top-0 right-0 -translate-y-0 translate-x-12">
+                        <ProfileBadge content="15000" width={60} height={30} />
+                    </div>
                 </div>
                 <h4 className="text-3xl font-bold pb-2 text-h5">@{username}</h4>
                 <p className="pb-4 text-b1 body-quotation">{pronouns}</p>
