@@ -120,13 +120,13 @@ describe('ReadlistsController', () => {
   });
 
   describe('findAllPublic', () => {
-    it('should return all public readlists for a given userId', async () => {
-      const userId = 'otherUser456';
+    it('should return all public readlists for a given username', async () => {
+      const username = 'otherUser456';
       const result = [{ id: '1', nome: 'Readlist Pública', isPublic: true }];
       mockReadlistsService.findAllPublic.mockResolvedValue(result);
 
-      const response = await controller.findAllPublic(userId);
-      expect(service.findAllPublic).toHaveBeenCalledWith(userId);
+      const response = await controller.findAllPublic(username);
+      expect(service.findAllPublic).toHaveBeenCalledWith(username);
       expect(response).toEqual(result);
     });
   });

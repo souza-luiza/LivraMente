@@ -4,11 +4,13 @@ import { ReadlistsService } from './readlists.service';
 import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 
 describe('ReadlistsService', () => {
   let service: ReadlistsService;
 
   const mockReadlist = { _id: '1', nome: 'Minha Readlist', criador: 'user123' };
+  const publicReadlist = { _id: '1', nome: 'Readlist Pública', publica: true };
 
   const mockSave = jest.fn().mockResolvedValue(mockReadlist);
 
@@ -30,8 +32,17 @@ describe('ReadlistsService', () => {
     }),
   };
 
+  const mockPopulate = jest.fn().mockReturnValue({
+    exec: jest.fn().mockResolvedValue({ readlists: [publicReadlist] }),
+  });
+
   const mockUserModel = {
     findByIdAndUpdate: jest.fn(),
+    findById: jest.fn().mockReturnValue({ populate: mockPopulate }),
+  };
+
+  const mockUsersService = {
+    getByUsername: jest.fn().mockResolvedValue({ _id: 'user123', username: 'user123' }),
   };
 
   beforeEach(async () => {
@@ -45,6 +56,10 @@ describe('ReadlistsService', () => {
         {
           provide: getModelToken('User'),
           useValue: mockUserModel,
+        },
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
         },
       ],
     }).compile();
@@ -62,7 +77,12 @@ describe('ReadlistsService', () => {
       const mockConstructor = jest.fn().mockImplementation(() => ({
         save: mockSave,
       }));
-      const customService = new ReadlistsService(mockConstructor as any, mockUserModel as any);
+
+      const customService = new ReadlistsService(
+        mockConstructor as any,
+        mockUserModel as any,
+        mockUsersService as any,
+      );
 
       const result = await customService.create('user123', createDto);
       expect(mockSave).toHaveBeenCalled();
@@ -124,9 +144,8 @@ describe('ReadlistsService', () => {
     });
 
     it('should throw BadRequestException on CastError', async () => {
-      const castError = { name: 'CastError' };
       mockReadlistModel.findOneAndUpdate.mockReturnValueOnce({
-        exec: jest.fn().mockRejectedValue(castError),
+        exec: jest.fn().mockRejectedValue({ name: 'CastError' }),
       });
 
       await expect(service.update('user123', 'invalid', { nome: 'x' })).rejects.toThrow(BadRequestException);
@@ -217,8 +236,19 @@ describe('ReadlistsService', () => {
   describe('findAllPublic', () => {
     it('should return all public readlists for a user', async () => {
       const result = await service.findAllPublic('user123');
-      expect(mockReadlistModel.find).toHaveBeenCalledWith({ criador: 'user123', publica: true });
-      expect(result).toEqual([mockReadlist]);
+
+      expect(mockUsersService.getByUsername).toHaveBeenCalledWith('user123');
+      expect(mockPopulate).toHaveBeenCalledWith({
+        path: 'readlists',
+        match: { publica: true },
+        select: '-favorito',
+      });
+      expect(result).toEqual([publicReadlist]);
+    });
+
+    it('should throw NotFoundException if user not found', async () => {
+      mockUsersService.getByUsername.mockResolvedValueOnce(null);
+      await expect(service.findAllPublic('user123')).rejects.toThrow(NotFoundException);
     });
   });
 });
