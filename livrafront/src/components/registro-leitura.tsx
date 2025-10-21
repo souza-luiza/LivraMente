@@ -16,7 +16,7 @@ interface RegistroLeituraProps {
 
 export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
-    const [show, setShow] = useState(true)
+    const [show, setShow] = useState(false)
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
     const [xp, setXp] = useState(0)
 
@@ -79,36 +79,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
         }))
     }
 
-    const validateForm = (): boolean => {
-        const newErrors = {
-            pagesRead: '',
-            minutesRead: '',
-            bookAmount: ''
-        }
-
-        let isValid = true
-
-        if (step === 1) {
-            if (!formData.pagesRead || formData.pagesRead === '0') {
-                newErrors.pagesRead = 'Por favor, informe o número de páginas lidas'
-                isValid = false
-            }
-        } else {
-            if (!formData.minutesRead || formData.minutesRead === '0') {
-                newErrors.minutesRead = 'Por favor, informe o número de minutos lidos'
-                isValid = false
-            }
-        }
-
-        if (formData.bookAmount && parseInt(formData.bookAmount) < 0) {
-            newErrors.bookAmount = 'A quantidade de livros não pode ser negativa'
-            isValid = false
-        }
-
-        setErrors(newErrors)
-        return isValid
-    }
-
     // Verifica se o usuário está logado e se já registrou a leitura hoje
     useEffect(() => {
         if (!isLoggedIn) return
@@ -126,10 +96,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
     const handleOnSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
-        if (!validateForm()) {
-            return
-        }
 
         try {
             // TODO: INTEGRAÇÃO COM A API
