@@ -42,10 +42,8 @@ export default function UserReadlistsPage() {
   type TabType = 'minhas' | 'favoritas';
   const [activeTab, setActiveTab] = useState<TabType>('minhas');
   const [modalOpen, setModalOpen] = useState(false);
-  const { handleCreateReadlist } = useCreateReadlist(loggedUserId);
-
-  // Usar hook com tipo correto para cada tab
-  const { readlists, loading, error } = useReadlistsList(pageUserId, isMyPage ? (activeTab === 'minhas' ? 'criadas' : 'favoritadas') : 'criadas');
+  const { handleCreateReadlist, isLoading, apiError, clearApiError } = useCreateReadlist(loggedUserId);
+  const { readlists, loading, error, refetch } = useReadlistsList(pageUserId, isMyPage ? (activeTab === 'minhas' ? 'criadas' : 'favoritadas') : 'criadas');
 
   // Se não for minha página, mostrar só públicas
   const filteredReadlists = isMyPage
@@ -106,7 +104,15 @@ export default function UserReadlistsPage() {
           <CreateReadlist
             open={modalOpen}
             onClose={() => setModalOpen(false)}
-            onCreate={handleCreateReadlist}
+            onCreate={async (data, setError) => {
+              await handleCreateReadlist(data, setError, () => {
+                // após criar readlist, refetch da lista
+                refetch();
+              });
+            }}
+            isLoading={isLoading}
+            apiError={apiError}
+            clearApiError={clearApiError}
           />
         )}
         {/* Loading */}

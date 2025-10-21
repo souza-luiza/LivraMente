@@ -4,18 +4,30 @@ import Input from "./general-input";
 import Button from "./button";
 import RemoveIcon from "./icons/RemoveIcon";
 import CheckIcon from "./icons/CheckIcon";
+import { createReadlistSchema } from '@/lib/validations/create-readlist'
+import { ZodError } from 'zod'
 
 interface CreateReadlistProps {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: { nome: string; descricao?: string; publica: boolean }) => void;
+  onCreate: (data: { nome: string; descricao?: string; publica: boolean }, setError?: (msg:string)=>void) => void | Promise<void>;
+  isLoading?: boolean;
+  apiError?: string;
+  clearApiError?: () => void;
 }
 
-export function CreateReadlist({ open, onClose, onCreate }: CreateReadlistProps) {
+export function CreateReadlist({ open, onClose, onCreate, isLoading, apiError, clearApiError }: CreateReadlistProps) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [publica, setPublica] = useState(true);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{nome?:string, descricao?:string}>({});
+  // mostra erro da API
+  useEffect(()=>{
+    if(apiError){
+      setError(apiError);
+    }
+  }, [apiError]);
   const [capa, setCapa] = useState<File | null>(null);
   const [capaPreview, setCapaPreview] = useState<string>("");
 
@@ -35,11 +47,27 @@ export function CreateReadlist({ open, onClose, onCreate }: CreateReadlistProps)
     e.preventDefault();
     let localError = "";
     const setLocalError = (msg: string) => { localError = msg; setError(msg); };
-    if (onCreate.length === 2) {
+
+    // Validação dos campos e exibição de erros
+    try {
+      createReadlistSchema.parse({ titulo: nome, descricao, publica });
+      setFieldErrors({});
+      setError('');
+    } catch (err: unknown) {
+      if (err instanceof ZodError) {
+        const titleMsg = err.issues?.find(i => i.path?.[0] === 'titulo')?.message || 'Título inválido';
+        setFieldErrors(prev => ({ ...prev, nome: titleMsg }));
+        setError(titleMsg);
+        return;
+      }
+    }
+
+    if (onCreate.length >= 2) {
       await (onCreate as any)({ nome, descricao, publica }, setLocalError);
     } else {
       await onCreate({ nome, descricao, publica });
     }
+
     if (!localError && nome.trim()) {
       setNome("");
       setDescricao("");
@@ -48,6 +76,32 @@ export function CreateReadlist({ open, onClose, onCreate }: CreateReadlistProps)
       setCapa(null);
       setCapaPreview("");
       onClose();
+    }
+  }
+
+  // Atualização de  erros em tempo real
+  function handleNomeChange(e: React.ChangeEvent<HTMLInputElement>){
+    const v = e.target.value;
+    setNome(v);
+    try {
+      createReadlistSchema.shape.titulo.parse(v);
+      setFieldErrors(prev => ({...prev, nome: undefined}));
+      setError('');
+      if(typeof clearApiError === 'function') clearApiError();
+    } catch(err:any){
+      if (err instanceof ZodError) setFieldErrors(prev => ({...prev, nome: err.issues[0]?.message}));
+    }
+  }
+
+  function handleDescricaoChange(e: React.ChangeEvent<HTMLInputElement>){
+    const v = e.target.value;
+    setDescricao(v);
+    try{
+      createReadlistSchema.shape.descricao.parse(v);
+      setFieldErrors(prev => ({...prev, descricao: undefined}));
+      if(typeof clearApiError === 'function') clearApiError();
+    }catch(err:any){
+      if (err instanceof ZodError) setFieldErrors(prev => ({...prev, descricao: err.issues[0]?.message}));
     }
   }
 
@@ -72,19 +126,25 @@ export function CreateReadlist({ open, onClose, onCreate }: CreateReadlistProps)
           label={"Nome da readlist"}
           placeholder={"Nome da readlist"}
           value={nome}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value)}
-          error={error ? "* Título é obrigatório" : undefined}
-          required
+          onChange={handleNomeChange}
+          error={fieldErrors.nome || undefined}
           fullWidth
           inputSize="large"
         />
+        {(fieldErrors.nome || error) && (
+          <p role="alert" className="text-b3 text-red-600 mt-1">{fieldErrors.nome || (error ? '* Título é obrigatório' : '')}</p>
+        )}
         <Input
           label="Descrição (opcional)"
           value={descricao}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescricao(e.target.value)}
+          onChange={handleDescricaoChange}
+          error={fieldErrors.descricao}
           fullWidth
           inputSize="large"
         />
+        {fieldErrors.descricao && (
+          <p role="alert" className="text-b3 text-red-600 mt-1">{fieldErrors.descricao}</p>
+        )}
         {/* Visibilidade */}
         <div className="flex items-center gap-4 mt-2">
           <span className="text-b2 font-semibold">Visibilidade:</span>
@@ -110,7 +170,7 @@ export function CreateReadlist({ open, onClose, onCreate }: CreateReadlistProps)
         </div>
           <div className="flex gap-2 mt-4 justify-center">
             <Button type="button" text="Cancelar" icon={<RemoveIcon />} size="medium" colorScheme="light-brown" onClick={onClose} />
-            <Button type="submit" text="Confirmar" icon={<CheckIcon />} size="medium" colorScheme="light-green" />
+            <Button type="submit" text={isLoading?"Criando...":"Confirmar"} icon={<CheckIcon />} size="medium" colorScheme="light-green" disabled={!!isLoading} />
           </div>
       </form>
     </div>
