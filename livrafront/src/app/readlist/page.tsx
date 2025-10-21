@@ -9,6 +9,7 @@ import ShareIcon from '@/components/icons/ShareIcon';
 import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';
 import StarIcon from '@/components/icons/StarIcon';
+import HeartIcon from '@/components/icons/HeartIcon';
 
 export default function ReadlistPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -53,17 +54,16 @@ export default function ReadlistPage() {
 
       {/* Conteúdo Principal */}
       <div 
-        className="flex-1 overflow-y-auto px-4 md:px-8 lg:px-[200px] py-8 md:py-12" 
-        style={{ maxWidth: '1500px' }}
+        className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 md:py-12 w-full max-w-[1600px] mx-auto" 
+        style={{ }}
       >
         {/* SEÇÃO 1: Barra de Pesquisa */}
         <div style={{ marginBottom: 'var(--large-padding)' }}>
           <div 
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 w-full"
             style={{ 
               backgroundColor: 'var(--primary-300)',
               borderRadius: '999px',
-              minWidth: '1270px',
               padding: '12px var(--large-padding)'
             }}
           >
@@ -82,23 +82,25 @@ export default function ReadlistPage() {
 
         {/* SEÇÃO 2: Header da Readlist */}
         <div
-          className="light-green"
+          className="light-green w-full flex items-center justify-left"
           style={{
             backgroundColor: 'var(--primary-200)',
             minHeight: '280px',
-            padding: 'calc(var(--large-padding) + 40px) var(--small-padding) var(--large-padding)',
+            padding: 'var(--large-padding)',
             borderRadius: 'var(--large-border-radius)',
             marginBottom: 'var(--large-padding)',
-            position: 'relative',
-            minWidth: '1270px'
+            position: 'relative'
           }}
         >
           {/* Ícones de Ação */}
-          <div className="flex flex-row md:flex-col gap-2 md:gap-0" style={{ 
-            position: 'absolute',
-            top: '10px',
-            right: '10px'
-          }}>
+          <div
+            className="flex flex-row md:flex-col gap-2 md:gap-0"
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+            }}
+          >
             <button 
               className="textless-medium"
               style={{ 
@@ -108,7 +110,7 @@ export default function ReadlistPage() {
               aria-label="Curtir"
               onClick={() => setIsLiked(!isLiked)}
             >
-              <LikeIcon 
+              <HeartIcon
                 size={50}
                 style={{ 
                   color: 'var(--primary-600)', 
@@ -158,16 +160,14 @@ export default function ReadlistPage() {
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center w-full max-w-4xl">
             {/* Imagem de Capa */}
             <div 
-              className="relative overflow-hidden flex-shrink-0 mx-auto md:mx-0"
+              className="relative overflow-hidden flex-shrink-0"
               style={{ 
                 width: '200px',
                 height: '180px',
-                borderRadius: 'var(--large-border-radius)',
-                marginTop: '-10px',
-                marginBottom: '-20px'
+                borderRadius: 'var(--large-border-radius)'
               }}
             >
               <Image 
@@ -179,128 +179,110 @@ export default function ReadlistPage() {
             </div>
 
             {/* Informações */}
-            <div className="flex-1">
-              <div>
-                <h1 className="text-h1 text-center md:text-left" style={{ 
-                  color: 'var(--secondary-700)',
-                  marginBottom: 'var(--extra-small-padding)',
-                  marginTop: '0px',
-                  marginLeft: '0px'
-                }}>
-                  {readlist.title}
-                </h1>
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <div 
-                    className="relative rounded-full overflow-hidden"
-                    style={{ width: '45px', height: '45px' }}
-                  >
-                    <Image 
-                      src={readlist.author.avatar}
-                      alt={readlist.author.username}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <span className="text-b1" style={{ color: 'var(--secondary-800)' }}>
-                    {readlist.author.username}
-                  </span>
+            <div className="flex flex-col items-center md:items-start justify-center flex-1">
+              <h1 className="text-h1 text-center md:text-left" style={{ 
+                color: 'var(--secondary-700)',
+                marginBottom: 'var(--extra-small-padding)',
+                marginTop: '0px'
+              }}>
+                {readlist.title}
+              </h1>
+              <div className="flex items-center gap-2 justify-center md:justify-start">
+                <div 
+                  className="relative rounded-full overflow-hidden"
+                  style={{ width: '45px', height: '45px' }}
+                >
+                  <Image 
+                    src={readlist.author.avatar}
+                    alt={readlist.author.username}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
+                <span className="text-b1" style={{ color: 'var(--secondary-800)' }}>
+                  {readlist.author.username}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* SEÇÃO 3: Container agrupado */}
-        <div className="flex gap-6" style={{ alignItems: 'flex-start' }}>
-          {/* Container principal */}
-          <div 
-            className="light-neutral flex-1"
-            style={{ 
-              borderRadius: 'var(--large-border-radius)',
-              padding: '0px'
-            }}
-          >
-            {/* Descrição e Estatísticas */}
-            <div 
-              className="flex flex-col lg:flex-row gap-6"
-              style={{ 
-                marginBottom: '0px',
-                paddingBottom: 'var(--large-padding)',
-                borderBottom: '1px solid var(--secondary-600)',
-                maxWidth: '946px',
-                alignItems: 'flex-start'
-              }}
-            >
-              {/* Descrição */}
-              <div className="flex-1">
-                <p className="text-b2" style={{ minWidth: '946px', color: 'var(--secondary-800)' }}>
-                  {readlist.description}
-                </p>
-              </div>
-
-              {/* Indicador de Progresso */}
-              <div 
-                className="light-brown w-full lg:w-auto"
-                style={{ 
-                  backgroundColor: 'var(--secondary-200)',
-                  borderRadius: 'var(--large-border-radius)',
-                  padding: 'var(--medium-padding)',
-                  minWidth: '300px',
-                  flexShrink: 0
-                }}
-              >
-              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--extra-small-padding)' }}>
-                <div>
-                  <p className="text-b1" style={{ 
-                    color: 'var(--secondary-800)',
-                    marginBottom: '2px'
-                  }}>
-                    Você já leu
-                  </p>
-                  <p className="text-b1" style={{ 
-                    color: 'var(--secondary-800)'
-                  }}>
-                    {readlist.progress.read} de {readlist.progress.total}
-                  </p>
-                </div>
-                <p className="text-h3 body-semibold" style={{ 
-                  color: 'var(--secondary-800)'
-                }}>
-                  {readlist.progress.percentage}%
-                </p>
-              </div>
-
-              {/* Barra de Progresso */}
-              <div 
-                style={{ 
-                  width: '100%',
-                  height: '8px',
-                  backgroundColor: 'var(--secondary-100)',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  marginTop: 'var(--extra-small-padding)'
-                }}
-              >
-                <div 
-                  style={{ 
-                    width: `${readlist.progress.percentage}%`,
-                    height: '100%',
-                    backgroundColor: 'var(--secondary-400)',
-                    borderRadius: '4px',
-                    transition: 'width 0.3s ease-in-out'
-                  }}
-                />
-              </div>
-            </div>
+        {/* SEÇÃO 3: Descrição e Indicador de Progresso */}
+        <div className="flex flex-col lg:flex-row gap-6 w-full" style={{ 
+          marginBottom: 'var(--large-padding)',
+          paddingBottom: 'var(--large-padding)',
+          borderBottom: '1px solid var(--secondary-600)',
+          alignItems: 'flex-start'
+        }}>
+          {/* Descrição */}
+          <div className="flex-1 w-full">
+            <p className="text-b2 w-full" style={{ color: 'var(--secondary-800)', textAlign: 'justify' }}>
+              {readlist.description}
+            </p>
           </div>
 
+          {/* Indicador de Progresso */}
+          <div 
+            className="light-brown w-full lg:w-auto lg:max-w-[350px]"
+            style={{ 
+              backgroundColor: 'var(--secondary-200)',
+              borderRadius: 'var(--large-border-radius)',
+              padding: 'var(--medium-padding)',
+              minWidth: '280px',
+              flexShrink: 0
+            }}
+          >
+            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--extra-small-padding)' }}>
+              <div>
+                <p className="text-b1" style={{ 
+                  color: 'var(--secondary-800)',
+                  marginBottom: '2px'
+                }}>
+                  Você já leu
+                </p>
+                <p className="text-b1" style={{ 
+                  color: 'var(--secondary-800)'
+                }}>
+                  {readlist.progress.read} de {readlist.progress.total}
+                </p>
+              </div>
+              <p className="text-h3 body-semibold" style={{ 
+                color: 'var(--secondary-800)'
+              }}>
+                {readlist.progress.percentage}%
+              </p>
+            </div>
+
+            {/* Barra de Progresso */}
+            <div 
+              style={{ 
+                width: '100%',
+                height: '8px',
+                backgroundColor: 'var(--secondary-100)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                marginTop: 'var(--extra-small-padding)'
+              }}
+            >
+              <div 
+                style={{ 
+                  width: `${readlist.progress.percentage}%`,
+                  height: '100%',
+                  backgroundColor: 'var(--secondary-400)',
+                  borderRadius: '4px',
+                  transition: 'width 0.3s ease-in-out'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SEÇÃO 4: Controles de Visualização e Grid/Lista */}
+        <div className="w-full">
           {/* Controles de Visualização */}
-          <div className="flex justify-end" style={{ 
+          <div className="flex justify-end w-full" style={{ 
             gap: 'var(--extra-small-padding)',
-            marginBottom: 'var(--large-padding)',
-            marginTop: 'var(--large-padding)',
-            maxWidth: '946px',
-            width: '100%'
+            marginBottom: 'var(--large-padding)'
           }}>
             <button 
               className="textless-medium"
@@ -329,7 +311,7 @@ export default function ReadlistPage() {
           {/* Visualização Condicional */}
           {viewMode === 'grid' ? (
             /* Grid de Livros */
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" style={{ gap: 'var(--small-padding)', maxWidth: '946px', width: '100%' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 w-full" style={{ gap: 'var(--small-padding)' }}>
               {readlist.books.map((book, index) => (
                 <div 
                   key={book.id}
@@ -362,7 +344,7 @@ export default function ReadlistPage() {
             </div>
           ) : (
             /* List View */
-            <div className="flex flex-col" style={{ gap: 'var(--medium-padding)', maxWidth: '946px', width: '100%' }}>
+            <div className="flex flex-col w-full" style={{ gap: 'var(--medium-padding)' }}>
               {readlist.books.map((book) => (
                 <div 
                   key={book.id}
@@ -431,11 +413,7 @@ export default function ReadlistPage() {
               ))}
             </div>
           )}
-          </div>
-          {/* Fim do container principal */}
-
         </div>
-        {/* Fim do container agrupado */}
 
       </div>
     </div>
