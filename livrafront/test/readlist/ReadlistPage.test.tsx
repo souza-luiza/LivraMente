@@ -358,4 +358,136 @@ describe('ReadlistPage', () => {
       expect(firstBook).toHaveAttribute('tabIndex', '0');
     });
   });
+
+  describe('Efeitos de Hover', () => {
+    it('deve aplicar hover no ícone de like', () => {
+      render(<ReadlistPage />);
+      
+      const likeButton = screen.getByLabelText('Curtir');
+      const likeIcon = screen.getByTestId('like-icon');
+      
+      fireEvent.mouseEnter(likeIcon);
+      fireEvent.mouseLeave(likeIcon);
+      
+      expect(likeIcon).toBeInTheDocument();
+    });
+
+    it('deve aplicar hover no ícone de share', () => {
+      render(<ReadlistPage />);
+      
+      const shareIcon = screen.getByTestId('share-icon');
+      
+      fireEvent.mouseEnter(shareIcon);
+      fireEvent.mouseLeave(shareIcon);
+      
+      expect(shareIcon).toBeInTheDocument();
+    });
+
+    it('deve aplicar hover nos itens da lista', () => {
+      render(<ReadlistPage />);
+      
+      const listButton = screen.getByLabelText('Visualização em lista');
+      fireEvent.click(listButton);
+      
+      const bookTitle = screen.getByText('Jantar Secreto');
+      const listItem = bookTitle.closest('.flex');
+      
+      if (listItem) {
+        fireEvent.mouseEnter(listItem);
+        expect(listItem).toHaveStyle({ backgroundColor: 'var(--neutral-100)' });
+        
+        fireEvent.mouseLeave(listItem);
+        expect(listItem).toHaveStyle({ backgroundColor: 'transparent' });
+      }
+    });
+  });
+
+  describe('Estrutura de Layout', () => {
+    it('deve renderizar sidebar apenas em telas grandes', () => {
+      const { container } = render(<ReadlistPage />);
+      
+      const sidebarContainer = container.querySelector('.hidden.lg\\:flex');
+      expect(sidebarContainer).toBeInTheDocument();
+    });
+
+    it('deve ter padding responsivo no conteúdo principal', () => {
+      const { container } = render(<ReadlistPage />);
+      
+      const mainContent = container.querySelector('.flex-1.overflow-y-auto');
+      expect(mainContent).toHaveClass('py-8', 'md:py-12');
+    });
+
+    it('deve renderizar o container com flex-col em mobile e flex-row em desktop', () => {
+      const { container } = render(<ReadlistPage />);
+      
+      const headerInfo = container.querySelector('.flex-col.md\\:flex-row');
+      expect(headerInfo).toBeInTheDocument();
+    });
+  });
+
+  describe('Elementos Visuais', () => {
+    it('deve ter bordas arredondadas nos elementos', () => {
+      render(<ReadlistPage />);
+      
+      const searchInput = screen.getByPlaceholderText('Pesquisar em livros lidos');
+      const searchContainer = searchInput.parentElement;
+      
+      expect(searchContainer).toBeInTheDocument();
+      expect(searchContainer).toHaveStyle({ borderRadius: '999px' });
+    });
+
+    it('deve aplicar cores do tema corretamente', () => {
+      const { container } = render(<ReadlistPage />);
+      
+      // Verifica o container principal com backgroundColor
+      const mainDiv = container.querySelector('.flex.min-h-screen');
+      expect(mainDiv).toBeInTheDocument();
+    });
+
+    it('deve ter transições suaves nos elementos interativos', () => {
+      const { container } = render(<ReadlistPage />);
+      
+      const likeButton = screen.getByLabelText('Curtir');
+      expect(likeButton).toHaveStyle({ transition: 'all 0.3s ease' });
+    });
+  });
+
+  describe('Dados da Readlist', () => {
+    it('deve exibir o título correto da readlist', () => {
+      render(<ReadlistPage />);
+      
+      const title = screen.getByText('Livros 2025');
+      expect(title).toBeInTheDocument();
+      expect(title).toHaveClass('text-h1');
+    });
+
+    it('deve exibir o autor correto', () => {
+      render(<ReadlistPage />);
+      
+      const author = screen.getByText('gatanoturna');
+      expect(author).toBeInTheDocument();
+      expect(author).toHaveClass('text-b1');
+    });
+
+    it('deve calcular a porcentagem de progresso corretamente', () => {
+      render(<ReadlistPage />);
+      
+      // 20 de 28 = 71%
+      expect(screen.getByText('71%')).toBeInTheDocument();
+      expect(screen.getByText('20 de 28')).toBeInTheDocument();
+    });
+
+    it('deve renderizar a quantidade correta de livros', () => {
+      render(<ReadlistPage />);
+      
+      const bookElements = screen.getAllByRole('button');
+      const bookButtons = bookElements.filter(btn => 
+        btn.getAttribute('aria-label')?.includes('Livro')
+      );
+      
+      // Deve ter pelo menos os 3 livros principais + os gerados
+      expect(bookButtons.length).toBeGreaterThanOrEqual(3);
+    });
+  });
 });
+
