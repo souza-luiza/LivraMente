@@ -6,7 +6,6 @@ import ProfileIcon from "./icons/ProfileIcon";
 import NotificationsIcon from "./icons/NotificationsIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
-import Link from "next/link";
 
 export default function Sidebar() {
     return (
