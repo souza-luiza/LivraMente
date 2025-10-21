@@ -21,7 +21,13 @@ describe('UsersController', () => {
     findOne: jest.fn().mockResolvedValue(mockUser),
     update: jest.fn().mockResolvedValue({ ...mockUser, username: 'Updated' }),
     remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
-    registroLeitura: jest.fn().mockResolvedValue({ ganhoXP: 30 })
+    registroLeitura: jest.fn().mockResolvedValue({ ganhoXP: 30 }),
+    favoritarReadlist: jest.fn().mockResolvedValue({ message: 'Readlist favoritada com sucesso' }),
+    desfavoritarReadlist: jest.fn().mockResolvedValue({ message: 'Readlist removida dos favoritos com sucesso' }),
+    findReadlistsFavoritas: jest.fn().mockResolvedValue([
+      { _id: 'r1', nome: 'Readlist 1' },
+      { _id: 'r2', nome: 'Readlist 2' },
+    ]),
   };
 
   beforeEach(async () => {
@@ -138,6 +144,56 @@ describe('UsersController', () => {
 
       expect(usersService.registroLeitura).toHaveBeenCalledWith(currentUser.userId, dto.opcao, dto.qtd);
       expect(result).toEqual({ ganhoXP: 25 });
+    });
+  });
+
+  describe('favoritarReadlist', () => {
+    it('deve favoritar uma readlist', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const readlistId = 'readlist-id';
+
+      mockUsersService.favoritarReadlist = jest.fn().mockResolvedValue({
+        message: 'Readlist favoritada com sucesso',
+      });
+
+      const result = await controller.favoritarReadlist(currentUser, readlistId);
+
+      expect(usersService.favoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(result).toEqual({ message: 'Readlist favoritada com sucesso' });
+    });
+  });
+
+  describe('desfavoritarReadlist', () => {
+    it('deve desfavoritar uma readlist', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const readlistId = 'readlist-id';
+
+      mockUsersService.desfavoritarReadlist = jest.fn().mockResolvedValue({
+        message: 'Readlist removida dos favoritos com sucesso',
+      });
+
+      const result = await controller.desfavoritarReadlist(currentUser, readlistId);
+
+      expect(usersService.desfavoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(result).toEqual({ message: 'Readlist removida dos favoritos com sucesso' });
+    });
+  });
+
+  describe('findReadlistsFavoritas', () => {
+    it('deve retornar as readlists favoritas do usuário', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+
+      const mockReadlists = [
+        { _id: 'r1', nome: 'Readlist 1' },
+        { _id: 'r2', nome: 'Readlist 2' },
+      ];
+
+      mockUsersService.findReadlistsFavoritas = jest.fn().mockResolvedValue(mockReadlists);
+
+      const result = await controller.findReadlistsFavoritas(currentUser);
+
+      expect(usersService.findReadlistsFavoritas).toHaveBeenCalledWith(currentUser.userId);
+      expect(result).toEqual(mockReadlists);
     });
   });
 });
