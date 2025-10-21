@@ -13,7 +13,6 @@ import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 
 export default function UserReadlistsPage() {
-  const gingerImg = '/ginger.jpg';
   // userId logado
   const loggedUserId = typeof window !== "undefined" ? localStorage.getItem("userId") || "1" : "1";
   // userId da página (pode vir da query string)
@@ -54,7 +53,7 @@ export default function UserReadlistsPage() {
     : readlists.filter(r => r.publica);
 
   return (
-    <div className="flex min-h-screen m-0 bg-[#f8fafc]">
+  <div className="flex min-h-screen h-screen m-0 bg-white">
       <Sidebar />
       <div className="flex-1 p-8 m-0">
         <div className="flex items-center gap-3 mb-4 border-none p-0">
@@ -86,14 +85,14 @@ export default function UserReadlistsPage() {
             <div className="flex gap-2">
               <button
                 className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${activeTab === 'minhas' ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105' : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'}`}
-                onClick={() => setActiveTab('minhas' as TabType)}
+                onClick={() => setActiveTab('minhas')}
                 style={{ fontFamily: 'var(--font-poppins)', fontWeight: 600 }}
               >
                 Criadas por mim
               </button>
               <button
                 className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${activeTab !== 'minhas' ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105' : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'}`}
-                onClick={() => setActiveTab('favoritas' as TabType)}
+                onClick={() => setActiveTab('favoritas')}
                 style={{ fontFamily: 'var(--font-poppins)', fontWeight: 600 }}
                 data-testid="favoritas-tab"
               >
@@ -111,11 +110,12 @@ export default function UserReadlistsPage() {
           />
         )}
         {/* Loading */}
-        {loading && (
-          <div className="flex flex-col gap-1 mt-12">
-            <LoadingPage />
-          </div>
-        )}
+        <div className="relative min-h-[200px] w-full">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+              <LoadingPage />
+            </div>
+          )}
         {/* Erro */}
         {!loading && filteredReadlists.length === 0 && (
           <div className="flex flex-col items-start justify-start mt-2 w-full">
@@ -134,6 +134,7 @@ export default function UserReadlistsPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

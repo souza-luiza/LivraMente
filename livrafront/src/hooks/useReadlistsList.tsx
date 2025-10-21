@@ -19,7 +19,7 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
       try {
         let data: Readlist[] = [];
         const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-        if (!loggedUserId) throw new Error('Usuário não autenticado');
+        if (!loggedUserId) throw new Error('Usuário não autenticado.');
 
         if (userId === loggedUserId) {
           if (type === 'favoritadas') {
