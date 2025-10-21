@@ -1,32 +1,19 @@
 import SearchIcon from "./icons/SearchIcon";
 import { InputHTMLAttributes } from 'react';
 
-interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {
-  inputSize?: 'small' | 'medium' | 'large'
-}
+interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> { }
 
-export default function SearchBar({ className, inputSize = 'medium', ...props }: SearchBarProps) {
-  const boxSize: Record<'small' | 'medium' | 'large', string> = {
-    small:  "small-box",
-    medium: "medium-box",
-    large:  "large-box"
-  };
-
-  const textStyle: Record<'small' | 'medium' | 'large', string> = {
-    small:  'text-b3',
-    medium: 'text-b2',
-    large:  'text-b1'
-  };
-  
+export default function SearchBar({ className, ...props }: SearchBarProps) {
   return (
-    <div className={`relative w-full ${className}`}>
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#95BB7E]">
+    <div className={`relative w-full max-w-md ${className}`}>
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#95BB7E]">
         <SearchIcon size={20} />
       </span>
 
       <input
         type="text"
-        className={`w-full pl-12 pr-4 bg-[#B0CC9E] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] ${boxSize[inputSize]} ${textStyle[inputSize]}`}
+        className="w-full pr-4 bg-[#CADDBF] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] small-box text-b3" 
+        style={{ paddingLeft: '2rem' }}
         {...props}
       />
     </div>

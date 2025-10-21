@@ -58,24 +58,10 @@ describe('SearchBar Component', () => {
     expect(inputElement).toHaveValue(testString);
   });
 
-  // Size tests
-  describe('Sizes', () => {
-    it('should apply small size styles', () => {
-      render(<SearchBar inputSize="small" />);
-      const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('text-b3 small-box');
-    });
-
-    it('should apply medium size styles by default', () => {
-      render(<SearchBar />);
-      const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('text-b2 medium-box');
-    });
-
-    it('should apply large size styles', () => {
-      render(<SearchBar inputSize="large" />);
-      const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('text-b1 large-box');
-    });
+  // Test for fixed size
+  it('should always apply small size styles', () => {
+    render(<SearchBar />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('small-box text-b3');
   });
 });
