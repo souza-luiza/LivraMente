@@ -100,7 +100,7 @@ export default function ReadlistPage() {
       />
 
       {/* Sidebar Fixa */}
-      <div className="hidden lg:flex min-h-screen bg-[#E5EEDF]">
+      <div>
         <Sidebar />
       </div>
 
