@@ -39,7 +39,7 @@ es-unifesp-2025-2-grupo-alpha/
 
 ### 📝 Descrição dos Componentes
 
-- **automations/**: Seção dedicada aos testes automatizados
+- **.github/workflows/**: Seção dedicada aos testes automatizados
 - **documentation/**: Documentação completa incluindo designs do Figma e PDFs de estudos realizados
 - **livraback/**: Backend em NestJS e MongoDB
 - **livrafront/**: Frontend em Next.js 15 com TypeScript e Tailwind CSS
