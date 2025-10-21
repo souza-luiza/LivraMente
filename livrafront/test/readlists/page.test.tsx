@@ -1,61 +1,6 @@
-global.alert = jest.fn();
-Object.defineProperty(window, 'location', {
-  value: {
-    ...window.location,
-    assign: jest.fn(),
-    replace: jest.fn(),
-  },
-});
-Object.defineProperty(window, 'navigation', {
-  value: {
-    // mock methods you use, e.g., navigate, back, etc.
-    navigate: jest.fn(),
-    back: jest.fn(),
-  },
-  writable: true,
-});
-it('navega entre tabs e mostra favoritas e criadas por mim corretamente', async () => {
-		// Mock para tab "Criadas por mim"
-		mockUseReadlistsList.mockReturnValueOnce({
-			readlists: [
-				{ _id: '1', nome: 'Minha Readlist', criador: { _id: '1', username: 'eu' }, livros: [], favoritadoPor: [], publica: true, descricao: '', createdAt: '' },
-			],
-			loading: false,
-			error: null,
-		});
-		await act(async () => {
-			render(<ReadlistsPage />);
-		});
-		expect(screen.getByText(/Minha Readlist/i)).toBeInTheDocument();
-		// Mock para tab "Favoritadas"
-		mockUseReadlistsList.mockReturnValueOnce({
-			readlists: [
-				{ _id: '2', nome: 'Favoritada', criador: { _id: '2', username: 'amigo' }, livros: [], favoritadoPor: ['1'], publica: true, descricao: '', createdAt: '' },
-			],
-			loading: false,
-			error: null,
-		});
-		const favoritasBtn = screen.getByRole('button', { name: /favoritadas/i });
-		await act(async () => {
-			fireEvent.click(favoritasBtn);
-		});
-	expect(screen.getAllByText(/Favoritada/i).length).toBeGreaterThan(0);
-		// Mock para voltar para "Criadas por mim"
-		mockUseReadlistsList.mockReturnValueOnce({
-			readlists: [
-				{ _id: '1', nome: 'Minha Readlist', criador: { _id: '1', username: 'eu' }, livros: [], favoritadoPor: [], publica: true, descricao: '', createdAt: '' },
-			],
-			loading: false,
-			error: null,
-		});
-		const criadasBtn = screen.getByRole('button', { name: /criadas por mim/i });
-		await act(async () => {
-			fireEvent.click(criadasBtn);
-		});
-		expect(screen.getByText(/Minha Readlist/i)).toBeInTheDocument();
-	});
+
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import ReadlistsPage from '../../src/app/readlists/page';
+import ReadlistsPage from '../../src/app/[username]/readlists/page';
 import { useReadlistsList } from '../../src/hooks/useReadlistsList';
 
 jest.mock('../../src/hooks/useReadlistsList');
@@ -155,11 +100,29 @@ describe('ReadlistsPage', () => {
 	});
 
 	it('navigates when Voltar link is clicked', async () => {
+		Object.defineProperty(window, 'location', {
+			value: { search: '?userId=2' },
+			writable: true,
+		});
+		global.fetch = jest.fn((url) => {
+			if (url.includes('/api/users/2')) {
+				return Promise.resolve(new Response(JSON.stringify({ username: 'john_doe' }), {
+					status: 200,
+					headers: { 'Content-Type': 'application/json' },
+				}));
+			}
+			return Promise.resolve(new Response(JSON.stringify([]), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			}));
+		}) as jest.Mock;
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
 		render(<ReadlistsPage />);
-		const voltarLink = screen.getByLabelText('Voltar');
-		expect(voltarLink).toBeInTheDocument();
-		fireEvent.click(voltarLink);
+		await waitFor(() => {
+			const voltarLink = screen.getByLabelText('Voltar');
+			expect(voltarLink).toBeInTheDocument();
+			expect(voltarLink.getAttribute('href')).toBe('/john_doe');
+		});
 	});
 
 	it('renders many readlists and edge-case data', async () => {

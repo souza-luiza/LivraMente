@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ReadlistCard } from "../../components/readlist-card";
-import { CreateReadlist } from "../../components/create-readlist";
+import { ReadlistCard } from "../../../components/readlist-card";
+import { CreateReadlist } from "../../../components/create-readlist";
 import Link from "next/link";
-import { useReadlistsList } from "../../hooks/useReadlistsList";
-import { useCreateReadlist } from "../../hooks/useCreateReadlist";
-import Button from "../../components/button";
-import LoadingPage from "../../components/loading";
+import { useReadlistsList } from "../../../hooks/useReadlistsList";
+import { useCreateReadlist } from "../../../hooks/useCreateReadlist";
+import Button from "../../../components/button";
+import LoadingPage from "../../../components/loading";
 import Sidebar from "@/components/sidebar";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
@@ -18,6 +18,7 @@ export default function UserReadlistsPage() {
   // userId da página (pode vir da query string)
   const [pageUserId, setPageUserId] = useState<string>(loggedUserId);
   const [pageUsername, setPageUsername] = useState<string>("");
+  const [profilePath, setProfilePath] = useState<string>('/');
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -38,6 +39,20 @@ export default function UserReadlistsPage() {
     }
   }, [pageUserId, loggedUserId]);
 
+  // Define profilePath para o link de voltar
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (pageUserId !== loggedUserId) {
+  if (pageUsername && pageUsername !== 'Usuário') setProfilePath(`/${pageUsername}`);
+  else setProfilePath('/');
+      return;
+    }
+    const myUsername = localStorage.getItem('username');
+  if (myUsername && myUsername.trim()) setProfilePath(`/${myUsername}`);
+  else setProfilePath('/');
+  }, [pageUserId, pageUsername, loggedUserId]);
+
   const isMyPage = loggedUserId === pageUserId;
   type TabType = 'minhas' | 'favoritas';
   const [activeTab, setActiveTab] = useState<TabType>('minhas');
@@ -57,7 +72,7 @@ export default function UserReadlistsPage() {
         <div className="flex items-center gap-3 mb-4 border-none p-0">
           <span className="flex items-center h-10">
             <Link
-              href="/perfil"
+              href={profilePath}
               className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-[var(--secondary-100)] text-[var(--secondary-700)]"
               aria-label="Voltar"
             >

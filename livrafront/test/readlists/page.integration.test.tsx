@@ -7,7 +7,7 @@ Object.defineProperty(window, 'location', {
   },
 });
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import ReadlistsPage from '../../src/app/readlists/page';
+import ReadlistsPage from '../../src/app/[username]/readlists/page';
 import { useReadlistsList } from '../../src/hooks/useReadlistsList';
 
 jest.mock('../../src/hooks/useReadlistsList');
