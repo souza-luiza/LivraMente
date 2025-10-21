@@ -12,7 +12,7 @@ export default function SearchBar({ className, ...props }: SearchBarProps) {
 
       <input
         type="text"
-        className="w-full pr-4 bg-[#CADDBF] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] small-box text-b3" 
+        className="w-full pr-4 bg-[#CADDBF] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] medium-box text-b3" 
         style={{ paddingLeft: '2rem' }}
         {...props}
       />
