@@ -11,6 +11,7 @@ import GridIcon from '@/components/icons/GridIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
+import EditReadlistModal from '@/components/EditReadlistModal';
 
 // Função para converter slug em título
 function slugToTitle(slug: string): string {
@@ -29,13 +30,14 @@ export default function ReadlistPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const livrosPorPagina = 42;
   
   // Simular se o usuário é o dono da readlist
   // TODO: Implementar lógica real comparando username com usuário logado
   const isOwner = true;
 
-  const readlist = {
+  const [readlist, setReadlist] = useState({
     title: slugToTitle(readlistSlug),
     slug: readlistSlug,
     author: {
@@ -43,6 +45,7 @@ export default function ReadlistPage() {
       avatar: "/kemi-teste.jpg"
     },
     description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+    isPrivate: false,
     progress: {
       read: 20,
       total: 28,
@@ -62,14 +65,40 @@ export default function ReadlistPage() {
         cover: "/kemi-teste.jpg"
       }))
     ]
-  };
+  });
 
-  const handleEditClick = () => {
-    router.push(`/${username}/readlist/${readlistSlug}/edit`);
+  const handleSaveReadlist = (data: {
+    title: string;
+    description: string;
+    coverImage: string;
+    isPrivate: boolean;
+  }) => {
+    setReadlist((prev) => ({
+      ...prev,
+      title: data.title,
+      description: data.description,
+      coverImage: data.coverImage,
+      isPrivate: data.isPrivate,
+    }));
+    // TODO: Implementar chamada à API para salvar as alterações
+    console.log('Salvando alterações:', data);
   };
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      {/* Modal de Edição */}
+      <EditReadlistModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        readlist={{
+          title: readlist.title,
+          description: readlist.description,
+          coverImage: readlist.coverImage,
+          isPrivate: readlist.isPrivate,
+        }}
+        onSave={handleSaveReadlist}
+      />
+
       {/* Sidebar Fixa */}
       <div className="hidden lg:flex min-h-screen bg-[#E5EEDF]">
         <Sidebar />
@@ -132,7 +161,7 @@ export default function ReadlistPage() {
                   transition: 'all 0.3s ease'
                 }}
                 aria-label="Editar readlist"
-                onClick={handleEditClick}
+                onClick={() => setIsEditModalOpen(true)}
               >
                 <EditIcon
                   size={50}
