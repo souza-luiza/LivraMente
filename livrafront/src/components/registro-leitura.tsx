@@ -75,18 +75,66 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
         }
     }
 
-    const handleOnSubmit = (e: React.FormEvent) => {
+    const handleOnSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                setStatus('error')
+                return
+            }
 
-            // TODO: INTEGRAÇÃO COM A API
-            // let xp = [REQUISIÇÃO PARA O BACK] --> cálculo do xp vai ser feito no back
-            // mandar 0/1 para indicar páginas/minutos + quantidade de páginas/minutos
-            // setXp(xp)
+            let opcao;
+            if (step === 1) {
+                opcao = 0;
+            } else {
+                opcao = 1;
+            }
+
+            let qtd;
+            if (step === 1) {
+                qtd = Number(formData.pagesRead);
+            } else {
+                qtd = Number(formData.minutesRead);
+            }
+
+            if (isNaN(qtd) || qtd <= 0) {
+                let field;
+                if (step === 1) {
+                    field = 'pagesRead';
+                } else {
+                    field = 'minutesRead';
+                }
+                setErrors(prev => ({
+                    ...prev,
+                    [field]: 'Informe um número válido',
+                }));
+                return;
+            }
+
+            // requisição da api do next
+            const response = await fetch('/api/gamification/reading', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ opcao, qtd }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                console.error('Erro ao registrar leitura:', data.error || data.message)
+                setStatus('error')
+                return
+            }
+
+            const xpGanho = Math.min(qtd, 60)
+            setXp(xpGanho)
 
             setStatus('success')
-
         } catch (error) {
 
             console.error('Falha ao conectar com o servidor.')
