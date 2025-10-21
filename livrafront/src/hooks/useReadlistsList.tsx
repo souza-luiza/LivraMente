@@ -19,7 +19,6 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
       try {
         let data: Readlist[] = [];
         const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-        if (!loggedUserId) throw new Error('Usuário não autenticado.');
 
         if (userId === loggedUserId) {
           if (type === 'favoritadas') {
@@ -33,7 +32,11 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
         setReadlists(Array.isArray(data) ? data : []);
         setLoading(false);
       } catch (err: any) {
-        setError(err?.message || 'Erro ao buscar readlists do usuário.');
+        let msg = err?.message || 'Erro ao buscar readlists do usuário.';
+        if (msg === 'Failed to fetch') {
+          msg = 'Não foi possível conectar ao servidor.';
+        }
+        setError(msg);
         setReadlists([]);
         setLoading(false);
       }
