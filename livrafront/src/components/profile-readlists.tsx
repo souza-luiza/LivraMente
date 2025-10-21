@@ -1,4 +1,3 @@
-import { image } from "framer-motion/client";
 import Readlist from "./readlist";
 
 export default function ProfileReadlists() {

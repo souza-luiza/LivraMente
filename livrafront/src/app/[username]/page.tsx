@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
