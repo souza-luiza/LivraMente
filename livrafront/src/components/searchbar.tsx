@@ -5,14 +5,14 @@ interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> { }
 
 export default function SearchBar({ className, ...props }: SearchBarProps) {
   return (
-    <div className={`relative w-full max-w-md ${className}`}>
-      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#95BB7E]">
+    <div className={`relative w-full max-w-2xl ${className}`}>
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#3D552F]">
         <SearchIcon size={20} />
       </span>
 
       <input
         type="text"
-        className="w-full pr-4 bg-[#CADDBF] text-[#95BB7E] placeholder:text-[#95BB7E] rounded-lg focus:outline-none focus:ring-[#1F2A17] medium-box text-b3" 
+        className="w-full pr-4 bg-[#CADDBF] text-[#1F2A17] placeholder:text-[#3D552F] rounded-lg focus:outline-none focus:ring-[#95BB7E] medium-box text-b3" 
         style={{ paddingLeft: '2rem' }}
         {...props}
       />
