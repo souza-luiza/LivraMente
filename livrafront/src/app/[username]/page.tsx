@@ -13,13 +13,14 @@ interface UserProfilePageProps {
     params: Promise<{username: string}>;
 }
 
+const userProfile = {
+    pronouns: "ele/dele", // Exemplo estático, substituir pela lógica real quando implementar a API
+    level: 15,
+    percentage: 67,
+}
+
 export default async function UserProfilePage({ params }: UserProfilePageProps){
     const { username } = await params;
-    const userProfile = {
-        pronouns: "ele/dele", // Exemplo estático, substituir pela lógica real quando implementar a API
-        level: 15,
-        percentage: 67,
-    }
     
     // Implementar a lógica para confirmar se usuário existe no banco de dados
     // Se não existir, chamar notFound()
