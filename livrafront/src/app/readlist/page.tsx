@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
 import SearchIcon from '@/components/icons/SearchIcon';
 import LikeIcon from '@/components/icons/LikeIcon';
@@ -10,12 +11,17 @@ import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
+import EditIcon from '@/components/icons/EditIcon';
 
 export default function ReadlistPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const livrosPorPagina = 42;
+  
+  // Simular se o usuário é o dono da readlist
+  const isOwner = true; // TODO: Implementar lógica real de verificação
 
   const readlist = {
     title: "Livros 2025",
@@ -101,6 +107,32 @@ export default function ReadlistPage() {
               right: '10px',
             }}
           >
+            {isOwner && (
+              <button 
+                className="textless-medium"
+                style={{ 
+                  backgroundColor: 'transparent',
+                  transition: 'all 0.3s ease'
+                }}
+                aria-label="Editar readlist"
+                onClick={() => router.push('/readlist/edit')}
+              >
+                <EditIcon
+                  size={50}
+                  style={{ 
+                    color: 'var(--primary-600)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--primary-700)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--primary-600)';
+                  }}
+                />
+              </button>
+            )}
             <button 
               className="textless-medium"
               style={{ 
