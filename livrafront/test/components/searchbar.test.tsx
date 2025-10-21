@@ -62,6 +62,6 @@ describe('SearchBar Component', () => {
   it('should always apply small size styles', () => {
     render(<SearchBar />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('medium-box text-b3');
+    expect(input).toHaveClass('medium-box text-b2');
   });
 });
