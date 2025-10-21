@@ -55,7 +55,7 @@ describe('LoginPage', () => {
     })
     
     // Verificar redirecionamento ao invés de alert
-    expect(mockPush).toHaveBeenCalledWith('/main')
+    expect(mockPush).toHaveBeenCalledWith(`${mockResponse.user.username}`)
   })
 
   //Teste de login com credenciais inválidas

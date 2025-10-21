@@ -56,9 +56,14 @@ describe('useLoginForm', () => {
 
   it('deve fazer login com sucesso', async () => {
     const mockResponse = {
-      token: 'token-teste',
-      user: { id: '1', username: 'teste', email: 'teste@exemplo.com' }
+      token: 'token-123',
+      user: {
+        id: '1',
+        username: 'testuser',
+        email: 'test@test.com'
+      }
     }
+
 
     mockLoginUser.mockResolvedValueOnce(mockResponse)
     const { result } = renderHook(() => useLoginForm())
@@ -172,7 +177,7 @@ describe('useLoginForm', () => {
       } as unknown as React.FormEvent)
     })
 
-    expect(mockPush).toHaveBeenCalledWith('/main')
+    expect(mockPush).toHaveBeenCalledWith(`${mockResponse.user.username}`)
   })
 
   it('deve tratar erro de credenciais inválidas', async () => {
