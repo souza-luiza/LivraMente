@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import React, { useState } from "react";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
@@ -8,13 +7,19 @@ import SearchBar from "@/components/searchbar";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/user-store";
 import EditIcon from "@/components/icons/EditIcon";
+import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import NotificationIcon from "@/components/icons/NotificationsIcon";
+import { div } from "framer-motion/m";
+
+import ProfileReadlists from "@/components/profile-readlists";
+import ProfilePosts from "@/components/profile-posts";
+import ProfileBadge from "@/components/profile-badge";
 
 export default function ProfilePage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter(); // 2. Crie a instância do router
+  const router = useRouter();
 
-  const { username, pronouns } = useUserStore();
+  const { username, pronouns, profileImageUrl } = useUserStore();
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -24,7 +29,6 @@ export default function ProfilePage() {
         <div className="p-4 border-b border-neutral-200">
           <div className="max-w-2xl mx-auto">
             <SearchBar
-              fullWidth
               placeholder="Pesquisar livros, autores, amigos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -38,8 +42,8 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center mb-8">
             <div className="relative">
               <img
-                src="/kemi-teste.jpg"
-                alt="Foto de perfil de um gato"
+                src={profileImageUrl || "/Readlist.svg"}
+                alt={profileImageUrl ? "Foto de perfil" : "Foto de perfil de um gato"}
                 className="w-32 h-32 rounded-full border-4 border-white shadow-md"
               />
             </div>
@@ -50,25 +54,22 @@ export default function ProfilePage() {
               {pronouns}
             </p>
             <Button
-              icon={<EditIcon size={16} />} colorScheme="dark-brown" size="small" text="Editar" onClick={() => router.push("/settings-profile")}/>
+              icon={<EditIcon size={16} />} colorScheme="dark-brown" size="small" text="Editar" onClick={() => router.push("/edit-profile")} />
           </div>
 
+
+
           {/* Conteúdo em Duas Colunas */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
             {/* Coluna da Esquerda: Readlists */}
             <div className="lg:col-span-1 flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <Link href="/readlists">
+                <Link href="/readlists" className="flex items-center">
                   <h2 className="text-xl font-bold text-gray-800 hover:underline">
                     Readlists
                   </h2>
+                  <ChevronRightIcon size={16} className="ml-1 mt-2" />
                 </Link>
-                <a
-                  href="/readlists"
-                  className="text-sm font-semibold text-green-700 hover:underline"
-                >
-                  Ver todas
-                </a>
               </div>
               {/* Placeholder para Readlists */}
               <div className="flex-1 bg-white/60 border-2 border-dashed border-gray-300 rounded-xl p-8 flex items-center justify-center">
@@ -88,17 +89,12 @@ export default function ProfilePage() {
             {/* Coluna da Direita: Postagens */}
             <div className="lg:col-span-2 flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <Link href="/postagens">
+                <Link href="/postagens" className="flex items-center">
                   <h2 className="text-xl font-bold text-gray-800 hover:underline">
                     Postagens
                   </h2>
+                  <ChevronRightIcon size={16} className="ml-1 mt-2" />
                 </Link>
-                <a
-                  href="/postagens"
-                  className="text-sm font-semibold text-green-700 hover:underline"
-                >
-                  Ver todas
-                </a>
               </div>
               {/* Placeholder para Postagens */}
               <div className="flex-1 bg-white/60 border-2 border-dashed border-gray-300 rounded-xl p-8 flex items-center justify-center">

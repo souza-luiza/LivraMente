@@ -80,7 +80,6 @@ export default function SettingsProfilePage() {
         <div className="p-4 border-b border-neutral-200">
           <div className="max-w-2xl mx-auto">
             <SearchBar
-              //fullWidth
               placeholder="Pesquisar livros, autores, amigos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -103,7 +102,7 @@ export default function SettingsProfilePage() {
                   height={100}
                   alt="Foto do Perfil"
                   // Adiciona um fallback para caso a imagem quebre - obs.: é um teste
-                  onError={(e) => { e.currentTarget.src = '/kemi-teste.jpg'; }}
+                  onError={(e) => { e.currentTarget.src = profileImageUrl; }}
                 />
                 <Button icon={<EditIcon size={16}/>} colorScheme="dark-green" size="small" text='Alterar Foto' onClick={() => toast.info("Função ainda não implementada!")}
                 />
