@@ -127,18 +127,20 @@ export function CreateReadlist({ open, onClose, onCreate, isLoading, apiError, c
           placeholder={"Nome da readlist"}
           value={nome}
           onChange={handleNomeChange}
-          error={fieldErrors.nome || undefined}
+          error={undefined}
+          className={(fieldErrors.nome || error) ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
           fullWidth
           inputSize="large"
         />
         {(fieldErrors.nome || error) && (
-          <p role="alert" className="text-b3 text-red-600 mt-1">{fieldErrors.nome || (error ? '* Título é obrigatório' : '')}</p>
+          <p role="alert" className="text-b3 text-red-600 mt-1">{fieldErrors.nome || error}</p>
         )}
         <Input
           label="Descrição (opcional)"
           value={descricao}
           onChange={handleDescricaoChange}
-          error={fieldErrors.descricao}
+          error={undefined}
+          className={fieldErrors.descricao ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
           fullWidth
           inputSize="large"
         />

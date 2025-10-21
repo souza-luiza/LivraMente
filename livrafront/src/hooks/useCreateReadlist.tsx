@@ -50,15 +50,16 @@ export function useCreateReadlist(userId: string) {
           const text = await response.text().catch(() => 'Erro ao criar readlist');
           throw new Error(text || 'Erro ao criar readlist');
         }
-        const result: Readlist = await response.json();
-        alert(`Readlist criada: ${result.nome}`);
-        if (setError) setError('');
-        if (addToList) addToList(result);
+  const result: Readlist = await response.json();
+  setApiError('');
+  if (setError) setError('');
+  if (addToList) addToList(result);
+  return result;
       } catch (err: any) {
-        const message = err?.message || 'Erro ao criar readlist';
-        if (setError) setError(message);
-        else alert(message);
-        setApiError(message);
+  const message = err?.message || 'Erro ao criar readlist';
+  if (setError) setError(message);
+  setApiError(message);
+  return undefined as unknown as Readlist;
       }
       finally {
         setIsLoading(false);
