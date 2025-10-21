@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Readlist } from '../types/readlist';
 import {
   getPublicReadlists,
@@ -11,40 +11,39 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchReadlists = useCallback(async () => {
     setLoading(true);
     setError(null);
+    try {
+      let data: Readlist[] = [];
+      const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
-    async function fetchReadlists() {
-      try {
-        let data: Readlist[] = [];
-        const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-
-        if (userId === loggedUserId) {
-          if (type === 'favoritadas') {
-            data = await getFavoriteReadlists();
-          } else {
-            data = await getOwnReadlists();
-          }
+      if (userId === loggedUserId) {
+        if (type === 'favoritadas') {
+          data = await getFavoriteReadlists();
         } else {
-          data = await getPublicReadlists(userId);
+          data = await getOwnReadlists();
         }
-        setReadlists(Array.isArray(data) ? data : []);
-        setLoading(false);
-      } catch (err: any) {
-        let msg = err?.message || 'Erro ao buscar readlists do usuário.';
-        if (msg === 'Failed to fetch') {
-          msg = 'Não foi possível conectar ao servidor.';
-        }
-        setError(msg);
-        setReadlists([]);
-        setLoading(false);
+      } else {
+        data = await getPublicReadlists(userId);
       }
+      setReadlists(Array.isArray(data) ? data : []);
+      setLoading(false);
+    } catch (err: any) {
+      let msg = err?.message || 'Erro ao buscar readlists do usuário.';
+      if (msg === 'Failed to fetch') {
+        msg = 'Não foi possível conectar ao servidor.';
+      }
+      setError(msg);
+      setReadlists([]);
+      setLoading(false);
     }
-
-    fetchReadlists();
-    return undefined;
   }, [userId, type]);
 
-  return { readlists, loading, error };
+  useEffect(() => {
+    fetchReadlists();
+    return undefined;
+  }, [fetchReadlists]);
+
+  return { readlists, loading, error, refetch: fetchReadlists };
 }
