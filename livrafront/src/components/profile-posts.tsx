@@ -1,6 +1,6 @@
 import Post from "./post";
 
-export default function ProfilePosts({ username  }: { username: string, id: string }) {
+export default function ProfilePosts({ username  }: { username: string }) {
     const posts = [
         {
             id: "1",
