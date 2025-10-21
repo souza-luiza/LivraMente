@@ -119,7 +119,7 @@ export default function HomePage() {
                                 {i == 1 && <CommunityIcon size={40} fill="#2B0F05" />}
                                 {i == 2 && <StarIcon size={40} fill="#2B0F05" />}
                                 {i == 3 && <OpenBookIcon size={40} fill="#2B0F05" />}
-                                <div className="flex-flex-col items-center justify-center">
+                                <div className="flex flex-col items-center justify-center">
                                     <p className="text-h6 mb-2">{livraPerk.mainText}</p>
                                     <p className="text-b2 body-semibold">{livraPerk.description}</p>
                                 </div>
