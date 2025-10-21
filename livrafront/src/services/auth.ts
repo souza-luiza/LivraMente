@@ -35,7 +35,7 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
       token: result.accessToken,
       user: { 
         id: 'user-id', 
-        username: data.email,
+        username: result.username,
         email: data.email 
       }
     }

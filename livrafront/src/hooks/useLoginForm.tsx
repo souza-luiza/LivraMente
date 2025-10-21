@@ -56,7 +56,7 @@ export function useLoginForm() {
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
       
-      router.push('/main')
+      router.push(`${response.user.username}`)
       
     } catch (error) {
       if (error instanceof ZodError) {
