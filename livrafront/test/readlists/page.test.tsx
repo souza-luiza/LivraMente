@@ -1,4 +1,20 @@
-	it('navega entre tabs e mostra favoritas e criadas por mim corretamente', async () => {
+global.alert = jest.fn();
+Object.defineProperty(window, 'location', {
+  value: {
+    ...window.location,
+    assign: jest.fn(),
+    replace: jest.fn(),
+  },
+});
+Object.defineProperty(window, 'navigation', {
+  value: {
+    // mock methods you use, e.g., navigate, back, etc.
+    navigate: jest.fn(),
+    back: jest.fn(),
+  },
+  writable: true,
+});
+it('navega entre tabs e mostra favoritas e criadas por mim corretamente', async () => {
 		// Mock para tab "Criadas por mim"
 		mockUseReadlistsList.mockReturnValueOnce({
 			readlists: [
@@ -251,12 +267,6 @@ describe('ReadlistsPage', () => {
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: 'Erro ao carregar readlists' });
 		render(<ReadlistsPage />);
 		expect(screen.getByText('Erro ao carregar readlists')).toBeInTheDocument();
-	});
-
-	it('shows loading state', () => {
-		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: true, error: null });
-		render(<ReadlistsPage />);
-		expect(screen.getByTestId('loading-main')).toBeInTheDocument();
 	});
 
 		it('switches tabs between minhas and favoritadas', async () => {

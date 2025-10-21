@@ -1,3 +1,11 @@
+global.alert = jest.fn();
+Object.defineProperty(window, 'location', {
+  value: {
+    ...window.location,
+    assign: jest.fn(),
+    replace: jest.fn(),
+  },
+});
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ReadlistCard } from '@/components/readlist-card';
 

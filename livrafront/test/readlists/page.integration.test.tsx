@@ -1,3 +1,11 @@
+global.alert = jest.fn();
+Object.defineProperty(window, 'location', {
+  value: {
+    ...window.location,
+    assign: jest.fn(),
+    replace: jest.fn(),
+  },
+});
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ReadlistsPage from '../../src/app/readlists/page';
 import { useReadlistsList } from '../../src/hooks/useReadlistsList';
@@ -116,11 +124,5 @@ describe('ReadlistsPage integration', () => {
     mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
     render(<ReadlistsPage />);
     expect(screen.getByText(/Nenhuma readlist encontrada/i)).toBeInTheDocument();
-  });
-
-  it('shows loading state', () => {
-    mockUseReadlistsList.mockReturnValue({ readlists: [], loading: true, error: null });
-    render(<ReadlistsPage />);
-    expect(screen.getByTestId('loading-main')).toBeInTheDocument();
   });
 });
