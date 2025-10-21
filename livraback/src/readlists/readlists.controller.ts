@@ -122,4 +122,71 @@ export class ReadlistsController {
     async remove(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
         return this.readlistsService.remove(user.userId, id);
     }
+
+    @Get('public/:username')
+    @ApiOperation({ 
+        summary: 'Lista readlists públicas de um usuário',
+        description: 'Retorna todas readlists públicas de um usuário por username para um usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Lista de readlists públicas retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async findAllPublic(@Param('username') username: string) {
+        return this.readlistsService.findAllPublic(username);
+    }
+
+    @Patch(':id/livros/:livroId')
+    @ApiOperation({
+        summary: 'Adiciona um livro na readlist',
+        description: 'Adiciona um livro por ID na readlist por ID do usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Livro adicionado com sucesso na readlist'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Readlist não encontrada'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async addLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Param('livroId') livroId: string) {
+        return this.readlistsService.addLivro(user.userId, id, livroId);
+    }
+
+    @Delete(':id/livros/:livroId')
+    @ApiOperation({
+        summary: 'Remove um livro da readlist',
+        description: 'Deleta um livro por ID da readlist por ID do usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Livro removido com sucesso da readlist'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Readlist não encontrada'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async removeLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Param('livroId') livroId: string) {
+        return this.readlistsService.removeLivro(user.userId, id, livroId);
+    }
 }
