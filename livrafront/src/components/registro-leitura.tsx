@@ -16,11 +16,8 @@ interface RegistroLeituraProps {
 
 export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
-
-    const [show, setShow] = useState(false)
-
+    const [show, setShow] = useState(true)
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-
     const [xp, setXp] = useState(0)
 
     const [formData, setFormData] = useState({
@@ -39,56 +36,107 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
         day: '2-digit',
         month: 'long',
         year: 'numeric'
-        })
+    })
 
     const hoje = formatter.format(new Date())
+
+    const validateInput = (name: string, value: string): string => {
+        const numericValue = value.replace(/[^\d]/g, '')
+        
+        const cleanValue = numericValue.replace(/^0+/, '')
+        
+        return cleanValue
+    }
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        const cleanedValue = validateInput(name, value)
+        
+        setFormData(prev => ({
+            ...prev,
+            [name]: cleanedValue
+        }))
+        
+        if (errors[name as keyof typeof errors]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }))
+        }
+    }
+
+    const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        
+        if (value === '' && (name === 'pagesRead' || name === 'minutesRead')) {
+            return
+        }
+        
+        const cleanedValue = validateInput(name, value)
+        setFormData(prev => ({
+            ...prev,
+            [name]: cleanedValue
+        }))
+    }
+
+    const validateForm = (): boolean => {
+        const newErrors = {
+            pagesRead: '',
+            minutesRead: '',
+            bookAmount: ''
+        }
+
+        let isValid = true
+
+        if (step === 1) {
+            if (!formData.pagesRead || formData.pagesRead === '0') {
+                newErrors.pagesRead = 'Por favor, informe o número de páginas lidas'
+                isValid = false
+            }
+        } else {
+            if (!formData.minutesRead || formData.minutesRead === '0') {
+                newErrors.minutesRead = 'Por favor, informe o número de minutos lidos'
+                isValid = false
+            }
+        }
+
+        if (formData.bookAmount && parseInt(formData.bookAmount) < 0) {
+            newErrors.bookAmount = 'A quantidade de livros não pode ser negativa'
+            isValid = false
+        }
+
+        setErrors(newErrors)
+        return isValid
+    }
 
     // Verifica se o usuário está logado e se já registrou a leitura hoje
     useEffect(() => {
         if (!isLoggedIn) return
 
         const today = new Date().toDateString()
-
-        // TODO: Rever, talvez registrar último acesso no banco para algo mais consistente?
         const lastAccess = localStorage.getItem('lastAccess')
 
         if (lastAccess !== today) {
-        setShow(true)
-        localStorage.setItem('lastAccess', today)
+            setShow(true)
+            localStorage.setItem('lastAccess', today)
         }
     }, [isLoggedIn])
 
     if (!show) return null
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-        ...prev,
-        [name]: value
-        }))
-        
-        if (errors[name as keyof typeof errors]) {
-        setErrors(prev => ({
-            ...prev,
-            [name]: ''
-        }))
-        }
-    }
-
     const handleOnSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
+        if (!validateForm()) {
+            return
+        }
+
         try {
-
             // TODO: INTEGRAÇÃO COM A API
-            // let xp = [REQUISIÇÃO PARA O BACK] --> cálculo do xp vai ser feito no back
-            // mandar 0/1 para indicar páginas/minutos + quantidade de páginas/minutos
+            // let xp = resposta da API
             // setXp(xp)
-
             setStatus('success')
-
         } catch (error) {
-
             console.error('Falha ao conectar com o servidor.')
             setStatus('error')
         }
@@ -177,9 +225,12 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                                 <Input 
                                     label="Páginas Lidas" 
                                     name="pagesRead"
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.pagesRead}
                                     onChange={handleInputChange}
+                                    onBlur={handleInputBlur}
                                     error={errors.pagesRead}
                                     placeholder="Exemplo: 74"
                                     required
@@ -188,9 +239,12 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                                 <Input 
                                     label="Quantidade de Livros Lidos" 
                                     name="bookAmount"
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.bookAmount}
                                     onChange={handleInputChange}
+                                    onBlur={handleInputBlur}
                                     error={errors.bookAmount}
                                     placeholder="Exemplo: 2"
                                     fullWidth
@@ -207,9 +261,12 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                                 <Input 
                                     label="Minutos Lidos" 
                                     name="minutesRead"
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.minutesRead}
                                     onChange={handleInputChange}
+                                    onBlur={handleInputBlur}
                                     error={errors.minutesRead}
                                     placeholder="Exemplo: 30"
                                     required
@@ -218,9 +275,12 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                                 <Input 
                                     label="Quantidade de Livros Lidos" 
                                     name="bookAmount"
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={formData.bookAmount}
                                     onChange={handleInputChange}
+                                    onBlur={handleInputBlur}
                                     error={errors.bookAmount}
                                     placeholder="Exemplo: 2"
                                     fullWidth
@@ -244,6 +304,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
             </motion.div>
             }
 
+            {/* Success and Error states remain the same */}
             {show && status === 'success' &&
             <motion.div 
                 key="registro-leitura-success"
@@ -254,21 +315,14 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                 transition={{ duration: 1, ease: 'easeInOut' }}
             >
                 <div className="flex flex-col items-center light-green p-[20px] rounded-[12px] gap-2">
-
-                    {/* Cabeçalho */}
                     <div className="flex flex-col justify-center items-center text-[#1F2A17] gap-1">
                         <LogoIcon size={40} fill="#1F2A17" />
                         <h1 className="text-h5">Leitura registrada!</h1>
                     </div>
-
                     <div className="text-center">
                         <p className="text-h4 text-[#4B8511]">+{xp} XP</p>
                         <p className="text-b2 text-[#1F2A17]">Volte amanhã para registrar seu progresso!</p>
                     </div>
-
-                    {/* TODO: Barra de progresso */}
-
-                    {/* Botão para fechar */}
                     <Button
                         text="Fechar"
                         icon={<RemoveIcon />}
@@ -290,7 +344,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                 transition={{ duration: 1, ease: 'easeInOut' }}
             >
                 <div className="flex flex-col items-center light-green p-[20px] rounded-[12px] gap-4">
-
                     <div className="flex flex-col justify-center items-center text-[#1F2A17] gap-4">    
                         <ErrorIcon size={80} fill="#682A1B" />
                         <div className="text-center gap-1">
@@ -298,8 +351,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                             <p className="text-b2">Tente novamente mais tarde.</p>
                         </div>
                     </div>
-
-                    {/* Botão para fechar */}
                     <Button
                         text="Fechar"
                         icon={<RemoveIcon />}
@@ -307,7 +358,6 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                         colorScheme="dark-brown"
                         onClick={() => setShow(false)}
                     />
-
                 </div>
             </motion.div>
             }
