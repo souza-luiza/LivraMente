@@ -35,9 +35,9 @@ jest.mock('@/components/icons/SearchIcon', () => {
   };
 });
 
-jest.mock('@/components/icons/LikeIcon', () => {
-  return function MockLikeIcon(props: any) {
-    return <svg data-testid="like-icon" {...props} />;
+jest.mock('@/components/icons/HeartIcon', () => {
+  return function MockHeartIcon(props: any) {
+    return <svg data-testid="heart-icon" {...props} />;
   };
 });
 
@@ -105,26 +105,26 @@ describe('ReadlistPage', () => {
   });
 
   describe('Interações com Ícones', () => {
-    it('deve alternar o estado do ícone de like quando clicado', () => {
+    it('deve alternar o estado do ícone de coração quando clicado', () => {
       render(<ReadlistPage />);
       
-      const likeButton = screen.getByLabelText('Curtir');
-      const likeIcon = screen.getByTestId('like-icon');
+      const heartButton = screen.getByLabelText('Curtir');
+      const heartIcon = screen.getByTestId('heart-icon');
       
       // Estado inicial - não preenchido
-      expect(likeIcon).toHaveStyle({ fill: 'none' });
+      expect(heartIcon).toHaveStyle({ fill: 'none' });
       
       // Clicar para curtir
-      fireEvent.click(likeButton);
+      fireEvent.click(heartButton);
       
       // Após clicar - preenchido
-      expect(likeIcon).toHaveStyle({ fill: 'var(--primary-600)' });
+      expect(heartIcon).toHaveStyle({ fill: 'var(--primary-600)' });
       
       // Clicar novamente para descurtir
-      fireEvent.click(likeButton);
+      fireEvent.click(heartButton);
       
       // Volta ao estado inicial
-      expect(likeIcon).toHaveStyle({ fill: 'none' });
+      expect(heartIcon).toHaveStyle({ fill: 'none' });
     });
 
     it('deve alternar o estado do ícone de compartilhar quando clicado', () => {
@@ -270,20 +270,26 @@ describe('ReadlistPage', () => {
       const { container } = render(<ReadlistPage />);
       
       const mainContent = container.querySelector('.flex-1');
-      expect(mainContent).toHaveClass('px-4', 'md:px-8', 'lg:px-[200px]');
+      expect(mainContent).toHaveClass('px-4');
+      expect(mainContent).toHaveClass('md:px-6');
+      expect(mainContent).toHaveClass('lg:px-8');
+      expect(mainContent).toHaveClass('xl:px-12');
+      expect(mainContent).toHaveClass('2xl:px-16');
+      expect(mainContent).toHaveClass('w-full');
+      expect(mainContent).toHaveClass('max-w-[1600px]');
+      expect(mainContent).toHaveClass('mx-auto');
     });
 
     it('deve ter grid responsivo com diferentes números de colunas', () => {
       const { container } = render(<ReadlistPage />);
       
       const grid = container.querySelector('.grid');
-      expect(grid).toHaveClass(
-        'grid-cols-2',
-        'sm:grid-cols-3',
-        'md:grid-cols-4',
-        'lg:grid-cols-5',
-        'xl:grid-cols-6'
-      );
+      expect(grid).toHaveClass('grid-cols-2');
+      expect(grid).toHaveClass('sm:grid-cols-3');
+      expect(grid).toHaveClass('md:grid-cols-4');
+      expect(grid).toHaveClass('lg:grid-cols-5');
+      expect(grid).toHaveClass('xl:grid-cols-6');
+      expect(grid).toHaveClass('2xl:grid-cols-7');
     });
 
     it('deve ter layout flexível para descrição e estatísticas', () => {
@@ -360,16 +366,16 @@ describe('ReadlistPage', () => {
   });
 
   describe('Efeitos de Hover', () => {
-    it('deve aplicar hover no ícone de like', () => {
+    it('deve aplicar hover no ícone de coração', () => {
       render(<ReadlistPage />);
       
-      const likeButton = screen.getByLabelText('Curtir');
-      const likeIcon = screen.getByTestId('like-icon');
+      const heartButton = screen.getByLabelText('Curtir');
+      const heartIcon = screen.getByTestId('heart-icon');
       
-      fireEvent.mouseEnter(likeIcon);
-      fireEvent.mouseLeave(likeIcon);
+      fireEvent.mouseEnter(heartIcon);
+      fireEvent.mouseLeave(heartIcon);
       
-      expect(likeIcon).toBeInTheDocument();
+      expect(heartIcon).toBeInTheDocument();
     });
 
     it('deve aplicar hover no ícone de share', () => {
@@ -414,7 +420,8 @@ describe('ReadlistPage', () => {
       const { container } = render(<ReadlistPage />);
       
       const mainContent = container.querySelector('.flex-1.overflow-y-auto');
-      expect(mainContent).toHaveClass('py-8', 'md:py-12');
+      expect(mainContent).toHaveClass('py-8');
+      expect(mainContent).toHaveClass('md:py-12');
     });
 
     it('deve renderizar o container com flex-col em mobile e flex-row em desktop', () => {
@@ -447,8 +454,8 @@ describe('ReadlistPage', () => {
     it('deve ter transições suaves nos elementos interativos', () => {
       const { container } = render(<ReadlistPage />);
       
-      const likeButton = screen.getByLabelText('Curtir');
-      expect(likeButton).toHaveStyle({ transition: 'all 0.3s ease' });
+      const heartButton = screen.getByLabelText('Curtir');
+      expect(heartButton).toHaveStyle({ transition: 'all 0.3s ease' });
     });
   });
 
