@@ -69,7 +69,7 @@ describe('Sidebar Component', () => {
     it('renders sidebar container with correct styling', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toBeInTheDocument()
       expect(sidebar).toHaveClass('light-green')
       expect(sidebar).toHaveClass('h-[calc(100vh-1rem)]')
@@ -105,7 +105,7 @@ describe('Sidebar Component', () => {
     it('has correct layout structure with two sections', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       const flexContainer = sidebar.firstChild
       expect(flexContainer).toHaveClass('flex flex-col justify-between h-full')
     })
@@ -151,7 +151,7 @@ describe('Sidebar Component', () => {
     it('has correct padding and margins', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('pt-4')
       expect(sidebar).toHaveClass('pb-4')
       expect(sidebar).toHaveClass('m-2')
@@ -167,7 +167,7 @@ describe('Sidebar Component', () => {
     it('has sticky positioning', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('sticky')
       expect(sidebar).toHaveClass('top-2')
     })
@@ -177,7 +177,7 @@ describe('Sidebar Component', () => {
     it('has proper semantic structure', () => {
       render(<Sidebar />)
     
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toBeInTheDocument()
       expect(sidebar).toHaveAttribute('data-testid', 'sidebar')
     })
@@ -221,14 +221,14 @@ describe('Sidebar Component', () => {
     it('maintains fit-content width layout', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('w-fit')
     })
 
     it('has viewport-relative height', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('h-[calc(100vh-1rem)]')
     })
   })
@@ -275,21 +275,21 @@ describe('Sidebar Component', () => {
     it('has correct border radius', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('rounded-xl')
     })
 
     it('uses consistent light-green color scheme', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('light-green')
     })
 
     it('has correct z-index for layering', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('z-50')
     })
   })
