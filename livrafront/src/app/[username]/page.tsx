@@ -5,9 +5,9 @@ import Sidebar from "@/components/sidebar";
 import ProfileIcon from "@/components/profile-icon";
 import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
-import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 import ProfilePosts from "@/components/profile-posts";
 import ProfileBadge from "@/components/profile-badge";
+import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 
 interface UserProfilePageProps {
     params: Promise<{username: string}>;
@@ -43,13 +43,13 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
                 </Link>
                 <div className="w-full flex justify-center items-stretch mt-8 gap-4">
                     <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
-                        <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/readlists`}>Readlists<ArrowRightIcon width={24} height={24}/></Link>
+                        <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/readlists`}>Readlists<ChevronRightIcon width={24} height={24}/></Link>
                         <div className="flex-1 overflow-y-auto">
                             <ProfileReadlists />
                         </div>
                     </div>
                     <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
-                        <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/posts`}>Postagens<ArrowRightIcon width={24} height={24}/></Link>
+                        <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/posts`}>Postagens<ChevronRightIcon width={24} height={24}/></Link>
                         <div className="flex-1 overflow-y-auto">
                             <ProfilePosts username={username} />
                         </div>

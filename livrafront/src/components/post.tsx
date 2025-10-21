@@ -2,7 +2,7 @@ import Link from "next/link";
 import CodeIcon from "./icons/CodeIcon";
 import Button from "./button";
 import CommentIcon from "./icons/CommentIcon";
-import LikeIcon from "./icons/LikeIcon";
+import HeartIcon from "./icons/HeartIcon";
 
 export default function Post({ id, community, author, content, commentsCount, likesCount }: { 
     id?: string; 
@@ -25,7 +25,7 @@ export default function Post({ id, community, author, content, commentsCount, li
             </div>
             <div className="flex gap-2">
                 <Button text={String(commentsCount || 0)} colorScheme="dark-green" size="small" icon={<CommentIcon />} />
-                <Button text={String(likesCount || 0)} colorScheme="dark-green" size="small" icon={<LikeIcon />} />
+                <Button text={String(likesCount || 0)} colorScheme="dark-green" size="small" icon={<HeartIcon />} />
             </div>
         </Link>
     )

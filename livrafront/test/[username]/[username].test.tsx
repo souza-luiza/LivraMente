@@ -68,9 +68,9 @@ jest.mock('@/components/icons/EditIcon', () => {
   }
 })
 
-jest.mock('@/components/icons/ArrowRightIcon', () => {
-  return function MockArrowRightIcon({ width, height }: { width: number; height: number }) {
-    return <span data-testid="arrow-right-icon" data-width={width} data-height={height}>→</span>
+jest.mock('@/components/icons/ChevronRightIcon', () => {
+  return function MockChevronRightIcon({ width, height }: { width: number; height: number }) {
+    return <span data-testid="chevron-right-icon" data-width={width} data-height={height}>→</span>
   }
 })
 
@@ -307,13 +307,13 @@ describe('UserProfilePage', () => {
       })
     })
 
-    it('readlists heading has arrow icon', async () => {
+    it('readlists heading has Chevron icon', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       
       render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const icons = screen.getAllByTestId('arrow-right-icon')
+        const icons = screen.getAllByTestId('chevron-right-icon')
         expect(icons[0]).toBeInTheDocument()
         expect(icons[0]).toHaveAttribute('data-width', '24')
         expect(icons[0]).toHaveAttribute('data-height', '24')
@@ -403,13 +403,13 @@ describe('UserProfilePage', () => {
       })
     })
 
-    it('posts heading has arrow icon', async () => {
+    it('posts heading has Chevron icon', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       
       render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const icons = screen.getAllByTestId('arrow-right-icon')
+        const icons = screen.getAllByTestId('chevron-right-icon')
         expect(icons[1]).toBeInTheDocument()
       })
     })

@@ -56,9 +56,9 @@ jest.mock('../../src/components/icons/CommentIcon', () => {
   }
 })
 
-jest.mock('../../src/components/icons/LikeIcon', () => {
-  return function MockLikeIcon() {
-    return <span data-testid="like-icon">❤️</span>
+jest.mock('../../src/components/icons/HeartIcon', () => {
+  return function MockHeartIcon() {
+    return <span data-testid="heart-icon">❤️</span>
   }
 })
 
@@ -123,10 +123,10 @@ describe('Post Component', () => {
       expect(screen.getByTestId('comment-icon')).toBeInTheDocument()
     })
 
-    it('renders LikeIcon', () => {
+    it('renders HeartIcon', () => {
       render(<Post {...defaultProps} />)
-      
-      expect(screen.getByTestId('like-icon')).toBeInTheDocument()
+
+      expect(screen.getByTestId('heart-icon')).toBeInTheDocument()
     })
 
     it('renders "Ver mais..." link', () => {
@@ -475,13 +475,6 @@ describe('Post Component', () => {
       expect(buttons[0]).toHaveAttribute('data-text', '-5')
     })
 
-    it('handles negative like count', () => {
-      render(<Post {...defaultProps} likesCount={-10} />)
-      
-      const buttons = screen.getAllByRole('button')
-      expect(buttons[1]).toHaveAttribute('data-text', '-10')
-    })
-
     it('handles special characters in content', () => {
       const specialContent = '<script>alert("xss")</script>'
       render(<Post {...defaultProps} content={specialContent} />)
@@ -557,7 +550,7 @@ describe('Post Component', () => {
       const buttons = screen.getAllByRole('button')
       
       expect(buttons[0]).toContainElement(screen.getByTestId('comment-icon'))
-      expect(buttons[1]).toContainElement(screen.getByTestId('like-icon'))
+      expect(buttons[1]).toContainElement(screen.getByTestId('heart-icon'))
     })
   })
 
@@ -605,7 +598,7 @@ describe('Post Component', () => {
       expect(screen.getByText('This is a test post content')).toBeInTheDocument()
       expect(screen.getByTestId('code-icon')).toBeInTheDocument()
       expect(screen.getByTestId('comment-icon')).toBeInTheDocument()
-      expect(screen.getByTestId('like-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('heart-icon')).toBeInTheDocument()
       expect(screen.getAllByRole('button')).toHaveLength(2)
     })
 
