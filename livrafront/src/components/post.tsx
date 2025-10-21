@@ -20,7 +20,7 @@ export default function Post({ id, community, author, content, commentsCount, li
                 <h6 className="text-h6">@{author}</h6>
             </div>
             <div className="mb-3 flex-1 overflow-hidden">
-                <p className="text-b2 whitespace-pre-line line-clamp-4 [&::-webkit-line-clamp]:content-['']">{content}</p>
+                <p className="text-b2 whitespace-pre-line line-clamp-4">{content}</p>
                 <span className="text-b2 font-semibold hover:underline text-[var(--primary-700)]">Ver mais...</span>
             </div>
             <div className="flex gap-2">
