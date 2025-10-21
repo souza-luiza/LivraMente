@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
 import SearchIcon from '@/components/icons/SearchIcon';
-import LikeIcon from '@/components/icons/LikeIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';
@@ -13,20 +12,34 @@ import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
 
+// Função para converter slug em título
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function ReadlistPage() {
   const router = useRouter();
+  const params = useParams();
+  const username = params.username as string;
+  const readlistSlug = params.readlistSlug as string;
+  
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const livrosPorPagina = 42;
   
   // Simular se o usuário é o dono da readlist
-  const isOwner = true; // TODO: Implementar lógica real de verificação
+  // TODO: Implementar lógica real comparando username com usuário logado
+  const isOwner = true;
 
   const readlist = {
-    title: "Livros 2025",
+    title: slugToTitle(readlistSlug),
+    slug: readlistSlug,
     author: {
-      username: "gatanoturna",
+      username: username,
       avatar: "/kemi-teste.jpg"
     },
     description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
@@ -49,6 +62,10 @@ export default function ReadlistPage() {
         cover: "/kemi-teste.jpg"
       }))
     ]
+  };
+
+  const handleEditClick = () => {
+    router.push(`/${username}/readlist/${readlistSlug}/edit`);
   };
 
   return (
@@ -115,7 +132,7 @@ export default function ReadlistPage() {
                   transition: 'all 0.3s ease'
                 }}
                 aria-label="Editar readlist"
-                onClick={() => router.push('/readlist/edit')}
+                onClick={handleEditClick}
               >
                 <EditIcon
                   size={50}
