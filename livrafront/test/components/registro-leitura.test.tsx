@@ -322,48 +322,56 @@ describe('RegistroLeitura', () => {
 
   describe('Form Submission', () => {
     beforeEach(() => {
-      localStorageMock.getItem.mockReturnValue(null)
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'token') return 'fake-token'
+        if (key === 'lastAccess') return null
+        return null
+      })
     })
 
     it('should submit pages form with valid data and show success state', async () => {
-      render(<RegistroLeitura isLoggedIn={true} />)
-      
-      const pagesInput = screen.getByTestId('input-pagesRead')
-      const bookInput = screen.getByTestId('input-bookAmount')
-      const submitButton = screen.getByTestId('button-registrar')
-      
-      fireEvent.change(pagesInput, { target: { value: '25' } })
-      fireEvent.change(bookInput, { target: { value: '1' } })
+        // mock do fetch
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            ok: true,
+            json: async () => ({ gamificação: { XP: 40 } })
+          })
+        ) as jest.Mock
 
-      fireEvent.click(submitButton)
+        render(<RegistroLeitura isLoggedIn={true} />)
 
-      // Should show success state
-      await waitFor(() => {
-        expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
-        expect(screen.getByText('+0 XP')).toBeInTheDocument() // Default XP value
+        const pagesInput = screen.getByTestId('input-pagesRead')
+        const bookInput = screen.getByTestId('input-bookAmount')
+        const submitButton = screen.getByTestId('button-registrar')
+
+        fireEvent.change(pagesInput, { target: { value: '25' } })
+        fireEvent.change(bookInput, { target: { value: '1' } })
+        fireEvent.click(submitButton)
+
+        await waitFor(() => {
+          expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
+          expect(screen.getByText('+25 XP')).toBeInTheDocument()
+        })
       })
-    })
 
     it('should submit minutes form with valid data and show success state', async () => {
-      render(<RegistroLeitura isLoggedIn={true} />)
-      
-      // Switch to minutes form
-      fireEvent.click(screen.getByText('Minutos'))
+        render(<RegistroLeitura isLoggedIn={true} />)
 
-      const minutesInput = screen.getByTestId('input-minutesRead')
-      const bookInput = screen.getByTestId('input-bookAmount')
-      const submitButton = screen.getByTestId('button-registrar')
+        fireEvent.click(screen.getByText('Minutos'))
 
-      fireEvent.change(minutesInput, { target: { value: '45' } })
-      fireEvent.change(bookInput, { target: { value: '2' } })
+        const minutesInput = screen.getByTestId('input-minutesRead')
+        const bookInput = screen.getByTestId('input-bookAmount')
+        const submitButton = screen.getByTestId('button-registrar')
 
-      fireEvent.click(submitButton)
+        fireEvent.change(minutesInput, { target: { value: '90' } })
+        fireEvent.change(bookInput, { target: { value: '2' } })
+        fireEvent.click(submitButton)
 
-      // Should show success state
-      await waitFor(() => {
-        expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
+        await waitFor(() => {
+          expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
+          expect(screen.getByText('+60 XP')).toBeInTheDocument() // limitado a 60
+        })
       })
-    })
 
     it('should handle form submission error', async () => {
       // Mock console.error to avoid test noise
@@ -389,7 +397,13 @@ describe('RegistroLeitura', () => {
 
   describe('Success and Error States', () => {
     it('should show success state and close when clicking Fechar', async () => {
-      localStorageMock.getItem.mockReturnValue(null)
+      // mock do token
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'token') return 'fake-token'
+        if (key === 'lastAccess') return null
+        return null
+      })
+
       render(<RegistroLeitura isLoggedIn={true} />)
 
       // Fill and submit form to get to success state
