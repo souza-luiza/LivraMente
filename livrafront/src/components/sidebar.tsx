@@ -9,7 +9,7 @@ import LogoutIcon from "./icons/LogoutIcon";
 
 export default function Sidebar() {
     return (
-    <div role="complementary" data-testid="sidebar" className="inline-block light-green w-[80px] h-fill pt-[15px] pb-[15px] m-4 rounded-[12px]">
+        <nav data-testid="sidebar" className="light-green h-[calc(100vh-1rem)] sticky top-2 flex flex-col w-fit pt-4 pb-4 m-2 rounded-xl z-50">
             <div className="flex flex-col justify-between h-full">
                 <div className="flex flex-col gap-[8px]">   
                     <Button icon={<LogoIcon />} colorScheme="light-green" size="large" tooltip="Início" />
@@ -22,6 +22,6 @@ export default function Sidebar() {
                     <Button icon={<LogoutIcon />} colorScheme="light-green" size="large" tooltip="Sair" />
                 </div>
             </div>
-        </div>
+        </nav>
     );
 }   

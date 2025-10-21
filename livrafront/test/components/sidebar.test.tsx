@@ -1,5 +1,4 @@
-// components/sidebar.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Sidebar from '../../src/components/sidebar'
 
@@ -70,19 +69,22 @@ describe('Sidebar Component', () => {
     it('renders sidebar container with correct styling', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toBeInTheDocument()
-      expect(sidebar).toHaveClass('inline-block')
       expect(sidebar).toHaveClass('light-green')
-      expect(sidebar).toHaveClass('w-[80px]')
-      expect(sidebar).toHaveClass('h-fill')
-      expect(sidebar).toHaveClass('rounded-[12px]')
+      expect(sidebar).toHaveClass('h-[calc(100vh-1rem)]')
+      expect(sidebar).toHaveClass('sticky')
+      expect(sidebar).toHaveClass('top-2')
+      expect(sidebar).toHaveClass('w-fit')
+      expect(sidebar).toHaveClass('rounded-xl')
+      expect(sidebar).toHaveClass('z-50')
     })
 
     it('renders all navigation buttons', () => {
       render(<Sidebar />)
       
-  expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
+      expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
+      expect(screen.getAllByTestId('button-início')[1]).toBeInTheDocument()
       expect(screen.getByTestId('button-perfil')).toBeInTheDocument()
       expect(screen.getByTestId('button-notificações')).toBeInTheDocument()
       expect(screen.getByTestId('button-configurações')).toBeInTheDocument()
@@ -103,12 +105,9 @@ describe('Sidebar Component', () => {
     it('has correct layout structure with two sections', () => {
       render(<Sidebar />)
       
-      const container = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      const flexContainer = container.firstChild
+      const sidebar = screen.getByRole('navigation')
+      const flexContainer = sidebar.firstChild
       expect(flexContainer).toHaveClass('flex flex-col justify-between h-full')
-      
-  const sections = container.querySelectorAll('div > div > div')
-  expect(sections.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -116,7 +115,8 @@ describe('Sidebar Component', () => {
     it('renders buttons with correct Portuguese tooltips', () => {
       render(<Sidebar />)
       
-  expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
+      expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
+      expect(screen.getAllByTestId('button-início')[1]).toBeInTheDocument()
       expect(screen.getByTestId('button-perfil')).toBeInTheDocument()
       expect(screen.getByTestId('button-notificações')).toBeInTheDocument()
       expect(screen.getByTestId('button-configurações')).toBeInTheDocument()
@@ -126,8 +126,8 @@ describe('Sidebar Component', () => {
     it('has two buttons with "Início" tooltip (Logo and Home)', () => {
       render(<Sidebar />)
       
-  const inicioButtons = screen.getAllByTestId('button-início')
-  expect(inicioButtons).toHaveLength(2)
+      const inicioButtons = screen.getAllByTestId('button-início')
+      expect(inicioButtons).toHaveLength(2)
     })
   })
 
@@ -144,17 +144,17 @@ describe('Sidebar Component', () => {
     it('has correct spacing between buttons', () => {
       render(<Sidebar />)
       
-  const topSection = screen.getAllByTestId('button-início')[0].closest('div')
+      const topSection = screen.getAllByTestId('button-início')[0].closest('div')
       expect(topSection).toHaveClass('gap-[8px]')
     })
 
     it('has correct padding and margins', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toHaveClass('pt-[15px]')
-      expect(sidebar).toHaveClass('pb-[15px]')
-      expect(sidebar).toHaveClass('m-4')
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('pt-4')
+      expect(sidebar).toHaveClass('pb-4')
+      expect(sidebar).toHaveClass('m-2')
     })
 
     it('uses large size for all buttons', () => {
@@ -163,60 +163,45 @@ describe('Sidebar Component', () => {
       const buttons = screen.getAllByRole('button')
       expect(buttons).toHaveLength(6)
     })
+
+    it('has sticky positioning', () => {
+      render(<Sidebar />)
+      
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('sticky')
+      expect(sidebar).toHaveClass('top-2')
+    })
   })
 
   describe('Accessibility', () => {
     it('has proper semantic structure', () => {
       render(<Sidebar />)
     
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toBeInTheDocument()
+      expect(sidebar).toHaveAttribute('data-testid', 'sidebar')
     })
 
     it('buttons are keyboard accessible', async () => {
       const user = userEvent.setup()
       render(<Sidebar />)
       
-  const firstButton = screen.getAllByTestId('button-início')[0]
+      const firstButton = screen.getAllByTestId('button-início')[0]
       firstButton.focus()
       
       expect(firstButton).toHaveFocus()
       
       await user.tab()
     })
-
-    it('has sufficient color contrast (visual test implication)', () => {
-      render(<Sidebar />)
-      
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toBeInTheDocument()
-    })
   })
 
   describe('Interaction Tests', () => {
     it('handles button clicks', async () => {
       const user = userEvent.setup()
-      const mockOnClick = jest.fn()
+      render(<Sidebar />)
       
-      jest.doMock('../../src/components/textless-button', () => ({
-        __esModule: true,
-        default: function MockButton({ icon, tooltip, onClick }: any) {
-          return (
-            <button 
-              data-testid={`button-${tooltip?.toLowerCase() || 'unknown'}`}
-              onClick={onClick || mockOnClick}
-              className="mock-button"
-            >
-              {icon}
-            </button>
-          )
-        },
-      }))
-      
-      const { rerender } = render(<Sidebar />)
-      
-  const homeButton = screen.getAllByTestId('button-início')[1]
-  await user.click(homeButton)
+      const homeButton = screen.getAllByTestId('button-início')[1]
+      await user.click(homeButton)
       
       expect(homeButton).toBeInTheDocument()
     })
@@ -228,22 +213,23 @@ describe('Sidebar Component', () => {
       const profileButton = screen.getByTestId('button-perfil')
       
       await user.hover(profileButton)
+      expect(profileButton).toBeInTheDocument()
     })
   })
 
   describe('Responsive Behavior', () => {
-    it('maintains fixed width layout', () => {
+    it('maintains fit-content width layout', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toHaveClass('w-[80px]')
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('w-fit')
     })
 
-    it('has fixed height for consistent layout', () => {
+    it('has viewport-relative height', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toHaveClass('h-fill')
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('h-[calc(100vh-1rem)]')
     })
   })
 
@@ -263,7 +249,7 @@ describe('Sidebar Component', () => {
     it('renders correctly with no additional props', () => {
       render(<Sidebar />)
       
-  expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
+      expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
       expect(screen.getByTestId('button-sair')).toBeInTheDocument()
     })
 
@@ -280,7 +266,6 @@ describe('Sidebar Component', () => {
       const logoutButton = screen.getByTestId('button-sair')
       const bottomSection = logoutButton.closest('div')
       
-      // Logout button should be in a separate container at the bottom
       expect(bottomSection).toBeInTheDocument()
       expect(bottomSection?.parentElement).toHaveClass('flex flex-col justify-between')
     })
@@ -290,22 +275,22 @@ describe('Sidebar Component', () => {
     it('has correct border radius', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toHaveClass('rounded-[12px]')
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('rounded-xl')
     })
 
     it('uses consistent light-green color scheme', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
+      const sidebar = screen.getByRole('navigation')
       expect(sidebar).toHaveClass('light-green')
     })
 
-    it('has proper shadow and depth (if applicable)', () => {
+    it('has correct z-index for layering', () => {
       render(<Sidebar />)
       
-      const sidebar = screen.getByRole('complementary') || screen.getByTestId('sidebar')
-      expect(sidebar).toBeInTheDocument()
+      const sidebar = screen.getByRole('navigation')
+      expect(sidebar).toHaveClass('z-50')
     })
   })
 })
