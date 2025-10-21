@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ReadlistCard } from "../../components/readlist-card";
-import { CreateReadlist } from "../../components/create-readlist";
+import { ReadlistCard } from "../../../components/readlist-card";
+import { CreateReadlist } from "../../../components/create-readlist";
 import Link from "next/link";
-import { useReadlistsList } from "../../hooks/useReadlistsList";
-import { useCreateReadlist } from "../../hooks/useCreateReadlist";
-import Button from "../../components/button";
-import LoadingPage from "../../components/loading";
+import { useReadlistsList } from "../../../hooks/useReadlistsList";
+import { useCreateReadlist } from "../../../hooks/useCreateReadlist";
+import Button from "../../../components/button";
+import LoadingPage from "../../../components/loading";
 import Sidebar from "@/components/sidebar";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";

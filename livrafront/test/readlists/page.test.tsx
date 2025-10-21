@@ -55,7 +55,7 @@ it('navega entre tabs e mostra favoritas e criadas por mim corretamente', async 
 		expect(screen.getByText(/Minha Readlist/i)).toBeInTheDocument();
 	});
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import ReadlistsPage from '../../src/app/readlists/page';
+import ReadlistsPage from '../../src/app/[username]/readlists/page';
 import { useReadlistsList } from '../../src/hooks/useReadlistsList';
 
 jest.mock('../../src/hooks/useReadlistsList');
