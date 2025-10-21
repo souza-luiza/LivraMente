@@ -24,7 +24,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
     
     // Implementar a lógica para confirmar se usuário existe no banco de dados
     // Se não existir, chamar notFound()
-    if(!username){
+    if (!username || username.trim() === '') {
         notFound();
     }
     return (
