@@ -148,7 +148,7 @@ export default function SettingsProfilePage() {
               />
 
               <div className="flex justify-end gap-4 pt-4 border-t border-neutral-200">
-                 <Button icon={<TrashIcon size={16}/>} colorScheme="light-brown" size="small" text='Cancelar' onClick={() => router.push("/profile")}
+                 <Button icon={<TrashIcon size={16}/>} colorScheme="light-brown" size="small" text='Cancelar' onClick={() => router.back()}
                 />
                 <Button icon={<SaveIcon size={16}/>} colorScheme="dark-green" size="small" text='Salvar Alterações' onClick={handleSaveChanges}
                 />
