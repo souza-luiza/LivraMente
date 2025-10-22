@@ -8,8 +8,8 @@ function getAuthHeaders(): { [key: string]: string } | undefined {
 }
 
 // Buscar readlists públicas de um usuário
-export async function getPublicReadlists(userId: string): Promise<Readlist[]> {
-  const response = await fetch(`${API_BASE_URL}/readlists/public/${userId}`, {
+export async function getPublicReadlists(username: string): Promise<Readlist[]> {
+  const response = await fetch(`${API_BASE_URL}/readlists/public/${username}`, {
     headers: {
       ...(getAuthHeaders() || {}),
     },
@@ -38,6 +38,25 @@ export async function getFavoriteReadlists(): Promise<Readlist[]> {
     },
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao buscar favoritas'));
+  return response.json();
+}
+
+// Criar uma nova readlist para o usuário autenticado
+export async function createReadlist(payload: { nome: string; descricao?: string; publica: boolean }): Promise<Readlist> {
+  const response = await fetch(`${API_BASE_URL}/readlists`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(getAuthHeaders() || {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao criar readlist');
+    return Promise.reject(new Error(text || 'Erro ao criar readlist'));
+  }
+
   return response.json();
 }
 
