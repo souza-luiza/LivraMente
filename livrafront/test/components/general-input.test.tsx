@@ -28,7 +28,7 @@ describe('Input Component', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
       expect(input).toHaveAttribute('id')
-      expect(input.id).toMatch(/^input-/)
+      expect(input.id).toMatch(/^_r_3_/)
     })
   })
 
