@@ -167,7 +167,6 @@ describe('useReadlistsList erro ao buscar readlists', () => {
     await act(async () => {
       await waitFor(() => result.current.error !== null, { timeout: 2000 });
     });
-    console.log('DEBUG error:', result.current.error);
     expect(result.current.error).toBe('Erro ao buscar suas readlists');
   expect(result.current.readlists).toEqual([]);
 });
