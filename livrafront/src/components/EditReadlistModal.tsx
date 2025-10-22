@@ -4,9 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Input from '@/components/general-input';
 import Button from '@/components/button';
-import TextlessButton from '@/components/textless-button';
-import RemoveIcon from '@/components/icons/RemoveIcon';
-import CheckIcon from '@/components/icons/CheckIcon';
+import TrashIcon from './icons/TrashIcon';
+import SaveIcon from './icons/SaveIcon';
 
 interface EditReadlistModalProps {
   isOpen: boolean;
@@ -99,16 +98,6 @@ export default function EditReadlistModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botão de Fechar */}
-        <div className="absolute top-4 right-4">
-          <TextlessButton
-            icon={<RemoveIcon />}
-            size="medium"
-            colorScheme="light-green"
-            onClick={onClose}
-            aria-label="Fechar"
-          />
-        </div>
 
         {/* Título do Modal */}
         <h4
@@ -235,13 +224,13 @@ export default function EditReadlistModal({
         </div>
 
         {/* Checkbox de Privacidade */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex items-center gap-2">
           <input
             type="checkbox"
             id="private-checkbox"
             checked={isPrivate}
             onChange={(e) => setIsPrivate(e.target.checked)}
-            className="w-5 h-5 cursor-pointer"
+            className="w-4 h-4 cursor-pointer"
             style={{
               accentColor: 'var(--primary-600)',
             }}
@@ -254,16 +243,30 @@ export default function EditReadlistModal({
             Tornar readlist privada
           </label>
         </div>
+        
+        <div className='flex flex-row items-center justify-center gap-2'>
+          {/* Botão de Fechar */}
+          <div>
+            <Button
+              text="Cancelar"
+              icon={<TrashIcon />}
+              size="medium"
+              colorScheme="dark-brown"
+              onClick={onClose}
+              aria-label="Fechar"
+            />
+          </div>
 
-        {/* Botão Salvar */}
-        <div className="flex justify-end">
-          <Button
-            text="Salvar"
-            icon={<CheckIcon />}
-            size="medium"
-            colorScheme="dark-green"
-            onClick={handleSave}
-          />
+          {/* Botão Salvar */}
+          <div>
+            <Button
+              text="Salvar Alterações"
+              icon={<SaveIcon />}
+              size="medium"
+              colorScheme="dark-green"
+              onClick={handleSave}
+            />
+          </div>
         </div>
       </div>
     </div>

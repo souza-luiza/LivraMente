@@ -335,7 +335,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       fireEvent.click(saveButton);
 
       expect(screen.getByTestId('input-error')).toHaveTextContent('O título é obrigatório');
@@ -371,7 +371,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       // Gerar erro
       fireEvent.click(saveButton);
@@ -397,7 +397,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: '   ' } });
       fireEvent.click(saveButton);
@@ -421,7 +421,7 @@ describe('EditReadlistModal', () => {
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
       const descriptionTextarea = screen.getByPlaceholderText('Adicione uma descrição opcional') as HTMLTextAreaElement;
       const privateCheckbox = screen.getByLabelText('Tornar readlist privada') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: 'Novo Título' } });
       fireEvent.change(descriptionTextarea, { target: { value: 'Nova descrição' } });
@@ -448,7 +448,7 @@ describe('EditReadlistModal', () => {
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
       const descriptionTextarea = screen.getByPlaceholderText('Adicione uma descrição opcional') as HTMLTextAreaElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: '  Título com espaços  ' } });
       fireEvent.change(descriptionTextarea, { target: { value: '  Descrição com espaços  ' } });
@@ -472,7 +472,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       fireEvent.click(saveButton);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -623,7 +623,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       expect(saveButton).toBeInTheDocument();
       
       // Verifica que o botão tem estilo inicial
