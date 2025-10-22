@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from 'next/navigation';
 import { ReadlistCard } from "../../../components/readlist-card";
 import { CreateReadlist } from "../../../components/create-readlist";
 import Link from "next/link";
@@ -13,52 +14,47 @@ import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 
 export default function UserReadlistsPage() {
+  const params = useParams();
+  const routeUsername = (params as any)?.username || '';
+
   // userId logado
   const loggedUserId = typeof window !== "undefined" ? localStorage.getItem("userId") || "1" : "1";
-  // userId da página (pode vir da query string)
-  const [pageUserId, setPageUserId] = useState<string>(loggedUserId);
-  const [pageUsername, setPageUsername] = useState<string>("");
+  const loggedUsername = typeof window !== "undefined" ? localStorage.getItem('username') || '' : '';
   const [profilePath, setProfilePath] = useState<string>('/');
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const qUserId = params.get("userId");
-      if (qUserId && qUserId !== pageUserId) {
-        setPageUserId(qUserId);
-      }
-    }
-  }, []);
-
-  // Busca username do usuário da página se não for o próprio
-  useEffect(() => {
-    if (pageUserId !== loggedUserId) {
-      fetch(`/api/users/${pageUserId}`)
-        .then(res => res.json())
-        .then(data => setPageUsername(data.username || "Usuário"))
-        .catch(() => setPageUsername("Usuário"));
-    }
-  }, [pageUserId, loggedUserId]);
 
   // Define profilePath para o link de voltar
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    if (pageUserId !== loggedUserId) {
-  if (pageUsername && pageUsername !== 'Usuário') setProfilePath(`/${pageUsername}`);
-  else setProfilePath('/');
+    if (routeUsername && routeUsername !== loggedUsername) {
+      setProfilePath(`/${routeUsername}`);
       return;
     }
-    const myUsername = localStorage.getItem('username');
-  if (myUsername && myUsername.trim()) setProfilePath(`/${myUsername}`);
-  else setProfilePath('/');
-  }, [pageUserId, pageUsername, loggedUserId]);
+    if (loggedUsername && loggedUsername.trim()) setProfilePath(`/${loggedUsername}`);
+    else setProfilePath('/');
+  }, [routeUsername, loggedUsername]);
 
-  const isMyPage = loggedUserId === pageUserId;
+  const isMyPage = !routeUsername || routeUsername === loggedUsername;
   type TabType = 'minhas' | 'favoritas';
   const [activeTab, setActiveTab] = useState<TabType>('minhas');
   const [modalOpen, setModalOpen] = useState(false);
-  const { handleCreateReadlist, isLoading, apiError, clearApiError } = useCreateReadlist(loggedUserId);
-  const { readlists, loading, error, refetch } = useReadlistsList(pageUserId, isMyPage ? (activeTab === 'minhas' ? 'criadas' : 'favoritadas') : 'criadas');
+  const { handleCreateReadlist } = useCreateReadlist(loggedUserId);
+
+  const identifierForHook = isMyPage ? loggedUserId : routeUsername;
+
+  if (!isMyPage && !routeUsername) {
+    return (
+      <div className="flex min-h-screen h-screen m-0 bg-white">
+        <Sidebar />
+        <div className="flex-1 p-8 m-0">
+          <div className="relative min-h-[200px] w-full flex items-center justify-center">
+            <LoadingPage />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { readlists, loading, error, refetch } = useReadlistsList(identifierForHook, isMyPage ? (activeTab === 'minhas' ? 'criadas' : 'favoritadas') : 'criadas');
 
   // Se não for minha página, mostrar só públicas
   const filteredReadlists = isMyPage
@@ -80,7 +76,7 @@ export default function UserReadlistsPage() {
             </Link>
           </span>
           <h1 className="font-extrabold tracking-tight font-poppins text-h2 text-[var(--secondary-700)]">
-            {isMyPage ? "Minhas readlists" : `Readlists de ${pageUsername}`}
+            {isMyPage ? "Minhas readlists" : `Readlists de ${routeUsername}`}
           </h1>
         </div>
         {/* Filtros e botão de criar readlist só se for minha página */}
@@ -120,14 +116,8 @@ export default function UserReadlistsPage() {
             open={modalOpen}
             onClose={() => setModalOpen(false)}
             onCreate={async (data, setError) => {
-              await handleCreateReadlist(data, setError, () => {
-                // após criar readlist, refetch da lista
-                refetch();
-              });
+              await handleCreateReadlist(data, setError, () => refetch && refetch());
             }}
-            isLoading={isLoading}
-            apiError={apiError}
-            clearApiError={clearApiError}
           />
         )}
         {/* Loading */}
