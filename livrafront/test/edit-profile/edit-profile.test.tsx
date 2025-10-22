@@ -27,6 +27,7 @@ describe('EditProfilePage', () => {
   const mockSetUsername = jest.fn();
   const mockSetPronouns = jest.fn();
   const mockRouterPush = jest.fn();
+  const mockRouterBack = jest.fn();
 
   // 2. Configuração inicial antes de cada teste
   beforeEach(() => {
@@ -36,6 +37,7 @@ describe('EditProfilePage', () => {
     // Configura o retorno do mock do useRouter
     (useRouter as jest.Mock).mockReturnValue({
       push: mockRouterPush,
+      back: mockRouterBack,
     });
 
     // Configura o retorno do mock do useUserStore
@@ -108,20 +110,22 @@ describe('EditProfilePage', () => {
     expect(mockSetUsername).not.toHaveBeenCalled();
   });
 
-  it('deve navegar para a página de perfil ao clicar em Cancelar', async () => {
+  it('deve chamar router.back() ao clicar em Cancelar', async () => {
     const user = userEvent.setup();
-    render(<EditProfilePage />);
+    render(<EditProfilePage />); 
 
     const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
     await user.click(cancelButton);
 
-    // Verifica se o router.push foi chamado com o caminho correto
-    expect(mockRouterPush).toHaveBeenCalledWith('/profile');
+    // Verifica se a função router.back foi chamada
+    expect(mockRouterBack).toHaveBeenCalledTimes(1);
+    // Garante que o push NÃO foi chamado
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
   it('deve redirecionar para /login se o usuário não estiver logado', () => {
     (useUserStore as unknown as jest.Mock).mockReturnValue({
-      username: '', 
+      username: '',
       pronouns: '',
       profileImageUrl: '/default-url.png', // Deve ter um valor (ou null) para o useEffect rodar
       setUsername: mockSetUsername,
