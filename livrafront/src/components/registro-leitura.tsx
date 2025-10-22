@@ -133,7 +133,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
             }
 
             // requisição da api do next
-            const response = await fetch('/api/gamification/reading', {
+            const response = await fetch('/api/gamificacao/registro-de-leitura', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
