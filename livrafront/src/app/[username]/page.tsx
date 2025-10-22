@@ -8,6 +8,7 @@ import ProfileReadlists from "@/components/profile-readlists";
 import ProfilePosts from "@/components/profile-posts";
 import ProfileBadge from "@/components/profile-badge";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
+import EditProfile from "@/app/[username]/edit-profile/page";
 
 interface UserProfilePageProps {
     params: Promise<{username: string}>;
@@ -39,7 +40,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
                 </div>
                 <h4 className="text-3xl font-bold pb-2 text-h5">@{username}</h4>
                 <p className="pb-4 text-b1 body-quotation">{userProfile.pronouns}</p>
-                <Link href={`/edit-profile/${username}`}>
+                <Link href={`/${username}/edit-profile`}>
                     <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
                 </Link>
                 <div className="w-full flex justify-center items-stretch mt-8 gap-4">

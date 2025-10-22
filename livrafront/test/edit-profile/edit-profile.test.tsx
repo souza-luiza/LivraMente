@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import EditProfilePage from '@/app/edit-profile/page';
+import EditProfilePage from '@/app/[username]/edit-profile/page';
 import { useUserStore } from '@/stores/user-store';
 import { useRouter } from 'next/navigation';
 import '@testing-library/jest-dom';
