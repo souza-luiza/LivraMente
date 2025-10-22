@@ -150,6 +150,8 @@ describe('useLoginForm', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'real-token-123')
     expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockResponse.user))
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('username', mockResponse.user.username)
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse.user.id))
   })
 
   it('deve redirecionar para página principal/feed após login', async () => {
