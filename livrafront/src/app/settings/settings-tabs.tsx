@@ -9,10 +9,9 @@ import ShieldIcon from "@/components/icons/ShieldIcon";
 import ProfileIcon from "@/components/profile-icon";
 import Button from "@/components/button";
 import Input from "@/components/general-input";
+import PhoneInputComponent from "@/components/phone-input";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import EditIcon from "@/components/icons/EditIcon";
-import LogoutIcon from "@/components/icons/LogoutIcon";
-import DeleteIcon from "@/components/icons/DeleteIcon";
 import GlobeIcon from "@/components/icons/GlobeIcon";
 import HeartIcon from "@/components/icons/HeartIcon";
 import CommentIcon from "@/components/icons/CommentIcon";
@@ -23,6 +22,7 @@ import SaveIcon from "@/components/icons/SaveIcon";
 import RemoveIcon from "@/components/icons/RemoveIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 import PauseIcon from "@/components/icons/PauseIcon";
+import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 
 export default function SettingsTabs() {
     const [value, setValue] = useState('profile');
@@ -92,11 +92,11 @@ export default function SettingsTabs() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         fullWidth
                                     />
-                                    <Input
+                                    <PhoneInputComponent
                                         label="Telefone"
-                                        placeholder="(00) 00000-0000"
+                                        placeholder="Digite seu telefone"
                                         value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
+                                        onChange={(value) => setPhone(value)}
                                         fullWidth
                                     />
                                     <CountrySelect
@@ -241,7 +241,15 @@ export default function SettingsTabs() {
                             </p>
                             <p className="text-b2 text-gray-500">
                                 Eles não serão notificados que você os bloqueou.
-                            </p>
+                            </p>                              
+                        </div>
+                        <div className="flex justify-end mb-2">
+                            <Button 
+                                text="Bloquear Contas" 
+                                icon={<PlusCheckboxIcon />} 
+                                size="medium" 
+                                colorScheme="dark-green"
+                            />
                         </div>
                         
                         <div className="border-2 border-dashed border-[#e5e7eb] rounded-lg p-16 text-center bg-[#fafbfc]">

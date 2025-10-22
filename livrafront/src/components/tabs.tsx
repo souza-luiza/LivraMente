@@ -39,7 +39,7 @@ interface TabListProps {
 
 export const TabList: React.FC<TabListProps> = ({ children, className = '' }) => {
   return (
-    <div className={`flex border-b border-[#d4d4d4] ${className}`} role="tablist">
+    <div className={`flex border-b-2 border-[#ededed] ${className}`} role="tablist">
       {children}
     </div>
   );
