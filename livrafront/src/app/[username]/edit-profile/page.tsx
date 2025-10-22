@@ -65,7 +65,7 @@ export default function SettingsProfilePage() {
 
     try {
       // Simulando uma chamada de API que sempre funciona
-      console.log("Salvando dados:", formData);
+      //console.log("Salvando dados:", formData);
 
       setUsername(formData.name);
       setPronouns(formData.pronouns); 
