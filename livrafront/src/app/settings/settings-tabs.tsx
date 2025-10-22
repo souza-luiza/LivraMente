@@ -179,10 +179,10 @@ export default function SettingsTabs() {
                         
                         <div className="space-y-3">
                             {[
-                                { icon: <HeartIcon />, title: "Curtidas", desc: "Quando alguém curtir sua publicação" },
-                                { icon: <CommentIcon />, title: "Comentários", desc: "Quando alguém comentar suas publicações" },
-                                { icon: <MentionIcon />, title: "Menções", desc: "Quando alguém mencionar você" },
-                                { icon: <SingleUserIcon />, title: "Novos seguidores", desc: "Quando alguém começar a seguir você" }
+                                { icon: <HeartIcon size={40}/>, title: "Curtidas", desc: "Quando alguém curtir sua publicação" },
+                                { icon: <CommentIcon size={40}/>, title: "Comentários", desc: "Quando alguém comentar suas publicações" },
+                                { icon: <MentionIcon size={40}/>, title: "Menções", desc: "Quando alguém mencionar você" },
+                                { icon: <SingleUserIcon size={40}/>, title: "Novos seguidores", desc: "Quando alguém começar a seguir você" }
                             ].map((item, index) => (
                                 <div key={index} className="flex items-center justify-between p-5 border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-colors">
                                     <div className="flex items-center gap-4">
@@ -212,12 +212,12 @@ export default function SettingsTabs() {
                         
                         <div className="space-y-3">
                             {[
-                                { icon: <ShieldIcon />, title: "Alterar senha", desc: "Última alteração há 3 meses" },
-                                { icon: <KeyIcon />, title: "Autenticação de dois fatores", desc: "Adicione uma camada extra de segurança" },
-                                { icon: <NotificationsIcon />, title: "Sessões ativas", desc: "1 dispositivo conectado" }
+                                { icon: <ShieldIcon size={40} />, title: "Alterar senha", desc: "Última alteração há 3 meses" },
+                                { icon: <KeyIcon size={40} />, title: "Autenticação de dois fatores", desc: "Adicione uma camada extra de segurança" },
+                                { icon: <NotificationsIcon size={40} />, title: "Sessões ativas", desc: "1 dispositivo conectado" }
                             ].map((item, index) => (
-                                <button key={index} className="w-full flex items-center justify-start p-5 hover:bg-[#f9fafb] rounded-lg transition-all border border-[#e5e7eb] group">
-                                    <div className="flex items-center gap-4">
+                                <button key={index} className="w-full flex items-center justify-start p-5 hover:bg-[#f9fafb] border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-all">
+                                    <div className="w-full flex items-center gap-4">
                                         <div className="text-[#4a5d3c]">{item.icon}</div>
                                         <div className="text-left">
                                             <p className="text-b1 font-semibold">{item.title}</p>
