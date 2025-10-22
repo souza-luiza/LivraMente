@@ -47,6 +47,7 @@ jest.mock('next/image', () => ({
 
 describe('EditReadlistModal', () => {
   const mockReadlist = {
+    id: 'test-readlist-id',
     title: 'Livros 2025',
     description: 'Minha lista de livros favoritos',
     coverImage: '/test-cover.jpg',
@@ -408,6 +409,12 @@ describe('EditReadlistModal', () => {
   });
 
   describe('Salvamento', () => {
+    beforeEach(() => {
+      // Limpar mocks especificamente para este bloco
+      mockOnClose.mockClear();
+      mockOnSave.mockClear();
+    });
+
     it('deve salvar alterações quando formulário é válido', () => {
       render(
         <EditReadlistModal
@@ -462,7 +469,7 @@ describe('EditReadlistModal', () => {
       });
     });
 
-    it('deve fechar o modal após salvar', () => {
+    it('deve fechar o modal após salvar', async () => {
       render(
         <EditReadlistModal
           isOpen={true}
@@ -475,7 +482,10 @@ describe('EditReadlistModal', () => {
       const saveButton = screen.getByText('Salvar');
       fireEvent.click(saveButton);
 
-      expect(mockOnClose).toHaveBeenCalledTimes(1);
+      // Aguardar o delay assíncrono (500ms no modo mock)
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      }, { timeout: 1000 });
     });
   });
 
@@ -610,7 +620,8 @@ describe('EditReadlistModal', () => {
       );
 
       const titleLabel = screen.getByText('Título');
-      expect(titleLabel).toHaveClass('transition-opacity', 'duration-200');
+      expect(titleLabel.className).toContain('transition-opacity');
+      expect(titleLabel.className).toContain('duration-200');
     });
 
     it('deve aplicar hover no botão salvar', () => {
