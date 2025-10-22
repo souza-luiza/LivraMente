@@ -71,7 +71,29 @@ export default function EditReadlistModal({
     setApiError('');
 
     try {
-      // Mapear campos do frontend para backend
+      // Verificar se está no modo mock (desenvolvimento)
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        // Modo mock: apenas atualizar localmente
+        console.warn('🔧 Modo mock: salvando apenas localmente (sem chamada à API)');
+        
+        if (onSave) {
+          onSave({
+            title: title.trim(),
+            description: description.trim(),
+            coverImage,
+            isPrivate,
+          });
+        }
+        
+        // Simular delay da API
+        await new Promise(resolve => setTimeout(resolve, 500));
+        onClose();
+        return;
+      }
+
+      // Modo autenticado: salvar na API
       const updateData = {
         nome: title.trim(),
         descricao: description.trim(),
@@ -79,7 +101,6 @@ export default function EditReadlistModal({
         publica: !isPrivate, 
       };
 
-      // Chamar API para atualizar
       await updateReadlist(readlist.id, updateData);
 
       // Callback opcional para atualizar UI

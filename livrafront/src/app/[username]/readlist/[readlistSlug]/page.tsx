@@ -37,6 +37,39 @@ export default function ReadlistPage() {
         setLoading(true);
         setError('');
 
+        // Verificar se está autenticado
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          // Modo de desenvolvimento: usar dados mock
+          console.warn('⚠️ Usuário não autenticado. Usando dados mock para desenvolvimento.');
+          
+          const mockData: ReadlistDetailResponse = {
+            _id: 'mock-id-123',
+            nome: readlistSlug
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
+            descricao: 'Esta é uma readlist de demonstração. Você pode editar mesmo no modo mock! As alterações ficarão apenas localmente.',
+            capa_url: '/kemi-teste.jpg',
+            publica: true,
+            favorito: false,
+            criador: 'mock-user',
+            livros: [
+              { id: '1', title: 'Jantar Secreto', year: '2016', pages: '416 pags', rating: 5, cover: '/kemi-teste.jpg' },
+              { id: '2', title: 'A Empregada', year: '2018', pages: '208 pags', rating: 5, cover: '/kemi-teste.jpg' },
+              { id: '3', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          
+          setReadlistData(mockData);
+          setIsOwner(true); 
+          setLoading(false);
+          return;
+        }
+
         // Primeiro, buscar readlists públicas do usuário
         const publicReadlists = await getPublicReadlists(username);
         
@@ -160,6 +193,28 @@ export default function ReadlistPage() {
         className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 md:py-12 w-full max-w-[1600px] mx-auto" 
         style={{ }}
       >
+        {/* Aviso de Modo de Desenvolvimento */}
+        {!localStorage.getItem('token') && (
+          <div className="mb-6 p-4 rounded-lg" style={{ 
+            backgroundColor: 'var(--warning-100)', 
+            border: '2px solid var(--warning-500)' 
+          }}>
+            <div className="flex items-center gap-3">
+              <span className="text-h5">⚠️</span>
+              <div>
+                <p className="text-b1 body-semibold" style={{ color: 'var(--warning-800)' }}>
+                  Modo de Desenvolvimento
+                </p>
+                <p className="text-b3" style={{ color: 'var(--warning-700)' }}>
+                  Você não está autenticado. Exibindo dados mock. 
+                  <a href="/login" className="underline ml-1 body-semibold">
+                    Faça login
+                  </a> para ver dados reais da API.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* SEÇÃO 1: Barra de Pesquisa */}
         <div style={{ marginBottom: 'var(--large-padding)' }}>
           <div 
