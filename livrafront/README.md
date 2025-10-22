@@ -35,7 +35,7 @@ Você pode começar a editar a página modificando `app/page.tsx`. A página se 
 
 Este projeto está atualmente utilizando [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para otimizar automaticamente e carregar [Geist](https://vercel.com/font), uma família de fontes da Vercel. (Brevemente será trocado pelas fontes do Projeto)
 
-## Aprenda mais
+## Aprenda mais!
 
 Para aprender mais sobre Next.js, dê uma olhada nos seguintes recursos:
 
