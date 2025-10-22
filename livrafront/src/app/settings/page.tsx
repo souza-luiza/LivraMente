@@ -1,5 +1,3 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
 import SettingsTabs from "./settings-tabs";
