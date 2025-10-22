@@ -19,6 +19,7 @@ export default function LoginPage() {
     height: '24px',
     display: 'block' as const
   }
+  }*/
 
   return (
       <div className="flex min-h-screen">
