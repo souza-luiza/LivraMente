@@ -14,11 +14,10 @@ export default function LoginPage() {
     formData, errors, isLoading, apiError, handleChange, handleSubmit 
   } = useLoginForm()
 
-  const iconStyle = {
+  /*const iconStyle = {
     width: '24px',
     height: '24px',
     display: 'block' as const
-  }
   }*/
 
   return (
