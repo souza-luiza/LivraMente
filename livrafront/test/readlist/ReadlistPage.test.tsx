@@ -3,6 +3,24 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ReadlistPage from '@/app/[username]/readlist/[readlistSlug]/page';
 
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('React does not recognize') ||
+       args[0].includes('for a non-boolean attribute'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});
+
 // Mock dos componentes Next.js
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(() => ({

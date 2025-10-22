@@ -3,6 +3,24 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import EditReadlistModal from '@/components/EditReadlistModal';
 
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('React does not recognize') ||
+       args[0].includes('for a non-boolean attribute'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});
+
 // Mock do Input component
 jest.mock('@/components/general-input', () => {
   return function MockInput(props: any) {
