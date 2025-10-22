@@ -37,12 +37,15 @@ export default function ReadlistPage() {
         setLoading(true);
         setError('');
 
+        // Verificar se está no modo demo (username = demo)
+        const isDemoMode = username === 'demo';
+        
         // Verificar se está autenticado
         const token = localStorage.getItem('token');
         
-        if (!token) {
+        if (!token || isDemoMode) {
           // Modo de desenvolvimento: usar dados mock
-          console.warn('⚠️ Usuário não autenticado. Usando dados mock para desenvolvimento.');
+          console.warn('⚠️ Modo de demonstração ativado. Usando dados mock.');
           
           const mockData: ReadlistDetailResponse = {
             _id: 'mock-id-123',
@@ -54,7 +57,7 @@ export default function ReadlistPage() {
             capa_url: '/kemi-teste.jpg',
             publica: true,
             favorito: false,
-            criador: 'mock-user',
+            criador: 'demo', // Username do modo mock 
             livros: [
               { id: '1', title: 'Jantar Secreto', year: '2016', pages: '416 pags', rating: 5, cover: '/kemi-teste.jpg' },
               { id: '2', title: 'A Empregada', year: '2018', pages: '208 pags', rating: 5, cover: '/kemi-teste.jpg' },
@@ -203,7 +206,7 @@ export default function ReadlistPage() {
         style={{ }}
       >
         {/* Aviso de Modo de Desenvolvimento */}
-        {!localStorage.getItem('token') && (
+        {(username === 'demo' || !localStorage.getItem('token')) && (
           <div className="mb-6 p-4 rounded-lg" style={{ 
             backgroundColor: 'var(--warning-100)', 
             border: '2px solid var(--warning-500)' 
@@ -212,10 +215,14 @@ export default function ReadlistPage() {
               <span className="text-h5">⚠️</span>
               <div>
                 <p className="text-b1 body-semibold" style={{ color: 'var(--warning-800)' }}>
-                  Modo de Desenvolvimento
+                  Modo de Demonstração
                 </p>
                 <p className="text-b3" style={{ color: 'var(--warning-700)' }}>
-                  Você não está autenticado. Exibindo dados mock. 
+                  {username === 'demo' 
+                    ? 'Você está visualizando dados de demonstração. As edições ficarão apenas localmente.'
+                    : 'Você não está autenticado. Exibindo dados mock.'
+                  }
+                  {' '}
                   <a href="/login" className="underline ml-1 body-semibold">
                     Faça login
                   </a> para ver dados reais da API.

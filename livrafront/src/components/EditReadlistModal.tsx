@@ -71,12 +71,13 @@ export default function EditReadlistModal({
     setApiError('');
 
     try {
-      // Verificar se está no modo mock (desenvolvimento)
+      // Verificar se está no modo mock (desenvolvimento ou usuário demo)
       const token = localStorage.getItem('token');
+      const isDemoMode = readlist.id === 'mock-id-123'; // ID do modo demo
       
-      if (!token) {
+      if (!token || isDemoMode) {
         // Modo mock: apenas atualizar localmente
-        console.warn('🔧 Modo mock: salvando apenas localmente (sem chamada à API)');
+        console.warn('🔧 Modo de demonstração: salvando apenas localmente (sem chamada à API)');
         
         if (onSave) {
           onSave({
