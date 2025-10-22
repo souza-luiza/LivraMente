@@ -164,7 +164,7 @@ export default function ReadlistPage() {
                 onClick={() => setIsEditModalOpen(true)}
               >
                 <EditIcon
-                  size={50}
+                  size={30}
                   style={{ 
                     color: 'var(--primary-600)',
                     transition: 'all 0.3s ease',
@@ -189,7 +189,7 @@ export default function ReadlistPage() {
               onClick={() => setIsLiked(!isLiked)}
             >
               <HeartIcon
-                size={50}
+                size={30}
                 style={{ 
                   color: 'var(--primary-600)', 
                   fill: isLiked ? 'var(--primary-600)' : 'none',
@@ -219,7 +219,7 @@ export default function ReadlistPage() {
               onClick={() => setIsShared(!isShared)}
             >
               <ShareIcon 
-                size={50}
+                size={30}
                 style={{ 
                   color: isShared ? 'var(--primary-600)' : 'var(--primary-600)', 
                   opacity: isShared ? 1 : 0.7,

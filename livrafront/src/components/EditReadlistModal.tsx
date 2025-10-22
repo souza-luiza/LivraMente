@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Input from '@/components/general-input';
+import Button from '@/components/button';
+import TextlessButton from '@/components/textless-button';
+import RemoveIcon from '@/components/icons/RemoveIcon';
+import CheckIcon from '@/components/icons/CheckIcon';
 
 interface EditReadlistModalProps {
   isOpen: boolean;
@@ -87,7 +91,7 @@ export default function EditReadlistModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-lg p-8"
+        className="relative w-full max-w-lg large-box"
         style={{
           backgroundColor: 'var(--primary-200)',
           maxHeight: '90vh',
@@ -96,22 +100,23 @@ export default function EditReadlistModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Botão de Fechar */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-2xl"
-          style={{ color: 'var(--secondary-700)' }}
-          aria-label="Fechar"
-        >
-          ✕
-        </button>
+        <div className="absolute top-4 right-4">
+          <TextlessButton
+            icon={<RemoveIcon />}
+            size="medium"
+            colorScheme="light-green"
+            onClick={onClose}
+            aria-label="Fechar"
+          />
+        </div>
 
         {/* Título do Modal */}
-        <h2
-          className="text-h2 mb-6"
+        <h4
+          className="text-h4 mb-6"
           style={{ color: 'var(--secondary-800)' }}
         >
           Editar detalhes 
-        </h2>
+        </h4>
 
         {/* Container Principal com Imagem e Campos */}
         <div className="flex gap-6 mb-6">
@@ -243,7 +248,7 @@ export default function EditReadlistModal({
           />
           <label
             htmlFor="private-checkbox"
-            className="text-b1 cursor-pointer"
+            className="text-b2 cursor-pointer"
             style={{ color: 'var(--secondary-800)' }}
           >
             Tornar readlist privada
@@ -252,24 +257,13 @@ export default function EditReadlistModal({
 
         {/* Botão Salvar */}
         <div className="flex justify-end">
-          <button
+          <Button
+            text="Salvar"
+            icon={<CheckIcon />}
+            size="medium"
+            colorScheme="dark-green"
             onClick={handleSave}
-            className="px-8 py-3 rounded-full text-b1 font-semibold transition-all"
-            style={{
-              backgroundColor: 'var(--primary-600)',
-              color: 'white',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--primary-700)';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--primary-600)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            Salvar
-          </button>
+          />
         </div>
       </div>
     </div>
