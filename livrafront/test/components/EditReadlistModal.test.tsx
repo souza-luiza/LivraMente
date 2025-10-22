@@ -470,12 +470,16 @@ describe('EditReadlistModal', () => {
     });
 
     it('deve fechar o modal após salvar', async () => {
+      // Criar mocks locais para garantir contagem limpa
+      const localMockOnClose = jest.fn();
+      const localMockOnSave = jest.fn();
+      
       render(
         <EditReadlistModal
           isOpen={true}
-          onClose={mockOnClose}
+          onClose={localMockOnClose}
           readlist={mockReadlist}
-          onSave={mockOnSave}
+          onSave={localMockOnSave}
         />
       );
 
@@ -484,7 +488,7 @@ describe('EditReadlistModal', () => {
 
       // Aguardar o delay assíncrono (500ms no modo mock)
       await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalledTimes(1);
+        expect(localMockOnClose).toHaveBeenCalledTimes(1);
       }, { timeout: 1000 });
     });
   });
