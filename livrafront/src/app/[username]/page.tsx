@@ -8,7 +8,6 @@ import ProfileReadlists from "@/components/profile-readlists";
 import ProfilePosts from "@/components/profile-posts";
 import ProfileBadge from "@/components/profile-badge";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
-import EditProfile from "@/app/[username]/edit-profile/page";
 
 interface UserProfilePageProps {
     params: Promise<{username: string}>;
