@@ -332,3 +332,18 @@ button.textless-large {
   width:  24px;
   height: 24px;
 }
+
+.small-tab {
+  padding:        4px var(--small-padding);
+  border-radius:  var(--small-border-radius) var(--small-border-radius) 0 0;
+}
+
+.medium-tab {
+  padding:        8px var(--medium-padding);
+  border-radius:  var(--medium-border-radius) var(--medium-border-radius) 0 0;
+}
+
+.large-tab {
+  padding:        8px var(--large-padding);
+  border-radius:  var(--large-border-radius) var(--large-border-radius) 0 0;
+}

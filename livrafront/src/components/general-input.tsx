@@ -1,4 +1,4 @@
-import React, { InputHTMLAttributes, forwardRef } from 'react'
+import React, { InputHTMLAttributes, forwardRef, useId } from 'react'
 import { cn } from '@/utils/cn'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -23,7 +23,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   const baseClasses = [
     'transition-all duration-200',
