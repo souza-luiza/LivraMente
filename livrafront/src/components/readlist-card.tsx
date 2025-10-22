@@ -3,6 +3,7 @@ import { useState } from 'react';
 import EditIcon from './icons/EditIcon';
 import InfoIcon from './icons/InfoIcon';
 import Button from './button';
+import Image from 'next/image';
 
 export function ReadlistCard({ r, userId }: { r: Readlist, userId: string }) {
   const isMine = r.criador?._id === userId;
@@ -113,11 +114,13 @@ export function ReadlistCard({ r, userId }: { r: Readlist, userId: string }) {
       )}
       {/* Imagem de capa */}
       <div className="flex items-center" style={{ height: '100%' }}>
-        <img
+        <Image
           src={r.capa_url && r.capa_url.trim() !== '' ? r.capa_url : '/kemi-teste.jpg'}
           alt={r.nome}
+          width={120}
+          height={170}
           className="object-cover rounded-xl bg-gray-200"
-          style={{ width: 120, height: 170, minWidth: 120, maxWidth: 120, marginRight: 32 }}
+          style={{ minWidth: 120, maxWidth: 120, marginRight: 32 }}
         />
       </div>
       {/* Conteúdo principal do card */}
