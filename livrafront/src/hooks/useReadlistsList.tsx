@@ -6,7 +6,7 @@ import {
   getFavoriteReadlists
 } from '../services/readlists';
 
-export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas' = 'criadas') {
+export function useReadlistsList(target: string, type: 'criadas' | 'favoritadas' = 'criadas') {
   const [readlists, setReadlists] = useState<Readlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,14 +18,14 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
       let data: Readlist[] = [];
       const loggedUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
-      if (userId === loggedUserId) {
+      if (target === loggedUserId) {
         if (type === 'favoritadas') {
           data = await getFavoriteReadlists();
         } else {
           data = await getOwnReadlists();
         }
       } else {
-        data = await getPublicReadlists(userId);
+        data = await getPublicReadlists(target);
       }
       setReadlists(Array.isArray(data) ? data : []);
       setLoading(false);
@@ -38,7 +38,7 @@ export function useReadlistsList(userId: string, type: 'criadas' | 'favoritadas'
       setReadlists([]);
       setLoading(false);
     }
-  }, [userId, type]);
+  }, [target, type]);
 
   useEffect(() => {
     fetchReadlists();
