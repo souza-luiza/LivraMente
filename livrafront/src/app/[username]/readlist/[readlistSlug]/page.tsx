@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
@@ -12,14 +12,8 @@ import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
 import EditReadlistModal from '@/components/EditReadlistModal';
-
-// Função para converter slug em título
-function slugToTitle(slug: string): string {
-  return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+import { getPublicReadlists, getReadlistById } from '@/services/readlist';
+import { ReadlistDetailResponse } from '@/types/readlist';
 
 export default function ReadlistPage() {
   const router = useRouter();
@@ -31,41 +25,57 @@ export default function ReadlistPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const livrosPorPagina = 42;
-  
-  // Simular se o usuário é o dono da readlist
-  // TODO: Implementar lógica real comparando username com usuário logado
-  const isOwner = true;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [readlistData, setReadlistData] = useState<ReadlistDetailResponse | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
 
-  const [readlist, setReadlist] = useState({
-    title: slugToTitle(readlistSlug),
-    slug: readlistSlug,
-    author: {
-      username: username,
-      avatar: "/kemi-teste.jpg"
-    },
-    description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-    isPrivate: false,
-    progress: {
-      read: 20,
-      total: 28,
-      percentage: 71
-    },
-    coverImage: "/kemi-teste.jpg",
-    books: [
-      { id: 1, title: "Jantar Secreto", year: "2016", pages: "416 pags", rating: 5, cover: "/kemi-teste.jpg" },
-      { id: 2, title: "A Empregada", year: "2018", pages: "208 pags", rating: 5, cover: "/kemi-teste.jpg" },
-      { id: 3, title: "Recursão", year: "2020", pages: "300 pags", rating: 5, cover: "/kemi-teste.jpg" },
-      ...Array(livrosPorPagina).fill(null).map((_, i) => ({
-        id: i + 4, 
-        title: `Livro ${i + 4}`, 
-        year: "2023", 
-        pages: "250 pags", 
-        rating: 4,
-        cover: "/kemi-teste.jpg"
-      }))
-    ]
-  });
+  // Buscar dados da readlist ao carregar a página
+  useEffect(() => {
+    async function loadReadlist() {
+      try {
+        setLoading(true);
+        setError('');
+
+        // Primeiro, buscar readlists públicas do usuário
+        const publicReadlists = await getPublicReadlists(username);
+        
+        // Converter slug para comparar com nome da readlist
+        const readlistName = readlistSlug
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+        // Encontrar a readlist pelo nome (slug convertido)
+        const foundReadlist = publicReadlists.find(
+          rl => rl.nome.toLowerCase() === readlistName.toLowerCase()
+        );
+
+        if (!foundReadlist) {
+          setError('Readlist não encontrada');
+          return;
+        }
+
+        // Buscar detalhes completos da readlist (com livros populados)
+        const detailedReadlist = await getReadlistById(foundReadlist._id);
+        setReadlistData(detailedReadlist);
+
+        // Verificar se o usuário logado é o dono
+        const currentUser = localStorage.getItem('user');
+        if (currentUser) {
+          const user = JSON.parse(currentUser);
+          setIsOwner(user.username === username);
+        }
+
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadReadlist();
+  }, [username, readlistSlug]);
 
   const handleSaveReadlist = (data: {
     title: string;
@@ -73,16 +83,56 @@ export default function ReadlistPage() {
     coverImage: string;
     isPrivate: boolean;
   }) => {
-    setReadlist((prev) => ({
-      ...prev,
-      title: data.title,
-      description: data.description,
-      coverImage: data.coverImage,
-      isPrivate: data.isPrivate,
-    }));
-    // TODO: Implementar chamada à API para salvar as alterações
-    console.log('Salvando alterações:', data);
+    // Atualizar estado local após salvar
+    if (readlistData) {
+      setReadlistData({
+        ...readlistData,
+        nome: data.title,
+        descricao: data.description,
+        capa_url: data.coverImage,
+        publica: !data.isPrivate,
+      });
+    }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="text-h4" style={{ color: 'var(--secondary-800)' }}>
+          Carregando readlist...
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !readlistData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="text-center">
+          <div className="text-h4 mb-4" style={{ color: 'var(--error-500)' }}>
+            {error || 'Readlist não encontrada'}
+          </div>
+          <button
+            onClick={() => router.back()}
+            className="px-6 py-2 rounded-full text-b1 font-semibold"
+            style={{
+              backgroundColor: 'var(--primary-600)',
+              color: 'white',
+            }}
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Calcular progresso de leitura
+  const totalBooks = readlistData.livros.length;
+  const readBooks = 0; // TODO: Implementar lógica real de livros lidos
+  const progressPercentage = totalBooks > 0 ? Math.round((readBooks / totalBooks) * 100) : 0;
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -91,10 +141,11 @@ export default function ReadlistPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         readlist={{
-          title: readlist.title,
-          description: readlist.description,
-          coverImage: readlist.coverImage,
-          isPrivate: readlist.isPrivate,
+          id: readlistData._id,
+          title: readlistData.nome,
+          description: readlistData.descricao || '',
+          coverImage: readlistData.capa_url || '/kemi-teste.jpg',
+          isPrivate: !readlistData.publica,
         }}
         onSave={handleSaveReadlist}
       />
@@ -249,8 +300,8 @@ export default function ReadlistPage() {
               }}
             >
               <Image 
-                src={readlist.coverImage}
-                alt={readlist.title}
+                src={readlistData.capa_url || '/kemi-teste.jpg'}
+                alt={readlistData.nome}
                 fill
                 className="object-cover"
               />
@@ -263,7 +314,7 @@ export default function ReadlistPage() {
                 marginBottom: 'var(--extra-small-padding)',
                 marginTop: '0px'
               }}>
-                {readlist.title}
+                {readlistData.nome}
               </h1>
               <div className="flex items-center gap-2 justify-center md:justify-start">
                 <div 
@@ -271,14 +322,14 @@ export default function ReadlistPage() {
                   style={{ width: '45px', height: '45px' }}
                 >
                   <Image 
-                    src={readlist.author.avatar}
-                    alt={readlist.author.username}
+                    src="/kemi-teste.jpg"
+                    alt={username}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <span className="text-b1" style={{ color: 'var(--secondary-800)' }}>
-                  {readlist.author.username}
+                  {username}
                 </span>
               </div>
             </div>
@@ -295,7 +346,7 @@ export default function ReadlistPage() {
           {/* Descrição */}
           <div className="flex-1 w-full">
             <p className="text-b2 w-full" style={{ color: 'var(--secondary-800)', textAlign: 'justify' }}>
-              {readlist.description}
+              {readlistData.descricao || 'Sem descrição'}
             </p>
           </div>
 
@@ -321,13 +372,13 @@ export default function ReadlistPage() {
                 <p className="text-b1" style={{ 
                   color: 'var(--secondary-800)'
                 }}>
-                  {readlist.progress.read} de {readlist.progress.total}
+                  {readBooks} de {totalBooks}
                 </p>
               </div>
               <p className="text-h3 body-semibold" style={{ 
                 color: 'var(--secondary-800)'
               }}>
-                {readlist.progress.percentage}%
+                {progressPercentage}%
               </p>
             </div>
 
@@ -344,7 +395,7 @@ export default function ReadlistPage() {
             >
               <div 
                 style={{ 
-                  width: `${readlist.progress.percentage}%`,
+                  width: `${progressPercentage}%`,
                   height: '100%',
                   backgroundColor: 'var(--secondary-400)',
                   borderRadius: '4px',
@@ -390,42 +441,57 @@ export default function ReadlistPage() {
           {viewMode === 'grid' ? (
             /* Grid de Livros */
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 w-full" style={{ gap: 'var(--small-padding)' }}>
-              {readlist.books.map((book, index) => (
-                <div 
-                  key={book.id}
-                  className="aspect-[2/3] cursor-pointer relative overflow-hidden"
-                  style={{ 
-                    backgroundColor: 'var(--secondary-500)',
-                    borderRadius: 'var(--medium-border-radius)',
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Livro ${index + 1}`}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = '0.8';
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = '1';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <Image 
-                    src={book.cover}
-                    alt={book.title}
-                    fill
-                    className="object-cover"
-                  />
+              {readlistData.livros.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-b1" style={{ color: 'var(--secondary-700)' }}>
+                    Nenhum livro nesta readlist ainda
+                  </p>
                 </div>
-              ))}
+              ) : (
+                readlistData.livros.map((book, index) => (
+                  <div 
+                    key={book.id}
+                    className="aspect-[2/3] cursor-pointer relative overflow-hidden"
+                    style={{ 
+                      backgroundColor: 'var(--secondary-500)',
+                      borderRadius: 'var(--medium-border-radius)',
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Livro ${index + 1}`}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.8';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    <Image 
+                      src={book.cover}
+                      alt={book.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))
+              )}
             </div>
           ) : (
             /* List View */
             <div className="flex flex-col w-full" style={{ gap: 'var(--medium-padding)' }}>
-              {readlist.books.map((book) => (
-                <div 
-                  key={book.id}
+              {readlistData.livros.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-b1" style={{ color: 'var(--secondary-700)' }}>
+                    Nenhum livro nesta readlist ainda
+                  </p>
+                </div>
+              ) : (
+                readlistData.livros.map((book) => (
+                  <div 
+                    key={book.id}
                   className="flex flex-col sm:flex-row gap-4 cursor-pointer"
                   style={{ 
                     padding: 'var(--small-padding)',
@@ -488,7 +554,8 @@ export default function ReadlistPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
