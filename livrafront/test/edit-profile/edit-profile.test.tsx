@@ -51,7 +51,7 @@ describe('EditProfilePage', () => {
 
   it('deve exibir os dados iniciais do usuário vindos do store', () => {
     render(<EditProfilePage />);
-    
+
     // Verifica se os inputs são preenchidos com os dados do store
     expect(screen.getByPlaceholderText('Novo nome de usuário')).toHaveValue('@gatanoturna');
     expect(screen.getByPlaceholderText('Ela/Dela, Ele/Dele, Etc...')).toHaveValue('ela/dela');
@@ -117,5 +117,22 @@ describe('EditProfilePage', () => {
 
     // Verifica se o router.push foi chamado com o caminho correto
     expect(mockRouterPush).toHaveBeenCalledWith('/profile');
+  });
+
+  it('deve redirecionar para /login se o usuário não estiver logado', () => {
+    (useUserStore as unknown as jest.Mock).mockReturnValue({
+      username: '', 
+      pronouns: '',
+      profileImageUrl: '/default-url.png', // Deve ter um valor (ou null) para o useEffect rodar
+      setUsername: mockSetUsername,
+      setPronouns: mockSetPronouns,
+      setProfileImageUrl: jest.fn(),
+    });
+
+    render(<EditProfilePage />);
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/login');
+
+    expect(screen.queryByRole('heading', { name: /Editar Perfil/i })).not.toBeInTheDocument();
   });
 });

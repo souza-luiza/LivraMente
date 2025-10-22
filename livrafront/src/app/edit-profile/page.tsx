@@ -36,6 +36,12 @@ export default function SettingsProfilePage() {
     });
   }, [username, pronouns, profileImageUrl]);
 
+  useEffect(() => {
+    if(!username) {
+      router.push("/login");
+    }
+  }, [username, profileImageUrl, router]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,10 +77,13 @@ export default function SettingsProfilePage() {
     }
   };
 
+  if (!username) {
+    return null; // Ou um indicador de carregamento
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-
       <main className="flex-grow flex flex-col overflow-hidden">
         {/* Seção da Barra de Busca */}
         <div className="p-4 border-b border-neutral-200">
