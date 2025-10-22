@@ -126,41 +126,43 @@ export default function SettingsTabs() {
                         {/* Privacidade */}
                         <div className="mb-10">
                             <h4 className="text-h4 mb-6">Privacidade da Conta</h4>
-                            <button className="w-1/2 flex justify-between items-center p-5 hover:bg-[#f9fafb] rounded-lg transition-all border border-[#e5e7eb] group">
-                                <div className="flex items-center gap-4">
+                            <button className="w-1/2 flex justify-start items-center p-5 hover:bg-[#f9fafb] rounded-lg transition-all border border-[#e5e7eb] group">
+                                <div className="w-full flex items-center gap-4">
                                     <GlobeIcon size={24} className="text-[#4a5d3c]" />
                                     <div className="text-left">
                                         <p className="text-b1 font-semibold">Conta Pública</p>
                                         <p className="text-b2 text-gray-500">Qualquer pessoa pode ver suas publicações</p>
                                     </div>
+                                    <ChevronRightIcon size={30} className="text-gray-400 group-hover:text-[#4a5d3c] transition-colors" />
                                 </div>
-                                <ChevronRightIcon size={20} className="text-gray-400 group-hover:text-[#4a5d3c] transition-colors" />
                             </button>
                         </div>
 
                         {/* Configurações Críticas */}
                         <div>
                             <h4 className="text-h4 mb-6 text-red-600">Configurações Críticas</h4>
-                            <div className="space-y-3">
-                                <button className="w-1/2 flex justify-between items-center p-5 hover:bg-red-50 rounded-lg transition-all border border-red-200 group">
-                                    <div className="flex items-center gap-4 text-red-600">
+                            <div className="space-y-3 justify-center">
+                                <button className="w-1/2 flex justify-start items-center p-5 hover:bg-red-50 rounded-lg transition-all border border-red-200 group">
+                                    <div className="w-full flex items-center gap-4 text-red-600">
                                         <PauseIcon size={24} />
                                         <div className="text-left">
                                             <p className="text-b1 font-semibold">Desativar conta temporariamente</p>
                                             <p className="text-b2 text-red-500">Suas informações serão preservadas</p>
                                         </div>
+                                        <ChevronRightIcon size={30} className="text-red-400 group-hover:text-red-600 transition-colors" />
                                     </div>
-                                    <ChevronRightIcon size={20} className="text-red-400 group-hover:text-red-600 transition-colors" />
                                 </button>
-                                <button className="w-1/2 flex items-center justify-between p-5 hover:bg-red-50 rounded-lg transition-all border border-red-200 group">
-                                    <div className="flex items-center gap-4 text-red-600">
+                                <button className="w-1/2 flex items-center justify-start p-5 hover:bg-red-50 rounded-lg transition-all border border-red-200 group">
+                                    <div className="w-full flex items-center gap-4 text-red-600">
                                         <TrashIcon size={24} />
-                                        <div className="text-left">
-                                            <p className="text-b1 font-semibold">Excluir conta permanentemente</p>
-                                            <p className="text-b2 text-red-500">Esta ação não pode ser desfeita</p>
+                                        <div className="flex justify-between items-center gap-4 text-left">
+                                            <div className="flex flex-col">
+                                                <p className="text-b1 font-semibold">Excluir conta permanentemente</p>
+                                                <p className="text-b2 text-red-500">Esta ação não pode ser desfeita</p>
+                                            </div>
+                                            <ChevronRightIcon size={30} className="text-red-400 group-hover:text-red-600 transition-colors" />
                                         </div>
                                     </div>
-                                    <ChevronRightIcon size={20} className="text-red-400 group-hover:text-red-600 transition-colors" />
                                 </button>
                             </div>
                         </div>
@@ -214,7 +216,7 @@ export default function SettingsTabs() {
                                 { icon: <KeyIcon />, title: "Autenticação de dois fatores", desc: "Adicione uma camada extra de segurança" },
                                 { icon: <NotificationsIcon />, title: "Sessões ativas", desc: "1 dispositivo conectado" }
                             ].map((item, index) => (
-                                <button key={index} className="w-full flex items-center justify-between p-5 hover:bg-[#f9fafb] rounded-lg transition-all border border-[#e5e7eb] group">
+                                <button key={index} className="w-full flex items-center justify-start p-5 hover:bg-[#f9fafb] rounded-lg transition-all border border-[#e5e7eb] group">
                                     <div className="flex items-center gap-4">
                                         <div className="text-[#4a5d3c]">{item.icon}</div>
                                         <div className="text-left">
@@ -234,10 +236,10 @@ export default function SettingsTabs() {
                     <div className="w-full mx-auto p-8">
                         <div className="mb-8">
                             <h4 className="text-h4 mb-2">Contas Bloqueadas</h4>
-                            <p className="text-b1 text-gray-600">
+                            <p className="text-b1 text-gray-700">
                                 Usuários bloqueados não poderão encontrar seu perfil, publicações ou lista de leitura. 
                             </p>
-                            <p className="text-b2">
+                            <p className="text-b2 text-gray-500">
                                 Eles não serão notificados que você os bloqueou.
                             </p>
                         </div>
