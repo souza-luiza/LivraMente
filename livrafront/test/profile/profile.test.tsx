@@ -55,6 +55,6 @@ describe('ProfilePage', () => {
     await user.click(editButton);
 
     // Verifica se a navegação foi chamada com o caminho correto
-    expect(mockRouterPush).toHaveBeenCalledWith('/settings-profile');
+    expect(mockRouterPush).toHaveBeenCalledWith('/edit-profile');
   });
 });
