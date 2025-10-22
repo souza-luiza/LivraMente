@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { useLoginForm } from "@/forms/useLoginForm"; 
+import { useLoginForm } from "@/hooks/useLoginForm"; 
 import Link from 'next/link';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Button from '@/components/button';

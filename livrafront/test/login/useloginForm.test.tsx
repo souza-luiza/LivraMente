@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
-import { useLoginForm } from '@/forms/useLoginForm'
+import { useLoginForm } from '@/hooks/useLoginForm'
 import { loginUser } from '@/services/auth'
 
 jest.mock('next/navigation', () => ({
@@ -56,9 +56,14 @@ describe('useLoginForm', () => {
 
   it('deve fazer login com sucesso', async () => {
     const mockResponse = {
-      token: 'token-teste',
-      user: { id: '1', username: 'teste', email: 'teste@exemplo.com' }
+      token: 'token-123',
+      user: {
+        id: '1',
+        username: 'testuser',
+        email: 'test@test.com'
+      }
     }
+
 
     mockLoginUser.mockResolvedValueOnce(mockResponse)
     const { result } = renderHook(() => useLoginForm())
@@ -145,6 +150,8 @@ describe('useLoginForm', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'real-token-123')
     expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockResponse.user))
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('username', mockResponse.user.username)
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse.user.id))
   })
 
   it('deve redirecionar para página principal/feed após login', async () => {
@@ -172,7 +179,7 @@ describe('useLoginForm', () => {
       } as unknown as React.FormEvent)
     })
 
-    expect(mockPush).toHaveBeenCalledWith('/main')
+    expect(mockPush).toHaveBeenCalledWith(`${mockResponse.user.username}`)
   })
 
   it('deve tratar erro de credenciais inválidas', async () => {
