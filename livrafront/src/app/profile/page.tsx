@@ -9,7 +9,6 @@ import { useUserStore } from "@/stores/user-store";
 import EditIcon from "@/components/icons/EditIcon";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import NotificationIcon from "@/components/icons/NotificationsIcon";
-import { div } from "framer-motion/m";
 
 import ProfileReadlists from "@/components/profile-readlists";
 import ProfilePosts from "@/components/profile-posts";

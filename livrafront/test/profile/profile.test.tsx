@@ -4,7 +4,6 @@ import ProfilePage from '@/app/profile/page';
 import { useUserStore } from '@/stores/user-store';
 import { useRouter } from 'next/navigation';
 import '@testing-library/jest-dom';
-import { profile } from 'console';
 
 // Mock das dependências
 jest.mock('next/navigation', () => ({

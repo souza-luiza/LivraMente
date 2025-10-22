@@ -34,7 +34,7 @@ export default function SettingsProfilePage() {
       pronouns: pronouns,
       profileImageUrl: profileImageUrl,
     });
-  }, [username, pronouns]);
+  }, [username, pronouns, profileImageUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
