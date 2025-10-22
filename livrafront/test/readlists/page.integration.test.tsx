@@ -14,7 +14,7 @@ jest.mock('../../src/hooks/useReadlistsList');
 const mockUseReadlistsList = useReadlistsList as jest.Mock;
 
 jest.mock('next/navigation', () => ({
-  useParams: () => ({ username: '1' })
+  useParams: () => ({ username: (global as any).__TEST_ROUTE_USERNAME__ || '1' })
 }));
 
 describe('ReadlistsPage integration', () => {
@@ -28,25 +28,12 @@ describe('ReadlistsPage integration', () => {
       value: { search: '' },
       writable: true,
     });
+    (global as any).__TEST_ROUTE_USERNAME__ = undefined;
   });
 
   it('fetches username for other user page', async () => {
-    Object.defineProperty(window, 'location', {
-      value: { search: '?userId=2' },
-      writable: true,
-    });
-    global.fetch = jest.fn((url) => {
-      if (url.includes('/api/users/2')) {
-        return Promise.resolve(new Response(JSON.stringify({ username: 'otherUser' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }));
-      }
-      return Promise.resolve(new Response(JSON.stringify([]), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }));
-    }) as jest.Mock;
+    // simulate visiting /otherUser
+    (global as any).__TEST_ROUTE_USERNAME__ = 'otherUser';
     mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
     render(<ReadlistsPage />);
     await waitFor(() => {

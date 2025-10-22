@@ -7,7 +7,7 @@ jest.mock('../../src/hooks/useReadlistsList');
 const mockUseReadlistsList = useReadlistsList as jest.Mock;
 
 jest.mock('next/navigation', () => ({
-	useParams: () => ({ username: '1' })
+	useParams: () => ({ username: (global as any).__TEST_ROUTE_USERNAME__ || '1' })
 }));
 
 describe('ReadlistsPage', () => {
@@ -21,24 +21,15 @@ describe('ReadlistsPage', () => {
 			value: { search: '' },
 			writable: true,
 		});
+		(global as any).__TEST_ROUTE_USERNAME__ = undefined;
 	});
 
 	it('falls back to Usuário if username fetch fails', async () => {
-		Object.defineProperty(window, 'location', {
-			value: { search: '?userId=2' },
-			writable: true,
-		});
-		global.fetch = jest.fn((url) => {
-			if (url.includes('/api/users/2')) {
-				return Promise.reject('fail');
-			}
-			return Promise.resolve(new Response(JSON.stringify([]), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' },
-			}));
-		}) as jest.Mock;
+		(global as any).__TEST_ROUTE_USERNAME__ = 'Usuário';
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		await waitFor(() => {
 			expect(screen.getByText(/Readlists de Usuário/i)).toBeInTheDocument();
 		});
@@ -65,11 +56,15 @@ describe('ReadlistsPage', () => {
 			writable: true,
 		});
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		expect(screen.getByText(/Minhas readlists/i)).toBeInTheDocument();
 	});
 
 	it('shows empty state if only private readlists for other user', async () => {
+		// simulate route username for other user (component reads route param)
+		(global as any).__TEST_ROUTE_USERNAME__ = 'otherUser';
 		Object.defineProperty(window, 'location', {
 			value: { search: '?userId=2' },
 			writable: true,
@@ -93,13 +88,17 @@ describe('ReadlistsPage', () => {
 			loading: false,
 			error: null,
 		});
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		await waitFor(() => {
 			expect(screen.getByText(/Nenhuma readlist encontrada/i)).toBeInTheDocument();
 		});
 	});
 
 	it('navigates when Voltar link is clicked', async () => {
+		// component uses the route username; set it so profilePath becomes /john_doe
+		(global as any).__TEST_ROUTE_USERNAME__ = 'john_doe';
 		Object.defineProperty(window, 'location', {
 			value: { search: '?userId=2' },
 			writable: true,
@@ -117,7 +116,9 @@ describe('ReadlistsPage', () => {
 			}));
 		}) as jest.Mock;
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		await waitFor(() => {
 			const voltarLink = screen.getByLabelText('Voltar');
 			expect(voltarLink).toBeInTheDocument();
@@ -169,6 +170,7 @@ describe('ReadlistsPage', () => {
 		});
 
 		it('renders other user page: title, only public readlists, no create button/tabs', async () => {
+			(global as any).__TEST_ROUTE_USERNAME__ = 'otherUser';
 			Object.defineProperty(window, 'location', {
 				value: { search: '?userId=2' },
 				writable: true,
@@ -193,7 +195,9 @@ describe('ReadlistsPage', () => {
 				loading: false,
 				error: null,
 			});
-			render(<ReadlistsPage />);
+			await act(async () => {
+				render(<ReadlistsPage />);
+			});
 			await waitFor(() => {
 				expect(screen.getByText(/Readlists de otherUser/i)).toBeInTheDocument();
 				expect(screen.queryByRole('button', { name: /criar readlist/i })).toBeNull();
@@ -220,15 +224,19 @@ describe('ReadlistsPage', () => {
 			});
 		});
 
-	it('shows empty state message', () => {
+	it('shows empty state message', async () => {
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		expect(screen.getByText(/Nenhuma readlist encontrada/i)).toBeInTheDocument();
 	});
 
-	it('shows error message', () => {
+	it('shows error message', async () => {
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: 'Erro ao carregar readlists' });
-		render(<ReadlistsPage />);
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
 		expect(screen.getByText('Erro ao carregar readlists')).toBeInTheDocument();
 	});
 
@@ -282,7 +290,7 @@ describe('ReadlistsPage', () => {
 				await waitFor(() => {
 					expect(screen.getAllByText(/Favoritada/i).length).toBeGreaterThan(0);
 					// Aceitar 'Pública' ou 'Favoritada' como label
-					const publicLabels = screen.queryAllByText((content, element) =>
+					const publicLabels = screen.queryAllByText((content) =>
 						/Pública|Favoritada/i.test(content)
 					);
 					expect(publicLabels.length).toBeGreaterThan(0);
