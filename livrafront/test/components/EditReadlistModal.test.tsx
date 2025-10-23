@@ -47,7 +47,6 @@ jest.mock('next/image', () => ({
 
 describe('EditReadlistModal', () => {
   const mockReadlist = {
-    id: 'test-readlist-id',
     title: 'Livros 2025',
     description: 'Minha lista de livros favoritos',
     coverImage: '/test-cover.jpg',
@@ -336,7 +335,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       fireEvent.click(saveButton);
 
       expect(screen.getByTestId('input-error')).toHaveTextContent('O título é obrigatório');
@@ -372,7 +371,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       // Gerar erro
       fireEvent.click(saveButton);
@@ -398,7 +397,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: '   ' } });
       fireEvent.click(saveButton);
@@ -409,12 +408,6 @@ describe('EditReadlistModal', () => {
   });
 
   describe('Salvamento', () => {
-    beforeEach(() => {
-      // Limpar mocks especificamente para este bloco
-      mockOnClose.mockClear();
-      mockOnSave.mockClear();
-    });
-
     it('deve salvar alterações quando formulário é válido', () => {
       render(
         <EditReadlistModal
@@ -428,7 +421,7 @@ describe('EditReadlistModal', () => {
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
       const descriptionTextarea = screen.getByPlaceholderText('Adicione uma descrição opcional') as HTMLTextAreaElement;
       const privateCheckbox = screen.getByLabelText('Tornar readlist privada') as HTMLInputElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: 'Novo Título' } });
       fireEvent.change(descriptionTextarea, { target: { value: 'Nova descrição' } });
@@ -455,7 +448,7 @@ describe('EditReadlistModal', () => {
 
       const titleInput = screen.getByTestId('title-input') as HTMLInputElement;
       const descriptionTextarea = screen.getByPlaceholderText('Adicione uma descrição opcional') as HTMLTextAreaElement;
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
 
       fireEvent.change(titleInput, { target: { value: '  Título com espaços  ' } });
       fireEvent.change(descriptionTextarea, { target: { value: '  Descrição com espaços  ' } });
@@ -469,27 +462,20 @@ describe('EditReadlistModal', () => {
       });
     });
 
-    it('deve fechar o modal após salvar', async () => {
-      // Criar mocks locais para garantir contagem limpa
-      const localMockOnClose = jest.fn();
-      const localMockOnSave = jest.fn();
-      
+    it('deve fechar o modal após salvar', () => {
       render(
         <EditReadlistModal
           isOpen={true}
-          onClose={localMockOnClose}
+          onClose={mockOnClose}
           readlist={mockReadlist}
-          onSave={localMockOnSave}
+          onSave={mockOnSave}
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       fireEvent.click(saveButton);
 
-      // Aguardar o delay assíncrono (500ms no modo mock)
-      await waitFor(() => {
-        expect(localMockOnClose).toHaveBeenCalledTimes(1);
-      }, { timeout: 1000 });
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -624,8 +610,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleLabel = screen.getByText('Título');
-      expect(titleLabel.className).toContain('transition-opacity');
-      expect(titleLabel.className).toContain('duration-200');
+      expect(titleLabel).toHaveClass('transition-opacity', 'duration-200');
     });
 
     it('deve aplicar hover no botão salvar', () => {
@@ -638,7 +623,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const saveButton = screen.getByText('Salvar');
+      const saveButton = screen.getByText('Salvar Alterações');
       expect(saveButton).toBeInTheDocument();
       
       // Verifica que o botão tem estilo inicial

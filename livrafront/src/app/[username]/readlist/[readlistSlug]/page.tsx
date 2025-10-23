@@ -11,6 +11,8 @@ import GridIcon from '@/components/icons/GridIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
+import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
+import Button from '@/components/button';
 import EditReadlistModal from '@/components/EditReadlistModal';
 import { getPublicReadlists, getReadlistById } from '@/services/readlist';
 import { ReadlistDetailResponse } from '@/types/readlist';
@@ -159,16 +161,14 @@ export default function ReadlistPage() {
           <div className="text-h4 mb-4" style={{ color: 'var(--error-500)' }}>
             {error || 'Readlist não encontrada'}
           </div>
-          <button
+          <Button
+            text="Voltar"
+            icon={<ArrowLeftIcon />}
+            size="medium"
+            colorScheme='dark-green'
             onClick={() => router.back()}
-            className="px-6 py-2 rounded-full text-b1 font-semibold"
-            style={{
-              backgroundColor: 'var(--primary-600)',
-              color: 'white',
-            }}
-          >
-            Voltar
-          </button>
+            aria-label='Voltar'
+          />
         </div>
       </div>
     );

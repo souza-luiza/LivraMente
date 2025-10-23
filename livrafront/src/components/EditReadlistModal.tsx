@@ -4,10 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Input from '@/components/general-input';
 import Button from '@/components/button';
-import TextlessButton from '@/components/textless-button';
-import RemoveIcon from '@/components/icons/RemoveIcon';
-import CheckIcon from '@/components/icons/CheckIcon';
-import { updateReadlist } from '@/services/readlist';
+import TrashIcon from './icons/TrashIcon';
+import SaveIcon from './icons/SaveIcon';
 
 interface EditReadlistModalProps {
   isOpen: boolean;
@@ -19,7 +17,7 @@ interface EditReadlistModalProps {
     coverImage: string;
     isPrivate: boolean;
   };
-  onSave?: (data: {
+  onSave: (data: {
     title: string;
     description: string;
     coverImage: string;
@@ -40,8 +38,6 @@ export default function EditReadlistModal({
   const [titleError, setTitleError] = useState('');
   const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [apiError, setApiError] = useState<string>('');
 
   if (!isOpen) return null;
 
@@ -62,64 +58,18 @@ export default function EditReadlistModal({
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!validateTitle(title)) {
       return;
     }
 
-    setIsSaving(true);
-    setApiError('');
-
-    try {
-      // Verificar se está no modo mock (desenvolvimento ou usuário demo)
-      const token = localStorage.getItem('token');
-      const isDemoMode = readlist.id === 'mock-id-123'; // ID do modo demo
-      
-      if (!token || isDemoMode) {
-        // Modo mock: apenas atualizar localmente
-        console.warn('🔧 Modo de demonstração: salvando apenas localmente (sem chamada à API)');
-        
-        if (onSave) {
-          onSave({
-            title: title.trim(),
-            description: description.trim(),
-            coverImage,
-            isPrivate,
-          });
-        }
-        
-        // Simular delay da API
-        await new Promise(resolve => setTimeout(resolve, 500));
-        onClose();
-        return;
-      }
-
-      // Modo autenticado: salvar na API
-      const updateData = {
-        nome: title.trim(),
-        descricao: description.trim(),
-        capa_url: coverImage,
-        publica: !isPrivate, 
-      };
-
-      await updateReadlist(readlist.id, updateData);
-
-      // Callback opcional para atualizar UI
-      if (onSave) {
-        onSave({
-          title: title.trim(),
-          description: description.trim(),
-          coverImage,
-          isPrivate,
-        });
-      }
-
-      onClose();
-    } catch (error) {
-      setApiError((error as Error).message);
-    } finally {
-      setIsSaving(false);
-    }
+    onSave({
+      title: title.trim(),
+      description: description.trim(),
+      coverImage,
+      isPrivate,
+    });
+    onClose();
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,16 +99,6 @@ export default function EditReadlistModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botão de Fechar */}
-        <div className="absolute top-4 right-4">
-          <TextlessButton
-            icon={<RemoveIcon />}
-            size="medium"
-            colorScheme="light-green"
-            onClick={onClose}
-            aria-label="Fechar"
-          />
-        </div>
 
         {/* Título do Modal */}
         <h4
@@ -167,13 +107,6 @@ export default function EditReadlistModal({
         >
           Editar detalhes 
         </h4>
-
-        {/* Erro da API */}
-        {apiError && (
-          <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-            {apiError}
-          </div>
-        )}
 
         {/* Container Principal com Imagem e Campos */}
         <div className="flex gap-6 mb-6">
@@ -292,13 +225,13 @@ export default function EditReadlistModal({
         </div>
 
         {/* Checkbox de Privacidade */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex items-center gap-2">
           <input
             type="checkbox"
             id="private-checkbox"
             checked={isPrivate}
             onChange={(e) => setIsPrivate(e.target.checked)}
-            className="w-5 h-5 cursor-pointer"
+            className="w-4 h-4 cursor-pointer"
             style={{
               accentColor: 'var(--primary-600)',
             }}
@@ -311,17 +244,30 @@ export default function EditReadlistModal({
             Tornar readlist privada
           </label>
         </div>
+        
+        <div className='flex flex-row items-center justify-center gap-2'>
+          {/* Botão de Fechar */}
+          <div>
+            <Button
+              text="Cancelar"
+              icon={<TrashIcon />}
+              size="medium"
+              colorScheme="dark-brown"
+              onClick={onClose}
+              aria-label="Fechar"
+            />
+          </div>
 
-        {/* Botão Salvar */}
-        <div className="flex justify-end">
-          <Button
-            text={isSaving ? "Salvando..." : "Salvar"}
-            icon={<CheckIcon />}
-            size="medium"
-            colorScheme="dark-green"
-            onClick={handleSave}
-            disabled={isSaving}
-          />
+          {/* Botão Salvar */}
+          <div>
+            <Button
+              text="Salvar Alterações"
+              icon={<SaveIcon />}
+              size="medium"
+              colorScheme="dark-green"
+              onClick={handleSave}
+            />
+          </div>
         </div>
       </div>
     </div>
