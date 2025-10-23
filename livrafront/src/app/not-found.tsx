@@ -2,11 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Button from '@/components/button';
 import { useRouter } from 'next/navigation';
 import ErrorIcon from '@/components/icons/ErrorIcon';
-import HomeIcon from '@/components/icons/HomeIcon';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 
 export default function NotFoundPage() {

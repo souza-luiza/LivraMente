@@ -1,9 +1,7 @@
 import SearchIcon from "./icons/SearchIcon";
 import { InputHTMLAttributes } from 'react';
 
-interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> { }
-
-export default function SearchBar({ className, ...props }: SearchBarProps) {
+export default function SearchBar({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className={`relative w-full max-w-2xl ${className}`}>
       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#5C8046]">

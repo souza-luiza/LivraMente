@@ -58,7 +58,7 @@ describe('useLoginForm', () => {
     const mockResponse = {
       token: 'token-123',
       user: {
-        id: '1',
+        _id: '1',
         username: 'testuser',
         email: 'test@test.com'
       }
@@ -126,7 +126,7 @@ describe('useLoginForm', () => {
   it('deve salvar token e user no localStorage após login', async () => {
     const mockResponse = {
       token: 'real-token-123',
-      user: { id: '1', username: 'test', email: 'test@test.com' }
+      user: { _id: '1', username: 'test', email: 'test@test.com' }
     }
 
     mockLoginUser.mockResolvedValueOnce(mockResponse)
@@ -151,13 +151,13 @@ describe('useLoginForm', () => {
     expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'real-token-123')
     expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockResponse.user))
     expect(localStorageMock.setItem).toHaveBeenCalledWith('username', mockResponse.user.username)
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse.user.id))
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse.user._id))
   })
 
   it('deve redirecionar para página principal/feed após login', async () => {
     const mockResponse = {
       token: 'token-123',
-      user: { id: '1', username: 'test', email: 'test@test.com' }
+      user: { _id: '1', username: 'test', email: 'test@test.com' }
     }
 
     mockLoginUser.mockResolvedValueOnce(mockResponse)

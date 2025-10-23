@@ -18,7 +18,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
     const [show, setShow] = useState(false)
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-    const [xp, setXp] = useState(0)
+    const [xp, /*setXp*/] = useState(0)
 
     const [formData, setFormData] = useState({
         pagesRead: '',

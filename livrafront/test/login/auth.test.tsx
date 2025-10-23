@@ -26,7 +26,7 @@ describe('serviço de autenticação', () => {
 
     expect(result).toEqual({
       token: 'token-123',
-      user: { id: 'user-id', username: 'test', email: 'test@test.com' }
+      user: { _id: 'user-id', username: 'test', email: 'test@test.com' }
     })
   })
 
