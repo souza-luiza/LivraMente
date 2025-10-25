@@ -10,6 +10,6 @@ import { Story, StorySchema } from '../schemas/story.schema';
     ])
   ],
   providers: [LlmPromptService],
-  exports: [LlmPromptService]
+  exports: [LlmPromptService] 
 })
-export class LlmModule { }
+export class LlmModule {}
