@@ -15,7 +15,7 @@ class OpcaoDTO {
 // Classe principal
 export class LlmResponseDTO {
   @IsString()
-  @Length(50,1000)
+  @Length(50, 3000)
   textoCapitulo: string;
 
   @IsArray()
