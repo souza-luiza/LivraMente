@@ -1,7 +1,7 @@
 import { IsString, IsArray, IsNumber, ArrayMinSize, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-const number_options = 4;
+const number_options = 4; // Número exato de opções que devem ser fornecidas, ajuste conforme necessário
 
 class OpcaoDTO {
   @IsNumber()
@@ -10,9 +10,6 @@ class OpcaoDTO {
   @IsString()
   texto: string; 
 }
-
-//sugestao que vou ver ainda
-//responder em formato json ou tópicos 
 
 // Classe principal
 export class LlmResponseDTO {

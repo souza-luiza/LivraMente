@@ -15,7 +15,6 @@ export class LlmPromptService {
     genre: string,
     lastUserChoice: string
   ): Promise<string> {
-    
 
     const story = await this.storyModel.findById(storyId).select('summary').exec();
     if (!story) {
@@ -31,7 +30,9 @@ export class LlmPromptService {
       "textoCapitulo": "O texto do próximo capítulo deve vir aqui...",
       "novasOpcoes": [
         { "id": 1, "texto": "Texto da primeira opção de escolha" },
-        { "id": 2, "texto": "Texto da segunda opção de escolha" }
+        { "id": 2, "texto": "Texto da segunda opção de escolha" },
+        { "id": 3, "texto": "Texto da terceira opção de escolha" },
+        { "id": 4, "texto": "Texto da quarta opção de escolha" }
       ]
     }
     `;
@@ -48,8 +49,7 @@ export class LlmPromptService {
       1. Continue a história a partir da "ÚLTIMA AÇÃO DO JOGADOR".
       2. Mantenha-se fiel ao GÊNERO: ${genre}.
       3. O novo trecho da história deve ter aproximadamente ${wordLimit} palavras.
-      4. Ao final do trecho, crie EXATAMENTE 2 novas opções de escolha para o jogador.
-      
+      4. Ao final do trecho, crie EXATAMENTE 4 novas opções de escolha para o jogador.
 
       FORMATO DE RESPOSTA OBRIGATÓRIO:
       Sua resposta deve ser APENAS um objeto JSON válido, sem nenhum outro texto, explicação ou formatação (como \`\`\`json).
