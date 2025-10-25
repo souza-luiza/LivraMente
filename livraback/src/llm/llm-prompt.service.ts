@@ -12,9 +12,9 @@ export class LlmPromptService {
 
   async createStoryPrompt(
     storyId: string,
-    genre: string,
+    genre: string[],
     userWriting: string,
-    wordLimit: number       // limite de palavras sera uma escolha do usuario com limite maximo de 1000
+    wordLimit: number
   ): Promise<string> {
 
     const story = await this.storyModel.findById(storyId).select('summary').exec();
@@ -33,7 +33,7 @@ export class LlmPromptService {
     const prompt = `
       Você é um assistente de escrita criativa. Sua tarefa é continuar uma história.
       
-      GÊNERO: ${genre}
+      GÊNERO:  ${genre.join(', ')}
       
       CONTEXTO (O QUE ACONTECEU ATÉ AGORA): 
       "${context}"
@@ -43,10 +43,10 @@ export class LlmPromptService {
       
       TAREFA:
       1. Continue a história combinando o "CONTEXTO" com a "INSTRUÇÃO DO USUÁRIO".
-      2. Mantenha-se fiel ao GÊNERO: ${genre}.
-      3. O novo trecho da história (textoCapitulo) deve ter aproximadamente ${wordLimit} palavras. (Req 4)
+      2. Mantenha-se fiel ao GÊNERO:  ${genre.join(', ')}.
+      3. O novo trecho da história (textoCapitulo) deve ter aproximadamente ${wordLimit} palavras.
       
-      FORMATO DE RESPOSTA OBRIGATÓRIO: (Req 5)
+      FORMATO DE RESPOSTA OBRIGATÓRIO:
       Sua resposta deve ser APENAS um objeto JSON válido...
       Use exatamente a seguinte estrutura:
       ${jsonFormatExample}
