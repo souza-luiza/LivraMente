@@ -14,7 +14,7 @@ export class LlmPromptService {
     genres: string[],
     wordLimit: number,
     userWriting?: string, // Opcional: O que o usuário quer
-    storyId?: string 
+    storyId?: string  //Opcional: Contexto da história
   ): Promise<string> {
 
     let contextPromptSection = "CONTEXTO: Nenhum. Esta é uma nova história.";

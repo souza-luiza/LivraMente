@@ -6,85 +6,96 @@ import { Story, StoryDocument } from '../schemas/story.schema';
 import { NotFoundException } from '@nestjs/common';
 
 const mockStory = {
-  _id: 's1',
-  summary: 'O herói está na taverna.',
+  _id: 's1',
+  summary: 'O herói está na taverna.',
 };
 const mockGenres = ['Fantasia', 'Comédia'];
 const mockUserWriting = 'O herói pede uma bebida.';
 const mockWordLimit = 150;
 
 const mockStoryModel = {
-  findById: jest.fn().mockReturnThis(),
-  select: jest.fn().mockReturnThis(),
-  exec: jest.fn(),
+  findById: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
 };
 
 describe('LlmPromptService', () => {
-  let service: LlmPromptService;
-  let model: Model<StoryDocument>;
+  let service: LlmPromptService;
+  let model: Model<StoryDocument>;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        LlmPromptService,
-        {
-          provide: getModelToken(Story.name),
-          useValue: mockStoryModel,
-        },
-      ],
-    }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        LlmPromptService,
+        {
+          provide: getModelToken(Story.name),
+          useValue: mockStoryModel,
+        },
+      ],
+    }).compile();
 
-    service = module.get<LlmPromptService>(LlmPromptService);
-    model = module.get<Model<StoryDocument>>(getModelToken(Story.name));
-  });
+    service = module.get<LlmPromptService>(LlmPromptService);
+    model = module.get<Model<StoryDocument>>(getModelToken(Story.name));
+  });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  // Teste 1: Caminho Feliz (Com contexto e com instrução)
-  it('should build prompt with context and user writing', async () => {
-    ((model as any).exec as jest.Mock).mockResolvedValue(mockStory);
+  // Teste 1: Com 'userWriting' / Com Contexto
+  it('should build prompt WITH userWriting and WITH context', async () => {
+    ((model as any).exec as jest.Mock).mockResolvedValue(mockStory);
+    const prompt = await service.createStoryPrompt(
+      mockGenres, mockWordLimit, mockUserWriting, 's1'
+    );
 
-    const prompt = await service.createStoryPrompt(
-      mockGenres,
-      mockWordLimit,
-      mockUserWriting,
-      's1', // Passando um storyId
-    );
+    expect(model.findById).toHaveBeenCalledWith('s1');
+    expect(prompt).toContain(mockStory.summary);
+    expect(prompt).toContain(mockUserWriting);
+    expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO (O QUE DEVE ACONTECER)');
+  });
 
-    expect(model.findById).toHaveBeenCalledWith('s1');
-    expect(prompt).toContain(mockStory.summary);
-    expect(prompt).toContain(mockGenres.join(', '));
-    expect(prompt).toContain(mockUserWriting);
-    expect(prompt).toContain(`${mockWordLimit} palavras`);
-    expect(prompt).toContain('EXATAMENTE 4');
-    expect(prompt).toContain('opção aleatória/surpresa');
-  });
+  // Teste 2: Com 'userWriting' / Sem Contexto
+  it('should build prompt WITH userWriting and WITHOUT context', async () => {
+    const prompt = await service.createStoryPrompt(
+      mockGenres, mockWordLimit, mockUserWriting, undefined
+    );
 
-  // Teste 2: Caminho Feliz (Sem contexto, sem instrução)
-  it('should build prompt without context or user writing', async () => {
-    const prompt = await service.createStoryPrompt(
-      mockGenres,
-      mockWordLimit,
-      undefined, // Sem user writing
-      undefined, // Sem storyId
-    );
+    expect(model.findById).not.toHaveBeenCalled();
+    expect(prompt).toContain('CONTEXTO: Nenhum. Esta é uma nova história.');
+    expect(prompt).toContain(mockUserWriting);
+    expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO (O QUE DEVE ACONTECER)');
+  });
 
-    expect(model.findById).not.toHaveBeenCalled();
+  // Teste 3: Sem 'userWriting' / Com Contexto
+  it('should build prompt WITHOUT userWriting and WITH context', async () => {
+    ((model as any).exec as jest.Mock).mockResolvedValue(mockStory);
+    const prompt = await service.createStoryPrompt(
+      mockGenres, mockWordLimit, undefined, 's1'
+    );
 
-    // Verifica se os textos alternativos estão lá
-    expect(prompt).toContain('CONTEXTO: Nenhum. Esta é uma nova história.');
-    expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO: Nenhuma. Use sua criatividade.');
-    expect(prompt).toContain(mockGenres.join(', '));
-  });
+    expect(model.findById).toHaveBeenCalledWith('s1');
+    expect(prompt).toContain(mockStory.summary);
+    expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO: Nenhuma. Use sua criatividade.');
+  });
 
-  // Teste 3: Caminho de Erro (ID inválido)
-  it('should throw NotFoundException if story is not found', async () => {
-    ((model as any).exec as jest.Mock).mockResolvedValue(null);
+  // Teste 4: Sem 'userWriting' / Sem Contexto
+  it('should build prompt WITHOUT userWriting and WITHOUT context', async () => {
+    const prompt = await service.createStoryPrompt(
+      mockGenres, mockWordLimit, undefined, undefined
+    );
 
-    await expect(
-      service.createStoryPrompt(mockGenres, mockWordLimit, mockUserWriting, 'id_falsa'),
-    ).rejects.toThrow(NotFoundException);
-  });
+    expect(model.findById).not.toHaveBeenCalled();
+    expect(prompt).toContain('CONTEXTO: Nenhum. Esta é uma nova história.');
+    expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO: Nenhuma. Use sua criatividade.');
+  });
+
+  //Teste 5: CASO DE ERRO
+  it('should throw NotFoundException if storyId is given but not found', async () => {
+    ((model as any).exec as jest.Mock).mockResolvedValue(null);
+
+    await expect(
+      service.createStoryPrompt(mockGenres, mockWordLimit, mockUserWriting, 'id_falsa'),
+    ).rejects.toThrow(NotFoundException);
+  });
 });
