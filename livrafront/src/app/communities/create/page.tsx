@@ -63,8 +63,9 @@ export default function CreateReadlistPage() {
             {/* Informações básicas */}
             <div className="flex-1 max-w-2xl">
               <div className="mb-4">
-                <label className="text-b1">Nome da comunidade</label>
+                <label className="text-b1" htmlFor="nome-comunidade">Nome da comunidade</label>
                 <Input
+                  id="nome-comunidade"
                   placeholder="Digite o nome da comunidade"
                   className="w-full"
                   value={nome}
@@ -73,8 +74,9 @@ export default function CreateReadlistPage() {
                 {errors.nome && <span className="text-red-500 text-xs">{errors.nome}</span>}
               </div>
               <div className="mb-4">
-                <label className="text-b1">Descrição da comunidade</label>
+                <label className="text-b1" htmlFor="descricao-comunidade">Descrição da comunidade</label>
                 <Input
+                  id="descricao-comunidade"
                   placeholder="Digite a descrição da comunidade"
                   className="h-32 w-full"
                   value={descricao}
@@ -83,13 +85,15 @@ export default function CreateReadlistPage() {
                 {errors.descricao && <span className="text-red-500 text-xs">{errors.descricao}</span>}
               </div>
               <div className="mb-4">
-                <label className="text-b1">Tags da comunidade</label>
+                <label className="text-b1" htmlFor="tags-comunidade">Tags da comunidade</label>
                 <Input
+                  id="tags-comunidade"
                   placeholder="Digite as tags da comunidade"
                   className="w-full"
                   value={tags}
                   onChange={handleTagsChange}
                 />
+                <span className="text-xs text-gray-500">Separe as tags por vírgula. Ex: ficção, aventura, mistério</span>
                 {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
               </div>
             </div>
