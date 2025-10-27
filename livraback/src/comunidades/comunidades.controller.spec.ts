@@ -2,12 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ComunidadesController } from './comunidades.controller';
 import { ComunidadesService } from './comunidades.service';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { CreateComunidadeDto } from './dto/create-comunidade.dto';
+import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 
 describe('ComunidadesController', () => {
   let controller: ComunidadesController;
   let service: ComunidadesService;
 
   const mockComunidadesService = {
+    create: jest.fn(),
+    update: jest.fn(),
     findAllPosts: jest.fn(),
     findAllComunidadeMembros: jest.fn(),
     addMembro: jest.fn(),
@@ -36,6 +40,36 @@ describe('ComunidadesController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
     expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('deve criar uma comunidade com sucesso', async () => {
+      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const createDto: CreateComunidadeDto = { nome: 'livros' };
+      const mockResponse = { _id: '1', nome: 'livros' };
+
+      mockComunidadesService.create.mockResolvedValue(mockResponse);
+
+      const result = await controller.create(mockUser, createDto);
+
+      expect(service.create).toHaveBeenCalledWith('123', createDto);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('update', () => {
+    it('deve atualizar uma comunidade com sucesso', async () => {
+      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const updateDto: UpdateComunidadeDto = { nome: 'nova-livros' };
+      const mockResponse = { _id: '1', nome: 'nova-livros' };
+
+      mockComunidadesService.update.mockResolvedValue(mockResponse);
+
+      const result = await controller.update(mockUser, 'livros', updateDto);
+
+      expect(service.update).toHaveBeenCalledWith('123', 'livros', updateDto);
+      expect(result).toEqual(mockResponse);
+    });
   });
 
   describe('findAllPosts', () => {
