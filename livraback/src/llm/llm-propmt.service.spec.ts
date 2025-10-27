@@ -90,7 +90,7 @@ describe('LlmPromptService', () => {
     expect(prompt).toContain('INSTRUÇÃO DO USUÁRIO: Nenhuma. Use sua criatividade.');
   });
 
-  //Teste 5: CASO DE ERRO
+  // Teste 5: CASO DE ERRO
   it('should throw NotFoundException if storyId is given but not found', async () => {
     ((model as any).exec as jest.Mock).mockResolvedValue(null);
 
