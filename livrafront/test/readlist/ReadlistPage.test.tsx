@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ReadlistPage from '@/app/[username]/readlist/[readlistSlug]/page';
+import ReadlistPage from '@/app/usuario/[username]/readlist/[readlistSlug]/page';
 
 const originalError = console.error;
 beforeAll(() => {
