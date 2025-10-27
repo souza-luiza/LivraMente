@@ -1,11 +1,45 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
 import { Model } from 'mongoose';
+import { CreateComunidadeDto } from './dto/create-comunidade.dto';
+import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 
 @Injectable()
 export class ComunidadesService {
     constructor(@InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>) {}
+
+    async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
+        const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
+        if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+        const comunidade = new this.comunidadeModel({...createComunidadeDto, moderadores: [criadorId], membros: [criadorId]});
+        return await comunidade.save();
+    }
+
+    async update(userId: string, comunidadeNome: string, updateComunidadeDto: UpdateComunidadeDto) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
+        if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+        const moderadores = comunidade.moderadores.map((m) => m.toString());
+        if(!moderadores.includes(userId)) throw new UnauthorizedException('Apenas o moderador pode editar a comunidade');
+
+        const existingComunidade = await this.comunidadeModel.findOne({ nome: updateComunidadeDto.nome }).exec();
+        if(existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+
+        const updated = await this.comunidadeModel.findOneAndUpdate(
+            {
+                nome: comunidadeNome
+            },
+            {
+                $set: updateComunidadeDto
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        ).exec();
+        return updated;
+    }
 
     async findAllPosts(comunidadeNome: string) {
         const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).populate('posts').exec();
