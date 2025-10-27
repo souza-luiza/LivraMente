@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ComunidadesService } from './comunidades.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Comunidade } from './entities/comunidade.entity';
 
@@ -31,6 +31,102 @@ describe('ComunidadesService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('deve criar uma comunidade com sucesso', async () => {
+      const criadorId = 'user123';
+      const dto = { nome: 'livros' };
+
+      comunidadeModel.findOne.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) } as any);
+
+      const mockSave = jest.fn().mockResolvedValue({
+        _id: '1',
+        nome: 'livros',
+        moderadores: [criadorId],
+        membros: [criadorId],
+      });
+
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      (service as any).comunidadeModel = Object.assign(mockConstructor, comunidadeModel);
+
+      const result = await service.create(criadorId, dto);
+
+      expect(result).toEqual({
+        _id: '1',
+        nome: 'livros',
+        moderadores: [criadorId],
+        membros: [criadorId],
+      });
+
+      expect(mockConstructor).toHaveBeenCalledWith({
+        ...dto,
+        moderadores: [criadorId],
+        membros: [criadorId],
+      });
+    });
+
+    it('deve lançar ConflictException se o nome já existir', async () => {
+      comunidadeModel.findOne.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({ nome: 'livros' }) } as any);
+
+      await expect(service.create('u1', { nome: 'livros' })).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('update', () => {
+    const userId = 'user1';
+    const comunidadeNome = 'fantasia';
+    const updateDto = { nome: 'nova-fantasia' };
+
+    it('deve atualizar uma comunidade com sucesso', async () => {
+      const comunidade = {
+        nome: comunidadeNome,
+        moderadores: [userId],
+      };
+
+      comunidadeModel.findOne
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidade) } as any) // busca comunidade existente
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) } as any); // verifica se novo nome já existe
+
+      const updatedDoc = { nome: 'nova-fantasia', moderadores: [userId] };
+      comunidadeModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(updatedDoc),
+      } as any);
+
+      const result = await service.update(userId, comunidadeNome, updateDto);
+
+      expect(result).toEqual(updatedDoc);
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: comunidadeNome },
+        { $set: updateDto },
+        { new: true, runValidators: true },
+      );
+    });
+
+    it('deve lançar NotFoundException se comunidade não existir', async () => {
+      comunidadeModel.findOne.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) } as any);
+
+      await expect(service.update(userId, comunidadeNome, updateDto)).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar UnauthorizedException se usuário não for moderador', async () => {
+      const comunidade = { nome: comunidadeNome, moderadores: ['outroUser'] };
+      comunidadeModel.findOne.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidade) } as any);
+
+      await expect(service.update(userId, comunidadeNome, updateDto)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('deve lançar ConflictException se novo nome já existir', async () => {
+      const comunidade = { nome: comunidadeNome, moderadores: [userId] };
+      comunidadeModel.findOne
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidade) } as any)
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({ nome: 'nova-fantasia' }) } as any);
+
+      await expect(service.update(userId, comunidadeNome, updateDto)).rejects.toThrow(ConflictException);
+    });
   });
 
   describe('findAllPosts', () => {
