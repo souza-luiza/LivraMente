@@ -16,7 +16,10 @@ jest.mock('@google/genai', () => ({
   })),
 }));
 
+const classTransformer = jest.requireActual('class-transformer');
+
 jest.mock('class-transformer', () => ({
+  ...classTransformer,
   plainToInstance: jest.fn(),
 }));
 jest.mock('class-validator', () => ({
@@ -58,7 +61,7 @@ describe('LlmApiService', () => {
       service.onModuleInit();
 
       expect(mockConfigService.get).toHaveBeenCalledWith('GOOGLE_API_KEY');
-      expect(mockGoogleGenAI).toHaveBeenCalledWith({ apiKey: 'fake-key' });
+      expect(GoogleGenAI).toHaveBeenCalledWith({ apiKey: 'fake-key' });
     });
 
     it('should throw error if API key is not found', () => {
