@@ -1,6 +1,6 @@
 import { IsArray, IsString, IsNumber, IsOptional, ArrayNotEmpty, Min, Max } from 'class-validator';
 
-export class GerarTextoDTO {
+export class GenerateTextDTO {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true }) // Cada item deve ser string
