@@ -11,18 +11,18 @@ const mockGenerateContent = jest.fn();
 jest.mock('@google/genai', () => ({
   GoogleGenAI: jest.fn(() => ({
     models: {
-      generateContent: mockGenerateContent, 
+      generateContent: mockGenerateContent,
     },
   })),
 }));
 
-const classTransformer = jest.requireActual('class-transformer');
-
 jest.mock('class-transformer', () => ({
-  ...classTransformer,
+  ...jest.requireActual('class-transformer'),
   plainToInstance: jest.fn(),
 }));
+
 jest.mock('class-validator', () => ({
+  ...jest.requireActual('class-validator'),
   validate: jest.fn(),
 }));
 
@@ -32,6 +32,7 @@ const mockedValidate = validate as jest.Mock;
 describe('LlmApiService', () => {
   let service: LlmApiService;
   let configService: ConfigService;
+  let consoleErrorSpy: jest.SpyInstance;
 
   const mockConfigService = {
     get: jest.fn(),
@@ -49,6 +50,13 @@ describe('LlmApiService', () => {
     configService = module.get<ConfigService>(ConfigService);
 
     jest.clearAllMocks();
+
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+  });
+
+  afterEach(() => {
+    // Restaura o console.error original
+    consoleErrorSpy.mockRestore();
   });
 
   it('should be defined', () => {
