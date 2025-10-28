@@ -1,6 +1,6 @@
 import { Controller, Post, Body, ValidationPipe, UsePipes } from '@nestjs/common';
 import { LlmPromptService } from './llm-prompt.service';
-import { LlmApiService } from './llm-api.service';
+import { LlmApiService } from './llm.api.service';
 import { GenerateTextDTO } from './dto/generate-text.dto';
 import { LlmResponseDTO } from './dto/llm-response.dto';
 
