@@ -1,4 +1,5 @@
 import { validate } from 'class-validator';
+import { GoogleGenAI } from '@google/genai';
 import { ConfigService } from '@nestjs/config';
 import { LlmApiService } from './llm.api.service';
 import { plainToInstance } from 'class-transformer';
