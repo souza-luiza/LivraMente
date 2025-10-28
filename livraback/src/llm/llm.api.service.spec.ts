@@ -8,14 +8,12 @@ import { LlmResponseDTO } from './dto/llm-response.dto';
 import { InternalServerErrorException } from '@nestjs/common';
 
 const mockGenerateContent = jest.fn();
-const mockGoogleGenAI = jest.fn(() => ({
-  models: {
-    generateContent: mockGenerateContent,
-  },
-}));
-
 jest.mock('@google/genai', () => ({
-  GoogleGenAI: mockGoogleGenAI,
+  GoogleGenAI: jest.fn(() => ({
+    models: {
+      generateContent: mockGenerateContent, 
+    },
+  })),
 }));
 
 jest.mock('class-transformer', () => ({
@@ -65,7 +63,7 @@ describe('LlmApiService', () => {
 
     it('should throw error if API key is not found', () => {
       mockConfigService.get.mockReturnValue(undefined);
-      
+
       // Verifica se a função lança o erro esperado
       expect(() => service.onModuleInit()).toThrow(
         'GOOGLE_API_KEY was not found on .env',
@@ -86,7 +84,7 @@ describe('LlmApiService', () => {
         novasOpcoes: [],
       };
       const aiResponseString = JSON.stringify(aiResponseJson);
-      
+
       const mockDto = new LlmResponseDTO();
       mockDto.textoCapitulo = aiResponseJson.textoCapitulo;
       mockDto.novasOpcoes = aiResponseJson.novasOpcoes;
@@ -98,7 +96,7 @@ describe('LlmApiService', () => {
       // Simula o plainToInstance
       mockedPlainToInstance.mockReturnValue(mockDto);
       // Simula a validação (sem erros)
-      mockedValidate.mockResolvedValue([]); 
+      mockedValidate.mockResolvedValue([]);
 
       const result = await service.generateContent(prompt);
 
@@ -145,7 +143,7 @@ describe('LlmApiService', () => {
       });
       mockedPlainToInstance.mockReturnValue(mockDto);
       // Simula a validação retornando erros
-      mockedValidate.mockResolvedValue(validationErrors); 
+      mockedValidate.mockResolvedValue(validationErrors);
 
       await expect(service.generateContent('prompt')).rejects.toThrow(
         InternalServerErrorException,
