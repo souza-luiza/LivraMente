@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from 'next/navigation'
-import LivraTime from '@/app/livratime/page'
+import LivraTime from '../../src/app/livratime/page'
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
