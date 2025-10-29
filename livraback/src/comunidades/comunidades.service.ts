@@ -88,6 +88,20 @@ export class ComunidadesService {
             const isModerador = moderadores.includes(userId);
             if(isModerador && comunidade.moderadores.length === 1) throw new BadRequestException('Não é possível remover o único moderador da comunidade');
 
+            if(isModerador) {
+                await this.comunidadeModel.findOneAndUpdate(
+                    {
+                        nome: comunidadeNome
+                    },
+                    {
+                        $pull: { moderadores: userId }
+                    },
+                    {
+                        new: true
+                    }
+                ).exec();
+            }
+
             await this.comunidadeModel.findOneAndUpdate(
                 {
                     nome: comunidadeNome
