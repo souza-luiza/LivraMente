@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useRouter } from 'next/navigation'
 import LivraTime from '../../src/app/livratime/page'
 
 jest.mock('next/navigation', () => ({
@@ -24,8 +23,7 @@ jest.mock('framer-motion', () => ({
 }))
 
 jest.mock('@/components/button', () => {
-  // Make the mocked Button call the mocked router.push when a `path` prop is provided
-  const { useRouter } = require('next/navigation')
+  const { useRouter } = jest.requireMock('next/navigation')
   return function MockButton({ text, icon, onClick, path }: any) {
     const router = useRouter && useRouter();
     const handle = (e: any) => {
@@ -77,7 +75,8 @@ describe('LivraTime Page', () => {
   const mockPush = jest.fn()
   
   beforeEach(() => {
-    ;(useRouter as jest.Mock).mockReturnValue({
+    const { useRouter } = jest.requireMock('next/navigation') as { useRouter: jest.Mock }
+    useRouter.mockReturnValue({
       push: mockPush,
     })
     mockPush.mockClear()
