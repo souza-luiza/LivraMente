@@ -202,27 +202,67 @@ describe('ComunidadesService', () => {
 
   describe('removeMembro', () => {
     it('deve remover membro e retornar mensagem de sucesso', async () => {
-      const mockExec = jest.fn().mockResolvedValue({ _id: '123' });
-      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
-  
-      const result = await service.removeMembro('u1', 'fantasia');
-      expect(result).toEqual({ message: 'Usuário removido da comunidade com sucesso' });
+        const mockExecFindOne = jest.fn().mockResolvedValue({
+            _id: '123',
+            moderadores: ['u1', 'u2'],
+            membros: ['u1', 'u2', 'u3'],
+        });
+        comunidadeModel.findOne.mockReturnValue({ exec: mockExecFindOne } as any);
+
+        const mockExecFindOneAndUpdate = jest.fn().mockResolvedValue({
+            _id: '123',
+            moderadores: ['u1', 'u2'],
+            membros: ['u2', 'u3'],
+        });
+        comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExecFindOneAndUpdate } as any);
+
+        const result = await service.removeMembro('u1', 'fantasia');
+        expect(result).toEqual({ message: 'Usuário removido da comunidade com sucesso' });
+
+        expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+            { nome: 'fantasia' },
+            { $pull: { membros: 'u1' } },
+            { new: true }
+        );
     });
-  
+
     it('deve lançar NotFoundException se comunidade não for encontrada ao remover membro', async () => {
-      const mockExec = jest.fn().mockResolvedValue(null);
-      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
-  
-      await expect(service.removeMembro('u1', 'naoexiste')).rejects.toThrow(NotFoundException);
+        comunidadeModel.findOne.mockReturnValueOnce({
+            exec: jest.fn().mockResolvedValue(null),
+        } as any);
+
+        await expect(service.removeMembro('u1', 'naoexiste')).rejects.toThrow(NotFoundException);
     });
-  
+
     it('deve lançar BadRequestException se o ID for inválido ao remover membro', async () => {
-      const mockError = { name: 'CastError' };
-      comunidadeModel.findOneAndUpdate.mockReturnValue({
-        exec: jest.fn().mockRejectedValue(mockError),
-      } as any);
-  
-      await expect(service.removeMembro('badId', 'fantasia')).rejects.toThrow(BadRequestException);
+        // Simulando o erro de ID inválido (por exemplo, um CastError)
+        const mockError = { name: 'CastError', message: 'Invalid ObjectId' };
+        
+        // Mock para findOne lançar um erro (simulando ID inválido)
+        comunidadeModel.findOne.mockReturnValueOnce({
+            exec: jest.fn().mockRejectedValue(mockError),
+        } as any);
+
+        await expect(service.removeMembro('badId', 'fantasia')).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve lançar BadRequestException se o único moderador for removido', async () => {
+        const comunidade = {
+            nome: 'fantasia',
+            moderadores: ['u1'],
+            membros: ['u1', 'u2'],
+        };
+
+        comunidadeModel.findOne.mockReturnValueOnce({
+            exec: jest.fn().mockResolvedValue(comunidade),
+        } as any);
+
+        await expect(service.removeMembro('u1', 'fantasia')).rejects.toThrow(BadRequestException);
+        expect(comunidadeModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
   });
+
+
+
+
 });
