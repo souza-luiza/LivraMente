@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import CreateReadlistPage from '@/app/communities/create/page';
+import CreateReadlistPage from '@/app/comunidades/criar/page';
 
 beforeAll(() => {
   global.URL.createObjectURL = jest.fn(() => 'mock-url');
