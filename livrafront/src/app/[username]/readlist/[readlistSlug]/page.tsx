@@ -14,7 +14,7 @@ import EditIcon from '@/components/icons/EditIcon';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Button from '@/components/button';
 import EditReadlistModal from '@/components/EditReadlistModal';
-import { getPublicReadlists, getReadlistById } from '@/services/readlist';
+import { getPublicReadlists, getReadlistById, getUserReadlists } from '@/services/readlist';
 import { ReadlistDetailResponse } from '@/types/readlist';
 
 export default function ReadlistPage() {
@@ -59,7 +59,10 @@ export default function ReadlistPage() {
             capa_url: '/kemi-teste.jpg',
             publica: true,
             favorito: false,
-            criador: 'demo', // Username do modo mock 
+            criador: {
+              _id: 'demo-user-id',
+              username: 'demo'
+            },
             livros: [
               { id: '1', title: 'Jantar Secreto', year: '2016', pages: '416 pags', rating: 5, cover: '/kemi-teste.jpg' },
               { id: '2', title: 'A Empregada', year: '2018', pages: '208 pags', rating: 5, cover: '/kemi-teste.jpg' },
@@ -84,18 +87,34 @@ export default function ReadlistPage() {
           return;
         }
 
-        // Primeiro, buscar readlists públicas do usuário
-        const publicReadlists = await getPublicReadlists(username);
+        // Verificar se o usuário logado é o dono do perfil
+        const currentUser = localStorage.getItem('user');
+        let isViewingOwnProfile = false;
         
-        // Converter slug para comparar com nome da readlist
-        const readlistName = readlistSlug
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+        if (currentUser) {
+          const user = JSON.parse(currentUser);
+          isViewingOwnProfile = user.username === username;
+        }
 
-        // Encontrar a readlist pelo nome (slug convertido)
-        const foundReadlist = publicReadlists.find(
-          rl => rl.nome.toLowerCase() === readlistName.toLowerCase()
+        // Se estiver vendo o próprio perfil, busca TODAS as readlists (incluindo privadas)
+        // Senão, busca apenas as públicas
+        const readlists = isViewingOwnProfile 
+          ? await getUserReadlists()
+          : await getPublicReadlists(username);
+        
+        // Função para normalizar texto para slug (remove acentos, minúscula, substitui espaços)
+        const toSlug = (str: string): string => {
+          return str
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .replace(/\s+/g, '-');
+        };
+
+        // Encontrar a readlist comparando slugs normalizados
+        const foundReadlist = readlists.find(rl => 
+          toSlug(rl.nome) === readlistSlug
         );
 
         if (!foundReadlist) {
@@ -108,10 +127,14 @@ export default function ReadlistPage() {
         setReadlistData(detailedReadlist);
 
         // Verificar se o usuário logado é o dono
-        const currentUser = localStorage.getItem('user');
+        // Compara o username da URL com o username do criador da readlist
         if (currentUser) {
           const user = JSON.parse(currentUser);
-          setIsOwner(user.username === username);
+          
+          // Se o username do criador existir, compara direto
+          // Senão, compara o username da URL com o username do user logado
+          const creatorUsername = detailedReadlist.criador.username || username;
+          setIsOwner(user.username === username || user.username === creatorUsername);
         }
 
       } catch (err) {

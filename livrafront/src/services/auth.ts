@@ -30,13 +30,26 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
 
     const result = await response.json()
     
-    // Backend retorna token
+    // Buscar dados do usuário usando o token
+    const userResponse = await fetch(`${API_BASE_URL}/users/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${result.accessToken}`,
+      },
+    });
+    
+    if (!userResponse.ok) {
+      throw new Error('Erro ao buscar dados do usuário');
+    }
+    
+    const userData = await userResponse.json();
+    
     return {
       token: result.accessToken,
       user: { 
-        id: 'user-id', 
-        username: data.email,
-        email: data.email 
+        id: userData._id || userData.id,
+        username: userData.username,
+        email: userData.email 
       }
     }
 
