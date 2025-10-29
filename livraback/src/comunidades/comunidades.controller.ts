@@ -13,6 +13,11 @@ import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 export class ComunidadesController {
     constructor(private readonly comunidadesService: ComunidadesService) {}
 
+    @Get()
+    async findAll() {
+        return this.comunidadesService.findAll();
+    }
+
     @Post()
     @ApiOperation({
         summary: 'Cria uma nova comunidade',

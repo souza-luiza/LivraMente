@@ -9,6 +9,10 @@ import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 export class ComunidadesService {
     constructor(@InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>) {}
 
+    async findAll() {
+        return await this.comunidadeModel.find().exec();
+    }
+
     async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
         const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
         if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');
