@@ -11,6 +11,7 @@ describe('ComunidadesService', () => {
 
   beforeEach(async () => {
     const mockModel = {
+      find: jest.fn(),
       findOne: jest.fn(),
       findOneAndUpdate: jest.fn(),
     };
@@ -32,6 +33,22 @@ describe('ComunidadesService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  describe('findAll', () => {
+    it('deve retornar todas as comunidades com sucesso', async () => {
+      const comunidadesMock = [
+        { _id: '1', nome: 'Livros', moderadores: ['user1'], membros: ['user1'] },
+        { _id: '2', nome: 'Música', moderadores: ['user2'], membros: ['user2'] }
+      ];
+
+      comunidadeModel.find.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidadesMock) } as any);
+
+      const result = await service.findAll();
+      expect(result).toEqual(comunidadesMock);
+      expect(comunidadeModel.find).toHaveBeenCalled();
+    });
+  });
+
 
   describe('create', () => {
     it('deve criar uma comunidade com sucesso', async () => {

@@ -12,6 +12,7 @@ describe('ComunidadesController', () => {
   const mockComunidadesService = {
     create: jest.fn(),
     update: jest.fn(),
+    findAll: jest.fn(),
     findAllPosts: jest.fn(),
     findAllComunidadeMembros: jest.fn(),
     addMembro: jest.fn(),
@@ -40,6 +41,22 @@ describe('ComunidadesController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
     expect(service).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('deve retornar todas as comunidades com sucesso', async () => {
+      const mockComunidades = [
+        { _id: '1', nome: 'Livros', moderadores: ['user1'], membros: ['user1'] },
+        { _id: '2', nome: 'Música', moderadores: ['user2'], membros: ['user2'] }
+      ];
+
+      mockComunidadesService.findAll.mockResolvedValue(mockComunidades);
+
+      const result = await controller.findAll();
+
+      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual(mockComunidades); 
+    });
   });
 
   describe('create', () => {
