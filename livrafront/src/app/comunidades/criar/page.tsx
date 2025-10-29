@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
@@ -8,7 +8,13 @@ import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 
-export default function CreateReadlistPage() {
+type Props = {
+  onNavigate?: (url: string) => void;
+};
+
+export default function CreateReadlistPage({ onNavigate }: Props = {}) {
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -37,15 +43,47 @@ export default function CreateReadlistPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Envio do formulário
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    // falta enviar dados para o backend
+    try {
+      const formData = new FormData();
+      formData.append('nome', nome);
+      formData.append('descricao', descricao);
+      formData.append('tags', tags);
+      if (foto) formData.append('foto', foto);
+
+      const response = await fetch('http://localhost:3000/comunidades', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar comunidade');
+      }
+      setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
+      (onNavigate ?? router.push)('/comunidades');
+    } catch (err) {
+      setMessage({ text: 'Erro ao criar comunidade', type: 'error' });
+    }
   };
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 p-10 flex flex-col">
+        {message.text && (
+          <div
+            className={`mb-4 text-center ${
+              message.type === 'error'
+                ? 'text-red-600 text-sm font-semibold'
+                : 'text-success-600 text-sm font-semibold'
+            }`}
+            role="alert"
+          >
+            {message.text}
+          </div>
+        )}
         <div className="flex items-center mb-6">
           <Button
             text="Voltar"
