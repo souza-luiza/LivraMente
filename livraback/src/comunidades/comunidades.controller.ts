@@ -14,6 +14,18 @@ export class ComunidadesController {
     constructor(private readonly comunidadesService: ComunidadesService) {}
 
     @Get()
+    @ApiOperation({ 
+        summary: 'Lista todas as comunidades',
+        description: 'Retorna todas comunidades existentes'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Lista de comunidades retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
     async findAll() {
         return this.comunidadesService.findAll();
     }
