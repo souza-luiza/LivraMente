@@ -81,7 +81,14 @@ export class ComunidadesService {
 
     async removeMembro(userId: string, comunidadeNome: string) {
         try {
-            const removed = await this.comunidadeModel.findOneAndUpdate(
+            const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
+            if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+            const moderadores = comunidade.moderadores.map((m) => m.toString());
+            const isModerador = moderadores.includes(userId);
+            if(isModerador && comunidade.moderadores.length === 1) throw new BadRequestException('Não é possível remover o único moderador da comunidade');
+
+            await this.comunidadeModel.findOneAndUpdate(
                 {
                     nome: comunidadeNome
                 },
@@ -92,8 +99,6 @@ export class ComunidadesService {
                     new: true
                 }
             ).exec();
-
-            if (!removed) throw new NotFoundException('Comunidade não encontrada');
             
             return { message: 'Usuário removido da comunidade com sucesso' };
 
