@@ -11,8 +11,8 @@ export class Comunidade {
   @Prop()
   descricao?: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  criador: Types.ObjectId;
+  /*@Prop({ type: Types.ObjectId, ref: 'User' })
+  criador: Types.ObjectId;*/ // acho que nao precisa
 
   // Moderadores da comunidade
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
