@@ -36,7 +36,19 @@ export class ReadlistsService {
 
     async findOne(criadorId: string, id: string) {
         try{
-            const readlist = await this.readlistModel.findOne({ _id: id, criador: criadorId }).exec();
+            // Primeiro tenta buscar como dono 
+            let readlist = await this.readlistModel.findOne({ 
+                _id: id, 
+                criador: criadorId 
+            }).populate('livros').exec();
+            
+            if (!readlist) {
+                readlist = await this.readlistModel.findOne({ 
+                    _id: id, 
+                    publica: true  // Apenas readlists públicas
+                }).populate('livros').exec();
+            }
+            
             if(!readlist) {
                 throw new NotFoundException('Readlist não encontrada');
             }
