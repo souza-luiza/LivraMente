@@ -27,9 +27,11 @@ export class ComunidadesService {
         const moderadores = comunidade.moderadores.map((m) => m.toString());
         if(!moderadores.includes(userId)) throw new UnauthorizedException('Apenas o moderador pode editar a comunidade');
 
-        const existingComunidade = await this.comunidadeModel.findOne({ nome: updateComunidadeDto.nome }).exec();
-        if(existingComunidade) throw new ConflictException('Nome de comunidade em uso');
-
+        if(updateComunidadeDto.nome){
+            const existingComunidade = await this.comunidadeModel.findOne({ nome: updateComunidadeDto.nome }).exec();
+            if(existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+        }
+        
         const updated = await this.comunidadeModel.findOneAndUpdate(
             {
                 nome: comunidadeNome
