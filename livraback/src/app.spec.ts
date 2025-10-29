@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ReadlistsModule } from './readlists/readlists.module';
+import { ComunidadesModule } from './comunidades/comunidades.module';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
@@ -41,7 +42,7 @@ describe('App Integration with Mocks', () => {
     findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: 'mockUserId', readlists: ['readlist1'] }),
   };
 
-  // ✅ Mock do model Readlist
+  // Mock do model Readlist
   const mockReadlistModel = {
     find: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue([]),
@@ -61,6 +62,16 @@ describe('App Integration with Mocks', () => {
     },
   };
 
+  // Mock do model Readlist
+  const mockComunidadeModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockReadlistId', nome: 'Atualizado' }),
+    }),
+  };
+
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
@@ -70,6 +81,7 @@ describe('App Integration with Mocks', () => {
         UsersModule,
         AuthModule,
         ReadlistsModule,
+        ComunidadesModule,
       ],
       controllers: [AppController],
       providers: [AppService],
@@ -80,6 +92,8 @@ describe('App Integration with Mocks', () => {
       .useValue(mockUserModel)
       .overrideProvider(getModelToken('Readlist'))
       .useValue(mockReadlistModel)
+      .overrideProvider(getModelToken('Comunidade'))
+      .useValue(mockComunidadeModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
