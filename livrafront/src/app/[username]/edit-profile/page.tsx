@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/user-store";
 import Sidebar from "@/components/sidebar";
-import SearchBar from "@/components/searchbar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";

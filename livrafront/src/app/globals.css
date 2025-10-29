@@ -302,14 +302,6 @@ input {
   border-radius:  var(--large-border-radius);
 }
 
-button.textless-small {
-  padding:        var(--xsmall-padding);
-
-button.textless-large {
-  padding:        var(--small-padding);
-  border-radius:  var(--large-border-radius);
-}
-
 .icon-small {
   width:  16px;
   height: 16px;

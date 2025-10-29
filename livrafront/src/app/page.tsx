@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link';
 import Button from '@/components/button';
 import LoginIcon from '@/components/icons/LoginIcon';
 import LogoIcon from '@/components/icons/LogoIcon';

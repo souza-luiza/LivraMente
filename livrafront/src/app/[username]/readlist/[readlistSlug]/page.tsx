@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
-import SearchIcon from '@/components/icons/SearchIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';

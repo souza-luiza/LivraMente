@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ReadlistCard } from '@/components/readlist-card';
 import { CreateReadlist } from '@/components/create-readlist';
-import Link from 'next/link';
 import { useReadlistsList } from '@/hooks/useReadlistsList';
 import { useCreateReadlist } from '@/hooks/useCreateReadlist';
 import Button from '@/components/button';
