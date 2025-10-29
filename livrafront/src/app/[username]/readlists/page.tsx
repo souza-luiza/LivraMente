@@ -120,7 +120,7 @@ export default function UserReadlistsPage() {
 
         <div className="relative min-h-[200px] w-full">
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+            <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
               <LoadingPage />
             </div>
           )}
