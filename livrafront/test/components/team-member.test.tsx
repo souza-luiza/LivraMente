@@ -107,20 +107,25 @@ describe('TeamMember Component', () => {
   describe('Social Links Tests', () => {
     it('should render GitHub link when provided', () => {
       const githubUrl = 'https://github.com/johndoe'
-      render(<TeamMember {...defaultProps} github={githubUrl} />)
-      
-      const githubLink = screen.getByTestId('github-icon').closest('a')
-      expect(githubLink).toHaveAttribute('href', githubUrl)
-      expect(githubLink).toHaveAttribute('target', '_blank')
+        // mock window.open and assert the icon button triggers it
+        const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any)
+        render(<TeamMember {...defaultProps} github={githubUrl} />)
+        const githubBtn = screen.getByTestId('github-icon').closest('button') as HTMLElement
+        expect(githubBtn).toBeInTheDocument()
+        githubBtn.click()
+        expect(openSpy).toHaveBeenCalledWith(githubUrl, '_blank')
+        openSpy.mockRestore()
     })
 
     it('should render LinkedIn link when provided', () => {
       const linkedinUrl = 'https://linkedin.com/in/johndoe'
+      const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any)
       render(<TeamMember {...defaultProps} linkedin={linkedinUrl} />)
-      
-      const linkedinLink = screen.getByTestId('linkedin-icon').closest('a')
-      expect(linkedinLink).toHaveAttribute('href', linkedinUrl)
-      expect(linkedinLink).toHaveAttribute('target', '_blank')
+      const linkedinBtn = screen.getByTestId('linkedin-icon').closest('button') as HTMLElement
+      expect(linkedinBtn).toBeInTheDocument()
+      linkedinBtn.click()
+      expect(openSpy).toHaveBeenCalledWith(linkedinUrl, '_blank')
+      openSpy.mockRestore()
     })
 
     it('should render both GitHub and LinkedIn links when provided', () => {
@@ -245,16 +250,19 @@ describe('TeamMember Component', () => {
     })
 
     it('should have external links opening in new tab', () => {
+      const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any)
       render(<TeamMember 
         {...defaultProps} 
         github="https://github.com/johndoe"
         linkedin="https://linkedin.com/in/johndoe"
       />)
-      
-      const links = screen.getAllByTestId('link')
-      links.forEach(link => {
-        expect(link).toHaveAttribute('target', '_blank')
-      })
+      const githubBtn = screen.getByTestId('github-icon').closest('button') as HTMLElement
+      const linkedinBtn = screen.getByTestId('linkedin-icon').closest('button') as HTMLElement
+      githubBtn.click()
+      linkedinBtn.click()
+      expect(openSpy).toHaveBeenCalledWith('https://github.com/johndoe', '_blank')
+      expect(openSpy).toHaveBeenCalledWith('https://linkedin.com/in/johndoe', '_blank')
+      openSpy.mockRestore()
     })
   })
 

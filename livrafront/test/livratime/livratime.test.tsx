@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useRouter } from 'next/navigation'
-import LivraTime from '@/app/LivraTime/page'
+import LivraTime from '@/app/livratime/page'
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
@@ -24,9 +24,16 @@ jest.mock('framer-motion', () => ({
 }))
 
 jest.mock('@/components/button', () => {
-  return function MockButton({ text, icon, onClick }: any) {
+  // Make the mocked Button call the mocked router.push when a `path` prop is provided
+  const { useRouter } = require('next/navigation')
+  return function MockButton({ text, icon, onClick, path }: any) {
+    const router = useRouter && useRouter();
+    const handle = (e: any) => {
+      if (onClick) onClick(e)
+      if (path && router && router.push) router.push(path)
+    }
     return (
-      <button onClick={onClick} data-testid={`button-${text.toLowerCase().replace(' ', '-')}`}>
+      <button onClick={handle} data-testid={`button-${text.toLowerCase().replace(' ', '-')}`}>
         {icon} {text}
       </button>
     )
@@ -148,25 +155,24 @@ describe('LivraTime Page', () => {
       render(<LivraTime />)
       
       const homeButton = screen.getByTestId('button-página-inicial')
-      // the Link wraps the button; assert the anchor's href
-      const homeAnchor = homeButton.closest('a')
-      expect(homeAnchor).toHaveAttribute('href', '/')
+      await userEvent.click(homeButton)
+      expect(mockPush).toHaveBeenCalledWith('/')
     })
 
     it('should navigate to login page when Entrar button is clicked', async () => {
       render(<LivraTime />)
       
       const loginButton = screen.getByTestId('button-entrar')
-      const loginAnchor = loginButton.closest('a')
-      expect(loginAnchor).toHaveAttribute('href', '/login')
+      await userEvent.click(loginButton)
+      expect(mockPush).toHaveBeenCalledWith('/login')
     })
 
     it('should navigate to register page when Cadastrar button is clicked', async () => {
       render(<LivraTime />)
       
       const registerButton = screen.getByTestId('button-cadastrar')
-      const registerAnchor = registerButton.closest('a')
-      expect(registerAnchor).toHaveAttribute('href', '/register')
+      await userEvent.click(registerButton)
+      expect(mockPush).toHaveBeenCalledWith('/register')
     })
   })
 

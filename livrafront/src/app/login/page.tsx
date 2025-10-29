@@ -106,7 +106,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-row items-baseline gap-1 mb-2">
-              <Link href="/esqueci-minha-senha" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Esqueci minha senha
               </Link>
             </div>

@@ -1,6 +1,4 @@
-'use client'
-
-import Link from 'next/link'
+"use client";
 
 import Button from '@/components/button'
 import TeamMember from '@/components/team-member'
@@ -43,14 +41,13 @@ export default function LivraTime() {
         {/*Botão de Voltar*/}
         <div className="w-1/4 h-fill">
           <div className="justify-start m-[16px]">
-            <Link href="/" >
-                <Button
-                    text="Página Inicial"
-                    icon={<HomeIcon />}
-                    size="medium"
-                    colorScheme="dark-brown"
-                />
-            </Link>
+              <Button
+                  text="Página Inicial"
+                  icon={<HomeIcon />}
+                  size="medium"
+                  colorScheme="dark-brown"
+                  path="/"
+              />
           </div>
         </div>
 
@@ -110,22 +107,20 @@ export default function LivraTime() {
         {/*Botões de Entrar & Cadastrar*/}
         <div className="w-1/4 h-fill">
           <div className="flex flex-row justify-end gap-1 m-[16px]">
-            <Link href="/login">
-                <Button 
-                    text="Entrar"
-                    colorScheme="dark-brown"
-                    size="medium"
-                    icon={<LoginIcon />}
-                />
-            </Link>
-            <Link href="/register">
-                <Button 
-                    text="Cadastrar"
-                    colorScheme="dark-brown"
-                    size="medium"
-                    icon={<Edit3Icon />}
-                />
-            </Link>
+              <Button 
+                  text="Entrar"
+                  colorScheme="dark-brown"
+                  size="medium"
+                  icon={<LoginIcon />}
+                  path="/login"
+              />
+              <Button 
+                  text="Cadastrar"
+                  colorScheme="dark-brown"
+                  size="medium"
+                  icon={<Edit3Icon />}
+                  path="/register"
+              />
           </div>
         </div>
       </div>

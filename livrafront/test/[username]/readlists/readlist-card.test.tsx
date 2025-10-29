@@ -37,7 +37,7 @@ describe('ReadlistCard', () => {
   it('favorita e desfavorita readlist', () => {
     const r = { ...mockReadlist, favoritadoPor: [] };
     render(<ReadlistCard r={r} userId="2" />);
-    const curtirBtn = screen.getByLabelText('Curtir');
+    const curtirBtn = screen.getByLabelText(/Curtir/i);
     fireEvent.mouseDown(curtirBtn);
     fireEvent.mouseUp(curtirBtn);
     fireEvent.mouseDown(curtirBtn);
@@ -48,7 +48,7 @@ describe('ReadlistCard', () => {
   it('aciona botão de compartilhar', () => {
     const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
     render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const compartilharBtn = screen.getByLabelText('Compartilhar');
+    const compartilharBtn = screen.getByLabelText(/Compartilhar/i);
     fireEvent.mouseDown(compartilharBtn);
     fireEvent.mouseUp(compartilharBtn);
     expect(compartilharBtn).toBeInTheDocument();
@@ -117,7 +117,7 @@ describe('ReadlistCard', () => {
   it('muda cor do ícone ao hover/active (heart)', () => {
     const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
     render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const curtirBtn = screen.getByLabelText('Curtir');
+    const curtirBtn = screen.getByLabelText(/Curtir/i);
     fireEvent.mouseEnter(curtirBtn);
     fireEvent.mouseDown(curtirBtn);
     fireEvent.mouseUp(curtirBtn);
@@ -128,7 +128,7 @@ describe('ReadlistCard', () => {
   it('muda cor do ícone ao hover/active (share)', () => {
     const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
     render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const compartilharBtn = screen.getByLabelText('Compartilhar');
+    const compartilharBtn = screen.getByLabelText(/Compartilhar/i);
     fireEvent.mouseEnter(compartilharBtn);
     fireEvent.mouseDown(compartilharBtn);
     fireEvent.mouseUp(compartilharBtn);
