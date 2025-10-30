@@ -125,7 +125,7 @@ describe('LlmApiService', () => {
         InternalServerErrorException,
       );
       await expect(service.generateContent('prompt')).rejects.toThrow(
-        'failed to generate LLM content',
+        'Falha em gerar o conteúdo na IA',
       );
     });
 
@@ -160,7 +160,7 @@ describe('LlmApiService', () => {
         InternalServerErrorException,
       );
       await expect(service.generateContent('prompt')).rejects.toThrow(
-        'The AI answer falid in segurance validation.',
+        'A resposta da IA falhou na validação de segurança.',
       );
       expect(console.error).toHaveBeenCalledWith('Error of validation of AI:', validationErrors);
     });

@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
-import { LlmResponseDTO } from './dto/llm-response.dto'; // O "Molde" da Task #131
+import { LlmResponseDTO } from './dto/llm-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 
@@ -34,14 +34,14 @@ export class LlmApiService implements OnModuleInit {
 
     } catch (error) {
       console.error(`Error calling Gemini's API (${modelName}):`, error);
-      throw new InternalServerErrorException('failed to generate LLM content');
+      throw new InternalServerErrorException('Falha em gerar o conteúdo na IA');
     }
     let responseObject;
     try {
       responseObject = JSON.parse(jsonString);
     } catch (e) {
       console.error("Parsing error: AI doesn't return a valid JSON.", jsonString);
-      throw new InternalServerErrorException('AI returned an invalid JSON.');
+      throw new InternalServerErrorException('IA retornou um JSON inválido.');
     }
 
     const responseDto = plainToInstance(LlmResponseDTO, responseObject);
@@ -49,7 +49,7 @@ export class LlmApiService implements OnModuleInit {
 
     if (errors.length > 0) {
       console.error('Error validating AI response:', errors);
-      throw new InternalServerErrorException('The AI answer failed in security validation.');
+      throw new InternalServerErrorException('A resposta da IA falhou na validação de segurança.');
     }
     
     return responseDto;
