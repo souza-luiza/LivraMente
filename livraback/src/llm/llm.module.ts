@@ -14,7 +14,7 @@ import { ConfigModule } from '@nestjs/config';
     ])
   ],
   providers: [LlmPromptService, LlmApiService],
-  exports: [LlmPromptService],
+  exports: [LlmPromptService, LlmApiService],
   controllers: [LlmController] 
 })
 export class LlmModule {}
