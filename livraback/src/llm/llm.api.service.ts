@@ -40,16 +40,16 @@ export class LlmApiService implements OnModuleInit {
     try {
       responseObject = JSON.parse(jsonString);
     } catch (e) {
-      console.error('Error of Parsing: IA doesnt return a valid JSON.', jsonString);
-      throw new InternalServerErrorException('IA retornou um JSON inválido.');
+      console.error("Parsing error: AI doesn't return a valid JSON.", jsonString);
+      throw new InternalServerErrorException('AI returned an invalid JSON.');
     }
 
     const responseDto = plainToInstance(LlmResponseDTO, responseObject);
     const errors = await validate(responseDto);
 
     if (errors.length > 0) {
-      console.error('Error of validation of AI:', errors);
-      throw new InternalServerErrorException('The AI answer falid in segurance validation.');
+      console.error('Error validating AI response:', errors);
+      throw new InternalServerErrorException('The AI answer failed in security validation.');
     }
     
     return responseDto;
