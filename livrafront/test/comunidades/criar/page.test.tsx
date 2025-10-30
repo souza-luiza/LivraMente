@@ -1,11 +1,20 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import CreateReadlistPage from '@/app/comunidades/criar/page';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+let CreateReadlistPage: any;
 
-beforeAll(() => {
+beforeAll(async () => {
   global.URL.createObjectURL = jest.fn(() => 'mock-url');
+  window.alert = jest.fn();
+  const mod = await import('@/app/comunidades/criar/page');
+  CreateReadlistPage = mod.default ?? mod;
 });
 
 describe('CreateReadlistPage', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+  afterAll(() => {
+    jest.useRealTimers();
+  });
   it('renderiza todos os campos do formulário', () => {
     render(<CreateReadlistPage />);
     expect(screen.getByText('Crie sua nova comunidade')).toBeInTheDocument();
@@ -17,19 +26,89 @@ describe('CreateReadlistPage', () => {
     expect(screen.getByText('Criar comunidade')).toBeInTheDocument();
   });
 
-  it('valida campos obrigatórios ao enviar', () => {
+  it('valida campos obrigatórios ao enviar', async () => {
     render(<CreateReadlistPage />);
-    fireEvent.click(screen.getByText('Criar comunidade'));
-    expect(screen.getByText('O nome é obrigatório.')).toBeInTheDocument();
-    expect(screen.getByText('A descrição é obrigatória.')).toBeInTheDocument();
-    expect(screen.getByText('As tags são obrigatórias.')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar comunidade'));
+    });
+    await waitFor(() => {
+      expect(screen.getByText('O nome é obrigatório.')).toBeInTheDocument();
+      expect(screen.getByText('A descrição é obrigatória.')).toBeInTheDocument();
+      expect(screen.getByText('As tags são obrigatórias.')).toBeInTheDocument();
+    });
   });
 
-  it('mostra preview da imagem ao selecionar arquivo', () => {
+  it('mostra preview da imagem ao selecionar arquivo', async () => {
     render(<CreateReadlistPage />);
     const input = screen.getByLabelText('Imagem de capa');
     const file = new File(['dummy'], 'capa.png', { type: 'image/png' });
-    fireEvent.change(input, { target: { files: [file] } });
-    expect(screen.getByAltText('Prévia')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
+    await waitFor(() => {
+      expect(screen.getByAltText('Prévia')).toBeInTheDocument();
+    });
+  });
+  it('envia dados para o backend ao criar comunidade', async () => {
+  const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+  render(<CreateReadlistPage />);
+  fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
+  fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
+  fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+  await act(async () => {
+    fireEvent.click(screen.getByText('Criar comunidade'));
+  });
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/comunidades'),
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+  fetchMock.mockRestore();
+  });
+  it('mostra erro se o backend falhar', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false } as Response);
+    render(<CreateReadlistPage />);
+    fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
+    fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
+    fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar comunidade'));
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Erro ao criar comunidade');
+    });
+    fetchMock.mockRestore();
+  });
+
+  it('não envia se houver erro de validação', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch');
+    render(<CreateReadlistPage />);
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar comunidade'));
+    });
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+    fetchMock.mockRestore();
+  });
+
+  it('redireciona após criar comunidade com sucesso', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+    const routerPush = jest.fn();
+    jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: routerPush });
+    render(<CreateReadlistPage />);
+    fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
+    fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
+    fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar comunidade'));
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Comunidade criada com sucesso!');
+    });
+    fireEvent.click(screen.getByText('Voltar'));
+    expect(routerPush).toHaveBeenCalledWith('/comunidades');
+    fetchMock.mockRestore();
   });
 });
