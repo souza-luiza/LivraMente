@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link';
 import Button from '@/components/button';
 import LoginIcon from '@/components/icons/LoginIcon';
 import LogoIcon from '@/components/icons/LogoIcon';
@@ -73,14 +72,13 @@ export default function HomePage() {
             {/*Parte da Esquerda*/}
             <div data-testid="left-section" className="w-1/4 h-screen flex justify-start">
                 <div className="m-[16px]">
-                    <Link href="/LivraTime" >
-                        <Button
-                            text="LivraTime"
-                            icon={<LogoIcon />}
-                            colorScheme="dark-brown"
-                            size="medium"
-                        />
-                    </Link>
+                    <Button
+                        text="LivraTime"
+                        icon={<LogoIcon />}
+                        colorScheme="dark-brown"
+                        size="medium"
+                        path="/livratime"
+                    />
                 </div>
             </div>
 
@@ -136,22 +134,20 @@ export default function HomePage() {
 
                 {/*Botões de Entrar & Cadastrar*/}
                 <div className="flex flex-row gap-1 m-[16px]">
-                    <Link href="/login">
-                        <Button 
-                            text="Entrar"
-                            colorScheme="dark-brown"
-                            size="medium"
-                            icon={<LoginIcon />}
-                        />
-                    </Link>
-                    <Link href="/register">
-                        <Button 
-                            text="Cadastrar"
-                            colorScheme="dark-brown"
-                            size="medium"
-                            icon={<Edit3Icon />}
-                        />
-                    </Link>
+                    <Button 
+                        text="Entrar"
+                        colorScheme="dark-brown"
+                        size="medium"
+                        icon={<LoginIcon />}
+                        path="/entrar"
+                    />
+                    <Button 
+                        text="Cadastrar"
+                        colorScheme="dark-brown"
+                        size="medium"
+                        icon={<Edit3Icon />}
+                        path="/cadastro"
+                    />
                 </div>
 
             </div>

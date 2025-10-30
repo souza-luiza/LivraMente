@@ -44,7 +44,7 @@ jest.mock('../../src/components/icons/LogoutIcon', () => ({
   },
 }))
 
-jest.mock('../../src/components/textless-button', () => ({
+jest.mock('../../src/components/button', () => ({
   __esModule: true,
   default: function MockButton({ icon, tooltip, onClick }: any) {
     return (
@@ -76,7 +76,7 @@ describe('Sidebar Component', () => {
       expect(sidebar).toHaveClass('sticky')
       expect(sidebar).toHaveClass('top-2')
       expect(sidebar).toHaveClass('w-fit')
-      expect(sidebar).toHaveClass('rounded-xl')
+      expect(sidebar).toHaveClass('large-border-radius')
       expect(sidebar).toHaveClass('z-50')
     })
 
@@ -276,7 +276,7 @@ describe('Sidebar Component', () => {
       render(<Sidebar />)
       
       const sidebar = screen.getByRole('navigation')
-      expect(sidebar).toHaveClass('rounded-xl')
+  expect(sidebar).toHaveClass('large-border-radius')
     })
 
     it('uses consistent light-green color scheme', () => {

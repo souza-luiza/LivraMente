@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import UserProfilePage from '@/app/settings/page';
+import UserProfilePage from '@/app/configuracoes/page';
 
 // Mock do componente Sidebar
 jest.mock('@/components/sidebar', () => ({
@@ -10,7 +10,7 @@ jest.mock('@/components/sidebar', () => ({
 }));
 
 // Mock do componente SettingsTabs
-jest.mock('@/app/settings/settings-tabs', () => ({
+jest.mock('@/app/configuracoes/settings-tabs', () => ({
   __esModule: true,
   default: () => <div data-testid="settings-tabs">Settings Tabs</div>
 }));
@@ -85,7 +85,7 @@ describe('Settings Page', () => {
       render(page);
       
       const mainElement = screen.getByRole('main');
-      expect(mainElement).toHaveClass('flex-1', 'flex', 'flex-col', 'p-8');
+      expect(mainElement).toHaveClass('flex-1 flex flex-col p-8');
     });
   });
 
@@ -286,7 +286,7 @@ describe('Settings Page', () => {
       const { container } = render(page);
       
       const mainContainer = container.firstChild as HTMLElement;
-      expect(mainContainer).toHaveClass('min-h-screen', 'flex', 'bg-[#eef3eb]');
+      expect(mainContainer).toHaveClass('min-h-screen flex bg-[#eef3eb]');
     });
 
     it('should apply all required classes to main element', async () => {
@@ -294,7 +294,7 @@ describe('Settings Page', () => {
       render(page);
       
       const mainElement = screen.getByRole('main');
-      expect(mainElement).toHaveClass('flex-1', 'flex', 'flex-col', 'p-8');
+      expect(mainElement).toHaveClass('flex-1 flex flex-col p-8');
     });
   });
 
