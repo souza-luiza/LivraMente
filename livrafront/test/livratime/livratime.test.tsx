@@ -1,8 +1,7 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useRouter } from 'next/navigation'
-import LivraTime from '@/app/LivraTime/page'
+import LivraTime from '@/app/livratime/page'
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
@@ -24,9 +23,15 @@ jest.mock('framer-motion', () => ({
 }))
 
 jest.mock('@/components/button', () => {
-  return function MockButton({ text, icon, onClick }: any) {
+  const { useRouter } = jest.requireMock('next/navigation')
+  return function MockButton({ text, icon, onClick, path }: any) {
+    const router = useRouter && useRouter();
+    const handle = (e: any) => {
+      if (onClick) onClick(e)
+      if (path && router && router.push) router.push(path)
+    }
     return (
-      <button onClick={onClick} data-testid={`button-${text.toLowerCase().replace(' ', '-')}`}>
+      <button onClick={handle} data-testid={`button-${text.toLowerCase().replace(' ', '-')}`}>
         {icon} {text}
       </button>
     )
@@ -57,20 +62,21 @@ jest.mock('@/components/icons/LoginIcon', () => () => 'LoginIcon')
 jest.mock('@/components/icons/Edit3Icon', () => () => 'Edit3Icon')
 jest.mock('@/components/icons/HomeIcon', () => () => 'HomeIcon')
 
-jest.mock('../../../public/team/Enzo.jpeg', () => 'enzo-image.jpg')
-jest.mock('../../../public/team/Isabele.jpeg', () => 'isabele-image.jpg')
-jest.mock('../../../public/team/Zampoli.jpeg', () => 'zampoli-image.jpg')
-jest.mock('../../../public/team/Akemi.jpeg', () => 'akemi-image.jpg')
-jest.mock('../../../public/team/Loren.jpeg', () => 'loren-image.jpg')
-jest.mock('../../../public/team/Luiza.jpeg', () => 'luiza-image.jpg')
-jest.mock('../../../public/team/Vivi.jpeg', () => 'vivi-image.jpg')
-jest.mock('../../../public/team/Kemi.jpg', () => 'kemi-image.jpg')
+jest.mock('../../public/team/Enzo.jpeg', () => 'enzo-image.jpg')
+jest.mock('../../public/team/Isabele.jpeg', () => 'isabele-image.jpg')
+jest.mock('../../public/team/Zampoli.jpeg', () => 'zampoli-image.jpg')
+jest.mock('../../public/team/Akemi.jpeg', () => 'akemi-image.jpg')
+jest.mock('../../public/team/Loren.jpeg', () => 'loren-image.jpg')
+jest.mock('../../public/team/Luiza.jpeg', () => 'luiza-image.jpg')
+jest.mock('../../public/team/Vivi.jpeg', () => 'vivi-image.jpg')
+jest.mock('../../public/team/Kemi.jpg', () => 'kemi-image.jpg')
 
 describe('LivraTime Page', () => {
   const mockPush = jest.fn()
   
   beforeEach(() => {
-    ;(useRouter as jest.Mock).mockReturnValue({
+    const { useRouter } = jest.requireMock('next/navigation') as { useRouter: jest.Mock }
+    useRouter.mockReturnValue({
       push: mockPush,
     })
     mockPush.mockClear()
@@ -148,25 +154,24 @@ describe('LivraTime Page', () => {
       render(<LivraTime />)
       
       const homeButton = screen.getByTestId('button-página-inicial')
-      // the Link wraps the button; assert the anchor's href
-      const homeAnchor = homeButton.closest('a')
-      expect(homeAnchor).toHaveAttribute('href', '/')
+      await userEvent.click(homeButton)
+      expect(mockPush).toHaveBeenCalledWith('/')
     })
 
     it('should navigate to login page when Entrar button is clicked', async () => {
       render(<LivraTime />)
       
       const loginButton = screen.getByTestId('button-entrar')
-      const loginAnchor = loginButton.closest('a')
-      expect(loginAnchor).toHaveAttribute('href', '/login')
+      await userEvent.click(loginButton)
+      expect(mockPush).toHaveBeenCalledWith('/entrar')
     })
 
     it('should navigate to register page when Cadastrar button is clicked', async () => {
       render(<LivraTime />)
       
       const registerButton = screen.getByTestId('button-cadastrar')
-      const registerAnchor = registerButton.closest('a')
-      expect(registerAnchor).toHaveAttribute('href', '/register')
+      await userEvent.click(registerButton)
+      expect(mockPush).toHaveBeenCalledWith('/cadastro')
     })
   })
 

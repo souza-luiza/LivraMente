@@ -18,7 +18,7 @@ export default function ProfileBadge({
   const width = Math.max(baseWidth, charWidth * contentLength + height * 0.8);
   
   const radius = height * 0.3;
-  const tailWidth = width * 0.2;
+  //const tailWidth = width * 0.2;
   const tailHeight = height * 0.3;
   const tailStart = width * 0.2;
   const tailEnd = width * 0.4;

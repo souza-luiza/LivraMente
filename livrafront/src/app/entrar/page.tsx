@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { useLoginForm } from "@/forms/useLoginForm"; 
+import { useLoginForm } from "@/hooks/useLoginForm"; 
 import Link from 'next/link';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Button from '@/components/button';
@@ -14,11 +14,11 @@ export default function LoginPage() {
     formData, errors, isLoading, apiError, handleChange, handleSubmit 
   } = useLoginForm()
 
-  const iconStyle = {
+  /*const iconStyle = {
     width: '24px',
     height: '24px',
     display: 'block' as const
-  }
+  }*/
 
   return (
       <div className="flex min-h-screen">
@@ -106,7 +106,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-row items-baseline gap-1 mb-2">
-              <Link href="/esqueci-minha-senha" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Esqueci minha senha
               </Link>
             </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
               <span className="text-b3 text-gray-900">
                 Não tem uma conta?
               </span>
-              <Link href="/register" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="/cadastro" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Cadastre-se
               </Link>
             </div>

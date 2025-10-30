@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ZodError } from 'zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { loginUser } from '@/services/auth'
+import { User } from '@/types/auth'
 
 export function useLoginForm() {
   const router = useRouter() 
@@ -53,10 +54,18 @@ export function useLoginForm() {
       // Se passou na validação, fazer o login
       const response = await loginUser(formData)
 
+      // Salvar dados no localStorage
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
+      try {
+        const user: User = response.user || {};
+        if (user.username) localStorage.setItem('username', String(user.username));
+        const id = user._id ?? '';
+        if (id) localStorage.setItem('userId', String(id));
+      } catch (e) {
+      }
       
-      router.push('/main')
+      router.push(`${response.user.username}`)
       
     } catch (error) {
       if (error instanceof ZodError) {

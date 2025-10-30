@@ -17,9 +17,16 @@ jest.mock('framer-motion', () => ({
 }))
 
 jest.mock('@/components/button', () => {
-  return function MockButton({ text, icon, onClick }: any) {
+  // Use require to get the mocked next/navigation from Jest's module registry
+  const { useRouter } = require('next/navigation')
+  return function MockButton({ text, icon, onClick, path }: any) {
+    const router = useRouter && useRouter();
+    const handle = (e: any) => {
+      if (onClick) onClick(e)
+      if (path && router && router.push) router.push(path)
+    }
     return (
-      <button onClick={onClick} data-testid={`button-${text.toLowerCase()}`}>
+      <button onClick={handle} data-testid={`button-${text.toLowerCase()}`}>
         {icon} {text}
       </button>
     )
@@ -115,26 +122,26 @@ describe('HomePage', () => {
     it('should navigate to LivraTime when LivraTime button is clicked', async () => {
       render(<HomePage />)
       
-  const livraTimeButton = screen.getByTestId('button-livratime')
-  // Link wraps the button; assert the anchor href instead of relying on router.push
-  const livraTimeAnchor = livraTimeButton.closest('a')
-  expect(livraTimeAnchor).toHaveAttribute('href', '/LivraTime')
+      const livraTimeButton = screen.getByTestId('button-livratime')
+      // Button mock calls the mocked router.push; assert it was called with the correct path
+      await (livraTimeButton as HTMLElement).click()
+      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/livratime')
     })
 
     it('should navigate to login when Entrar button is clicked', async () => {
       render(<HomePage />)
       
-  const entrarButton = screen.getByTestId('button-entrar')
-  const entrarAnchor = entrarButton.closest('a')
-  expect(entrarAnchor).toHaveAttribute('href', '/login')
+      const entrarButton = screen.getByTestId('button-entrar')
+      await (entrarButton as HTMLElement).click()
+      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/entrar')
     })
 
     it('should navigate to register when Cadastrar button is clicked', async () => {
       render(<HomePage />)
       
-  const cadastrarButton = screen.getByTestId('button-cadastrar')
-  const cadastrarAnchor = cadastrarButton.closest('a')
-  expect(cadastrarAnchor).toHaveAttribute('href', '/register')
+      const cadastrarButton = screen.getByTestId('button-cadastrar')
+      await (cadastrarButton as HTMLElement).click()
+      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/cadastro')
     })
   })
 
@@ -142,7 +149,7 @@ describe('HomePage', () => {
     it('should initialize with first benefit item visible', () => {
       render(<HomePage />)
       
-  const firstBenefit = screen.getByText('Acompanhe sua leitura e ganhe XP')
+      const firstBenefit = screen.getByText('Acompanhe sua leitura e ganhe XP')
       expect(firstBenefit).toBeInTheDocument()
     })
 
@@ -167,12 +174,12 @@ describe('HomePage', () => {
     it('should apply correct text colors', () => {
       render(<HomePage />)
       
-  const mainTitle = screen.getByText('LivraMente')
-  const subtitle = screen.getByText('A rede dos leitores brasileiros')
+      const mainTitle = screen.getByText('LivraMente')
+      const subtitle = screen.getByText('A rede dos leitores brasileiros')
 
-  // Tailwind classes are sometimes abstracted; ensure titles exist and contain expected text
-  expect(mainTitle).toBeInTheDocument()
-  expect(subtitle).toBeInTheDocument()
+      // Tailwind classes are sometimes abstracted; ensure titles exist and contain expected text
+      expect(mainTitle).toBeInTheDocument()
+      expect(subtitle).toBeInTheDocument()
     })
   })
 
@@ -197,8 +204,8 @@ describe('HomePage', () => {
     it('should use flex layout for three-column design', () => {
       render(<HomePage />)
       
-  const mainContainer = screen.getByTestId('left-section').parentElement
-  expect(mainContainer).toHaveClass('flex flex-row')
+      const mainContainer = screen.getByTestId('left-section').parentElement
+      expect(mainContainer).toHaveClass('flex flex-row')
     })
 
     it('should have correct width distribution', () => {

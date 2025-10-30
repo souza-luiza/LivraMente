@@ -8,7 +8,7 @@ export interface LoginFormData {
 
 /* Dados do usuário autenticado */
 export interface User {
-  id: string
+  _id: string
   email: string
   username: string
 }
