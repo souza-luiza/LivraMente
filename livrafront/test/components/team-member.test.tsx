@@ -107,13 +107,12 @@ describe('TeamMember Component', () => {
   describe('Social Links Tests', () => {
     it('should render GitHub link when provided', () => {
       const githubUrl = 'https://github.com/johndoe'
-        // mock window.open and assert the icon button triggers it
         const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null as any)
         render(<TeamMember {...defaultProps} github={githubUrl} />)
         const githubBtn = screen.getByTestId('github-icon').closest('button') as HTMLElement
         expect(githubBtn).toBeInTheDocument()
         githubBtn.click()
-        expect(openSpy).toHaveBeenCalledWith(githubUrl, '_blank')
+        expect(openSpy).toHaveBeenCalledWith(githubUrl, '_blank', 'noopener,noreferrer')
         openSpy.mockRestore()
     })
 
@@ -124,7 +123,7 @@ describe('TeamMember Component', () => {
       const linkedinBtn = screen.getByTestId('linkedin-icon').closest('button') as HTMLElement
       expect(linkedinBtn).toBeInTheDocument()
       linkedinBtn.click()
-      expect(openSpy).toHaveBeenCalledWith(linkedinUrl, '_blank')
+      expect(openSpy).toHaveBeenCalledWith(linkedinUrl, '_blank', 'noopener,noreferrer')
       openSpy.mockRestore()
     })
 
@@ -260,8 +259,8 @@ describe('TeamMember Component', () => {
       const linkedinBtn = screen.getByTestId('linkedin-icon').closest('button') as HTMLElement
       githubBtn.click()
       linkedinBtn.click()
-      expect(openSpy).toHaveBeenCalledWith('https://github.com/johndoe', '_blank')
-      expect(openSpy).toHaveBeenCalledWith('https://linkedin.com/in/johndoe', '_blank')
+      expect(openSpy).toHaveBeenCalledWith('https://github.com/johndoe', '_blank', 'noopener,noreferrer')
+      expect(openSpy).toHaveBeenCalledWith('https://linkedin.com/in/johndoe', '_blank', 'noopener,noreferrer')
       openSpy.mockRestore()
     })
   })
