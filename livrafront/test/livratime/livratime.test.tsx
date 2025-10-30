@@ -163,7 +163,7 @@ describe('LivraTime Page', () => {
       
       const loginButton = screen.getByTestId('button-entrar')
       await userEvent.click(loginButton)
-      expect(mockPush).toHaveBeenCalledWith('/login')
+      expect(mockPush).toHaveBeenCalledWith('/entrar')
     })
 
     it('should navigate to register page when Cadastrar button is clicked', async () => {
@@ -171,7 +171,7 @@ describe('LivraTime Page', () => {
       
       const registerButton = screen.getByTestId('button-cadastrar')
       await userEvent.click(registerButton)
-      expect(mockPush).toHaveBeenCalledWith('/register')
+      expect(mockPush).toHaveBeenCalledWith('/cadastro')
     })
   })
 

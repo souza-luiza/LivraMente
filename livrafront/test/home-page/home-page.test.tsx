@@ -133,7 +133,7 @@ describe('HomePage', () => {
       
       const entrarButton = screen.getByTestId('button-entrar')
       await (entrarButton as HTMLElement).click()
-      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/login')
+      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/entrar')
     })
 
     it('should navigate to register when Cadastrar button is clicked', async () => {
@@ -141,7 +141,7 @@ describe('HomePage', () => {
       
       const cadastrarButton = screen.getByTestId('button-cadastrar')
       await (cadastrarButton as HTMLElement).click()
-      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/register')
+      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/cadastro')
     })
   })
 

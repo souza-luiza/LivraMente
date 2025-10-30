@@ -115,7 +115,7 @@ export default function LoginPage() {
               <span className="text-b3 text-gray-900">
                 Não tem uma conta?
               </span>
-              <Link href="/register" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="/cadastro" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Cadastre-se
               </Link>
             </div>

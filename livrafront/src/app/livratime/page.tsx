@@ -112,14 +112,14 @@ export default function LivraTime() {
                   colorScheme="dark-brown"
                   size="medium"
                   icon={<LoginIcon />}
-                  path="/login"
+                  path="/entrar"
               />
               <Button 
                   text="Cadastrar"
                   colorScheme="dark-brown"
                   size="medium"
                   icon={<Edit3Icon />}
-                  path="/register"
+                  path="/cadastro"
               />
           </div>
         </div>

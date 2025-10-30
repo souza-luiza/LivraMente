@@ -16,7 +16,7 @@ export default function Sidebar() {
                     <Button icon={<HomeIcon />} colorScheme="light-green" size="large" tooltip="Início" />
                     <Button icon={<ProfileIcon />} colorScheme="light-green" size="large" tooltip="Perfil" />
                     <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" tooltip="Notificações" />
-                    <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/settings" tooltip="Configurações" />
+                    <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/configuracoes" tooltip="Configurações" />
                 </div>
                 <div>
                     <Button icon={<LogoutIcon />} colorScheme="light-green" size="large" tooltip="Sair" />
