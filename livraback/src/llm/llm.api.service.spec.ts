@@ -162,7 +162,7 @@ describe('LlmApiService', () => {
       await expect(service.generateContent('prompt')).rejects.toThrow(
         'A resposta da IA falhou na validação de segurança.',
       );
-      expect(console.error).toHaveBeenCalledWith('Error of validation of AI:', validationErrors);
+      expect(console.error).toHaveBeenCalledWith('Error validating AI response:', validationErrors);
     });
   });
 });
