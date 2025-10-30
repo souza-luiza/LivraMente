@@ -3,7 +3,7 @@ import { InputHTMLAttributes } from 'react';
 
 export default function SearchBar({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <search className={`block w-full h-fit mt-2 ${className}`}>
+    <search className={`block w-full h-fit mt-2 ${className}`} role="search">
       <div className="relative w-[min(90%,600px)] mx-auto">
         <span className="absolute left-2 top-1/2 -translate-y-1/2">
           <SearchIcon size={20} fill="#5C8046" />

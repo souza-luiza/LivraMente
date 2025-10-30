@@ -43,12 +43,8 @@ export default function TeamMember({
     }
 
     const handleClick = (path: string, e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!e.defaultPrevented && path) {
-            if (path.startsWith("http")) {
-                window.open(path, "_blank");
-            } else {
-                router.push(path);
-            }
+        if (!e.defaultPrevented && /^https?:\/\//.test(path)) {
+            window.open(path, "_blank", "noopener,noreferrer");
         }
     };
 

@@ -2,6 +2,7 @@
 
 import { ButtonHTMLAttributes, ReactNode, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   text?: ReactNode;      
@@ -9,6 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "small" | "medium" | "large";
   colorScheme?: "light-green" | "dark-green" | "light-brown" | "dark-brown"  | "light-neutral";
   path?: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
   tooltip?: string;
 }
@@ -28,10 +30,7 @@ export default function Button({
 
     const [isHovered, setIsHovered] = useState(false);
 
-    // Avoid importing Next.js router here to keep this primitive usable in tests
-    // and in non-Next contexts. Use window navigation as a safe fallback when
-    // a `path` prop is provided.
-    const router = undefined;
+    const router = useRouter();
 
     const textStyles: Record<"small" | "medium" | "large", string> = {
         small:  "text-b2 body-semibold",
@@ -53,14 +52,12 @@ export default function Button({
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (onClick) onClick(e);
+        if (loading || disabled || e.defaultPrevented || !path) return;
 
-        if (!e.defaultPrevented && path) {
-            if (path.startsWith("http")) {
-                window.open(path, "_blank");
-            } else if (typeof window !== 'undefined') {
-                // Use location.assign so tests and non-next environments work
-                window.location.assign(path);
-            }
+        if (/^https?:\/\//.test(path)) {
+            window.open(path, "_blank", "noopener,noreferrer");
+        } else if (typeof window !== 'undefined') {
+            router.push(path);
         }
     };
 

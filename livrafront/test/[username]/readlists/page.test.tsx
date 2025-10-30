@@ -124,9 +124,8 @@ describe('ReadlistsPage', () => {
 		await waitFor(() => {
 			const voltarBtn = screen.getByLabelText('Voltar');
 			expect(voltarBtn).toBeInTheDocument();
-			// clicking the button should call window.location.assign with profilePath
-			(voltarBtn as HTMLElement).click()
-			expect((window.location as any).assign).toHaveBeenCalledWith('/john_doe')
+			(voltarBtn as HTMLElement).click();
+			expect(mockPush).toHaveBeenCalledWith('/john_doe');
 		});
 	});
 
