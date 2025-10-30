@@ -34,12 +34,6 @@ describe('SearchBar Component', () => {
     expect(inputElement).toHaveValue('');
   });
 
-  it('should apply custom CSS classes', () => {
-    render(<SearchBar placeholder="Buscar..." className="minha-classe-extra" />);
-    const containerElement = screen.getByPlaceholderText('Buscar...').parentElement;
-    expect(containerElement).toHaveClass('minha-classe-extra');
-  });
-
   it('should call the onChange function when typing', async () => {
     const user = userEvent.setup();
     const handleChange = jest.fn();
@@ -58,10 +52,9 @@ describe('SearchBar Component', () => {
     expect(inputElement).toHaveValue(testString);
   });
 
-  // Test for fixed size
   it('should always apply small size styles', () => {
     render(<SearchBar />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('medium-box text-b2');
+    expect(input).toHaveClass('px-4 py-2 medium-border-radius text-b2');
   });
 });

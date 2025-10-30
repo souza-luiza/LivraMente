@@ -90,7 +90,7 @@ export default function EditReadlistModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg large-box"
+        className="relative w-full max-w-lg large-padding large-border-radius"
         style={{
           backgroundColor: 'var(--primary-200)',
           maxHeight: '90vh',
