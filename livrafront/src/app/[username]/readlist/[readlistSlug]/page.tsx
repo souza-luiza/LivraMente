@@ -142,7 +142,7 @@ export default function ReadlistPage() {
               />  
             )}
             <Button
-              icon={<HeartIcon />}
+              icon={<HeartIcon fill={isLiked ? "currentColor" : "none"} />}
               size="large"
               colorScheme="light-green"
               aria-label="Curtir readlist"

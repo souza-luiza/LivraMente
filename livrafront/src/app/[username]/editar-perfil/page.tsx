@@ -17,9 +17,6 @@ export default function SettingsProfilePage() {
   const router = useRouter();
   const { username, pronouns, profileImageUrl, setUsername, setPronouns, setProfileImageUrl } = useUserStore();
 
-  // Estado para a SearchBar que estava faltando
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [formData, setFormData] = useState({
     name: "",
     pronouns: "",
