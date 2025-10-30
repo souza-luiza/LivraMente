@@ -33,7 +33,7 @@ export class LlmApiService implements OnModuleInit {
       jsonString = response.text(); // Armazena a resposta
 
     } catch (error) {
-      console.error(`Error of calling Geminis API (${modelName}):`, error);
+      console.error(`Error calling Gemini's API (${modelName}):`, error);
       throw new InternalServerErrorException('failed to generate LLM content');
     }
     let responseObject;
