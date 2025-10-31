@@ -15,6 +15,85 @@ function EditCommunityPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModerator, setIsModerator] = useState<boolean | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const comunidadeNome = searchParams.get('nome') || '';
+  const [nome, setNome] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [tags, setTags] = useState('');
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; foto?: string }>({});
+
+  const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value);
+  const handleDescricaoChange = (e: React.ChangeEvent<HTMLInputElement>) => setDescricao(e.target.value);
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value);
+  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFoto(e.target.files[0]);
+      setFotoPreview(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
+  // Carrega dados da comunidade e checa permissão
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`http://localhost:3000/comunidades/${comunidadeNome}`);
+        if (!res.ok) throw new Error('Erro ao buscar comunidade');
+        const data = await res.json();
+        setNome(data.nome || '');
+        setDescricao(data.descricao || '');
+        setTags(data.tags ? data.tags.join(', ') : '');
+        setFotoPreview(data.imagem_url || null);
+        const userId = localStorage.getItem('userId');
+        setIsModerator(data.moderadores?.includes(userId));
+      } catch (err) {
+        setMessage({ text: 'Erro ao carregar comunidade', type: 'error' });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    if (comunidadeNome) fetchData();
+  }, [comunidadeNome]);
+
+  // Validação dos campos
+  const validate = () => {
+    const newErrors: typeof errors = {};
+    if (!nome.trim()) newErrors.nome = 'O nome é obrigatório.';
+    if (!descricao.trim()) newErrors.descricao = 'A descrição é obrigatória.';
+    if (!tags.trim()) newErrors.tags = 'As tags são obrigatórias.';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Envio do formulário
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('nome', nome);
+      formData.append('descricao', descricao);
+      formData.append('tags', tags);
+      if (foto) formData.append('foto', foto);
+
+      const response = await fetch('http://localhost:3000/comunidades', {
+        method: 'PATCH',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao editar comunidade');
+      }
+      setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
+      setIsLoading(false);
+    } catch (err) {
+      setMessage({ text: 'Erro ao editar comunidade', type: 'error' });
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="flex h-screen bg-white">
       <Sidebar />
