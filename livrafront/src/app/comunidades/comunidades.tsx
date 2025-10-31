@@ -49,7 +49,7 @@ interface ComunidadesProps {
   genero?: string; // gênero a filtrar
 } 
 
-export default function Communities({ genero }: ComunidadesProps) { 
+export default function Comunidades({ genero }: ComunidadesProps) { 
     const filteredComunidades = genero ? comunidades.filter((c) => c.generos.includes(genero)) : comunidades;
 
     return (
