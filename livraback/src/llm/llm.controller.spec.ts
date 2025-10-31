@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LlmController } from './llm.controller';
 import { GenerateTextDTO } from './dto/generate-text.dto';
-import { LlmPromptService } from './llm-prompt.service';
+import { LlmPromptService } from './llm.prompt.service';
 import { LlmResponseDTO } from './dto/llm-response.dto';
 import { LlmApiService } from './llm.api.service';
 
