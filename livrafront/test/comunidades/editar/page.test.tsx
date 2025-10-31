@@ -179,4 +179,29 @@ it('envia dados para o backend ao editar comunidade', async () => {
     );
   });
 });
+it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
+  const mockPush = jest.fn();
+  jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
+  render(<Page />);
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText('Salvar alterações'));
+  await waitFor(() => {
+    expect(screen.getByText('Comunidade editada com sucesso!')).toBeInTheDocument();
+  });
+  const voltarBtn = await screen.findByRole('button', { name: 'Voltar para comunidades' });
+  fireEvent.click(voltarBtn);
+  expect(mockPush).toHaveBeenCalledWith('/comunidades/comunidade-teste');
+
+  // Erro
+  (global.fetch as jest.Mock).mockImplementationOnce(() => Promise.resolve({ ok: false }));
+  render(<Page />);
+  await waitFor(() => {
+    expect(screen.getByText('Erro ao carregar comunidade')).toBeInTheDocument();
+  });
+  const voltarBtnErro = await screen.findByRole('button', { name: 'Voltar' });
+  fireEvent.click(voltarBtnErro);
+  expect(mockPush).toHaveBeenCalledWith('/comunidades/comunidade-teste');
+});
 });

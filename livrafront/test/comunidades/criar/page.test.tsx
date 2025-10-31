@@ -107,7 +107,7 @@ describe('CreateCommunityPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Comunidade criada com sucesso!');
     });
-    fireEvent.click(screen.getByText('Voltar'));
+    fireEvent.click(screen.getByText('Voltar para comunidades'));
     expect(routerPush).toHaveBeenCalledWith('/comunidades');
     fetchMock.mockRestore();
   });

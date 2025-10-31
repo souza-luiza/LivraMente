@@ -86,7 +86,7 @@ export default function CreateCommunityPage() {
               {message.text}
             </div>
             <Button
-              text="Voltar"
+              text="Voltar para comunidades"
               icon={<ArrowLeftIcon />}
               size="large"
               colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}
