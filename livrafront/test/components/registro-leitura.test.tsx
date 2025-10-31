@@ -330,23 +330,15 @@ describe('RegistroLeitura', () => {
     })
 
     it('should submit pages form with valid data and show success state', async () => {
-        // mock do fetch
-        global.fetch = jest.fn(() =>
-          Promise.resolve({
-            ok: true,
-            json: async () => ({ gamificação: { XP: 40 } })
-          })
-        ) as jest.Mock
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ ganhoXP: 25 }),
+        })
 
         render(<RegistroLeitura isLoggedIn={true} />)
 
-        const pagesInput = screen.getByTestId('input-pagesRead')
-        const bookInput = screen.getByTestId('input-bookAmount')
-        const submitButton = screen.getByTestId('button-registrar')
-
-        fireEvent.change(pagesInput, { target: { value: '25' } })
-        fireEvent.change(bookInput, { target: { value: '1' } })
-        fireEvent.click(submitButton)
+        fireEvent.change(screen.getByTestId('input-pagesRead'), { target: { value: '25' } })
+        fireEvent.click(screen.getByTestId('button-registrar'))
 
         await waitFor(() => {
           expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
@@ -354,9 +346,17 @@ describe('RegistroLeitura', () => {
         })
       })
 
+
     it('should submit minutes form with valid data and show success state', async () => {
+        // mock the fetch response to include the ganhoXP field
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ ganhoXP: 45 }), // 90 minutes → 45 XP
+        })
+
         render(<RegistroLeitura isLoggedIn={true} />)
 
+        // switch to minutes form
         fireEvent.click(screen.getByText('Minutos'))
 
         const minutesInput = screen.getByTestId('input-minutesRead')
@@ -369,7 +369,7 @@ describe('RegistroLeitura', () => {
 
         await waitFor(() => {
           expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
-          expect(screen.getByText('+60 XP')).toBeInTheDocument() // limitado a 60
+          expect(screen.getByText('+45 XP')).toBeInTheDocument()
         })
       })
 
@@ -397,6 +397,10 @@ describe('RegistroLeitura', () => {
 
   describe('Success and Error States', () => {
     it('should show success state and close when clicking Fechar', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ganhoXP: 10 }), 
+      })
       // mock do token
       localStorageMock.getItem.mockImplementation((key) => {
         if (key === 'token') return 'fake-token'

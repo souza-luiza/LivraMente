@@ -18,7 +18,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
     const [show, setShow] = useState(false)
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-    const [xp, /*setXp*/] = useState(0)
+    const [xp, setXp] = useState(0)
 
     const [formData, setFormData] = useState({
         pagesRead: '',
@@ -150,9 +150,8 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
                 return
             }
 
-            const xpGanho = Math.min(qtd, 60)
+            const xpGanho = data?.ganhoXP ?? 0
             setXp(xpGanho)
-
             setStatus('success')
         } catch (error) {
             console.error('Falha ao conectar com o servidor.')
