@@ -51,6 +51,8 @@ export default function CreateReadlistPage() {
       formData.append('descricao', descricao);
       formData.append('tags', tags);
       if (foto) formData.append('foto', foto);
+      const userId = localStorage.getItem('userId');
+      if (userId) formData.append('moderadores', userId);
 
       const response = await fetch('http://localhost:3000/comunidades', {
         method: 'POST',
