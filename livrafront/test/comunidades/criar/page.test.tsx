@@ -1,14 +1,14 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-let CreateReadlistPage: any;
+let CreateCommunityPage: any;
 
 beforeAll(async () => {
   global.URL.createObjectURL = jest.fn(() => 'mock-url');
   window.alert = jest.fn();
   const mod = await import('@/app/comunidades/criar/page');
-  CreateReadlistPage = mod.default ?? mod;
+  CreateCommunityPage = mod.default ?? mod;
 });
 
-describe('CreateReadlistPage', () => {
+describe('CreateCommunityPage', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -16,7 +16,7 @@ describe('CreateReadlistPage', () => {
     jest.useRealTimers();
   });
   it('renderiza todos os campos do formulário', () => {
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     expect(screen.getByText('Crie sua nova comunidade')).toBeInTheDocument();
     expect(screen.getByLabelText('Nome da comunidade')).toBeInTheDocument();
     expect(screen.getByLabelText('Descrição da comunidade')).toBeInTheDocument();
@@ -27,7 +27,7 @@ describe('CreateReadlistPage', () => {
   });
 
   it('valida campos obrigatórios ao enviar', async () => {
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     await act(async () => {
       fireEvent.click(screen.getByText('Criar comunidade'));
     });
@@ -39,7 +39,7 @@ describe('CreateReadlistPage', () => {
   });
 
   it('mostra preview da imagem ao selecionar arquivo', async () => {
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     const input = screen.getByLabelText('Imagem de capa');
     const file = new File(['dummy'], 'capa.png', { type: 'image/png' });
     await act(async () => {
@@ -51,7 +51,7 @@ describe('CreateReadlistPage', () => {
   });
   it('envia dados para o backend ao criar comunidade', async () => {
   const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
-  render(<CreateReadlistPage />);
+  render(<CreateCommunityPage />);
   fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
   fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
   fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
@@ -68,7 +68,7 @@ describe('CreateReadlistPage', () => {
   });
   it('mostra erro se o backend falhar', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false } as Response);
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
     fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
     fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
@@ -83,7 +83,7 @@ describe('CreateReadlistPage', () => {
 
   it('não envia se houver erro de validação', async () => {
     const fetchMock = jest.spyOn(global, 'fetch');
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     await act(async () => {
       fireEvent.click(screen.getByText('Criar comunidade'));
     });
@@ -97,7 +97,7 @@ describe('CreateReadlistPage', () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
     const routerPush = jest.fn();
     jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: routerPush });
-    render(<CreateReadlistPage />);
+    render(<CreateCommunityPage />);
     fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
     fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
     fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });

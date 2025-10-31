@@ -9,7 +9,7 @@ import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import LoadingPage from '@/components/loading';
 
-export default function CreateReadlistPage() {
+export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
