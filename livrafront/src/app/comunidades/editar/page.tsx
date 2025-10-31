@@ -120,8 +120,8 @@ function EditCommunityPage() {
             <div
               className={`mb-6 text-center text-h3 font-primary ${
                 message.type === 'error'
-                  ? 'text-red-600'
-                  : 'text-success-600'
+                  ? '--error-600'
+                  : '--success-500'
               }`}
               role="alert"
             >

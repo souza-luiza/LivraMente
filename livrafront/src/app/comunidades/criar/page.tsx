@@ -60,12 +60,12 @@ export default function CreateCommunityPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao criar comunidade');
+        throw new Error('Erro ao criar comunidade.');
       }
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
-      setMessage({ text: 'Erro ao criar comunidade', type: 'error' });
+      setMessage({ text: 'Erro ao criar comunidade.', type: 'error' });
       setIsLoading(false);
     }
   };
@@ -78,8 +78,8 @@ export default function CreateCommunityPage() {
             <div
               className={`mb-6 text-center text-h3 font-primary ${
                 message.type === 'error'
-                  ? 'text-red-600'
-                  : 'text-success-600'
+                  ? '--error-500'
+                  : '--success-600'
               }`}
               role="alert"
             >
