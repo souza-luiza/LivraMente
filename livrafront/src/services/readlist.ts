@@ -59,23 +59,22 @@ export async function getPublicReadlists(username: string): Promise<Readlist[]> 
   try {
     const token = localStorage.getItem('token')
     
-    console.log('🔍 getPublicReadlists:', { username, hasToken: !!token });
-    
-    // Readlists públicas não exigem autenticação, mas enviamos token se disponível
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      throw new Error('Usuário não autenticado')
     }
 
     const response = await fetch(`${API_BASE_URL}/readlists/public/${username}`, {
       method: 'GET',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Sessão expirada. Faça login novamente.')
+      }
       if (response.status === 404) {
         throw new Error('Usuário não encontrado')
       }
@@ -102,18 +101,16 @@ export async function getReadlistById(readlistId: string): Promise<ReadlistDetai
   try {
     const token = localStorage.getItem('token')
     
-    // Enviamos token se disponível (para acessar privadas também)
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      throw new Error('Usuário não autenticado')
     }
 
     const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}`, {
       method: 'GET',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     })
 
     if (!response.ok) {

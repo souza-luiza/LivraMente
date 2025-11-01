@@ -44,23 +44,18 @@ describe('Readlist Services', () => {
     localStorageMock.setItem('token', mockToken);
   });
 
-  // Helper para criar mock de readlist com formato correto
-  const createMockReadlist = (overrides = {}): Readlist => ({
-    _id: '1',
-    nome: 'Favoritos',
-    favorito: true,
-    publica: true,
-    criador: {
-      _id: 'user-1',
-      username: 'testuser'
-    },
-    livros: [],
-    ...overrides
-  });
-
   describe('getUserReadlists', () => {
     it('should fetch user readlists successfully', async () => {
-      const mockReadlists: Readlist[] = [createMockReadlist()];
+      const mockReadlists: Readlist[] = [
+        {
+          _id: '1',
+          nome: 'Favoritos',
+          favorito: true,
+          publica: true,
+          criador: 'user-1',
+          livros: []
+        }
+      ];
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -122,10 +117,14 @@ describe('Readlist Services', () => {
 
     it('should fetch public readlists successfully', async () => {
       const mockReadlists: Readlist[] = [
-        createMockReadlist({
+        {
+          _id: '1',
           nome: 'Públicas',
-          favorito: false
-        })
+          favorito: false,
+          publica: true,
+          criador: 'user-1',
+          livros: []
+        }
       ];
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -167,7 +166,7 @@ describe('Readlist Services', () => {
         nome: 'Detalhes',
         favorito: false,
         publica: true,
-        criador: { _id: 'user-1', username: 'testuser' },
+        criador: 'user-1',
         livros: [
           {
             id: '1',
@@ -229,7 +228,7 @@ describe('Readlist Services', () => {
         descricao: createData.descricao,
         publica: createData.publica,
         favorito: false,
-        criador: { _id: 'user-1', username: 'testuser' },
+        criador: 'user-1',
         livros: []
       };
 
@@ -279,7 +278,7 @@ describe('Readlist Services', () => {
         descricao: updateData.descricao,
         favorito: false,
         publica: true,
-        criador: { _id: 'user-1', username: 'testuser' },
+        criador: 'user-1',
         livros: []
       };
 
@@ -348,7 +347,7 @@ describe('Readlist Services', () => {
         nome: 'Test',
         favorito: false,
         publica: true,
-        criador: { _id: 'user-1', username: 'testuser' },
+        criador: 'user-1',
         livros: [livroId]
       };
 
@@ -388,7 +387,7 @@ describe('Readlist Services', () => {
         nome: 'Test',
         favorito: false,
         publica: true,
-        criador: { _id: 'user-1', username: 'testuser' },
+        criador: 'user-1',
         livros: []
       };
 
@@ -428,10 +427,11 @@ describe('Readlist Services', () => {
       localStorageMock.clear();
     });
 
-    it('should check authentication for endpoints that require it', async () => {
-      // Endpoints que EXIGEM autenticação
-      const authenticatedEndpoints = [
+    it('should check authentication for all endpoints', async () => {
+      const endpoints = [
         () => getUserReadlists(),
+        () => getPublicReadlists('user'),
+        () => getReadlistById('id'),
         () => createReadlist({ nome: 'test' }),
         () => updateReadlist('id', {}),
         () => deleteReadlist('id'),
@@ -439,27 +439,11 @@ describe('Readlist Services', () => {
         () => removeBookFromReadlist('id', 'bookId')
       ];
 
-      for (const endpoint of authenticatedEndpoints) {
+      for (const endpoint of endpoints) {
         await expect(endpoint()).rejects.toThrow('Usuário não autenticado');
       }
 
       expect(global.fetch).not.toHaveBeenCalled();
-    });
-    
-    it('should allow public endpoints without authentication', async () => {
-      // Mock de resposta bem-sucedida
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue([])
-      });
-
-      // Endpoints que NÃO exigem autenticação (públicos)
-      await expect(getPublicReadlists('user')).resolves.toEqual([]);
-      await expect(getReadlistById('id')).resolves.toBeDefined();
-
-      // Deve ter feito chamadas fetch
-      expect(global.fetch).toHaveBeenCalled();
     });
   });
 });

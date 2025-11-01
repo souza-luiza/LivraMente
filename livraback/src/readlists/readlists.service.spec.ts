@@ -104,37 +104,15 @@ describe('ReadlistsService', () => {
   });
 
   describe('findOne', () => {
-    beforeEach(() => {
-      // Limpar mocks antes de cada teste neste bloco
-      mockReadlistModel.findOne.mockClear();
-    });
-
     it('should return one readlist by id and user', async () => {
-      // Mock com populate() e exec()
-      mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockReadlist),
-        }),
-      });
-      
       const result = await service.findOne('user123', '1');
       expect(mockReadlistModel.findOne).toHaveBeenCalledWith({ _id: '1', criador: 'user123' });
       expect(result).toEqual(mockReadlist);
     });
 
     it('should throw NotFoundException if not found', async () => {
-      // Mock primeira busca (como dono) retorna null
       mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(null),
-        }),
-      });
-      
-      // Mock segunda busca (pública) também retorna null
-      mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(null),
-        }),
+        exec: jest.fn().mockResolvedValue(null),
       });
 
       await expect(service.findOne('user123', '1')).rejects.toThrow(NotFoundException);
@@ -143,38 +121,10 @@ describe('ReadlistsService', () => {
     it('should throw BadRequestException on CastError', async () => {
       const castError = { name: 'CastError' };
       mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockRejectedValue(castError),
-        }),
+        exec: jest.fn().mockRejectedValue(castError),
       });
 
       await expect(service.findOne('user123', 'invalid')).rejects.toThrow(BadRequestException);
-    });
-    
-    it('should return public readlist when user is not owner', async () => {
-      const publicReadlist = { ...mockReadlist, publica: true };
-      
-      // Mock primeira busca (como dono) retorna null
-      mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(null),
-        }),
-      });
-      
-      // Mock segunda busca (pública) retorna a readlist
-      mockReadlistModel.findOne.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(publicReadlist),
-        }),
-      });
-
-      const result = await service.findOne('otherUser', '1');
-      expect(result).toEqual(publicReadlist);
-      
-      // Verifica que chamou findOne duas vezes
-      expect(mockReadlistModel.findOne).toHaveBeenCalledTimes(2);
-      expect(mockReadlistModel.findOne).toHaveBeenNthCalledWith(1, { _id: '1', criador: 'otherUser' });
-      expect(mockReadlistModel.findOne).toHaveBeenNthCalledWith(2, { _id: '1', publica: true });
     });
   });
 
