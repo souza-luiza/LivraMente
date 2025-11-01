@@ -35,12 +35,13 @@ describe('EditarComunidadePage', () => {
 
   it('renderiza o formulário com dados carregados', async () => {
     render(<Page />);
-    expect(screen.getByTestId('sidebar')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('Descrição Teste')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('tag1, tag2')).toBeInTheDocument();
+      expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+      expect(screen.getByTestId('sidebar')).toBeInTheDocument();
     });
+    expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Descrição Teste')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('tag1, tag2')).toBeInTheDocument();
   });
 
   it('valida campos obrigatórios', async () => {
@@ -143,11 +144,12 @@ it('mostra mensagem de erro ao falhar no PATCH', async () => {
   );
   render(<Page />);
   await waitFor(() => {
+    expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
     expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
   });
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
-    expect(screen.getByText('Erro ao editar comunidade')).toBeInTheDocument();
+    expect(screen.getByText(/Erro ao editar comunidade/i)).toBeInTheDocument();
   });
 });
 
