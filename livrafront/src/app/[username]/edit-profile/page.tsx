@@ -215,7 +215,7 @@ export default function SettingsProfilePage() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="hidden"
+                  style={{ display: 'none' }}
                 />
                 
                 <Button 

@@ -83,7 +83,7 @@ export default function ImageCropModal({ isOpen, imageUrl, onClose, onSave }: Im
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-[#00000090] flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] flex flex-col">
         <h2 className="text-h5 font-bold mb-4">Recortar Imagem</h2>
         
