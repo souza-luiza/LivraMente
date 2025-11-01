@@ -34,12 +34,12 @@ export class LlmApiService implements OnModuleInit {
 
     } catch (error) {
       console.error(`Error calling Gemini's API (${modelName}):`, error);
-      throw new InternalServerErrorException('Falha em gerar o conteúdo na IA');
+      throw new InternalServerErrorException('Falha em gerar o conteúdo na IA'); //ta dando erro aqui
     }
     let responseObject;
     try {
       responseObject = JSON.parse(jsonString);
-    } catch (e) {
+    } catch (e) { 
       console.error("Parsing error: AI doesn't return a valid JSON.", jsonString);
       throw new InternalServerErrorException('IA retornou um JSON inválido.');
     }
