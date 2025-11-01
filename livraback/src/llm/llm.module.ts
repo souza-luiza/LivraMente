@@ -5,6 +5,7 @@ import { Story, StorySchema } from '../schemas/story.schema';
 import { LlmApiService } from './llm.api.service';
 import { LlmController } from './llm.controller';
 import { ConfigModule } from '@nestjs/config';
+import { LlmStoryService } from './llm.story.service';
 
 @Module({
   imports: [
@@ -13,8 +14,8 @@ import { ConfigModule } from '@nestjs/config';
       { name: Story.name, schema: StorySchema }
     ])
   ],
-  providers: [LlmPromptService, LlmApiService],
-  exports: [LlmPromptService, LlmApiService],
+  providers: [LlmPromptService, LlmApiService, LlmStoryService],
+  exports: [LlmPromptService, LlmApiService, LlmStoryService],
   controllers: [LlmController] 
 })
 export class LlmModule {}
