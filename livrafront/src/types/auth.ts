@@ -11,6 +11,7 @@ export interface User {
   _id: string
   email: string
   username: string
+  avatarUrl?: string
 }
 
  /* Resposta da API de login */

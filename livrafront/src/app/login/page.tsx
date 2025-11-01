@@ -1,7 +1,11 @@
-'use client'
+"use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/authStore";
+import { useUserStore } from "@/stores/user-store";
+import { loginUser } from "@/services/auth";
 import React from 'react';
-import { useLoginForm } from "@/hooks/useLoginForm"; 
 import Link from 'next/link';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Button from '@/components/button';
@@ -9,16 +13,75 @@ import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
 import { motion } from 'framer-motion';
 
-export default function LoginPage() {
-  const { 
-    formData, errors, isLoading, apiError, handleChange, handleSubmit 
-  } = useLoginForm()
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
-  /*const iconStyle = {
-    width: '24px',
-    height: '24px',
-    display: 'block' as const
-  }*/
+export default function LoginPage() {
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
+  const { setUsername, setProfileImageUrl } = useUserStore();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    setErrors({ email: "", password: "" });
+
+    if (!formData.email) {
+      setErrors((prev) => ({ ...prev, email: "Email é obrigatório" }));
+      isValid = false;
+    }
+
+    if (!formData.password) {
+      setErrors((prev) => ({ ...prev, password: "Senha é obrigatória" }));
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Salvar no authStore (token + autenticação)
+      setAuth(response.token, response.user.username, response.user._id);
+      
+      // Salvar no userStore (dados do perfil)
+      setUsername(response.user.username);
+      if (response.user.avatarUrl) {
+        setProfileImageUrl(response.user.avatarUrl);
+      }
+
+      router.push(`/${response.user.username}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao fazer login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
       <div className="flex min-h-screen">

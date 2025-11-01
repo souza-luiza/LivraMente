@@ -1,7 +1,7 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
-export type UserDocument = HydratedDocument<User>; // referencia de userDocument fica User
+export type UserDocument = User & Document;
 
 // Subdocumento (_id: false)
 @Schema({ _id: false })         
@@ -44,6 +44,18 @@ export class User {
 
   @Prop({ required: true })
   senha: string;
+
+  // Novo: pronomes
+  @Prop({ required: false, default: '' })
+  pronouns?: string;
+
+  // Novo: avatar
+  @Prop({ required: false, default: '/AbstractUser.png' })
+  avatarUrl?: string;
+
+  // PublicId para apagar/atualizar no Cloudinary
+  @Prop({ required: false, default: '' })
+  avatarPublicId?: string;
 
   @Prop({ type: Perfil, required: false })
   perfil?: Perfil;

@@ -1,41 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  Put, 
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegistroLeituraDto } from './dto/registro-leitura.dto';
+import { memoryStorage } from 'multer';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  @ApiOperation({
-    summary: 'Retorna os dados do usuário',
-    description: 'Retorna os dados do usuário autenticado'
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Dados do usuário retornados com sucesso'
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Usuário não encontrado'
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Token JWT inválido'
-  })
-  async getProfile(@CurrentUser() user: CurrentUserDto) {
-    return this.usersService.findOne(user.userId);
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  // Endpoint público - DEVE vir ANTES do @Get(':id')
+  @Get('public/:username')
+  getPublicProfile(@Param('username') username: string) {
+    return this.usersService.getPublicByUsername(username);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('me')
+  @Put('profile')
   @ApiOperation({
     summary: 'Atualiza os dados do usuário',
     description: 'Atualiza os dados do usuário autenticado'
@@ -62,6 +76,45 @@ export class UsersController {
   })
   async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(user.userId, updateUserDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        const ok = allowedTypes.includes(file.mimetype);
+        if (!ok) return cb(new BadRequestException('Formato de imagem inválido'), false);
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  @ApiOperation({ summary: 'Upload de avatar do usuário' })
+  @ApiResponse({ status: 200, description: 'Avatar atualizado com sucesso' })
+  async updateAvatar(
+    @CurrentUser() user: CurrentUserDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo foi enviado');
+    }
+
+    return this.usersService.updateAvatar(user.userId, file);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -167,29 +220,4 @@ export class UsersController {
   async findReadlistsFavoritas(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findReadlistsFavoritas(user.userId);
   }
-
-  /*@Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Get()
-  async findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
-  }*/
 }

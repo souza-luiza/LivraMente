@@ -1,12 +1,12 @@
 /* Faz requisições HTTP para fazer login do usuário */
 
+import { api } from '@/lib/api';
 import { LoginFormData, LoginResponse } from '@/types/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
   try {
-    // Fazer requisição POST para o endpoint de login
     const response = await fetch(`${API_BASE_URL}/auth/signin`, {
       method: 'POST',
       headers: {
@@ -30,13 +30,13 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
 
     const result = await response.json()
     
-    // Backend retorna token
     return {
       token: result.accessToken,
       user: { 
-        _id: 'user-id', 
+        _id: result.userId || result.user?.id || 'user-id', 
         username: result.username,
-        email: data.email 
+        email: data.email,
+        avatarUrl: result.avatarUrl
       }
     }
 
@@ -47,3 +47,21 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
     throw new Error('Erro de rede')
   }
 }
+
+export const logoutUser = async () => {
+  await api.post('/auth/logout');
+};
+
+export const getCurrentUser = async () => {
+  const response = await api.get('/auth/me');
+  return response.data;
+};
+
+export const checkAuth = async () => {
+  try {
+    await api.get('/auth/verify');
+    return true;
+  } catch {
+    return false;
+  }
+};

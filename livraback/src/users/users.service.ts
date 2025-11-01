@@ -1,17 +1,23 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './entities/user.entity';
+import { Readlist, ReadlistDocument } from '../readlists/entities/readlist.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './entities/user.entity';
-import { Model } from 'mongoose';
-import { Readlist, ReadlistDocument } from '../readlists/entities/readlist.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>
+    @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
+    private readonly cloudinary: CloudinaryService,
   ) {} // dentro dessa variavel tem todos os metodos do mongo
 
   async create(createUserDto: CreateUserDto) {
@@ -38,48 +44,49 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const {email, username } = updateUserDto;
+    const { email, username } = updateUserDto;
 
-    // Verifica se já existe user com msm email:
-    if(email) { // se quer atualizar email
-      const userComEmail = await this.getByEmail(email);
-      if(userComEmail) {
-        if(userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
-          throw new ConflictException('Email em uso');
-        }
-        else { // se a propria pessoa da requisicao esta usando o email
-          throw new BadRequestException('Email em uso por esta conta');
-        }
+    // Verifica se já existe user com msm email (excluindo o próprio usuário):
+    if(email) {
+      const emailExists = await this.userModel.findOne({ 
+        email,
+        _id: { $ne: id } // Exclui o próprio usuário da busca
+      }).exec();
+      
+      if(emailExists) {
+        throw new ConflictException('E-mail já está em uso');
       }
     }
 
-    // Verifica se já existe user com msm username:
-    if(username) { // se quer atualizar username
-      const userComUsername = await this.getByUsername(username);
-      if(userComUsername) {
-        if(userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
-          throw new ConflictException('Nome de usuário em uso');
-        }
-        else { // se a propria pessoa da requisicao esta usando o username
-          throw new BadRequestException('Nome de usuário em uso por esta conta');
-        }
+    // Verifica se já existe user com msm username (excluindo o próprio usuário):
+    if(username) {
+      const usernameExists = await this.userModel.findOne({ 
+        username,
+        _id: { $ne: id } // Exclui o próprio usuário da busca
+      }).exec();
+      
+      if(usernameExists) {
+        throw new ConflictException('Nome de usuário já está em uso');
       }
     }
 
     const updated = await this.userModel.findByIdAndUpdate(
       {
-        _id: id, // procurar objeto por id (mongo por padrao cria id com _)
+        _id: id,
       }, 
       {
-        $set: updateUserDto, // o que quero alterar (set altera os campos que eu quero alterar)
+        $set: updateUserDto,
       },
       {
-        new: true, // alterar no banco de dados
-        runValidators: true, // validação do schema no update
+        new: true,
+        runValidators: true,
       },
     ).select('-senha').exec();
 
-    if (!updated) throw new NotFoundException('Usuário não encontrado');
+    if (!updated) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+    
     return updated;
   }
 
@@ -164,5 +171,35 @@ export class UsersService {
     const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito' }).select('readlists_favoritas').exec();
     if(!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File) {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    if (!file?.buffer) throw new BadRequestException('Arquivo inválido');
+
+    const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/avatars');
+
+    // Remove avatar anterior se existir
+    if (user.avatarPublicId) {
+      await this.cloudinary.deleteImage(user.avatarPublicId);
+    }
+
+    user.avatarUrl = uploaded.secure_url;
+    user.avatarPublicId = uploaded.public_id;
+    await user.save();
+
+    const obj = user.toObject();
+    delete (obj as any).senha;
+    return obj;
+  }
+
+  async getPublicByUsername(username: string) {
+    const user = await this.userModel
+      .findOne({ username })
+      .select('username pronouns avatarUrl gamificação')
+      .exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    return user;
   }
 }
