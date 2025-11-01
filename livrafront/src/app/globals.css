@@ -119,7 +119,6 @@
   --bold-font-weight:     800;
 
   /* Standard Padding Values */
-  --xsmall-padding:       12px;
   --small-padding:        12px;
   --medium-padding:       16px;
   --large-padding:        20px;
@@ -303,21 +302,6 @@ input {
   border-radius:  var(--large-border-radius);
 }
 
-button.textless-small {
-  padding:        var(--xsmall-padding);
-  border-radius:  var(--small-border-radius);
-}
-
-button.textless-medium {
-  padding:        var(--small-padding);
-  border-radius:  var(--medium-border-radius);
-}
-
-button.textless-large {
-  padding:        var(--small-padding);
-  border-radius:  var(--large-border-radius);
-}
-
 .icon-small {
   width:  16px;
   height: 16px;
@@ -346,4 +330,48 @@ button.textless-large {
 .large-tab {
   padding:        8px var(--large-padding);
   border-radius:  var(--large-border-radius) var(--large-border-radius) 0 0;
+}
+
+.no-border-radius {
+  border-radius:  var(--no-border-radius);
+}
+
+.small-border-radius {
+  border-radius:  var(--small-border-radius);
+}
+
+.medium-border-radius {
+  border-radius:  var(--medium-border-radius);
+}
+
+.large-border-radius {
+  border-radius:  var(--large-border-radius);
+}
+
+.no-border-width {
+  border-width:  var(--no-border-width);
+}
+
+.small-border-width {
+  border-width:  var(--small-border-width);
+}
+
+.medium-border-width {
+  border-width:  var(--medium-border-width);
+}
+
+.large-border-width {
+  border-width:  var(--large-border-width);
+}
+
+.small-padding {
+  padding:  var(--small-padding);
+}
+
+.medium-padding {
+  padding:  var(--medium-padding);
+}
+
+.large-padding {
+  padding:  var(--large-padding);
 }

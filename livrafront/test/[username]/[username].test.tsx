@@ -295,7 +295,7 @@ describe('UserProfilePage', () => {
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/john_doe/edit-profile"]')
+        const link = container.querySelector('a[href="/john_doe/editar-perfil"]')
         expect(link).toBeInTheDocument()
       })
     })
@@ -591,7 +591,7 @@ describe('UserProfilePage', () => {
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/jane_smith/edit-profile"]')
+        const link = container.querySelector('a[href="/jane_smith/editar-perfil"]')
         expect(link).toBeInTheDocument()
       })
     })

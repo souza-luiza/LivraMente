@@ -1,9 +1,9 @@
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { Url } from "next/dist/shared/lib/router/router";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import { useRouter } from "next/navigation";
 
 import GitHubIcon from "./icons/GithubIcon";
 import LinkedinIcon from "./icons/LinkedinIcon";
@@ -34,11 +34,19 @@ export default function TeamMember({
     hoverScale = true
     }: TeamMemberProps) {
 
+    const router = useRouter();
+
     const iconSize: Record<"small" | "medium" | "large", number> = {
         small:  24,
         medium: 28,
         large:  32
     }
+
+    const handleClick = (path: string, e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!e.defaultPrevented && /^https?:\/\//.test(path)) {
+            window.open(path, "_blank", "noopener,noreferrer");
+        }
+    };
 
     return (
         <motion.div 
@@ -77,20 +85,22 @@ export default function TeamMember({
 
                 {/*Botão do Github*/}
                 {github &&
-                    <Link href={github} target="_blank">
-                        <button className="cursor-pointer">
-                            <GitHubIcon size={iconSize[buttonSize]} fill={`${color}`} />
-                        </button>
-                    </Link>
+                    <button 
+                        className="cursor-pointer"
+                         onClick={(e) => handleClick(github.toString(), e)}
+                    >
+                        <GitHubIcon size={iconSize[buttonSize]} fill={`${color}`} />
+                    </button>
                 }
 
                 {/*Botão do LinkedIn*/}
                 {linkedin &&
-                    <Link href={linkedin} target="_blank">
-                        <button className="cursor-pointer">
-                            <LinkedinIcon size={iconSize[buttonSize]} fill={`${color}`} />
-                        </button>
-                    </Link>
+                    <button 
+                        className="cursor-pointer"
+                        onClick={(e) => handleClick(linkedin.toString(), e)}
+                    >
+                        <LinkedinIcon size={iconSize[buttonSize]} fill={`${color}`} />
+                    </button>
                 }
 
             </div>

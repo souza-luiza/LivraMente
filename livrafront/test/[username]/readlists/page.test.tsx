@@ -6,8 +6,10 @@ import { useReadlistsList } from '../../../src/hooks/useReadlistsList';
 jest.mock('../../../src/hooks/useReadlistsList');
 const mockUseReadlistsList = useReadlistsList as jest.Mock;
 
+const mockPush = jest.fn()
 jest.mock('next/navigation', () => ({
-	useParams: () => ({ username: (global as any).__TEST_ROUTE_USERNAME__ || '1' })
+	useParams: () => ({ username: (global as any).__TEST_ROUTE_USERNAME__ || '1' }),
+	useRouter: () => ({ push: mockPush }),
 }));
 
 describe('ReadlistsPage', () => {
@@ -18,7 +20,7 @@ describe('ReadlistsPage', () => {
 			writable: true,
 		});
 		Object.defineProperty(window, 'location', {
-			value: { search: '' },
+			value: { search: '', assign: jest.fn() },
 			writable: true,
 		});
 		(global as any).__TEST_ROUTE_USERNAME__ = undefined;
@@ -52,7 +54,7 @@ describe('ReadlistsPage', () => {
 
 	it('does not change pageUserId if userId in search equals loggedUserId', async () => {
 		Object.defineProperty(window, 'location', {
-			value: { search: '?userId=1' },
+			value: { search: '?userId=1', assign: jest.fn() },
 			writable: true,
 		});
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
@@ -66,7 +68,7 @@ describe('ReadlistsPage', () => {
 		// simulate route username for other user (component reads route param)
 		(global as any).__TEST_ROUTE_USERNAME__ = 'otherUser';
 		Object.defineProperty(window, 'location', {
-			value: { search: '?userId=2' },
+			value: { search: '?userId=2', assign: jest.fn() },
 			writable: true,
 		});
 		global.fetch = jest.fn((url) => {
@@ -100,7 +102,7 @@ describe('ReadlistsPage', () => {
 		// component uses the route username; set it so profilePath becomes /john_doe
 		(global as any).__TEST_ROUTE_USERNAME__ = 'john_doe';
 		Object.defineProperty(window, 'location', {
-			value: { search: '?userId=2' },
+			value: { search: '?userId=2', assign: jest.fn() },
 			writable: true,
 		});
 		global.fetch = jest.fn((url) => {
@@ -120,9 +122,10 @@ describe('ReadlistsPage', () => {
 			render(<ReadlistsPage />);
 		});
 		await waitFor(() => {
-			const voltarLink = screen.getByLabelText('Voltar');
-			expect(voltarLink).toBeInTheDocument();
-			expect(voltarLink.getAttribute('href')).toBe('/john_doe');
+			const voltarBtn = screen.getByLabelText('Voltar');
+			expect(voltarBtn).toBeInTheDocument();
+			(voltarBtn as HTMLElement).click();
+			expect(mockPush).toHaveBeenCalledWith('/john_doe');
 		});
 	});
 
