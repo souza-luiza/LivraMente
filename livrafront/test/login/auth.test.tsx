@@ -11,7 +11,7 @@ describe('serviço de autenticação', () => {
     const mockResponse = {
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({ accessToken: 'token-123' })
+      json: jest.fn().mockResolvedValue({ accessToken: 'token-123', username: 'test' })
     }
     
     ;(fetch as jest.Mock).mockResolvedValue(mockResponse)
@@ -26,7 +26,7 @@ describe('serviço de autenticação', () => {
 
     expect(result).toEqual({
       token: 'token-123',
-      user: { id: 'user-id', username: 'test@test.com', email: 'test@test.com' }
+      user: { _id: 'user-id', username: 'test', email: 'test@test.com' }
     })
   })
 

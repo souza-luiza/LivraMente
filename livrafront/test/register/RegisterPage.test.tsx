@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import RegisterPage from '@/app/register/page'
+import RegisterPage from '@/app/cadastro/page'
 
 // Mock the components
 jest.mock('@/components/button', () => {
@@ -404,17 +404,6 @@ describe('RegisterPage', () => {
       // UI now says "Já tem uma conta?"
       expect(screen.getByText(/Já tem uma conta\?/i)).toBeInTheDocument()
       expect(screen.getByText(/Faça login/i)).toBeInTheDocument()
-    })
-
-    it('renders benefits section on desktop', () => {
-      render(<RegisterPage />)
-
-      // the header/desktop copy may vary; ensure at least one occurrence and check the benefit text
-      expect(screen.getAllByText(/A rede social dos leitores brasileiros/i).length).toBeGreaterThanOrEqual(1)
-      expect(screen.getByText('Acompanhe sua leitura')).toBeInTheDocument()
-      expect(screen.getByText('Conecte-se e interaja')).toBeInTheDocument()
-      expect(screen.getByText('Avalie livros e receba recomendações')).toBeInTheDocument()
-      expect(screen.getByText('Ganhe XP e participe de competições')).toBeInTheDocument()
     })
   })
 })

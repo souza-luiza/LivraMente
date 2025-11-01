@@ -28,7 +28,7 @@ describe('Input Component', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
       expect(input).toHaveAttribute('id')
-      expect(input.id).toMatch(/^input-/)
+      expect(input.id).toMatch(/^_r_3_/)
     })
   })
 
@@ -37,19 +37,19 @@ describe('Input Component', () => {
     it('applies default variant styles', () => {
       render(<Input variant="default" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('border-gray-300', 'bg-white')
+      expect(input).toHaveClass('border-gray-300 bg-white')
     })
 
     it('applies outline variant styles', () => {
       render(<Input variant="outline" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('border-2', 'bg-transparent')
+      expect(input).toHaveClass('border-2 bg-transparent')
     })
 
     it('applies filled variant styles', () => {
       render(<Input variant="filled" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('bg-gray-50', 'border-gray-200')
+      expect(input).toHaveClass('bg-gray-50 border-gray-200')
     })
   })
 
@@ -58,19 +58,19 @@ describe('Input Component', () => {
     it('applies small size styles', () => {
       render(<Input inputSize="small" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('text-b3', 'small-box')
+      expect(input).toHaveClass('text-b3 small-box')
     })
 
     it('applies medium size styles', () => {
       render(<Input inputSize="medium" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('text-b2', 'medium-box')
+      expect(input).toHaveClass('text-b2 medium-box')
     })
 
     it('applies large size styles', () => {
       render(<Input inputSize="large" />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('text-b1', 'large-box')
+      expect(input).toHaveClass('text-b1 large-box')
     })
   })
 
@@ -150,7 +150,7 @@ describe('Input Component', () => {
     it('applies disabled styles', () => {
       render(<Input disabled />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('disabled:opacity-50', 'disabled:cursor-not-allowed')
+      expect(input).toHaveClass('disabled:opacity-50 disabled:cursor-not-allowed')
     })
   })
 

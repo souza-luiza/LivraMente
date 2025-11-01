@@ -1,0 +1,161 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { ReadlistCard } from '@/components/readlist-card';
+import { CreateReadlist } from '@/components/create-readlist';
+import { useReadlistsList } from '@/hooks/useReadlistsList';
+import { useCreateReadlist } from '@/hooks/useCreateReadlist';
+import Button from '@/components/button';
+import LoadingPage from '@/components/loading';
+import Sidebar from '@/components/sidebar';
+import PlusCheckboxIcon from '@/components/icons/PlusCheckboxIcon';
+import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
+
+export default function UserReadlistsPage() {
+  const params = useParams() as { username?: string };
+  const routeUsername = typeof params?.username === 'string' ? params.username : '';
+
+  const loggedUserId =
+    typeof window !== 'undefined' ? localStorage.getItem('userId') || '1' : '1';
+  const loggedUsername =
+    typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '';
+
+  const [profilePath, setProfilePath] = useState<string>('/');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (routeUsername && routeUsername !== loggedUsername) {
+      setProfilePath(`/${routeUsername}`);
+    } else if (loggedUsername.trim()) {
+      setProfilePath(`/${loggedUsername}`);
+    } else {
+      setProfilePath('/');
+    }
+  }, [routeUsername, loggedUsername]);
+
+  const isMyPage = !routeUsername || routeUsername === loggedUsername;
+  type TabType = 'minhas' | 'favoritas';
+  const [activeTab, setActiveTab] = useState<TabType>('minhas');
+  const [modalOpen, setModalOpen] = useState(false);
+  const { handleCreateReadlist } = useCreateReadlist();
+
+  const identifierForHook = isMyPage ? loggedUserId : routeUsername ?? '';
+
+  const { readlists, loading, error, refetch } = useReadlistsList(
+    identifierForHook,
+    isMyPage
+      ? activeTab === 'minhas'
+        ? 'criadas'
+        : 'favoritadas'
+      : 'criadas'
+  );
+
+  const filteredReadlists = isMyPage
+    ? readlists
+    : readlists.filter((r) => r.publica);
+
+  return (
+    <div className="flex min-h-screen h-screen m-0 bg-white">
+      <Sidebar />
+      <div className="flex-1 p-8">
+        <div className="flex flex-row items-center gap-3 mb-4">
+          <Button
+            icon={<ArrowLeftIcon />}
+            size="medium"
+            colorScheme="dark-brown"
+            path={profilePath}
+            aria-label="Voltar"
+          />
+          <h1 className="tracking-tight text-h4 text-[#23160A]">
+            {isMyPage ? 'Minhas readlists' : `Readlists de ${routeUsername}`}
+          </h1>
+        </div>
+
+        {isMyPage && (
+          <div className="flex items-center gap-6 mb-4">
+            <Button
+              type="button"
+              text="Criar readlist"
+              icon={<PlusCheckboxIcon />}
+              size="medium"
+              colorScheme="light-green"
+              onClick={() => setModalOpen(true)}
+            />
+            <div className="flex gap-2">
+              <button
+                className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${
+                  activeTab === 'minhas'
+                    ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105'
+                    : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'
+                }`}
+                onClick={() => setActiveTab('minhas')}
+              >
+                Criadas por mim
+              </button>
+              <button
+                className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${
+                  activeTab !== 'minhas'
+                    ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105'
+                    : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'
+                }`}
+                onClick={() => setActiveTab('favoritas')}
+                data-testid="favoritas-tab"
+              >
+                Favoritadas
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isMyPage && activeTab === 'minhas' && (
+          <CreateReadlist
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onCreate={async (data, setError) => {
+              await handleCreateReadlist(data, setError, () => refetch && refetch());
+            }}
+          />
+        )}
+
+        <div className="relative min-h-[200px] w-full">
+          {loading && (
+            <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+              <LoadingPage />
+            </div>
+          )}
+
+          {!loading && filteredReadlists.length === 0 && (
+            <div className="flex flex-col items-start justify-start mt-2 w-full">
+              {error ? (
+                <div className="text-b2 text-red-600 text-center mt-2" data-testid="error-msg">
+                  {error}
+                </div>
+              ) : (
+                <div className="text-b2 text-[var(--secondary-700)] mb-3 text-base font-poppins">
+                  Nenhuma readlist encontrada.
+                </div>
+              )}
+            </div>
+          )}
+
+          {!loading && filteredReadlists.length > 0 && (
+            <div className="flex flex-col gap-1 mt-8">
+              {filteredReadlists.map((r) => (
+                <ReadlistCard
+                  key={r._id}
+                  r={{
+                    ...r,
+                    favorito: activeTab === 'favoritas' ? true : r.favorito,
+                    nome: activeTab === 'favoritas' ? 'Favoritada' : r.nome,
+                  }}
+                  userId={loggedUserId}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

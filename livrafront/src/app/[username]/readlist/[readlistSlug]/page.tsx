@@ -1,21 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
-import SearchIcon from '@/components/icons/SearchIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
-import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
-import Button from '@/components/button';
 import EditReadlistModal from '@/components/EditReadlistModal';
-import { getPublicReadlists, getReadlistById } from '@/services/readlist';
-import { ReadlistDetailResponse } from '@/types/readlist';
+import SearchBar from '@/components/searchbar';
+import Button from '@/components/button';
+
+// Função para converter slug em título
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 export default function ReadlistPage() {
   const router = useRouter();
@@ -27,105 +32,41 @@ export default function ReadlistPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [readlistData, setReadlistData] = useState<ReadlistDetailResponse | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
+  const livrosPorPagina = 42;
+  
+  // Simular se o usuário é o dono da readlist
+  // TODO: Implementar lógica real comparando username com usuário logado
+  const isOwner = true;
 
-  // Buscar dados da readlist ao carregar a página
-  useEffect(() => {
-    async function loadReadlist() {
-      try {
-        setLoading(true);
-        setError('');
-
-        // Verificar se está no modo demo (username = demo)
-        const isDemoMode = username === 'demo';
-        
-        // Verificar se está autenticado
-        const token = localStorage.getItem('token');
-        
-        if (!token || isDemoMode) {
-          // Modo de desenvolvimento: usar dados mock
-          console.warn('⚠️ Modo de demonstração ativado. Usando dados mock.');
-          
-          const mockData: ReadlistDetailResponse = {
-            _id: 'mock-id-123',
-            nome: readlistSlug
-              .split('-')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            descricao: 'Esta é uma readlist de demonstração. Você pode editar mesmo no modo mock! As alterações ficarão apenas localmente.',
-            capa_url: '/kemi-teste.jpg',
-            publica: true,
-            favorito: false,
-            criador: {
-              _id: 'demo-user-id',
-              username: 'demo'
-            },
-            livros: [
-              { id: '1', title: 'Jantar Secreto', year: '2016', pages: '416 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '2', title: 'A Empregada', year: '2018', pages: '208 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '3', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '4', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '5', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '6', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '7', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '8', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '9', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '10', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '11', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-              { id: '12', title: 'Recursão', year: '2020', pages: '300 pags', rating: 5, cover: '/kemi-teste.jpg' },
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          
-          setReadlistData(mockData);
-          setIsOwner(true); 
-          setLoading(false);
-          return;
-        }
-
-        // Primeiro, buscar readlists públicas do usuário
-        const publicReadlists = await getPublicReadlists(username);
-        
-        // Converter slug para comparar com nome da readlist
-        const readlistName = readlistSlug
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-
-        // Encontrar a readlist pelo nome (slug convertido)
-        const foundReadlist = publicReadlists.find(
-          rl => rl.nome.toLowerCase() === readlistName.toLowerCase()
-        );
-
-        if (!foundReadlist) {
-          setError('Readlist não encontrada');
-          return;
-        }
-
-        // Buscar detalhes completos da readlist (com livros populados)
-        const detailedReadlist = await getReadlistById(foundReadlist._id);
-        setReadlistData(detailedReadlist);
-
-        // Verificar se o usuário logado é o dono
-        const currentUser = localStorage.getItem('user');
-        if (currentUser) {
-          const user = JSON.parse(currentUser);
-          setIsOwner(user.username === username);
-        }
-
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadReadlist();
-  }, [username, readlistSlug]);
+  const [readlist, setReadlist] = useState({
+    title: slugToTitle(readlistSlug),
+    slug: readlistSlug,
+    author: {
+      username: username,
+      avatar: "/kemi-teste.jpg"
+    },
+    description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+    isPrivate: false,
+    progress: {
+      read: 20,
+      total: 28,
+      percentage: 71
+    },
+    coverImage: "/kemi-teste.jpg",
+    books: [
+      { id: 1, title: "Jantar Secreto", year: "2016", pages: "416 pags", rating: 5, cover: "/kemi-teste.jpg" },
+      { id: 2, title: "A Empregada", year: "2018", pages: "208 pags", rating: 5, cover: "/kemi-teste.jpg" },
+      { id: 3, title: "Recursão", year: "2020", pages: "300 pags", rating: 5, cover: "/kemi-teste.jpg" },
+      ...Array(livrosPorPagina).fill(null).map((_, i) => ({
+        id: i + 4, 
+        title: `Livro ${i + 4}`, 
+        year: "2023", 
+        pages: "250 pags", 
+        rating: 4,
+        cover: "/kemi-teste.jpg"
+      }))
+    ]
+  });
 
   const handleSaveReadlist = (data: {
     title: string;
@@ -133,54 +74,16 @@ export default function ReadlistPage() {
     coverImage: string;
     isPrivate: boolean;
   }) => {
-    // Atualizar estado local após salvar
-    if (readlistData) {
-      setReadlistData({
-        ...readlistData,
-        nome: data.title,
-        descricao: data.description,
-        capa_url: data.coverImage,
-        publica: !data.isPrivate,
-      });
-    }
+    setReadlist((prev) => ({
+      ...prev,
+      title: data.title,
+      description: data.description,
+      coverImage: data.coverImage,
+      isPrivate: data.isPrivate,
+    }));
+    // TODO: Implementar chamada à API para salvar as alterações
+    console.log('Salvando alterações:', data);
   };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
-        <div className="text-h4" style={{ color: 'var(--secondary-800)' }}>
-          Carregando readlist...
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error || !readlistData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
-        <div className="text-center">
-          <div className="text-h4 mb-4" style={{ color: 'var(--error-500)' }}>
-            {error || 'Readlist não encontrada'}
-          </div>
-          <Button
-            text="Voltar"
-            icon={<ArrowLeftIcon />}
-            size="medium"
-            colorScheme='dark-green'
-            onClick={() => router.back()}
-            aria-label='Voltar'
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Calcular progresso de leitura
-  const totalBooks = readlistData.livros.length;
-  const readBooks = 0; // TODO: Implementar lógica real de livros lidos
-  const progressPercentage = totalBooks > 0 ? Math.round((readBooks / totalBooks) * 100) : 0;
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -189,73 +92,24 @@ export default function ReadlistPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         readlist={{
-          id: readlistData._id,
-          title: readlistData.nome,
-          description: readlistData.descricao || '',
-          coverImage: readlistData.capa_url || '/kemi-teste.jpg',
-          isPrivate: !readlistData.publica,
+          title: readlist.title,
+          description: readlist.description,
+          coverImage: readlist.coverImage,
+          isPrivate: readlist.isPrivate,
         }}
         onSave={handleSaveReadlist}
       />
 
       {/* Sidebar Fixa */}
-      <div>
-        <Sidebar />
-      </div>
+      <Sidebar />
 
       {/* Conteúdo Principal */}
       <div 
-        className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 md:py-12 w-full max-w-[1600px] mx-auto" 
+        className="flex-1 overflow-y-auto px-4 w-full" 
         style={{ }}
       >
-        {/* Aviso de Modo de Desenvolvimento */}
-        {(username === 'demo' || !localStorage.getItem('token')) && (
-          <div className="mb-6 p-4 rounded-lg" style={{ 
-            backgroundColor: 'var(--warning-100)', 
-            border: '2px solid var(--warning-500)' 
-          }}>
-            <div className="flex items-center gap-3">
-              <span className="text-h5">⚠️</span>
-              <div>
-                <p className="text-b1 body-semibold" style={{ color: 'var(--warning-800)' }}>
-                  Modo de Demonstração
-                </p>
-                <p className="text-b3" style={{ color: 'var(--warning-700)' }}>
-                  {username === 'demo' 
-                    ? 'Você está visualizando dados de demonstração. As edições ficarão apenas localmente.'
-                    : 'Você não está autenticado. Exibindo dados mock.'
-                  }
-                  {' '}
-                  <a href="/login" className="underline ml-1 body-semibold">
-                    Faça login
-                  </a> para ver dados reais da API.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
         {/* SEÇÃO 1: Barra de Pesquisa */}
-        <div style={{ marginBottom: 'var(--large-padding)' }}>
-          <div 
-            className="flex items-center gap-3 w-full"
-            style={{ 
-              backgroundColor: 'var(--primary-300)',
-              borderRadius: '999px',
-              padding: '12px var(--large-padding)'
-            }}
-          >
-            <SearchIcon size={20} style={{ color: 'var(--primary-700)' }} />
-            <input 
-              type="text" 
-              placeholder="Pesquisar em livros lidos"
-              className="bg-transparent flex-1 outline-none text-b2"
-              style={{ 
-                color: 'var(--primary-800)',
-                border: 'none'
-              }}
-            />
-          </div>
-        </div>
+        <SearchBar placeholder="Pesquisar no livra..." className="mb-2" />
 
         {/* SEÇÃO 2: Header da Readlist */}
         <div
@@ -271,7 +125,7 @@ export default function ReadlistPage() {
         >
           {/* Ícones de Ação */}
           <div
-            className="flex flex-row md:flex-col gap-2 md:gap-0"
+            className="flex flex-row md:flex-col gap-2 md:gap-2"
             style={{
               position: 'absolute',
               top: '10px',
@@ -279,88 +133,28 @@ export default function ReadlistPage() {
             }}
           >
             {isOwner && (
-              <button 
-                className="textless-medium"
-                style={{ 
-                  backgroundColor: 'transparent',
-                  transition: 'all 0.3s ease'
-                }}
+              <Button
+                icon={<EditIcon />}
+                size="large"
+                colorScheme="light-green"
                 aria-label="Editar readlist"
                 onClick={() => setIsEditModalOpen(true)}
-              >
-                <EditIcon
-                  size={30}
-                  style={{ 
-                    color: 'var(--primary-600)',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--primary-700)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--primary-600)';
-                  }}
-                />
-              </button>
+              />  
             )}
-            <button 
-              className="textless-medium"
-              style={{ 
-                backgroundColor: 'transparent',
-                transition: 'all 0.3s ease'
-              }}
-              aria-label="Curtir"
+            <Button
+              icon={<HeartIcon fill={isLiked ? "currentColor" : "none"} />}
+              size="large"
+              colorScheme="light-green"
+              aria-label="Curtir readlist"
               onClick={() => setIsLiked(!isLiked)}
-            >
-              <HeartIcon
-                size={30}
-                style={{ 
-                  color: 'var(--primary-600)', 
-                  fill: isLiked ? 'var(--primary-600)' : 'none',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }} 
-                onMouseEnter={(e) => {
-                  if (!isLiked) {
-                    e.currentTarget.style.fill = 'var(--primary-400)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLiked) {
-                    e.currentTarget.style.fill = 'none';
-                  }
-                }}
-              />
-            </button>
-            <button 
-              className="textless-medium"
-              style={{ 
-                backgroundColor: 'transparent',
-                padding: '0px',
-                transition: 'all 0.3s ease'
-              }}
-              aria-label="Compartilhar"
+            />
+            <Button
+              icon={<ShareIcon />}
+              size="large"
+              colorScheme="light-green"
+              aria-label="Compartilhar readlist"
               onClick={() => setIsShared(!isShared)}
-            >
-              <ShareIcon 
-                size={30}
-                style={{ 
-                  color: isShared ? 'var(--primary-600)' : 'var(--primary-600)', 
-                  opacity: isShared ? 1 : 0.7,
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isShared) {
-                    e.currentTarget.style.opacity = '0.7';
-                  }
-                }}
-              />
-            </button>
+            />
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center w-full max-w-4xl">
@@ -374,8 +168,8 @@ export default function ReadlistPage() {
               }}
             >
               <Image 
-                src={readlistData.capa_url || '/kemi-teste.jpg'}
-                alt={readlistData.nome}
+                src={readlist.coverImage}
+                alt={readlist.title}
                 fill
                 className="object-cover"
               />
@@ -383,12 +177,11 @@ export default function ReadlistPage() {
 
             {/* Informações */}
             <div className="flex flex-col items-center md:items-start justify-center flex-1">
-              <h1 className="text-h1 text-center md:text-left" style={{ 
-                color: 'var(--secondary-700)',
+              <h1 className="text-h1 text-center md:text-left" style={{
                 marginBottom: 'var(--extra-small-padding)',
                 marginTop: '0px'
               }}>
-                {readlistData.nome}
+                {readlist.title}
               </h1>
               <div className="flex items-center gap-2 justify-center md:justify-start">
                 <div 
@@ -396,14 +189,14 @@ export default function ReadlistPage() {
                   style={{ width: '45px', height: '45px' }}
                 >
                   <Image 
-                    src="/kemi-teste.jpg"
-                    alt={username}
+                    src={readlist.author.avatar}
+                    alt={readlist.author.username}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <span className="text-b1" style={{ color: 'var(--secondary-800)' }}>
-                  {username}
+                  {readlist.author.username}
                 </span>
               </div>
             </div>
@@ -420,7 +213,7 @@ export default function ReadlistPage() {
           {/* Descrição */}
           <div className="flex-1 w-full">
             <p className="text-b2 w-full" style={{ color: 'var(--secondary-800)', textAlign: 'justify' }}>
-              {readlistData.descricao || 'Sem descrição'}
+              {readlist.description}
             </p>
           </div>
 
@@ -446,13 +239,13 @@ export default function ReadlistPage() {
                 <p className="text-b1" style={{ 
                   color: 'var(--secondary-800)'
                 }}>
-                  {readBooks} de {totalBooks}
+                  {readlist.progress.read} de {readlist.progress.total}
                 </p>
               </div>
               <p className="text-h3 body-semibold" style={{ 
                 color: 'var(--secondary-800)'
               }}>
-                {progressPercentage}%
+                {readlist.progress.percentage}%
               </p>
             </div>
 
@@ -469,7 +262,7 @@ export default function ReadlistPage() {
             >
               <div 
                 style={{ 
-                  width: `${progressPercentage}%`,
+                  width: `${readlist.progress.percentage}%`,
                   height: '100%',
                   backgroundColor: 'var(--secondary-400)',
                   borderRadius: '4px',
@@ -515,57 +308,42 @@ export default function ReadlistPage() {
           {viewMode === 'grid' ? (
             /* Grid de Livros */
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 w-full" style={{ gap: 'var(--small-padding)' }}>
-              {readlistData.livros.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-b1" style={{ color: 'var(--secondary-700)' }}>
-                    Nenhum livro nesta readlist ainda
-                  </p>
+              {readlist.books.map((book, index) => (
+                <div 
+                  key={book.id}
+                  className="aspect-[2/3] cursor-pointer relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'var(--secondary-500)',
+                    borderRadius: 'var(--medium-border-radius)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Livro ${index + 1}`}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.8';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <Image 
+                    src={book.cover}
+                    alt={book.title}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-              ) : (
-                readlistData.livros.map((book, index) => (
-                  <div 
-                    key={book.id}
-                    className="aspect-[2/3] cursor-pointer relative overflow-hidden"
-                    style={{ 
-                      backgroundColor: 'var(--secondary-500)',
-                      borderRadius: 'var(--medium-border-radius)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Livro ${index + 1}`}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '0.8';
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                  >
-                    <Image 
-                      src={book.cover}
-                      alt={book.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))
-              )}
+              ))}
             </div>
           ) : (
             /* List View */
             <div className="flex flex-col w-full" style={{ gap: 'var(--medium-padding)' }}>
-              {readlistData.livros.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-b1" style={{ color: 'var(--secondary-700)' }}>
-                    Nenhum livro nesta readlist ainda
-                  </p>
-                </div>
-              ) : (
-                readlistData.livros.map((book) => (
-                  <div 
-                    key={book.id}
+              {readlist.books.map((book) => (
+                <div 
+                  key={book.id}
                   className="flex flex-col sm:flex-row gap-4 cursor-pointer"
                   style={{ 
                     padding: 'var(--small-padding)',
@@ -628,8 +406,7 @@ export default function ReadlistPage() {
                     </div>
                   </div>
                 </div>
-                ))
-              )}
+              ))}
             </div>
           )}
         </div>

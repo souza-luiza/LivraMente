@@ -7,10 +7,6 @@ import Button from '@/components/button'
 import Input from '@/components/general-input'
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon'
 import LogoIcon from '@/components/icons/LogoIcon'
-import OpenBookIcon from '@/components/icons/OpenBookIcon'
-import CommunityIcon from '@/components/icons/CommunityIcon'
-import LibraryIcon from '@/components/icons/LibraryIcon'
-import StarIcon from '@/components/icons/StarIcon'
 import DateInput from '@/components/date-input'
 import CountrySelect from '@/components/select-country'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -251,63 +247,26 @@ export default function RegisterPage() {
   return (
     <main role="main" className="min-h-screen flex">
       {/* Lado Esquerdo - Verde */}
-      <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: 'var(--primary-600)' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative" style={{ backgroundColor: 'var(--primary-300)' }}>
         <div className="flex flex-col justify-center items-center w-full p-12 text-white">
           {/* Logo/Marca */}
-          <div className="flex flex-col items-center text-[#E5EEDF] text-center mb-8">
-            <LogoIcon size={160} fill="#E5EEDF" className="mb-2" />
+          <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }} 
+          transition={{ duration: 0.5, ease: "easeInOut" }} 
+          className="flex flex-col items-center justify-center h-full text-[#1F2A17]"
+          >
+            <Link href="/">
+              <LogoIcon size={160} fill="#1F2A17" className="mb-2" />
+            </Link>
             <h1 className="text-h1">
               LivraMente
             </h1>
             <p className="text-b1 body-semibold">
               A rede dos leitores brasileiros
             </p>
-          </div>
+          </motion.div>
 
-          {/* Benefícios */}
-          <div className="space-y-4 w-fit text-[#E5EEDF]">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <OpenBookIcon size={24} fill="#E5EEDF" />
-              </div>
-              <div className="text-b2">
-                <h3 className="body-semibold">Acompanhe sua leitura</h3>
-                <p className="opacity-80">Registre seu progresso e metas</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <CommunityIcon size={24} fill="#E5EEDF" />
-              </div>
-              <div className="text-b2">
-                <h3 className="body-semibold">Conecte-se e interaja</h3>
-                <p className="opacity-80">Encontre amigos e comunidades literárias</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <LibraryIcon size={24} fill="#E5EEDF" />
-              </div>
-              <div className="text-b2">
-                <h3 className="body-semibold">Avalie livros e receba recomendações</h3>
-                <p className="opacity-80">Compartilhe suas opiniões e descubra novas leituras</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <StarIcon size={24} fill="#E5EEDF" />
-              </div>
-              <div className="text-b2">
-                <h3 className="body-semibold">Ganhe XP e participe de competições</h3>
-                <p className="opacity-80">Desafie seus amigos e suba de nível</p>
-              </div>
-            </div>
-          </div>
-
-          {/* TODO: Colocar um gato ou algo do tipo aqui */}
           {/* Decoração */}
           <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/10 to-transparent"></div>
         </div>
@@ -527,7 +486,7 @@ export default function RegisterPage() {
                 <p className=" text-gray-600">
                   Já tem uma conta?{' '}
                   <Link 
-                    href="/login" 
+                    href="/entrar" 
                     className="body-semibold text-[#3D552F] hover:underline"
                   >
                     Faça login

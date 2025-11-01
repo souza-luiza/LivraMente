@@ -1,11 +1,13 @@
 interface ProfileIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   percentage?: number; // 0 a 100
+  showProgress?: boolean;
 }
 
 export default function ProfileIcon({
   size = 40,
   percentage = 0,
+  showProgress = true,
   ...props
 }: ProfileIconProps) {
 
@@ -25,34 +27,38 @@ export default function ProfileIcon({
       viewBox={`0 0 ${size} ${size}`}
       {...props}
     >
-      <circle
-        cx={centerX}
-        cy={centerY}
-        r={radius}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="6"
-        opacity="0.2"
-      />
+      {showProgress && (
+        <>
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            opacity="0.2"
+          />
+          
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${centerX} ${centerY})`}
+            style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+          />
+        </>
+      )}
       
       <circle
         cx={centerX}
         cy={centerY}
-        r={radius}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="6"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${centerX} ${centerY})`}
-        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
-      />
-      
-      <circle
-        cx={centerX}
-        cy={centerY}
-        r={radius - 5}
+        r={showProgress ? radius - 5 : radius}
         fill="currentColor"
       />
     </svg>

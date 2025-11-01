@@ -1,16 +1,31 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import UserProfilePage from '@/app/[username]/page'
 import { notFound } from 'next/navigation'
 
 // Mock next/navigation
+const mockPush = jest.fn()
+
 jest.mock('next/navigation', () => ({
   notFound: jest.fn(),
-  useRouter: jest.fn(),
+  useRouter: () => ({ push: mockPush }),
   useSearchParams: () => ({
     get: jest.fn(),
   }),
   usePathname: () => '',
 }))
+
+// Mock next/link so clicks call router.push (helps test navigation)
+jest.mock('next/link', () => {
+  return function MockLink({ href, children, ...props }: any) {
+    const { useRouter } = require('next/navigation')
+    const router = useRouter()
+    return (
+      <a href={href} onClick={(e) => { e.preventDefault(); router.push(href); }} {...props}>
+        {children}
+      </a>
+    )
+  }
+})
 
 // Mock components
 jest.mock('@/components/sidebar', () => {
@@ -280,7 +295,7 @@ describe('UserProfilePage', () => {
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/edit-profile/john_doe"]')
+        const link = container.querySelector('a[href="/john_doe/editar-perfil"]')
         expect(link).toBeInTheDocument()
       })
     })
@@ -367,6 +382,19 @@ describe('UserProfilePage', () => {
       await waitFor(() => {
         const scrollArea = container.querySelector('.overflow-y-auto')
         expect(scrollArea).toBeInTheDocument()
+      })
+    })
+
+    it('navigates to readlists page when clicking the Readlists link', async () => {
+      const params = Promise.resolve({ username: 'john_doe' })
+      const { container } = render(await UserProfilePage({ params }))
+
+      await waitFor(() => {
+        const link = container.querySelector('a[href="/john_doe/readlists"]')
+        expect(link).toBeInTheDocument()
+        // click the link
+        fireEvent.click(link!)
+        expect(mockPush).toHaveBeenCalledWith('/john_doe/readlists')
       })
     })
   })
@@ -563,7 +591,7 @@ describe('UserProfilePage', () => {
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/edit-profile/jane_smith"]')
+        const link = container.querySelector('a[href="/jane_smith/editar-perfil"]')
         expect(link).toBeInTheDocument()
       })
     })

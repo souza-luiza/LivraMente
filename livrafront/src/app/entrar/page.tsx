@@ -1,37 +1,45 @@
 'use client'
 
 import React from 'react';
-import { useLoginForm } from "@/forms/useLoginForm"; 
+import { useLoginForm } from "@/hooks/useLoginForm"; 
 import Link from 'next/link';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Button from '@/components/button';
 import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const { 
     formData, errors, isLoading, apiError, handleChange, handleSubmit 
   } = useLoginForm()
 
-  const iconStyle = {
+  /*const iconStyle = {
     width: '24px',
     height: '24px',
     display: 'block' as const
-  }
+  }*/
 
   return (
       <div className="flex min-h-screen">
         {/* Left Side */} 
-        <div className="flex-1 bg-[#5C8046]">
-          <div className="flex flex-col items-center justify-center h-full text-[#E5EEDF]">
-            <LogoIcon size={160} fill="#E5EEDF" className="mb-2" />
+        <div className="flex-1 bg-[#B0CC9E]">
+          <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }} 
+          transition={{ duration: 0.5, ease: "easeInOut" }} 
+          className="flex flex-col items-center justify-center h-full text-[#1F2A17]"
+          >
+            <Link href="/">
+              <LogoIcon size={160} fill="#1F2A17" className="mb-2" />
+            </Link>
             <h1 className="text-h1">
               LivraMente
             </h1>
             <p className="text-b1 body-semibold">
               A rede dos leitores brasileiros
             </p>
-          </div>
+          </motion.div>
         </div>
 
         {/* Right Side */}
@@ -98,7 +106,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-row items-baseline gap-1 mb-2">
-              <Link href="/esqueci-minha-senha" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Esqueci minha senha
               </Link>
             </div>
@@ -107,7 +115,7 @@ export default function LoginPage() {
               <span className="text-b3 text-gray-900">
                 Não tem uma conta?
               </span>
-              <Link href="/register" className="text-b3 body-semibold text-[#3D552F] hover:underline">
+              <Link href="/cadastro" className="text-b3 body-semibold text-[#3D552F] hover:underline">
                 Cadastre-se
               </Link>
             </div>

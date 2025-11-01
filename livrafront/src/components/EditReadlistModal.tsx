@@ -6,13 +6,11 @@ import Input from '@/components/general-input';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import SaveIcon from './icons/SaveIcon';
-import AddIcon from './icons/AddIcon';
 
 interface EditReadlistModalProps {
   isOpen: boolean;
   onClose: () => void;
   readlist: {
-    id: string;
     title: string;
     description: string;
     coverImage: string;
@@ -92,7 +90,7 @@ export default function EditReadlistModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg large-box"
+        className="relative w-full max-w-lg large-padding large-border-radius"
         style={{
           backgroundColor: 'var(--primary-200)',
           maxHeight: '90vh',
@@ -244,38 +242,6 @@ export default function EditReadlistModal({
           >
             Tornar readlist privada
           </label>
-        </div>
-
-        {/* Seção de Gerenciamento de Livros */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h5 className="text-b1 body-semibold" style={{ color: 'var(--secondary-800)' }}>
-              Livros na readlist
-            </h5>
-          </div>
-          
-          {/* Botão de Adicionar Livro */}
-          <button
-            onClick={() => {
-              // TODO: Implementar busca/seleção de livros
-              console.log('Adicionar livro clicado');
-            }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-200 hover:opacity-80"
-            style={{
-              backgroundColor: 'var(--primary-300)',
-              border: '2px dashed var(--primary-600)',
-            }}
-          >
-            <AddIcon size={20} style={{ color: 'var(--primary-700)' }} />
-            <span className="text-b2 body-semibold" style={{ color: 'var(--primary-700)' }}>
-              Adicionar livro
-            </span>
-          </button>
-
-          {/* Lista de livros (placeholder) */}
-          <p className="text-b3 text-center mt-3" style={{ color: 'var(--secondary-600)' }}>
-            Adicione livros à sua readlist
-          </p>
         </div>
         
         <div className='flex flex-row items-center justify-center gap-2'>
