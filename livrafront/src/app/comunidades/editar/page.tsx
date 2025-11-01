@@ -85,26 +85,29 @@ function EditCommunityPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao editar comunidade');
+        throw new Error('Erro ao editar comunidade.');
       }
       setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
-      setMessage({ text: 'Erro ao editar comunidade', type: 'error' });
+      setMessage({ text: 'Erro ao editar comunidade.', type: 'error' });
       setIsLoading(false);
     }
   };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        <LoadingPage />
+      </div>
+    );
+  }
   return (
     <div className="flex h-screen bg-white">
       <Sidebar />
       <div className="flex-1 p-10 flex flex-col">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <LoadingPage />
-          </div>
-        ) : isModerator === false ? (
+        {isModerator === false ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <div className="mb-6 text-center text-h3 font-primary text-red-600" role="alert">
+            <div className="mb-6 text-center text-h3 font-primary --error-600" role="alert">
               Apenas moderadores podem editar esta comunidade.
             </div>
             <Button
@@ -165,7 +168,7 @@ function EditCommunityPage() {
                       value={nome}
                       onChange={handleNomeChange}
                     />
-                    {errors.nome && <span className="text-red-500 text-xs">{errors.nome}</span>}
+                    {errors.nome && <span className="--error-500 text-xs">{errors.nome}</span>}
                   </div>
                   <div className="mb-4">
                     <label className="text-b1" htmlFor="descricao-comunidade">Descrição da comunidade</label>
@@ -176,7 +179,7 @@ function EditCommunityPage() {
                       value={descricao}
                       onChange={handleDescricaoChange}
                     />
-                    {errors.descricao && <span className="text-red-500 text-xs">{errors.descricao}</span>}
+                    {errors.descricao && <span className="--error-500 text-xs">{errors.descricao}</span>}
                   </div>
                   <div className="mb-4">
                     <label className="text-b1" htmlFor="tags-comunidade">Tags da comunidade</label>
@@ -188,7 +191,7 @@ function EditCommunityPage() {
                       onChange={handleTagsChange}
                     />
                     <span className="text-xs text-gray-500">Separe as tags por vírgula. Ex: ficção, aventura, mistério</span>
-                    {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
+                    {errors.tags && <span className="--error-500 text-xs">{errors.tags}</span>}
                   </div>
                 </div>
                 {/* Upload de imagem de capa */}
