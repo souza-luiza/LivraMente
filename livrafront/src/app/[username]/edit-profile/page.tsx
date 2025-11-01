@@ -13,6 +13,7 @@ import  TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import { api } from "@/lib/api";
+import ImageCropModal from "@/components/ImageCropModal";
 
 export default function SettingsProfilePage() {
   const router = useRouter();
@@ -28,7 +29,9 @@ export default function SettingsProfilePage() {
   });
   const [errors, setErrors] = useState({ name: "", pronouns: "", profileImageUrl: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState<string>("");
+  const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -79,35 +82,46 @@ export default function SettingsProfilePage() {
       return;
     }
 
-    try {
-      setIsUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImageUrl(reader.result as string);
+      setShowCropModal(true);
+    };
+    reader.readAsDataURL(file);
+  };
 
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
+  const handleCropSave = (croppedBlob: Blob) => {
+    setCroppedImageBlob(croppedBlob);
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setFormData(prev => ({ ...prev, profileImageUrl: previewUrl }));
+    setShowCropModal(false);
+    toast.info('Imagem pronta. Clique em "Salvar Alterações" para confirmar.');
+  };
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_BASE_URL}/users/avatar`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataUpload,
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao fazer upload da imagem');
-      }
-
-      const data = await response.json();
-      setProfileImageUrl(data.avatarUrl);
-      setFormData(prev => ({ ...prev, profileImageUrl: data.avatarUrl }));
-      toast.success('Foto de perfil atualizada com sucesso!');
-    } catch (error) {
-      console.error('Erro ao fazer upload:', error);
-      toast.error('Erro ao atualizar foto de perfil');
-    } finally {
-      setIsUploadingImage(false);
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setTempImageUrl("");
+    // Resetar o input de arquivo para permitir selecionar a mesma imagem novamente
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
+  };
+
+  const handleCancel = () => {
+    // Limpar preview e blob se houver
+    if (croppedImageBlob) {
+      URL.revokeObjectURL(formData.profileImageUrl);
+      setCroppedImageBlob(null);
+    }
+    
+    // Resetar formulário para valores originais
+    setFormData({
+      name: username,
+      pronouns: pronouns,
+      profileImageUrl: profileImageUrl,
+    });
+    
+    router.back();
   };
 
   const handleSaveChanges = async (e: React.FormEvent) => {
@@ -117,6 +131,29 @@ export default function SettingsProfilePage() {
     setIsLoading(true);
 
     try {
+      // Atualizar avatar se houver imagem cortada
+      if (croppedImageBlob) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', croppedImageBlob, 'avatar.jpg');
+
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+        const response = await fetch(`${API_BASE_URL}/users/avatar`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataUpload,
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao fazer upload da imagem');
+        }
+
+        const data = await response.json();
+        setProfileImageUrl(data.avatarUrl);
+      }
+
+      // Atualizar dados do perfil
       await api.put('/users/profile', {
         username: formData.name,
         pronouns: formData.pronouns,
@@ -132,6 +169,7 @@ export default function SettingsProfilePage() {
       toast.error(error instanceof Error ? error.message : "Erro ao atualizar perfil");
     } finally {
       setIsLoading(false);
+      setCroppedImageBlob(null);
     }
   };
 
@@ -170,11 +208,6 @@ export default function SettingsProfilePage() {
                     alt="Foto do Perfil"
                     onError={(e) => { e.currentTarget.src = "/AbstractUser.png"; }}
                   />
-                  {isUploadingImage && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                    </div>
-                  )}
                 </div>
                 
                 <input
@@ -191,7 +224,6 @@ export default function SettingsProfilePage() {
                   size="small" 
                   text='Alterar Foto' 
                   onClick={handleImageClick}
-                  disabled={isUploadingImage}
                   type="button"
                 />
               </div>
@@ -232,7 +264,7 @@ export default function SettingsProfilePage() {
                   colorScheme="light-brown" 
                   size="small" 
                   text='Cancelar' 
-                  onClick={() => router.back()}
+                  onClick={handleCancel}
                   type="button"
                 />
                 <Button 
@@ -248,6 +280,13 @@ export default function SettingsProfilePage() {
           </div>
         </div>
       </main>
+
+      <ImageCropModal
+        isOpen={showCropModal}
+        imageUrl={tempImageUrl}
+        onClose={handleCropCancel}
+        onSave={handleCropSave}
+      />
     </div>
   );
 }
