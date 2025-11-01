@@ -16,9 +16,10 @@ import LogoIcon from "@/components/icons/LogoIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import ErrorIcon from "@/components/icons/ErrorIcon";
 
-const userProfile = {
-    level: 15,
-    percentage: 67,
+interface Gamification {
+    level: number;
+    XP: number;
+    XP_next_level: number;
 }
 
 interface UserData {
@@ -27,6 +28,7 @@ interface UserData {
     email: string;
     _id: string;
     avatarUrl?: string;
+    gamification: Gamification;
 }
 
 export default function UserProfilePage(){
@@ -42,6 +44,11 @@ export default function UserProfilePage(){
     
     // Verificar se é o próprio usuário logado
     const isOwnProfile = loggedUsername === username;
+
+    const calculateXPPercentage = (gamification?: Gamification) => {
+        if (!gamification) return 0;
+        return Math.round((gamification.XP / gamification.XP_next_level) * 100);
+    };
 
     useEffect(() => {
         async function fetchUserData() {
@@ -141,6 +148,9 @@ export default function UserProfilePage(){
         );
     }
 
+    const xpPercentage = calculateXPPercentage(userData.gamification);
+    const userLevel = userData.gamification?.level || 1;
+
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">
             <Sidebar />
@@ -149,13 +159,13 @@ export default function UserProfilePage(){
                 <div className="w-48 h-48 mb-4 relative">
                     <ProfileIcon 
                         size={190} 
-                        percentage={userProfile.percentage} 
+                        percentage={xpPercentage} 
                         avatarUrl={userData.avatarUrl}
                         username={userData.username}
                         className="text-[var(--success-700)]" 
                     />
                     <div className="absolute top-0 right-0 -translate-y-0 translate-x-12">
-                        <ProfileBadge content={userProfile.level} width={60} height={30} />
+                        <ProfileBadge content={userLevel} width={60} height={30} />
                     </div>
                 </div>
                 
