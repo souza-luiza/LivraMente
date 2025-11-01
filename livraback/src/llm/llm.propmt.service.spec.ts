@@ -11,7 +11,7 @@ const mockStory = {
 };
 const mockGenres = ['Fantasia', 'Comédia'];
 const mockUserWriting = 'O herói pede uma bebida.';
-const mockWordLimit = 150;
+const mockWordLimit = 200;
 
 const mockStoryModel = {
   findById: jest.fn().mockReturnThis(),
@@ -22,6 +22,8 @@ const mockStoryModel = {
 describe('LlmPromptService', () => {
   let service: LlmPromptService;
   let model: Model<StoryDocument>;
+
+  let mockMathRandom: jest.SpyInstance;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,12 +36,14 @@ describe('LlmPromptService', () => {
       ],
     }).compile();
 
+    mockMathRandom = jest.spyOn(Math, 'random').mockImplementation(() => 0);
     service = module.get<LlmPromptService>(LlmPromptService);
     model = module.get<Model<StoryDocument>>(getModelToken(Story.name));
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    mockMathRandom.mockRestore();
   });
 
   // Teste 1: Com 'userWriting' / Com Contexto
@@ -97,5 +101,49 @@ describe('LlmPromptService', () => {
     await expect(
       service.createStoryPrompt(mockGenres, mockWordLimit, mockUserWriting, 'id_falsa'),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  describe('Default Value Logic (when user does not provide)', () => {
+
+    // Teste 6: Sem 'genres' / Sem 'wordLimit'
+    it('should use default random genre and default word limit if not provided', async () => {
+      mockMathRandom.mockReturnValue(0);
+
+      const prompt = await service.createStoryPrompt(
+        undefined,  // genres
+        undefined,  // wordLimit
+        'um novo herói', // userWriting
+        undefined,  // storyId
+      );
+
+      expect(prompt).toContain('GÊNEROS: Fantasia');
+      expect(prompt).toContain('aproximadamente 200 palavras');
+    });
+
+    // Teste 7: Com 'genres' / Sem 'wordLimit'
+    it('should use provided genres but default word limit', async () => {
+      const prompt = await service.createStoryPrompt(
+        ['Mistério'], // genres
+        undefined,  // wordLimit
+        undefined,
+        undefined,
+      );
+      expect(prompt).toContain('GÊNEROS: Mistério');
+      expect(prompt).toContain('aproximadamente 200 palavras');
+    });
+
+    // Teste 8: Sem 'genres' / Com 'wordLimit'
+    it('should use random genre but provided word limit', async () => {
+      mockMathRandom.mockReturnValue(0);
+
+      const prompt = await service.createStoryPrompt(
+        undefined,  // genres
+        500,        // wordLimit
+        undefined,
+        undefined,
+      );
+      expect(prompt).toContain('GÊNEROS: Fantasia');
+      expect(prompt).toContain('aproximadamente 500 palavras'); // Usa o limite fornecido
+    });
   });
 });
