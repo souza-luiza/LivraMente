@@ -147,7 +147,7 @@ export default function CreateStory() {
                 >
                   <div
                     className={`max-w-3xl rounded-lg px-4 py-3 ${message.role === 'user'
-                      ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                      ? 'bg-primary-600 dark:bg-teal-900 text-white'
                       : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
                       }`}
                   >
@@ -207,15 +207,15 @@ export default function CreateStory() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder={opcoes.length > 0
-                ? 'Escolha uma das opções acima para continuar...'
+                ? 'Escolha uma das opções acima OU escreva sua própria ação...'
                 : 'Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens...'
               }
               className="flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               rows={1}
-              disabled={isLoading || opcoes.length > 0}
+              disabled={isLoading}
             />
             <div className="flex h-full">
-              <TextlessButton icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim() || opcoes.length > 0} />
+              <TextlessButton icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
