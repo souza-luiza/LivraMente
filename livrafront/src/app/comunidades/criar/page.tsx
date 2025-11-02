@@ -1,9 +1,10 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
+import TagsDropdown from '@/components/tags-dropdown';
 import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
@@ -15,14 +16,13 @@ export default function CreateCommunityPage() {
   const router = useRouter();
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [tags, setTags] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; foto?: string }>({});
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value);
-  const handleDescricaoChange = (e: React.ChangeEvent<HTMLInputElement>) => setDescricao(e.target.value);
-  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value);
+  const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setDescricao(e.target.value);
   const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFoto(e.target.files[0]);
@@ -35,7 +35,7 @@ export default function CreateCommunityPage() {
     const newErrors: typeof errors = {};
     if (!nome.trim()) newErrors.nome = 'O nome é obrigatório.';
     if (!descricao.trim()) newErrors.descricao = 'A descrição é obrigatória.';
-    if (!tags.trim()) newErrors.tags = 'As tags são obrigatórias.';
+    if (!tags || tags.length === 0) newErrors.tags = 'As tags são obrigatórias.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -48,8 +48,8 @@ export default function CreateCommunityPage() {
     try {
       const formData = new FormData();
       formData.append('nome', nome);
-      formData.append('descricao', descricao);
-      formData.append('tags', tags);
+  formData.append('descricao', descricao);
+  formData.append('tags', Array.isArray(tags) ? tags.join(', ') : tags);
       if (foto) formData.append('foto', foto);
       const userId = localStorage.getItem('userId');
       if (userId) formData.append('moderadores', userId);
@@ -104,7 +104,7 @@ export default function CreateCommunityPage() {
                 icon={<ArrowLeftIcon />}
                 size="medium"
                 colorScheme="light-green"
-                onClick={() => router.push('/communities')}
+                onClick={() => router.push('/comunidades')}
               />
               <div className="w-6" />
               <h1 className="text-h3">Crie sua nova comunidade</h1>
@@ -127,25 +127,18 @@ export default function CreateCommunityPage() {
                   </div>
                   <div className="mb-4">
                     <label className="text-b1" htmlFor="descricao-comunidade">Descrição da comunidade</label>
-                    <Input
+                    <textarea
                       id="descricao-comunidade"
                       placeholder="Digite a descrição da comunidade"
-                      className="h-32 w-full"
+                      className={`h-32 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 text-gray-900 border border-gray-300 bg-white focus:ring-green-900 focus:border-green-900 hover:border-gray-400 medium-box text-b2 w-full light-neutral resize-none`}
                       value={descricao}
                       onChange={handleDescricaoChange}
                     />
                     {errors.descricao && <span className="text-red-500 text-xs">{errors.descricao}</span>}
                   </div>
-                  <div className="mb-4">
-                    <label className="text-b1" htmlFor="tags-comunidade">Tags da comunidade</label>
-                    <Input
-                      id="tags-comunidade"
-                      placeholder="Digite as tags da comunidade"
-                      className="w-full"
-                      value={tags}
-                      onChange={handleTagsChange}
-                    />
-                    <span className="text-xs text-gray-500">Separe as tags por vírgula. Ex: ficção, aventura, mistério</span>
+                    <div className="mb-4">
+                    <label className="text-b1" id="tags-comunidade-label">Tags da comunidade</label>
+                    <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
                     {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
                   </div>
                 </div>
@@ -181,6 +174,7 @@ export default function CreateCommunityPage() {
               </div>
               <div className="mb-4 flex justify-center">
                 <Button
+                  type="submit"
                   text="Criar comunidade"
                   icon={<CheckIcon />}
                   size="large"
