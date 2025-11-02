@@ -8,10 +8,6 @@ import ShareIcon from "@/components/icons/ShareIcon";
 import TextlessButton from "@/components/textless-button";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 type Opcao = {
   id: number;
   texto: string;
@@ -46,11 +42,7 @@ export default function CreateStory() {
 
     const userMessage = opcaoTexto || input.trim();
 
-<<<<<<< Updated upstream
-    if (!input.trim() || isLoading) return;
-=======
     if (!userMessage || isLoading) return;
->>>>>>> Stashed changes
 
     setInput('');
     setOpcoes([]);
@@ -104,12 +96,6 @@ export default function CreateStory() {
   }, 1000);
 }; */}
 
-<<<<<<< Updated upstream
-//MUDEI ATÉ AQUI não quebrou
-=======
-  //MUDEI ATÉ AQUI não quebrou
->>>>>>> Stashed changes
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -138,7 +124,6 @@ export default function CreateStory() {
         <div className="max-w-5xl mx-auto px-4 py-8">
           {messages.length === 0 ? (
             <div className="text-center py-2">
-<<<<<<< Updated upstream
               <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-6">
               </div>
               <h4 className="text-h4 font-semibold text-gray-900 dark:text-white mb-2">
@@ -165,17 +150,11 @@ export default function CreateStory() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {messages.map((message, idx) => (
-=======
-              {/* ... seu código da tela inicial ... */}
-            </div>
-          ) : (
+        
             // Tela do Chat
             <div className="space-y-4">
               {messages.map((message, idx) => (
                 // O map das mensagens (user/assistant) está perfeito
->>>>>>> Stashed changes
                 <div
                   key={idx}
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -186,19 +165,6 @@ export default function CreateStory() {
                       : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
                       }`}
                   >
-<<<<<<< Updated upstream
-                    <div className="flex items-start gap-3">
-                      {message.role === 'assistant' && (
-                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          {/* <SparklesIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" /> */}
-                        </div>
-                      )}
-                      <p className="whitespace-pre-wrap leading-relaxed text-sm">{message.content}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-=======
                     {/* ... seu código de balão de chat ... */}
                     <p className="whitespace-pre-wrap leading-relaxed text-sm">{message.content}</p>
                   </div>
@@ -224,7 +190,6 @@ export default function CreateStory() {
               )}
 
               {/* Bloco 2: Renderiza o LOADING (SE estiver carregando) */}
->>>>>>> Stashed changes
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-3xl rounded-lg px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -250,15 +215,6 @@ export default function CreateStory() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-<<<<<<< Updated upstream
-              placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
-              className="flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              rows={1}
-              disabled={isLoading}
-            />
-            <div className="flex h-full">
-              <TextlessButton icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={handleSend} disabled={isLoading || !input.trim()} />
-=======
               placeholder={opcoes.length > 0
                 ? 'Escolha uma das opções acima para continuar...'
                 : 'Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens...'
@@ -269,7 +225,6 @@ export default function CreateStory() {
             />
             <div className="flex h-full">
               <TextlessButton icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim() || opcoes.length > 0} />
->>>>>>> Stashed changes
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
