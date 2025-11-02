@@ -100,7 +100,7 @@ export default function ReadlistPage() {
           // Converter os dados básicos para o formato esperado
           const publicReadlistData: ReadlistDetailResponse = {
             ...foundReadlist,
-            livros: [] // Readlists públicas não vêm com livros populados
+            livros: [] // TODO: Readlists públicas não vêm com livros populados
           };
           setReadlistData(publicReadlistData);
         }
