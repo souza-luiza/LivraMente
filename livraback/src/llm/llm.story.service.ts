@@ -5,6 +5,7 @@ import { Story, StoryDocument } from '../schemas/story.schema';
 import { LlmPromptService } from './llm.prompt.service';
 import { LlmApiService } from './llm.api.service';
 import { GenerateTextDTO } from './dto/generate-text.dto';
+import { LlmApiResponseDTO } from './dto/llm-api.response.dto';
 import { LlmResponseDTO, OpcaoDTO } from './dto/llm-response.dto';
 
 @Injectable()
@@ -13,12 +14,12 @@ export class LlmStoryService {
     @InjectModel(Story.name) private storyModel: Model<StoryDocument>,
     private readonly promptService: LlmPromptService,
     private readonly apiService: LlmApiService,
-  ) {}
+  ) { }
 
   async generateAndSaveStory(
     dto: GenerateTextDTO,
   ): Promise<LlmResponseDTO> {
-    
+
     const prompt = await this.promptService.createStoryPrompt(
       dto.genres,
       dto.wordLimit,
@@ -26,43 +27,47 @@ export class LlmStoryService {
       dto.storyId,
     );
 
-    const aiResponse = await this.apiService.generateContent(prompt);
+    const aiResponse: LlmApiResponseDTO = await this.apiService.generateContent(prompt);
+
+    const novasOpcoesComId: OpcaoDTO[] = aiResponse.novasOpcoes.map((texto, index) => {
+      return { id: index + 1, texto: texto };
+    });
 
     const savedStory = await this.saveOrUpdateStory(
-      dto.storyId,
+      dto,
       aiResponse.textoCapitulo,
-      aiResponse.novasOpcoes,
+      novasOpcoesComId,
     );
 
-    if( !savedStory){
+    if (!savedStory) {
       throw new NotFoundException(`História com ID ${dto.storyId} não encontrada.`);
     }
 
     return {
-      storyId: (savedStory as any)._id.toString(), // O ID da história (seja ela nova ou atualizada)
+      storyId: (savedStory as any)._id.toString(),
       textoCapitulo: aiResponse.textoCapitulo,
-      novasOpcoes: aiResponse.novasOpcoes,
+      novasOpcoes: novasOpcoesComId,
     };
   }
 
   private async saveOrUpdateStory(
-    storyId: string | undefined,
+    dto: GenerateTextDTO,
     textoCapitulo: string,
     novasOpcoes: OpcaoDTO[],
   ): Promise<StoryDocument | null> {
 
-
-    if (storyId) {
-      return this.storyModel.findByIdAndUpdate( storyId,
-          {
-            $set: { summary: textoCapitulo }, 
-          },
-          { new: true }, // Retorna o documento atualizado
-        )
+    if (dto.storyId) {
+      return this.storyModel.findByIdAndUpdate(dto.storyId,
+        {
+          $set: { summary: textoCapitulo },
+        },
+        { new: true },
+      )
         .exec();
     } else {
       const newStory = new this.storyModel({
         summary: textoCapitulo, 
+        title: dto.userWriting || 'Nova História',
       });
       return newStory.save();
     }
