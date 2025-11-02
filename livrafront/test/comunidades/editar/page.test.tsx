@@ -41,7 +41,8 @@ describe('EditarComunidadePage', () => {
     });
     expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Descrição Teste')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('tag1, tag2')).toBeInTheDocument();
+  expect(screen.getByText('tag1')).toBeInTheDocument();
+  expect(screen.getByText('tag2')).toBeInTheDocument();
   });
 
   it('valida campos obrigatórios', async () => {
@@ -51,7 +52,10 @@ describe('EditarComunidadePage', () => {
     });
     fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: '' } });
     fireEvent.change(screen.getByPlaceholderText('Digite a descrição da comunidade'), { target: { value: '' } });
-    fireEvent.change(screen.getByPlaceholderText('Digite as tags da comunidade'), { target: { value: '' } });
+    const tagsBtn = screen.getByRole('button', { name: 'Tags da comunidade' });
+    fireEvent.click(tagsBtn);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'tag1' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'tag2' }));
     fireEvent.click(screen.getByText('Salvar alterações'));
     expect(await screen.findByText('O nome é obrigatório.')).toBeInTheDocument();
     expect(screen.getByText('A descrição é obrigatória.')).toBeInTheDocument();
@@ -169,16 +173,18 @@ it('envia dados para o backend ao editar comunidade', async () => {
   });
   fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: 'Novo Nome' } });
   fireEvent.change(screen.getByPlaceholderText('Digite a descrição da comunidade'), { target: { value: 'Nova Descrição' } });
-  fireEvent.change(screen.getByPlaceholderText('Digite as tags da comunidade'), { target: { value: 'tag3, tag4' } });
+  const tagsBtn = screen.getByRole('button', { name: 'Tags da comunidade' });
+  fireEvent.click(tagsBtn);
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Romance' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Fantasia' }));
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:3000/comunidades',
-      expect.objectContaining({
-        method: 'PATCH',
-        body: expect.any(FormData),
-      })
-    );
+    expect(global.fetch).toHaveBeenCalled();
+    const init = (global.fetch as jest.Mock).mock.calls[1][1] as RequestInit; 
+    const body = init.body as FormData;
+    const tagsSent = String(body.get('tags'));
+    expect(tagsSent).toEqual(expect.stringContaining('Romance'));
+    expect(tagsSent).toEqual(expect.stringContaining('Fantasia'));
   });
 });
 it('redireciona para /comunidades ao clicar no botão de voltar', async () => {

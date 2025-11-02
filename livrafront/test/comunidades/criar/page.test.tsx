@@ -54,15 +54,18 @@ describe('CreateCommunityPage', () => {
   render(<CreateCommunityPage />);
   fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
   fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
-  fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+  const tagsBtn = screen.getByRole('button', { name: 'Tags da comunidade' });
+  fireEvent.click(tagsBtn);
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Romance' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Aventura' }));
   await act(async () => {
     fireEvent.click(screen.getByText('Criar comunidade'));
   });
   await waitFor(() => {
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/comunidades'),
-      expect.objectContaining({ method: 'POST' })
-    );
+    expect(fetchMock).toHaveBeenCalled();
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    const body = init.body as FormData;
+    expect(body.get('tags')).toBe('Romance, Aventura');
   });
   fetchMock.mockRestore();
   });
@@ -71,7 +74,10 @@ describe('CreateCommunityPage', () => {
     render(<CreateCommunityPage />);
     fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
     fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
-    fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+    const tagsBtn = screen.getByRole('button', { name: 'Tags da comunidade' });
+    fireEvent.click(tagsBtn);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Romance' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Aventura' }));
     await act(async () => {
       fireEvent.click(screen.getByText('Criar comunidade'));
     });
@@ -100,7 +106,10 @@ describe('CreateCommunityPage', () => {
     render(<CreateCommunityPage />);
     fireEvent.change(screen.getByLabelText('Nome da comunidade'), { target: { value: 'Minha Comunidade' } });
     fireEvent.change(screen.getByLabelText('Descrição da comunidade'), { target: { value: 'Descrição' } });
-    fireEvent.change(screen.getByLabelText('Tags da comunidade'), { target: { value: 'tag1, tag2' } });
+    const tagsBtn = screen.getByRole('button', { name: 'Tags da comunidade' });
+    fireEvent.click(tagsBtn);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Romance' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Aventura' }));
     await act(async () => {
       fireEvent.click(screen.getByText('Criar comunidade'));
     });
