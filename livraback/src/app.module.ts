@@ -15,6 +15,7 @@ import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { Comunidade, ComunidadeSchema } from './schemas/comunidade.schemas';
 import { ReadlistsModule } from './readlists/readlists.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ReadlistsModule } from './readlists/readlists.module';
     UsersModule,
     AuthModule,
     ReadlistsModule,
+    PostsModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

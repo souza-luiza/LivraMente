@@ -9,6 +9,7 @@ import OpenBookIcon from "@/components/icons/OpenBookIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import RemoveIcon from "@/components/icons/RemoveIcon";
 import CheckIcon from "@/components/icons/CheckIcon";
+import CreatePostModal from "@/components/CreatePostModal";
 
 interface CommunityPageButtonsProps {
     community: string;
@@ -19,9 +20,22 @@ interface CommunityPageButtonsProps {
 export default function CommunityPageButtons({ community, isMember, isMod }: CommunityPageButtonsProps) {
     
     const [leaveCommunity, setLeaveCommunity] = useState(false);
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
     const handleClick = () => {
         // Lógica para entrar/sair da comunidade
+    }
+
+    const handleOpenPostModal = () => {
+        setIsPostModalOpen(true);
+    }
+
+    const handleClosePostModal = () => {
+        setIsPostModalOpen(false);
+    }
+
+    const handlePost = (data: { content: string; images: string[]; requestReview: boolean }) => {
+        // TODO: Implementar lógica de criação de post na API
     }
 
     return (
@@ -45,14 +59,14 @@ export default function CommunityPageButtons({ community, isMember, isMod }: Com
                 icon={<Edit2Icon />}
                 colorScheme="light-green"
                 size="medium"
-                path={`/${community}/postar` /* PROVISÓRIO */}
+                onClick={handleOpenPostModal}
             />
             <Button
                 text="Wiki"
                 icon={<OpenBookIcon />}
                 colorScheme="light-green"
                 size="medium"
-                path={"`/wiki/${community}`" /* PROVISÓRIO */}
+                path={`/wiki/${community}` /* PROVISÓRIO */}
             />
             {isMod && 
             <Button
@@ -62,6 +76,14 @@ export default function CommunityPageButtons({ community, isMember, isMod }: Com
                 size="medium"
                 path={`/${community}/editar-comunidade` /* PROVISÓRIO */}
             />}
+
+            {/* Modal de Criação de Post */}
+            <CreatePostModal
+                isOpen={isPostModalOpen}
+                onClose={handleClosePostModal}
+                communityName={community}
+                onPost={handlePost}
+            />
         </div>
     )
 }
