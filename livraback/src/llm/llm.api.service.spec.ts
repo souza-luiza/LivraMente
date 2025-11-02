@@ -11,16 +11,21 @@ const mockGenerateContent = jest.fn();
 const mockGetGenerativeModel = jest.fn(() => ({
   generateContent: mockGenerateContent,
 }));
-const mockGoogleGenerativeAI = jest.fn(() => ({
-  getGenerativeModel: mockGetGenerativeModel,
-}));
-const actualGenAI = jest.requireActual('@google/generative-ai');
 
-jest.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: mockGoogleGenerativeAI,
-  HarmCategory: actualGenAI.HarmCategory,
-  HarmBlockThreshold: actualGenAI.HarmBlockThreshold,
-}));
+jest.mock('@google/generative-ai', () => {
+  const actualGenAI = jest.requireActual('@google/generative-ai');
+  return {
+    GoogleGenerativeAI: jest.fn(() => ({
+      getGenerativeModel: mockGetGenerativeModel,
+    })),
+    HarmCategory: actualGenAI.HarmCategory,
+    HarmBlockThreshold: actualGenAI.HarmBlockThreshold,
+  };
+});
+
+const { GoogleGenerativeAI: MockedGoogleGenerativeAI } = 
+  jest.requireMock('@google/generative-ai');
+
 jest.mock('class-transformer', () => ({
   ...jest.requireActual('class-transformer'),
   plainToInstance: jest.fn(),
@@ -55,18 +60,21 @@ describe('LlmApiService', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   describe('onModuleInit', () => {
     it('should initialize GoogleGenerativeAI with API key', () => {
       mockConfigService.get.mockReturnValue('fake-key');
       service.onModuleInit();
-      expect(mockGoogleGenerativeAI).toHaveBeenCalledWith('fake-key');
+      expect(mockConfigService.get).toHaveBeenCalledWith('GOOGLE_API_KEY');
+      expect(MockedGoogleGenerativeAI).toHaveBeenCalledWith('fake-key');
     });
 
     it('should throw error if API key is not found', () => {
       mockConfigService.get.mockReturnValue(undefined);
-      expect(() => service.onModuleInit()).toThrow(
-        'GOOGLE_API_KEY was not found on .env',
-      );
+      expect(() => service.onModuleInit()).toThrow('GOOGLE_API_KEY was not found on .env');
     });
   });
 
@@ -80,30 +88,28 @@ describe('LlmApiService', () => {
       const prompt = 'test prompt';
       const aiResponseJson = {
         textoCapitulo: 'O capítulo...',
-        novasOpcoes: ['Opção 1', 'Opção 2', 'Opção 3', 'Opção 4'], // Resposta como string[]
+        novasOpcoes: ['op1', 'op2', 'op3', 'op4'],
       };
       const aiResponseString = JSON.stringify(aiResponseJson);
       const mockDto = new LlmApiResponseDTO();
       mockDto.textoCapitulo = aiResponseJson.textoCapitulo;
       mockDto.novasOpcoes = aiResponseJson.novasOpcoes;
 
-      mockGenerateContent.mockResolvedValue({
-        response: { text: () => aiResponseString },
-      });
+      mockGenerateContent.mockResolvedValue({ response: { text: () => aiResponseString } });
       mockedPlainToInstance.mockReturnValue(mockDto);
       mockedValidate.mockResolvedValue([]);
 
       const result = await service.generateContent(prompt);
 
       expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-        model: expect.any(String),
+        model: 'gemini-2.5-flash',
         safetySettings: expect.any(Array),
       });
+
       expect(mockGenerateContent).toHaveBeenCalledWith({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: expect.any(Object),
       });
-
       expect(mockedPlainToInstance).toHaveBeenCalledWith(LlmApiResponseDTO, aiResponseJson);
       expect(mockedValidate).toHaveBeenCalledWith(mockDto);
       expect(result).toBe(mockDto);
@@ -138,7 +144,7 @@ describe('LlmApiService', () => {
     });
 
     it('should throw if AI response fails DTO validation', async () => {
-      const responseJson = { textoCapitulo: 'curto' }; // Falha no @Length
+      const responseJson = { textoCapitulo: 'curto' };
       const mockDto = { textoCapitulo: 'curto' };
       const validationErrors = [{ property: 'textoCapitulo' }];
 

@@ -76,7 +76,7 @@ export class LlmPromptService {
       A API está forçando uma resposta "application/json".
       Responda APENAS com um objeto JSON válido contendo:
       - "textoCapitulo": (string) O texto da história.
-      - "novasOpcoes": (string[]) Um array com EXATAMENTE 4 strings de opção.
+      - "novasOpcoes": (string[]) Um array com EXATAMENTE 4 strings.
     `;
 
     return prompt;

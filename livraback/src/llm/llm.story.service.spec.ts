@@ -28,12 +28,7 @@ const mockStoryModel = jest.fn().mockImplementation(() => ({
 
 const mockAiResponse = {
   textoCapitulo: 'Era uma vez um capítulo...',
-  novasOpcoes: [
-    { id: 1, texto: 'opção 1' },
-    { id: 2, texto: 'opção 2' },
-    { id: 3, texto: 'opção 3' },
-    { id: 4, texto: 'opção 4' },
-  ],
+  novasOpcoes: ['opção 1', 'opção 2', 'opção 3', 'opção 4'],
 };
 
 const mockPrompt = 'Você é um assistente...';
@@ -67,8 +62,6 @@ describe('LlmStoryService', () => {
     it('should create and save a new story', async () => {
       const dto: GenerateTextDTO = {
         userWriting: 'Uma nova história',
-        genres: ['Fantasia'],
-        wordLimit: 150,
         storyId: undefined,
       };
 
@@ -88,7 +81,10 @@ describe('LlmStoryService', () => {
       );
       expect(mockApiService.generateContent).toHaveBeenCalledWith(mockPrompt);
       
-      expect(mockStoryModel).toHaveBeenCalledWith({ summary: mockAiResponse.textoCapitulo });
+      expect(mockStoryModel).toHaveBeenCalledWith({ 
+        summary: mockAiResponse.textoCapitulo,
+        title: dto.userWriting || 'Nova História',
+      });
       expect(mockSave).toHaveBeenCalledTimes(1);
       
       expect((mockStoryModel as any).findByIdAndUpdate).not.toHaveBeenCalled();
@@ -96,7 +92,12 @@ describe('LlmStoryService', () => {
       expect(result).toEqual({
         storyId: mockNewStoryId,
         textoCapitulo: mockAiResponse.textoCapitulo,
-        novasOpcoes: mockAiResponse.novasOpcoes,
+        novasOpcoes: [
+          { id: 1, texto: 'opção 1' },
+          { id: 2, texto: 'opção 2' },
+          { id: 3, texto: 'opção 3' },
+          { id: 4, texto: 'opção 4' },
+        ],
       });
     });
   });
@@ -136,14 +137,18 @@ describe('LlmStoryService', () => {
       expect(result).toEqual({
         storyId: existingStoryId,
         textoCapitulo: mockAiResponse.textoCapitulo,
-        novasOpcoes: mockAiResponse.novasOpcoes,
+        novasOpcoes: [
+          { id: 1, texto: 'opção 1' },
+          { id: 2, texto: 'opção 2' },
+          { id: 3, texto: 'opção 3' },
+          { id: 4, texto: 'opção 4' },
+        ],
       });
     });
   });
 
   describe('Cenário 3: Erro (História não encontrada)', () => {
     it('should throw NotFoundException if storyId is invalid', async () => {
-      // Arrange
       const invalidStoryId = 'id-falso-789';
       const dto: GenerateTextDTO = {
         userWriting: 'A continuação',
