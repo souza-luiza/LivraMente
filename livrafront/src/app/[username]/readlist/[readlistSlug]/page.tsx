@@ -19,14 +19,6 @@ import { ReadlistDetailResponse } from '@/types/readlist';
 import LoadingPage from '@/components/loading';
 import ErrorIcon from '@/components/icons/ErrorIcon';
 
-// Função para converter slug em título
-function slugToTitle(slug: string): string {
-  return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
 export default function ReadlistPage() {
   const router = useRouter();
   const params = useParams();
@@ -81,8 +73,8 @@ export default function ReadlistPage() {
         // Encontrar a readlist comparando slugs normalizados
         const foundReadlist = readlists.find(rl => {
           const normalized = toSlug(rl.nome);
-          console.log(`- Comparando: "${normalized}" === "${readlistSlug}"?`, normalized === readlistSlug);
-          return normalized === readlistSlug;
+          console.log(`- Comparando: "${normalized}" === "${toSlug(readlistSlug)}"?`, normalized === toSlug(readlistSlug));
+          return normalized === toSlug(readlistSlug);
         });
 
         console.log('- Readlist encontrada?', !!foundReadlist);
@@ -108,7 +100,7 @@ export default function ReadlistPage() {
         }
 
       } catch (err) {
-        console.error('❌ Erro ao carregar readlist:', err);
+        console.error('Erro ao carregar readlist:', err);
         setError((err as Error).message);
       } finally {
         setLoading(false);
