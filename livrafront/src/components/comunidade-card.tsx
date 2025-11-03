@@ -5,14 +5,14 @@ export default function Comunidade({ id, name, descricao, image}: {id?:string; n
     return (
         <Link href={`/comunidades/${id}`} className="w-full flex items-center p-4 gap-2 hover:shadow-md transition-shadow medium-border-radius">
             {/*Coluna da Imagem*/}
-            <div className="w-1/5 overflow-hidden rounded-full border-[2px]" style={{width: 80, height: 80}}>
-                <Image
-                    src={image || "/team/Kemi.jpg"}
+            <div className="w-1/5 overflow-hidden rounded-full border-[3px] text-[var(--primary-700)] bg-[#3D552F]" style={{width: 80, height: 80}}>
+                {image ? (<Image
+                    src={image}
                     alt={"Imagem da Comunidade"}
                     width={80}
                     height={80}
                     className="object-cover"
-                />
+                />) : null}
             </div>
 
             {/*Coluna do conteúdo*/}

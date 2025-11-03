@@ -1,4 +1,4 @@
-import Comunidade from "@/components/comunidade"
+import Comunidade from "@/components/comunidade-card"
 
 const comunidades = [
     {
@@ -40,7 +40,7 @@ const comunidades = [
         id: "6",
         name: "Estilhaça-me",
         descricao: "Depois de passar toda a vida privada de liberdade, ela finalmente está encontrando forças para lutar e para viver um futuro com o garoto que pensava ter perdido",
-        imageUrl: "",
+        imageUrl: "/team/Kemi.jpg",
         generos: ["distopia", "romance"]
     },
 ]
