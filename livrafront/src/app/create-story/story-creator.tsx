@@ -1,12 +1,23 @@
 'use client';
 
 import { useEffect, useRef } from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Button from "@/components/button";
 import SaveIcon from "@/components/icons/SaveIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
 import TextlessButton from "@/components/textless-button";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
+
+const SUGESTOES_POOL = [
+  'Escreva uma fantasia épica com dragões e magia',
+  'Crie um mistério ambientado na Londres vitoriana',
+  'Conte uma história de ficção científica sobre Aliens',
+  'Desenvolva um romance em uma pequena cidade costeira',
+  'Um detetive que viaja no tempo para resolver crimes',
+  'A história de um chef que cozinha pratos mágicos',
+  'Uma aventura de piratas em um mar de estrelas',
+  'Um thriller psicológico sobre um escritor que...',
+];
 
 type Opcao = {
   id: number;
@@ -27,6 +38,11 @@ export default function CreateStory() {
   const [buttonAlign, setButtonAlign] = useState<'center' | 'flex-end'>('center');
   const [storyId, setStoryId] = useState<string | null>(null);
   const [opcoes, setOpcoes] = useState<Opcao[]>([]);
+
+  const sugestoes = useMemo(() => {
+    const shuffled = [...SUGESTOES_POOL].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 4);
+  }, []);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -111,21 +127,20 @@ export default function CreateStory() {
         <div className="max-w-5xl mx-auto px-4 py-8">
           {messages.length === 0 ? (
             <div className="text-center py-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-4">
               </div>
               <h4 className="text-h4 font-semibold text-gray-900 dark:text-white mb-2">
                 Comece a criar a sua história!
               </h4>
               <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                 Descreva a sua ideia de história, personagens ou enredo, e eu ajudarei você a criar uma narrativa envolvente.
+                {/*não sei se ficou muito legal a disposição, mas da para deixar de sugestão*/}
+                <br />
+                <br />
+                Escolha uma das sugestões abaixo para começar, caso não tenha ideia por onde iniciar:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                {[
-                  'Escreva uma fantasia épica com dragões e magia',
-                  'Crie um mistério ambientado na Londres vitoriana',
-                  'Conte uma história de ficção científica sobre Aliens',
-                  'Desenvolva um romance em uma pequena cidade costeira',
-                ].map((suggestion, idx) => (
+                {sugestoes.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => setInput(suggestion)}
@@ -163,11 +178,11 @@ export default function CreateStory() {
                 </div>
               ))}
 
-               {/* Bloco 1: Renderiza as OPÇÕES (SE não estiver carregando E elas existirem) */}
+              {/* Bloco 1: Renderiza as OPÇÕES (SE não estiver carregando E elas existirem) */}
               {!isLoading && opcoes.length > 0 && (
                 <div className="flex justify-start">
                   <div className="max-w-3xl w-full flex flex-col items-start gap-2">
-                    {opcoes.map((opcao) => ( 
+                    {opcoes.map((opcao) => (
                       <button
                         key={opcao.id}
                         onClick={() => handleSend(opcao.texto)}
@@ -176,6 +191,25 @@ export default function CreateStory() {
                         {opcao.texto}
                       </button>
                     ))}
+
+                    <div className="flex w-full gap-2 pt-2">
+                      {/* O BOTÃO EXTRA - caso o user não goste de nenhuma opção */}
+                      <button
+                        onClick={() => handleSend("Nenhuma dessas. Me dê 4 opções diferentes.")}
+                        className="p-3 w-1/2 text-left bg-white dark:bg-red-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                      >
+                        Nenhuma das opções. Gerar novas ideias.
+                      </button>
+
+                      {/*Botão para salvar rascunho - ainda não implementado */}
+                      <button
+                        onClick={() => handleSend("Salvar rascunho")}
+                        className="p-3 w-1/2 text-left bg-white dark:bg-green-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                        >
+                        Salvar rascunho
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               )}
@@ -195,10 +229,10 @@ export default function CreateStory() {
             </div>
           )}
         </div>
-      </main>
+      </main >
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 sticky bottom-0">
+      < div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 sticky bottom-0" >
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col">
           <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 dark:focus-within:ring-primary-400 focus-within:border-transparent">
             <textarea
@@ -222,7 +256,7 @@ export default function CreateStory() {
             O Criador de Histórias é alimentado por IA e pode gerar conteúdo impreciso ou inadequado. Use com cautela.
           </p>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
