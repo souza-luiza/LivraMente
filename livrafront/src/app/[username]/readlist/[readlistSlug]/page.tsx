@@ -16,6 +16,7 @@ import SearchBar from '@/components/searchbar';
 import Button from '@/components/button';
 import { getUserReadlists, getPublicReadlists, getReadlistById, updateReadlist } from '@/services/readlist';
 import { ReadlistDetailResponse } from '@/types/readlist';
+import LoadingPage from '@/components/loading';
 
 // Função para converter slug em título
 function slugToTitle(slug: string): string {
@@ -150,11 +151,7 @@ export default function ReadlistPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
-        <div className="text-h4" style={{ color: 'var(--secondary-800)' }}>
-          Carregando readlist...
-        </div>
-      </div>
+        <LoadingPage />
     );
   }
 
