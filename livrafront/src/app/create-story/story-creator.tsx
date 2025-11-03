@@ -44,15 +44,39 @@ export default function CreateStory() {
     return shuffled.slice(0, 4);
   }, []);
 
+  const handleNewStory = () => {
+    localStorage.removeItem('storyDraft');
+    setMessages([]);
+    setOpcoes([]);
+    setStoryId(null);
+    setInput('');
+  };
+
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = '60px';
-      const scrollHeight = textarea.scrollHeight;
-      textarea.style.height = Math.min(scrollHeight, 280) + 'px';
-      setButtonAlign(scrollHeight > 60 ? 'flex-end' : 'center');
+    const savedDraft = localStorage.getItem('storyDraft');
+    if (savedDraft) {
+      try {
+        const { messages, opcoes, storyId } = JSON.parse(savedDraft);
+        setMessages(messages);
+        setOpcoes(opcoes);
+        setStoryId(storyId);
+      } catch (e) {
+
+        localStorage.removeItem('storyDraft');
+      }
     }
-  }, [input]);
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const draft = {
+        messages: messages,
+        opcoes: opcoes,
+        storyId: storyId,
+      };
+      localStorage.setItem('storyDraft', JSON.stringify(draft));
+    }
+  }, [messages, opcoes, storyId]);
 
   const handleSend = async (opcaoTexto?: string) => {
 
@@ -201,12 +225,12 @@ export default function CreateStory() {
                         Nenhuma das opções. Gerar novas ideias.
                       </button>
 
-                      {/*Botão para salvar rascunho - ainda não implementado */}
+                      {/*Botão para iniciar nova história */}
                       <button
-                        onClick={() => handleSend("Salvar rascunho")}
+                        onClick={handleNewStory}
                         className="p-3 w-1/2 text-left bg-white dark:bg-green-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
-                        >
-                        Salvar rascunho
+                      >
+                        Iniciar nova história
                       </button>
                     </div>
 
