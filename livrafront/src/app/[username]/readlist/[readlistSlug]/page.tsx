@@ -17,6 +17,7 @@ import Button from '@/components/button';
 import { getUserReadlists, getPublicReadlists, getReadlistById, updateReadlist } from '@/services/readlist';
 import { ReadlistDetailResponse } from '@/types/readlist';
 import LoadingPage from '@/components/loading';
+import ErrorIcon from '@/components/icons/ErrorIcon';
 
 // Função para converter slug em título
 function slugToTitle(slug: string): string {
@@ -158,10 +159,10 @@ export default function ReadlistPage() {
   // Error state
   if (error || !readlistData) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
-        <div className="text-center max-w-md px-6">
+      <div className="flex flex-col min-h-screen items-center justify-center">
+        <div className="text-center">
           {/* Ícone de erro */}
-          <div className="mb-4 text-6xl">❌</div>
+          <div className="mb-4 flex justify-center"><ErrorIcon size={120} fill='var(--error-600)' aria-label="Logo" role='img'/></div>
           
           {/* Título do erro */}
           <h1 className="text-h3 mb-3" style={{ color: 'var(--error-600)' }}>
@@ -170,7 +171,7 @@ export default function ReadlistPage() {
           
           {/* Mensagem de erro */}
           <p className="text-b1 mb-6" style={{ color: 'var(--secondary-800)' }}>
-            {error || 'Readlist não encontrada'}
+            {error?.includes('fetch') ? 'Falha ao buscar' : 'Readlist não encontrada'}
           </p>
           
           {/* Botões de ação */}
