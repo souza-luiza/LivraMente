@@ -118,15 +118,16 @@ describe('ReadlistsPage', () => {
 			}));
 		}) as jest.Mock;
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-		await act(async () => {
-			render(<ReadlistsPage />);
-		});
-		await waitFor(() => {
-			const voltarBtn = screen.getByLabelText('Voltar');
-			expect(voltarBtn).toBeInTheDocument();
-			(voltarBtn as HTMLElement).click();
-			expect(mockPush).toHaveBeenCalledWith('/john_doe');
-		});
+			await act(async () => {
+				render(<ReadlistsPage />);
+			});
+			await waitFor(() => {
+				const voltarBtn = screen.getByLabelText('Voltar');
+				expect(voltarBtn).toBeInTheDocument();
+				// The link renders as an anchor; verify its href instead of relying on router.push
+				const anchor = voltarBtn.closest('a');
+				expect(anchor).toHaveAttribute('href', '/john_doe');
+			});
 	});
 
 	it('renders many readlists and edge-case data', async () => {

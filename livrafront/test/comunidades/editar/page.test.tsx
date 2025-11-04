@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Page from '@/app/comunidades/editar/page';
+import Page from '@/app/comunidade/[community]/editar/page';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
