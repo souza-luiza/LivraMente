@@ -14,6 +14,10 @@ import AdventureIcon from "@/components/icons/AdventureIcon";
 import { Comunidade } from "@/types/comunidade";
 import { getComunidades } from "@/services/comunidades";
 import LoadingPage from "@/components/loading";
+import ErrorIcon from "@/components/icons/ErrorIcon";
+import Button from "@/components/button";
+import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
+import HomeIcon from "@/components/icons/HomeIcon";
 
 export default function ComunidadesTabs() {
     const [value, setValue] = useState('romance');
@@ -47,8 +51,10 @@ export default function ComunidadesTabs() {
     );
 
     if (error) return (
-        <div className="flex flex-col items-center justify-center py-10">
-            <h6 className="text-h6 text-[var(--error-500)] ">{error}</h6>
+        <div className="flex flex-col items-center h-[70vh] justify-center">
+            <div className="mb-4 flex justify-center"><ErrorIcon size={120} fill='var(--error-600)' aria-label="Logo" role='img'/></div>
+            <h4 className="text-h4 text-[var(--error-600)] mb-6">{error}</h4>
+            <Button text="Página Inicial" icon={<HomeIcon />} size="medium" colorScheme="dark-brown" path="/" />
         </div>
     );
 

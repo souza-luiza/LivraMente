@@ -1,7 +1,7 @@
 import Sidebar from "@/components/sidebar";
 import ComunidadesTabs from "./comunidades-tab";
 
-export default function CommunitiesPage() {
+export default function ComunidadesPage() {
     return (
         <div className="flex min-h-screen bg-[#E5EEDF]">
             <Sidebar />
