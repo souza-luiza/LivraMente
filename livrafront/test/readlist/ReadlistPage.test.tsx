@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ReadlistPage from '@/app/usuario/[username]/readlist/[readlistSlug]/page';
+import ReadlistPage from '@/app/[username]/readlist/[readlistSlug]/page';
 
 const originalError = console.error;
 beforeAll(() => {
@@ -209,7 +209,7 @@ describe('DynamicReadlistPage', () => {
       render(<ReadlistPage />);
       
       const editButton = screen.getByLabelText('Editar readlist');
-      const container = editButton.parentElement?.parentElement as HTMLElement | null;
+      const container = editButton.parentElement as HTMLElement | null;
       
       expect(container).toHaveStyle({
         position: 'absolute',
@@ -337,10 +337,8 @@ describe('DynamicReadlistPage', () => {
     it('deve renderizar a barra de pesquisa', () => {
       render(<ReadlistPage />);
       
-  const searchInput = screen.getByPlaceholderText(/Pesquisar no livra/i);
-  expect(searchInput).toBeInTheDocument();
-  // SearchBar is mocked in this test to render a simple input with testid `mock-search`
-  expect(screen.getByTestId('mock-search')).toBeInTheDocument();
+      const searchInput = screen.getByPlaceholderText(/Pesquisar em livros lidos/i);
+      expect(searchInput).toBeInTheDocument();
     });
 
     it('deve renderizar as estatísticas de progresso', () => {
@@ -484,7 +482,7 @@ describe('DynamicReadlistPage', () => {
       render(<ReadlistPage />);
       
       const editButton = screen.getByLabelText('Editar readlist');
-      const container = editButton.parentElement?.parentElement as HTMLElement | null;
+      const container = editButton.parentElement as HTMLElement | null;
           
       expect(container).toHaveClass('flex-row');
       expect(container).toHaveClass('md:flex-col');
@@ -520,7 +518,7 @@ describe('DynamicReadlistPage', () => {
     it('deve permitir digitar no campo de pesquisa', () => {
       render(<ReadlistPage />);
       
-  const searchInput = screen.getByPlaceholderText(/Pesquisar no livra/i) as HTMLInputElement;
+      const searchInput = screen.getByPlaceholderText(/Pesquisar em livros lidos/i) as HTMLInputElement;
       
       fireEvent.change(searchInput, { target: { value: 'Jantar' } });
       

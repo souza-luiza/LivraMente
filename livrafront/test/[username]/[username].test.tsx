@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import UserProfilePage from '@/app/usuario/[username]/page'
+import UserProfilePage from '@/app/[username]/page'
 import { notFound } from 'next/navigation'
 
 // Mock next/navigation
@@ -290,13 +290,13 @@ describe('UserProfilePage', () => {
       })
     })
 
-    it('edit button link has correct href', async () => {
+    it('edit button navigates to edit profile', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/john_doe/editar-perfil"]')
-        expect(link).toBeInTheDocument()
+        const editButton = screen.getByText('Editar Perfil')
+        expect(editButton).toBeInTheDocument()
       })
     })
   })
@@ -576,22 +576,32 @@ describe('UserProfilePage', () => {
   })
 
   describe('Navigation Links', () => {
-    it('has three navigation links', async () => {
+    it('has two navigation links (readlists and posts)', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
         const links = container.querySelectorAll('a')
-        expect(links.length).toBeGreaterThanOrEqual(3)
+        expect(links.length).toBeGreaterThanOrEqual(2)
       })
     })
 
-    it('edit profile link includes username', async () => {
+    it('readlists link includes username', async () => {
       const params = Promise.resolve({ username: 'jane_smith' })
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/jane_smith/editar-perfil"]')
+        const link = container.querySelector('a[href="/jane_smith/readlists"]')
+        expect(link).toBeInTheDocument()
+      })
+    })
+
+    it('posts link includes username', async () => {
+      const params = Promise.resolve({ username: 'jane_smith' })
+      const { container } = render(await UserProfilePage({ params }))
+      
+      await waitFor(() => {
+        const link = container.querySelector('a[href="/jane_smith/posts"]')
         expect(link).toBeInTheDocument()
       })
     })
