@@ -6,16 +6,38 @@ import { Story, StoryDocument } from '../schemas/story.schema';
 @Injectable()
 export class LlmPromptService {
 
+  private readonly DEFAULT_GENRES_POOL = [
+    'Fantasia',
+    'Aventura',
+    'Ficção Científica',
+    'Mistério',
+    'Romance',
+    'Terror',
+    'Comédia',
+    'Drama Histórico'
+  ];
+
   constructor(
     @InjectModel(Story.name) private storyModel: Model<StoryDocument>,
   ) { }
 
   async createStoryPrompt(
-    genres: string[],
-    wordLimit: number,
+    genres: string[] | undefined,
+    wordLimit: number | undefined,
     userWriting?: string, // Opcional: O que o usuário quer
     storyId?: string  //Opcional: Contexto da história
   ): Promise<string> {
+
+    let finalGenres: string[];
+
+    if (genres && genres.length > 0) {
+      finalGenres = genres;
+    } else {
+      const randomIndex = Math.floor(Math.random() * this.DEFAULT_GENRES_POOL.length);
+      finalGenres = [this.DEFAULT_GENRES_POOL[randomIndex]];
+    }
+
+    const finalWordLimit = wordLimit || 200;
 
     let contextPromptSection = "CONTEXTO: Nenhum. Esta é uma nova história.";
 
@@ -27,7 +49,7 @@ export class LlmPromptService {
       contextPromptSection = `CONTEXTO (O QUE ACONTECEU ATÉ AGORA): "${story.summary}"`;
     }
 
-    const genresString = genres.join(', ');
+    const genresString = finalGenres.join(', ');
 
     let userWritingPromptSection = "INSTRUÇÃO DO USUÁRIO: Nenhuma. Use sua criatividade.";
     if (userWriting && userWriting.trim() !== "") {
@@ -55,7 +77,7 @@ export class LlmPromptService {
       TAREFA:
       1. Crie um trecho de história que combine o "CONTEXTO" com a "INSTRUÇÃO DO USUÁRIO".
       2. Mantenha-se fiel aos GÊNEROS: ${genresString}.
-      3. O 'textoCapitulo' deve ter aproximadamente ${wordLimit} palavras.
+      3. O 'textoCapitulo' deve ter aproximadamente ${finalWordLimit} palavras.
       4. Crie EXATAMENTE 4 'novasOpcoes' para o usuário.
       5. As 3 primeiras opções devem ser escolhas lógicas baseadas na história.
       6. A 4ª OPÇÃO (id: 4) DEVE SER UMA ESCOLHA "ALEATÓRIA" ou "SURPRESA" (ex: "Algo inesperado acontece", "Um meteoro cai", "Você encontra um item mágico").
