@@ -322,46 +322,54 @@ describe('RegistroLeitura', () => {
 
   describe('Form Submission', () => {
     beforeEach(() => {
-      localStorageMock.getItem.mockReturnValue(null)
-    })
-
-    it('should submit pages form with valid data and show success state', async () => {
-      render(<RegistroLeitura isLoggedIn={true} />)
-      
-      const pagesInput = screen.getByTestId('input-pagesRead')
-      const bookInput = screen.getByTestId('input-bookAmount')
-      const submitButton = screen.getByTestId('button-registrar')
-      
-      fireEvent.change(pagesInput, { target: { value: '25' } })
-      fireEvent.change(bookInput, { target: { value: '1' } })
-
-      fireEvent.click(submitButton)
-
-      // Should show success state
-      await waitFor(() => {
-        expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
-        expect(screen.getByText('+0 XP')).toBeInTheDocument() // Default XP value
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'token') return 'fake-token'
+        if (key === 'lastAccess') return null
+        return null
       })
     })
 
-    it('should submit minutes form with valid data and show success state', async () => {
+    it('should submit pages form with valid data and show success state', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ganhoXP: 25 }),
+      })
+
       render(<RegistroLeitura isLoggedIn={true} />)
-      
-      // Switch to minutes form
+
+      fireEvent.change(screen.getByTestId('input-pagesRead'), { target: { value: '25' } })
+      fireEvent.click(screen.getByTestId('button-registrar'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
+        expect(screen.getByText('+25 XP')).toBeInTheDocument()
+      })
+    })
+
+
+    it('should submit minutes form with valid data and show success state', async () => {
+      // mock the fetch response to include the ganhoXP field
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ganhoXP: 45 }), // 90 minutes → 45 XP
+      })
+
+      render(<RegistroLeitura isLoggedIn={true} />)
+
+      // switch to minutes form
       fireEvent.click(screen.getByText('Minutos'))
 
       const minutesInput = screen.getByTestId('input-minutesRead')
       const bookInput = screen.getByTestId('input-bookAmount')
       const submitButton = screen.getByTestId('button-registrar')
 
-      fireEvent.change(minutesInput, { target: { value: '45' } })
+      fireEvent.change(minutesInput, { target: { value: '90' } })
       fireEvent.change(bookInput, { target: { value: '2' } })
-
       fireEvent.click(submitButton)
 
-      // Should show success state
       await waitFor(() => {
         expect(screen.getByText('Leitura registrada!')).toBeInTheDocument()
+        expect(screen.getByText('+45 XP')).toBeInTheDocument()
       })
     })
 
@@ -389,7 +397,17 @@ describe('RegistroLeitura', () => {
 
   describe('Success and Error States', () => {
     it('should show success state and close when clicking Fechar', async () => {
-      localStorageMock.getItem.mockReturnValue(null)
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ganhoXP: 10 }), 
+      })
+      // mock do token
+      localStorageMock.getItem.mockImplementation((key) => {
+        if (key === 'token') return 'fake-token'
+        if (key === 'lastAccess') return null
+        return null
+      })
+
       render(<RegistroLeitura isLoggedIn={true} />)
 
       // Fill and submit form to get to success state

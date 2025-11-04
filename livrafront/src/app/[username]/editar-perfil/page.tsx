@@ -1,9 +1,9 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/user-store";
 import Sidebar from "@/components/sidebar";
-import SearchBar from "@/components/searchbar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
@@ -16,9 +16,6 @@ import EditIcon from "@/components/icons/EditIcon";
 export default function SettingsProfilePage() {
   const router = useRouter();
   const { username, pronouns, profileImageUrl, setUsername, setPronouns, setProfileImageUrl } = useUserStore();
-
-  // Estado para a SearchBar que estava faltando
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -82,23 +79,14 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex items-center h-screen bg-gray-50">
       <Sidebar />
+
       <main className="flex-grow flex flex-col overflow-hidden">
-        {/* Seção da Barra de Busca */}
-        <div className="p-4 border-b border-neutral-200">
-          <div className="max-w-2xl mx-auto">
-            <SearchBar
-              placeholder="Pesquisar livros, autores, amigos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
 
         <div className="flex-grow overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg p-8 shadow-sm">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="max-w-2xl mx-auto bg-white large-border-radius p-8 shadow-sm">
+            <h1 className="text-h4 font-bold text-[#23160A] mb-6">
               Editar Perfil
             </h1>
 
@@ -113,18 +101,15 @@ export default function SettingsProfilePage() {
                   // Adiciona um fallback para caso a imagem quebre - obs.: é um teste
                   onError={(e) => { e.currentTarget.src = profileImageUrl; }}
                 />
-                <Button icon={<EditIcon size={16}/>} colorScheme="dark-green" size="small" text='Alterar Foto' onClick={() => toast.info("Função ainda não implementada!")}
+                <Button icon={<EditIcon />} colorScheme="dark-green" size="medium" text='Alterar Foto' onClick={() => toast.info("Função ainda não implementada!")}
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700 flex items-center">
-                  Nome de Usuário
-                  <span className="ml-2 text-xs text-gray-500">(Nome de usuário atual: {username})</span>
-                </label>
-
                 <Input
                   name="name"
+                  label="Nome de Usuário"
+                  helperText={`Nome de usuário atual: ${username}`}
                   value={formData.name}
                   onChange={handleInputChange}
                   error={errors.name}
@@ -133,13 +118,10 @@ export default function SettingsProfilePage() {
                 />
               </div>
 
-              <label className="text-sm font-medium text-gray-700 flex items-center">
-                Pronomes
-                <span className="ml-2 text-xs text-gray-500">(Pronomes atuais: {pronouns})</span>
-              </label>
-
               <Input
                 name="pronouns"
+                label="Pronomes"
+                helperText={`Pronomes atuais: ${pronouns}`}
                 value={formData.pronouns}
                 onChange={handleInputChange}
                 error={errors.pronouns}
@@ -148,9 +130,9 @@ export default function SettingsProfilePage() {
               />
 
               <div className="flex justify-end gap-4 pt-4 border-t border-neutral-200">
-                 <Button icon={<TrashIcon size={16}/>} colorScheme="light-brown" size="small" text='Cancelar' onClick={() => router.back()}
+                 <Button icon={<TrashIcon />} colorScheme="light-brown" size="medium" text='Cancelar' onClick={() => router.back()}
                 />
-                <Button icon={<SaveIcon size={16}/>} colorScheme="dark-green" size="small" text='Salvar Alterações' onClick={handleSaveChanges}
+                <Button icon={<SaveIcon />} colorScheme="dark-green" size="medium" text='Salvar Alterações' onClick={handleSaveChanges}
                 />
               </div>
             </form>

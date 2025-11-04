@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import RegisterPage from '@/app/register/page'
+import RegisterPage from '@/app/cadastro/page'
 
 // Mock the components
 jest.mock('@/components/button', () => {

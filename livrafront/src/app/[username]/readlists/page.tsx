@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ReadlistCard } from '@/components/readlist-card';
 import { CreateReadlist } from '@/components/create-readlist';
-import Link from 'next/link';
 import { useReadlistsList } from '@/hooks/useReadlistsList';
 import { useCreateReadlist } from '@/hooks/useCreateReadlist';
 import Button from '@/components/button';
@@ -59,18 +58,16 @@ export default function UserReadlistsPage() {
   return (
     <div className="flex min-h-screen h-screen m-0 bg-white">
       <Sidebar />
-      <div className="flex-1 p-8 m-0">
-        <div className="flex items-center gap-3 mb-4 border-none p-0">
-          <span className="flex items-center h-10">
-            <Link
-              href={profilePath}
-              className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-[var(--secondary-100)] text-[var(--secondary-700)]"
-              aria-label="Voltar"
-            >
-              <ArrowLeftIcon className="w-10 h-10" />
-            </Link>
-          </span>
-          <h1 className="font-extrabold tracking-tight font-poppins text-h2 text-[var(--secondary-700)]">
+      <div className="flex-1 p-8">
+        <div className="flex flex-row items-center gap-3 mb-4">
+          <Button
+            icon={<ArrowLeftIcon />}
+            size="medium"
+            colorScheme="dark-brown"
+            path={profilePath}
+            aria-label="Voltar"
+          />
+          <h1 className="tracking-tight text-h4 text-[#23160A]">
             {isMyPage ? 'Minhas readlists' : `Readlists de ${routeUsername}`}
           </h1>
         </div>
@@ -123,7 +120,7 @@ export default function UserReadlistsPage() {
 
         <div className="relative min-h-[200px] w-full">
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+            <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
               <LoadingPage />
             </div>
           )}
