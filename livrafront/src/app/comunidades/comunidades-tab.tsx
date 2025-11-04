@@ -16,7 +16,6 @@ import { getComunidades } from "@/services/comunidades";
 import LoadingPage from "@/components/loading";
 import ErrorIcon from "@/components/icons/ErrorIcon";
 import Button from "@/components/button";
-import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import HomeIcon from "@/components/icons/HomeIcon";
 
 export default function ComunidadesTabs() {
