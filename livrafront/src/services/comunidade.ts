@@ -6,13 +6,14 @@ function getAuthHeaders(): { [key: string]: string } | undefined {
   return token ? { Authorization: `Bearer ${token}` } : undefined
 }
 
-export async function createCommunity(formData: FormData) {
+export async function createCommunity(payload: Record<string, unknown>) {
   const response = await fetch(`${API_BASE_URL}/comunidades`, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       ...(getAuthHeaders() || {}),
     },
-    body: formData,
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
@@ -36,13 +37,14 @@ export async function getCommunity(comunidadeNome: string) {
   return response.json()
 }
 
-export async function updateCommunity(comunidadeNome: string, formData: FormData) {
+export async function updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
   const response = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}`, {
     method: 'PATCH',
     headers: {
+      'Content-Type': 'application/json',
       ...(getAuthHeaders() || {}),
     },
-    body: formData,
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
