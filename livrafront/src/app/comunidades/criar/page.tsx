@@ -1,11 +1,11 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
-import { createCommunity } from '@/services/comunidade';
+import { createCommunity, uploadImage } from '@/services/comunidade';
 import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
@@ -20,16 +20,31 @@ export default function CreateCommunityPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [foto, setFoto] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const [previewObjectUrl, setPreviewObjectUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; foto?: string }>({});
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value);
   const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setDescricao(e.target.value);
   const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFoto(e.target.files[0]);
-      setFotoPreview(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0]
+      const url = URL.createObjectURL(file)
+      setFoto(file);
+      setFotoPreview(url);
+      setPreviewObjectUrl(url);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrl && typeof URL.revokeObjectURL === 'function') {
+        try {
+          URL.revokeObjectURL(previewObjectUrl)
+        } catch (e) {
+        }
+      }
+    }
+  }, [previewObjectUrl])
 
   // Validação dos campos
   const validate = () => {
@@ -47,15 +62,17 @@ export default function CreateCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('nome', nome);
-  formData.append('descricao', descricao);
-  formData.append('tags', Array.isArray(tags) ? tags.join(', ') : tags);
-      if (foto) formData.append('foto', foto);
-      const userId = localStorage.getItem('userId');
-      if (userId) formData.append('moderadores', userId);
-
-      await createCommunity(formData)
+      let imagem_url: string | undefined = undefined;
+      if (foto) {
+        imagem_url = await uploadImage(foto);
+      }
+      const payload = {
+        nome,
+        descricao,
+        imagem_url: imagem_url || fotoPreview || undefined,
+        tags,
+      }
+      await createCommunity(payload)
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
@@ -169,10 +186,11 @@ export default function CreateCommunityPage() {
               <div className="mb-4 flex justify-center">
                 <Button
                   type="submit"
-                  text="Criar comunidade"
+                  text={isLoading ? 'Criando...' : 'Criar comunidade'}
                   icon={<CheckIcon />}
                   size="large"
                   colorScheme="dark-green"
+                  disabled={isLoading}
                 />
               </div>
             </form>

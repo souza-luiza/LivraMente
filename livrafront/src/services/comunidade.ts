@@ -54,3 +54,22 @@ export async function updateCommunity(comunidadeNome: string, payload: Record<st
 
   return response.json()
 }
+
+export async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+    body: formData,
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao enviar imagem')
+    return Promise.reject(new Error(text || 'Erro ao enviar imagem'))
+  }
+  const json = await response.json()
+  return json.url || json.imagem_url || json.data || ''
+}
