@@ -8,12 +8,13 @@ import CommunityIcon from "@/components/icons/CommunityIcon";
 import CheckIcon from "@/components/icons/CheckIcon";
 
 interface CommunityMembersProps {
-    isMember: boolean; // Usuário é membro da comunidade
-    isMod: boolean; // Usuário é moderador da comunidade
+    members: any;   // MUDAR PARA User[]; ?
+    isMember: boolean;
+    isModerator: boolean;
 }
 
-export default function CommunityMembers({ isMember, isMod }: CommunityMembersProps) {
-    const [memberCount, setMemberCount] = useState(234); // Exemplo inicial de membros
+export default function CommunityMembers({ members, isMember, isModerator }: CommunityMembersProps) {
+    const [memberCount, setMemberCount] = useState(234);
     const [value, setValue] = useState('members');
 
     const handleChange = (newValue: string) => {

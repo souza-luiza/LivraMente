@@ -6,35 +6,39 @@ import KemiImg from '../../../../public/team/Kemi.jpg'
 import CommunityPosts from "./community-page-posts";
 import CommunityPageButtons from "./community-page-buttons";
 import CommunityMembers from "./community-page-members";
-import CommunityIcon from "@/components/icons/CommunityIcon";
 
+// API
+import { getComunidadeByName, checkMemberOrMod, getMembers, getPosts } from "@/services/comunidade";
 
 interface CommunityPageProps {
-    params: Promise<{community: string}>;
-    isMember: boolean; // Usuário é membro da comunidade
-    isMod: boolean; // Usuário é moderador da comunidade
+    params: {communitySlug: string};
 }
 
-const communityInfo = {
-    name: "Community",
-    description: "This is the community's description.",
-    banner: KemiImg,
-    img: KemiImg,
-    numMembers: 234
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
-export default async function CommunityPage({ params, isMember = true, isMod = false }: CommunityPageProps){
-    const { community } = await params;
+export default async function CommunityPage({ params }: CommunityPageProps){
+    const { communitySlug } = await params;
 
-    // Implementar a lógica para confirmar se comunidade existe no banco de dados
-    // Se não existir, chamar notFound()
-    if (!community || community.trim() === '') {
+    if (!communitySlug) {
         notFound();
     }
 
-    const handleClick = () => {
-        // Lógica para entrar/sair da comunidade
-    }
+    // Converte slug em título que será pesquisado no banco
+    const communityTitle = slugToTitle(communitySlug);
+
+    // Busca da comunidade pelo nome
+    const community = await getComunidadeByName(communityTitle).catch(() => null);
+    if (!community) notFound();
+
+    // REVER ESSES CONST AQUI!
+    const { isMember, isModerator } = await checkMemberOrMod(community.nome).catch(() => ({ isMember: false, isModerator: false }));
+    const members = await getMembers(community.nome).catch(() => null);
+    const posts = await getPosts(community.nome).catch(() => null);
 
     return (
         <div className="min-h-screen flex bg-[#FFFFFF]">
@@ -49,33 +53,33 @@ export default async function CommunityPage({ params, isMember = true, isMod = f
                 <main className=" w-full h-full pl-2 pr-4 py-2">
 
                     {/*Header da Comunidade*/}
-                    <div className="w-full h-1/10 flex flex-col">
+                    <div className="w-full h-[10%] flex flex-col">
                         {/*Banner*/}
                         <div className="w-full flex-grow overflow-hidden rounded-[12px] bg-[#E5EEDF]">
-                            <Image
-                                src={communityInfo.banner}
-                                alt={`${communityInfo.name} banner`}
+                            {/*community.banner && <Image
+                                src={community.banner}
+                                alt={`${community.nome} banner`}
                                 className="w-full h-full object-cover"
-                            />
+                            />*/}
                         </div>
                         <div className="flex flex-row flex-shrink-0 items-center gap-3 mt-2 px-4">
                             {/*Foto da Comunidade */}
                             <div className="max-h-[100px] aspect-square rounded-full medium-border-width overflow-hidden">
-                                <Image
-                                    src={communityInfo.img}
-                                    alt={`${communityInfo.name} photo`}
+                                {community.imagem_url && <Image
+                                    src={community.imagem_url}
+                                    alt={`${community.nome} photo`}
                                     className="w-full h-full object-cover"
-                                />
+                                />}
                             </div>
                             {/*Info da Comunidade */}
                             <div className="flex flex-col text-[#1F2A17] gap-1">
                                 <h1 className="text-h4">
-                                    {community}
+                                    {communityTitle}
                                 </h1>
                                 <p className="text-b2">
-                                    {communityInfo.description}
+                                    {community.descricao}
                                 </p>
-                                <CommunityPageButtons community={community} isMember={isMember} isMod={isMod} />
+                                <CommunityPageButtons community={community} isMember={isMember} isModerator={isModerator} />
                             </div>
                         </div>
                     </div>
@@ -84,12 +88,12 @@ export default async function CommunityPage({ params, isMember = true, isMod = f
 
                         {/*Postagens*/}
                         <div className="w-5/7 px-4">
-                            <CommunityPosts />
+                            <CommunityPosts posts={posts} />
                         </div>
 
                         {/*Membors da Comunidade*/}
                         <div className="w-2/7 px-4">
-                            <CommunityMembers isMember={isMember} isMod={isMod} />
+                            <CommunityMembers members={members} isMember={isMember} isModerator={isModerator} />
                         </div>
                     </div>
 

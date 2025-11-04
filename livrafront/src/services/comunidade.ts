@@ -1,0 +1,60 @@
+import { Comunidade } from '@/types/comunidade';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+
+function getAuthHeaders(): { [key: string]: string } | undefined {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+}
+
+export async function getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`);
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar comunidade: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function getPosts(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/posts`);
+  if (!res.ok) throw new Error("Erro ao buscar posts");
+  return res.json();
+}
+
+export async function getMembers(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`);
+  if (!res.ok) throw new Error("Erro ao buscar membros");
+  return res.json();
+}
+
+export async function checkMemberOrMod(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${comunidadeNome}`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao verificar membro/moderador");
+  return res.json();
+} 
+
+export async function enterCommunity(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`, {
+    method: "PATCH",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao entrar na comunidade");
+  return res.json();
+}
+
+export async function leaveCommunity(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`, {
+    method: "DELETE",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao sair da comunidade");
+  return res.json();
+}

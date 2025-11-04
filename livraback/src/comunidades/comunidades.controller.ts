@@ -30,6 +30,27 @@ export class ComunidadesController {
         return this.comunidadesService.findAll();
     }
 
+    @Get(':comunidadeNome')
+    @ApiOperation({ 
+        summary: 'Busca uma comunidade pelo nome',
+        description: 'Retorna os detalhes de uma comunidade específica pelo nome informado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Comunidade retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async findOne(@Param('comunidadeNome') comunidadeNome: string) {
+        return this.comunidadesService.findOne(comunidadeNome);
+    }
+
     @Post()
     @ApiOperation({
         summary: 'Cria uma nova comunidade',
@@ -117,6 +138,27 @@ export class ComunidadesController {
     })
     async findAllComunidadeMembros(@Param('comunidadeNome') comunidadeNome: string) {
         return this.comunidadesService.findAllComunidadeMembros(comunidadeNome);
+    }
+
+    @Get('verificar-membro/:comunidadeNome')
+    @ApiOperation({
+        summary: 'Verifica se o usuário é membro e/ou moderador',
+        description: 'Verifica se o usuário autenticado é membro ou moderador de uma comunidade'
+    })
+    @ApiResponse({ 
+        status: 200, 
+        description: 'Status de membership retornado com sucesso',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async verificarMembro(@Param('comunidadeNome') comunidadeNome: string, @CurrentUser() user: CurrentUserDto) {
+        return this.comunidadesService.verifyMemberOrMod(user.userId, comunidadeNome);
     }
 
     @Patch(':comunidadeNome/membros')

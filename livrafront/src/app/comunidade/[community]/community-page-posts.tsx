@@ -7,7 +7,11 @@ import ProfilePosts from "@/components/profile-posts";
 import PenToolIcon from "@/components/icons/PenToolIcon";
 import Edit2Icon from "@/components/icons/Edit2Icon";
 
-export default function CommunityPosts() {
+interface CommunityPostsProps {
+    posts: any; // MUDAR PARA Post[]; ?
+}
+
+export default function CommunityPosts({ posts }: CommunityPostsProps) {
     const [value, setValue] = useState('community-feed');
 
     const handleChange = (newValue: string) => {

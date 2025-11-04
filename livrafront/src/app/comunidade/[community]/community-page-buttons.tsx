@@ -8,15 +8,16 @@ import Edit2Icon from "@/components/icons/Edit2Icon";
 import OpenBookIcon from "@/components/icons/OpenBookIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import RemoveIcon from "@/components/icons/RemoveIcon";
-import CheckIcon from "@/components/icons/CheckIcon";
+
+import { Comunidade } from "@/types/comunidade";
 
 interface CommunityPageButtonsProps {
-    community: string;
-    isMember: boolean; // Usuário é membro da comunidade
-    isMod: boolean; // Usuário é moderador da comunidade
+    community: Comunidade;
+    isMember: boolean;
+    isModerator: boolean;
 }
 
-export default function CommunityPageButtons({ community, isMember, isMod }: CommunityPageButtonsProps) {
+export default function CommunityPageButtons({ community, isMember, isModerator }: CommunityPageButtonsProps) {
     
     const [leaveCommunity, setLeaveCommunity] = useState(false);
 
@@ -54,7 +55,7 @@ export default function CommunityPageButtons({ community, isMember, isMod }: Com
                 size="medium"
                 path={"`/wiki/${community}`" /* PROVISÓRIO */}
             />
-            {isMod && 
+            {isModerator && 
             <Button
                 text="Editar"
                 icon={<EditIcon />}
