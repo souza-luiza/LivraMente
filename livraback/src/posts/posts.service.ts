@@ -263,7 +263,6 @@ export class PostsService {
       throw new NotFoundException('Post não encontrado');
     }
 
-    const userObjectId = new Types.ObjectId(userId);
     const jaCurtiu = post.curtidas.some(
       (curtidaId) => curtidaId.toString() === userId
     );
@@ -275,7 +274,7 @@ export class PostsService {
       );
     } else {
       // Curtir
-      post.curtidas.push(userObjectId);
+      post.curtidas.push(new Types.ObjectId(userId));
     }
 
     await post.save();

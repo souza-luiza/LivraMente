@@ -10,14 +10,14 @@ export class CreatePostDto {
   conteudo: string;
 
   @ApiProperty({ 
-    description: 'Array de URLs de imagens', 
+    description: 'Array de URLs ou base64 data URLs de imagens', 
     required: false,
     type: [String],
     maximum: 4
   })
   @IsOptional()
   @IsArray()
-  @IsUrl({}, { each: true, message: 'Cada imagem deve ser uma URL válida' })
+  @IsString({ each: true, message: 'Cada imagem deve ser uma string (URL ou base64 data URL)' })
   imagens?: string[];
 
   @ApiProperty({ 

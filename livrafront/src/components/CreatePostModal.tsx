@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
-import CheckIcon from './icons/CheckIcon';
 import ChevronRightIcon from './icons/ChevronRightIcon';
 
 interface CreatePostModalProps {
@@ -75,17 +74,28 @@ export default function CreatePostModal({
       const remainingSlots = 4 - images.length;
       const filesToProcess = Array.from(files).slice(0, remainingSlots);
       
-      const newImages: string[] = [];
-      filesToProcess.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          newImages.push(reader.result as string);
-          if (newImages.length === filesToProcess.length) {
-            setImages([...images, ...newImages]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      const readFileAsDataURL = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (reader.result) {
+              resolve(reader.result as string);
+            } else {
+              reject(new Error('Failed to read file'));
+            }
+          };
+          reader.onerror = () => reject(new Error('FileReader error'));
+          reader.readAsDataURL(file);
+        });
+      };
+
+      Promise.all(filesToProcess.map(readFileAsDataURL))
+        .then((newImages) => {
+          setImages([...images, ...newImages]);
+        })
+        .catch((error) => {
+          console.error('Error reading files:', error);
+        });
     }
   };
 

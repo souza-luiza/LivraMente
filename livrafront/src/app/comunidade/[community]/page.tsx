@@ -87,7 +87,7 @@ export default async function CommunityPage({ params, isMember = true, isMod = f
                             <CommunityPosts />
                         </div>
 
-                        {/*Membors da Comunidade*/}
+                        {/*Membros da Comunidade*/}
                         <div className="w-2/7 px-4">
                             <CommunityMembers isMember={isMember} isMod={isMod} />
                         </div>

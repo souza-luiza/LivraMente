@@ -221,7 +221,7 @@ export default function ReadlistPage() {
               <ShareIcon 
                 size={30}
                 style={{ 
-                  color: isShared ? 'var(--primary-600)' : 'var(--primary-600)', 
+                  color: 'var(--primary-600)', 
                   opacity: isShared ? 1 : 0.7,
                   transition: 'all 0.3s ease',
                   cursor: 'pointer'

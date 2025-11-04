@@ -14,7 +14,6 @@ describe('PostsService', () => {
   const validComunidadeId = '507f1f77bcf86cd799439012';
   const validPostId = '507f1f77bcf86cd799439013';
 
-  const mockUser = { _id: validUserId, username: 'testuser' };
   const mockComunidade = {
     _id: validComunidadeId,
     nome: 'Test Community',
