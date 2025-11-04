@@ -1,12 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Button from "@/components/button";
 import SaveIcon from "@/components/icons/SaveIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
-import TextlessButton from "@/components/textless-button";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
+
+const SUGESTOES_POOL = [
+  'Escreva uma fantasia épica com dragões e magia',
+  'Crie um mistério ambientado na Londres vitoriana',
+  'Conte uma história de ficção científica sobre Aliens',
+  'Desenvolva um romance em uma pequena cidade costeira',
+  'Um detetive que viaja no tempo para resolver crimes',
+  'A história de um chef que cozinha pratos mágicos',
+  'Uma aventura de piratas em um mar de estrelas',
+  'Um thriller psicológico sobre um escritor que...',
+];
 
 type Opcao = {
   id: number;
@@ -28,15 +38,44 @@ export default function CreateStory() {
   const [storyId, setStoryId] = useState<string | null>(null);
   const [opcoes, setOpcoes] = useState<Opcao[]>([]);
 
+  const sugestoes = useMemo(() => {
+    const shuffled = [...SUGESTOES_POOL].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 4);
+  }, []);
+
+  const handleNewStory = () => {
+    localStorage.removeItem('storyDraft');
+    setMessages([]);
+    setOpcoes([]);
+    setStoryId(null);
+    setInput('');
+  };
+
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = '60px';
-      const scrollHeight = textarea.scrollHeight;
-      textarea.style.height = Math.min(scrollHeight, 280) + 'px';
-      setButtonAlign(scrollHeight > 60 ? 'flex-end' : 'center');
+    const savedDraft = localStorage.getItem('storyDraft');
+    if (savedDraft) {
+      try {
+        const { messages, opcoes, storyId } = JSON.parse(savedDraft);
+        setMessages(messages);
+        setOpcoes(opcoes);
+        setStoryId(storyId);
+      } catch (e) {
+
+        localStorage.removeItem('storyDraft');
+      }
     }
-  }, [input]);
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const draft = {
+        messages: messages,
+        opcoes: opcoes,
+        storyId: storyId,
+      };
+      localStorage.setItem('storyDraft', JSON.stringify(draft));
+    }
+  }, [messages, opcoes, storyId]);
 
   const handleSend = async (opcaoTexto?: string) => {
 
@@ -83,19 +122,6 @@ export default function CreateStory() {
     }
   };
 
-  // Simula a Resposta da IA, trocar para a API real (provavelmente do Gemini) aqui
-  {/*setTimeout(() => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: 'assistant',
-        content: 'Aqui é onde o conteúdo da história gerada pela IA apareceria. Conectar o Gemini (ou outra IA) aqui',
-      },
-    ]);
-    setIsLoading(false);
-  }, 1000);
-}; */}
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -124,21 +150,20 @@ export default function CreateStory() {
         <div className="max-w-5xl mx-auto px-4 py-8">
           {messages.length === 0 ? (
             <div className="text-center py-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl mb-4">
               </div>
               <h4 className="text-h4 font-semibold text-gray-900 dark:text-white mb-2">
                 Comece a criar a sua história!
               </h4>
               <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                 Descreva a sua ideia de história, personagens ou enredo, e eu ajudarei você a criar uma narrativa envolvente.
+                {/*não sei se ficou muito legal a disposição, mas da para deixar de sugestão*/}
+                <br />
+                <br />
+                Escolha uma das sugestões abaixo para começar, caso não tenha ideia por onde iniciar:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                {[
-                  'Escreva uma fantasia épica com dragões e magia',
-                  'Crie um mistério ambientado na Londres vitoriana',
-                  'Conte uma história de ficção científica sobre Aliens',
-                  'Desenvolva um romance em uma pequena cidade costeira',
-                ].map((suggestion, idx) => (
+                {sugestoes.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => setInput(suggestion)}
@@ -150,23 +175,28 @@ export default function CreateStory() {
               </div>
             </div>
           ) : (
-        
-            // Tela do Chat
+
+            // tela do chat - cometario que vou apagar depois
             <div className="space-y-4">
               {messages.map((message, idx) => (
-                // O map das mensagens (user/assistant) está perfeito
                 <div
                   key={idx}
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
                     className={`max-w-3xl rounded-lg px-4 py-3 ${message.role === 'user'
-                      ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                      ? 'bg-primary-600 dark:bg-teal-900 text-white'
                       : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
                       }`}
                   >
-                    {/* ... seu código de balão de chat ... */}
-                    <p className="whitespace-pre-wrap leading-relaxed text-sm">{message.content}</p>
+                    <div className="flex items-start gap-3">
+                      {message.role === 'assistant' && (
+                        <div className="w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {/* <SparklesIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" /> */}
+                        </div>
+                      )}
+                      <p className="whitespace-pre-wrap leading-relaxed text-sm">{message.content}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -174,9 +204,8 @@ export default function CreateStory() {
               {/* Bloco 1: Renderiza as OPÇÕES (SE não estiver carregando E elas existirem) */}
               {!isLoading && opcoes.length > 0 && (
                 <div className="flex justify-start">
-                  {/* Eu ajustei esta div para os botões ficarem um embaixo do outro */}
                   <div className="max-w-3xl w-full flex flex-col items-start gap-2">
-                    {opcoes.map((opcao) => ( 
+                    {opcoes.map((opcao) => (
                       <button
                         key={opcao.id}
                         onClick={() => handleSend(opcao.texto)}
@@ -185,6 +214,25 @@ export default function CreateStory() {
                         {opcao.texto}
                       </button>
                     ))}
+
+                    <div className="flex w-full gap-2 pt-2">
+                      {/* O BOTÃO EXTRA - caso o user não goste de nenhuma opção */}
+                      <button
+                        onClick={() => handleSend("Nenhuma dessas. Me dê 4 opções diferentes.")}
+                        className="p-3 w-1/2 text-left bg-white dark:bg-red-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                      >
+                        Nenhuma das opções. Gerar novas ideias.
+                      </button>
+
+                      {/*Botão para iniciar nova história */}
+                      <button
+                        onClick={handleNewStory}
+                        className="p-3 w-1/2 text-left bg-white dark:bg-green-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                      >
+                        Iniciar nova história
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               )}
@@ -204,10 +252,10 @@ export default function CreateStory() {
             </div>
           )}
         </div>
-      </main>
+      </main >
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 sticky bottom-0">
+      < div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 sticky bottom-0" >
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col">
           <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 dark:focus-within:ring-primary-400 focus-within:border-transparent">
             <textarea
@@ -216,22 +264,22 @@ export default function CreateStory() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder={opcoes.length > 0
-                ? 'Escolha uma das opções acima para continuar...'
+                ? 'Escolha uma das opções acima OU escreva sua própria ação...'
                 : 'Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens...'
               }
               className="flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               rows={1}
-              disabled={isLoading || opcoes.length > 0}
+              disabled={isLoading}
             />
             <div className="flex h-full">
-              <TextlessButton icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim() || opcoes.length > 0} />
+              <Button icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
             O Criador de Histórias é alimentado por IA e pode gerar conteúdo impreciso ou inadequado. Use com cautela.
           </p>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
