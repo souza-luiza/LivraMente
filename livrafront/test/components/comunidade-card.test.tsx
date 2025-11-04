@@ -14,7 +14,7 @@ describe("Comunidade Card", () => {
 
     expect(screen.getByText("Comunidade Teste")).toBeInTheDocument();
     expect(screen.getByText("Descrição da comunidade teste")).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/comunidades/123");
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/comunidade/comunidade-teste");
     expect(screen.getByAltText("Imagem da Comunidade")).toBeInTheDocument();
   });
 
