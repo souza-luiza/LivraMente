@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import UserProfilePage from '@/app/[username]/page'
+import UserProfilePage from '@/app/usuario/[username]/page'
 import { notFound } from 'next/navigation'
 
 // Mock next/navigation
