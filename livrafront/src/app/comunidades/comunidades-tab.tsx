@@ -1,7 +1,7 @@
 'use client';
 
 import { Tab, TabList, TabPanel, TabProvider } from "@/components/tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Comunidades from "./comunidades";
 import DramaIcon from "@/components/icons/DramaIcon";
 import FantasyIcon from "@/components/icons/FantasyIcon";
@@ -11,13 +11,46 @@ import ComedyIcon from "@/components/icons/ComedyIcon";
 import DystopiaIcon from "@/components/icons/DystopiaIcon";
 import HeartIcon from "@/components/icons/HeartIcon";
 import AdventureIcon from "@/components/icons/AdventureIcon";
+import { Comunidade } from "@/types/comunidade";
+import { getComunidades } from "@/services/comunidades";
+import LoadingPage from "@/components/loading";
 
 export default function ComunidadesTabs() {
     const [value, setValue] = useState('romance');
+    const [comunidades, setComunidades] = useState<Comunidade[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const handleChange = (newValue: string) => {
         setValue(newValue);
     }
+
+    useEffect(() => {
+        async function fetchComunidades() {
+            try {
+                setLoading(true);
+                const data = await getComunidades();
+                setComunidades(data);
+            } catch(err: any) {
+                setError("Não foi possível carregar as comunidades.");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchComunidades();
+    }, []);
+
+    if (loading) return (
+        <div className="fixed inset-0">
+            <LoadingPage />
+        </div>
+    );
+
+    if (error) return (
+        <div className="flex flex-col items-center justify-center py-10">
+            <h6 className="text-h6 text-[var(--error-500)] ">{error}</h6>
+        </div>
+    );
 
     return (
         <TabProvider value={value} onChange={handleChange}>
@@ -35,28 +68,28 @@ export default function ComunidadesTabs() {
 
                 {/* Romance */}
                 <TabPanel value="romance">
-                    <Comunidades genero="romance" />
+                    <Comunidades genero="romance" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="aventura">
-                    <Comunidades genero="aventura" />
+                    <Comunidades genero="aventura" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="fantasia">
-                    <Comunidades genero="fantasia" />
+                    <Comunidades genero="fantasia" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="drama">
-                    <Comunidades genero="drama" />
+                    <Comunidades genero="drama" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="terror">
-                    <Comunidades genero="terror" />
+                    <Comunidades genero="terror" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="suspense">
-                    <Comunidades genero="suspense" />
+                    <Comunidades genero="suspense" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="comedia">
-                    <Comunidades genero="comedia" />
+                    <Comunidades genero="comedia" comunidades={comunidades} />
                 </TabPanel>
                 <TabPanel value="distopia">
-                    <Comunidades genero="distopia" />
+                    <Comunidades genero="distopia" comunidades={comunidades} />
                 </TabPanel>
             </div>
         </TabProvider>
