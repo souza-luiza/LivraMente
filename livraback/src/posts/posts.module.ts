@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { Post, PostSchema } from '../schemas/post.schema';
-import { Comunidade, ComunidadeSchema } from '../schemas/comunidade.schemas';
+import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade.entity';
 
 @Module({
   imports: [

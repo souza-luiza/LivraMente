@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
-import { Comunidade } from '../schemas/comunidade.schemas';
+import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
@@ -25,7 +25,7 @@ export class PostsService {
       (membroId) => membroId.toString() === userId
     );
 
-    if (!isMembro && comunidade.criador.toString() !== userId) {
+    if (!isMembro) {
       throw new ForbiddenException('Você precisa ser membro da comunidade para postar');
     }
 
@@ -105,13 +105,12 @@ export class PostsService {
       throw new NotFoundException('Comunidade não encontrada');
     }
 
-    // Verificar se o usuário é moderador ou criador
+    // Verificar se o usuário é moderador
     const isModerador = comunidade.moderadores.some(
       (modId) => modId.toString() === userId
     );
-    const isCriador = comunidade.criador.toString() === userId;
 
-    if (!isModerador && !isCriador) {
+    if (!isModerador) {
       throw new ForbiddenException('Apenas moderadores podem ver posts pendentes');
     }
 
@@ -192,9 +191,8 @@ export class PostsService {
       const isModerador = comunidade.moderadores.some(
         (modId) => modId.toString() === userId
       );
-      const isCriador = comunidade.criador.toString() === userId;
 
-      if (!isModerador && !isCriador) {
+      if (!isModerador) {
         throw new ForbiddenException('Você não tem permissão para deletar este post');
       }
     }
@@ -239,9 +237,8 @@ export class PostsService {
     const isModerador = comunidade.moderadores.some(
       (modId) => modId.toString() === userId
     );
-    const isCriador = comunidade.criador.toString() === userId;
 
-    if (!isModerador && !isCriador) {
+    if (!isModerador) {
       throw new ForbiddenException('Apenas moderadores podem moderar posts');
     }
 
