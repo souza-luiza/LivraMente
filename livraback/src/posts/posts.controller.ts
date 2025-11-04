@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { ModerarPostDto } from './dto/moderar-post.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { PostCategoria } from '../schemas/post.schema';
 
 @ApiTags('posts')
@@ -44,6 +45,7 @@ export class PostsController {
     return this.postsService.create(user.userId, createPostDto);
   }
 
+  // listar posts da comunidade
   @Get('comunidade/:comunidadeId')
   @ApiOperation({
     summary: 'Lista posts de uma comunidade',
@@ -178,8 +180,6 @@ export class PostsController {
     description: 'Aprova ou rejeita um post pendente, definindo sua categoria. Apenas para moderadores.'
   })
   @ApiParam({ name: 'id', description: 'ID do post' })
-  @ApiQuery({ name: 'aprovar', type: Boolean, description: 'true para aprovar, false para rejeitar' })
-  @ApiQuery({ name: 'categoria', enum: PostCategoria, description: 'Categoria aprovada' })
   @ApiResponse({
     status: 200,
     description: 'Post moderado com sucesso'
@@ -194,16 +194,19 @@ export class PostsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Post não está pendente de moderação'
+    description: 'Post não está pendente de moderação ou dados inválidos'
   })
   async moderarPost(
     @CurrentUser() user: CurrentUserDto,
     @Param('id') id: string,
-    @Query('aprovar') aprovar: string,
-    @Query('categoria') categoria: PostCategoria
+    @Body() moderarDto: ModerarPostDto
   ) {
-    const aprovarBool = aprovar === 'true';
-    return this.postsService.moderarPost(user.userId, id, categoria, aprovarBool);
+    return this.postsService.moderarPost(
+      user.userId, 
+      id, 
+      moderarDto.categoria, 
+      moderarDto.aprovar
+    );
   }
 
   @Post(':id/curtir')

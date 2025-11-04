@@ -156,6 +156,11 @@ describe('PostsController', () => {
 
   describe('moderarPost', () => {
     it('should approve a post with category', async () => {
+      const moderarDto = {
+        aprovar: true,
+        categoria: PostCategoria.FANART,
+      };
+
       const approvedPost = { 
         ...mockPost, 
         status: PostStatus.PUBLICADO,
@@ -166,8 +171,7 @@ describe('PostsController', () => {
       const result = await controller.moderarPost(
         mockUser,
         'post123',
-        'true',
-        PostCategoria.FANART
+        moderarDto
       );
 
       expect(service.moderarPost).toHaveBeenCalledWith(
@@ -180,6 +184,11 @@ describe('PostsController', () => {
     });
 
     it('should reject a post', async () => {
+      const moderarDto = {
+        aprovar: false,
+        categoria: PostCategoria.GERAL,
+      };
+
       const rejectedPost = { 
         ...mockPost, 
         status: PostStatus.REJEITADO,
@@ -189,8 +198,7 @@ describe('PostsController', () => {
       const result = await controller.moderarPost(
         mockUser,
         'post123',
-        'false',
-        PostCategoria.GERAL
+        moderarDto
       );
 
       expect(service.moderarPost).toHaveBeenCalledWith(

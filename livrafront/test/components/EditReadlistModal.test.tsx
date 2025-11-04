@@ -610,7 +610,7 @@ describe('EditReadlistModal', () => {
       );
 
       const titleLabel = screen.getByText('Título');
-      expect(titleLabel).toHaveClass('transition-opacity', 'duration-200');
+      expect(titleLabel).toHaveClass('transition-opacity duration-200');
     });
 
     it('deve aplicar hover no botão salvar', () => {

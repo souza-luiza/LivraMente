@@ -21,19 +21,15 @@ export class Post extends Document {
   @Prop({ required: true })
   conteudo: string;
 
-  // Array de URLs de imagens
   @Prop({ type: [String], default: [] })
   imagens: string[];
 
-  // Categoria do post
   @Prop({ type: String, enum: PostCategoria, default: PostCategoria.GERAL })
   categoria: PostCategoria;
 
-  // Status do post (para moderação)
   @Prop({ type: String, enum: PostStatus, default: PostStatus.PUBLICADO })
   status: PostStatus;
 
-  // Solicitação de revisão para moderadores
   @Prop({ default: false })
   solicitacao_revisao: boolean;
 

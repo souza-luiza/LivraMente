@@ -67,13 +67,12 @@ export class PostsService {
   }
 
   async findAllByComunidade(comunidadeId: string, userId?: string) {
-    // Validar que a comunidade existe
     const comunidade = await this.comunidadeModel.findById(comunidadeId);
     if (!comunidade) {
       throw new NotFoundException('Comunidade não encontrada');
     }
 
-    // Buscar apenas posts publicados (não pendentes de moderação)
+    // Buscar apenas posts publicados
     const posts = await this.postModel
       .find({
         comunidade: new Types.ObjectId(comunidadeId),
@@ -101,7 +100,6 @@ export class PostsService {
   }
 
   async findPendentes(comunidadeId: string, userId: string) {
-    // Validar que a comunidade existe
     const comunidade = await this.comunidadeModel.findById(comunidadeId);
     if (!comunidade) {
       throw new NotFoundException('Comunidade não encontrada');
@@ -137,7 +135,7 @@ export class PostsService {
       .findById(id)
       .populate('autor', 'username nome_exibicao imagem_perfil')
       .populate('livro_referenciado', 'nome capa_url')
-      .populate('comentarios');
+      .populate('comentarios');               // inclui comentarios
 
     if (!post) {
       throw new NotFoundException('Post não encontrado');
@@ -185,8 +183,12 @@ export class PostsService {
 
     // Verificar se o usuário é o autor
     if (post.autor.toString() !== userId) {
-      // Verificar se é moderador da comunidade
       const comunidade = await this.comunidadeModel.findById(post.comunidade);
+      if (!comunidade) {
+        throw new NotFoundException('Comunidade não encontrada');
+      }
+      
+      // Verificar se é moderador da comunidade
       const isModerador = comunidade.moderadores.some(
         (modId) => modId.toString() === userId
       );
@@ -228,8 +230,12 @@ export class PostsService {
       throw new BadRequestException('Este post não está pendente de moderação');
     }
 
-    // Verificar se o usuário é moderador
     const comunidade = await this.comunidadeModel.findById(post.comunidade);
+    if (!comunidade) {
+      throw new NotFoundException('Comunidade não encontrada');
+    }
+    
+    // Verificar se o usuário é moderador
     const isModerador = comunidade.moderadores.some(
       (modId) => modId.toString() === userId
     );
