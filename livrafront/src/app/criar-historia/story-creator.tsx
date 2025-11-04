@@ -15,18 +15,19 @@ import AdventureIcon from "@/components/icons/AdventureIcon";
 import MultipleUsersIcon from "@/components/icons/MultipleUsersIcon";
 import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 import AddIcon from "@/components/icons/AddIcon";
+import ZombieIcon from "@/components/icons/ZombieIcon";
 
 const SUGESTOES_POOL = [
-    {text: 'Escreva uma fantasia épica com dragões e magia', icon: <FantasyIcon size={64} />},
-    {text: 'Crie um mistério ambientado na Londres vitoriana', icon: <MysteryIcon size={64} />},
-    {text: 'Conte uma história de ficção científica sobre Aliens', icon: <TerrorIcon size={64} />},
-    {text: 'Desenvolva um romance em uma pequena cidade costeira', icon: <HeartIcon size={64} />},
-    {text: 'Elabore uma história de terror em uma casa assombrada', icon: <TerrorIcon size={64} />},
-    {text: 'Invente uma aventura de piratas em alto mar', icon: <AdventureIcon size={64} />},
-    {text: 'Descreva uma jornada de autodescoberta em um mundo pós-apocalíptico', icon: <MysteryIcon size={64} />},
-    {text: 'Crie uma fábula com uma lição moral sobre amizade', icon: <MultipleUsersIcon size={64} />},
-    {text: 'Imagine uma distopia futurista onde a tecnologia controla tudo', icon: <TerrorIcon size={64} />},
-    {text: 'Desenvolva uma comédia romântica ambientada em uma livraria', icon: <ClosedBookIcon size={64} />},
+    {text: 'Escreva uma fantasia épica com dragões e magia', icon: <FantasyIcon size={54} />},
+    {text: 'Crie um mistério ambientado na Londres vitoriana', icon: <MysteryIcon size={54} />},
+    {text: 'Conte uma história de ficção científica sobre Aliens', icon: <TerrorIcon size={54} />},
+    {text: 'Desenvolva um romance em uma pequena cidade costeira', icon: <HeartIcon fill="currentColor" size={54} />},
+    {text: 'Elabore uma história de terror em uma casa assombrada', icon: <TerrorIcon size={54} />},
+    {text: 'Invente uma aventura de piratas em alto mar', icon: <AdventureIcon size={54} />},
+    {text: 'Descreva uma jornada de autodescoberta em um mundo pós-apocalíptico', icon: <ZombieIcon size={54} />},
+    {text: 'Crie uma fábula com uma lição moral sobre amizade', icon: <MultipleUsersIcon size={54} />},
+    {text: 'Imagine uma distopia futurista onde a tecnologia controla tudo', icon: <TerrorIcon size={54} />},
+    {text: 'Desenvolva uma comédia romântica ambientada em uma livraria', icon: <HeartIcon fill="currentColor" size={54} />},
 
 ];
 
@@ -187,11 +188,13 @@ export default function CreateStory() {
                         <button
                             key={idx}
                             onClick={() => setInput(suggestion.text)}
-                            className="p-4 active:opacity-95 hover:opacity-90 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black border-gray-200 rounded-lg text-left transition-colors text-sm dark-green hover:border-primary-300"
+                            className="p-4 active:opacity-95 hover:opacity-90 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black border-gray-200 rounded-lg text-left transition-colors text-sm dark-green hover:border-primary-300 flex items-center gap-2"
                         >
                             {suggestion.icon}
-                            {suggestion.text}
-                            <ChevronRightIcon className="inline-block ml-2 mb-1 text-primary-600" size={32} />
+                            <span className="flex-1">{suggestion.text}</span>
+                            <span className="flex items-center">
+                                <ChevronRightIcon className="text-primary-600" size={32} />
+                            </span>
                         </button>
                         ))}
                     </div>
@@ -229,7 +232,8 @@ export default function CreateStory() {
                         <button
                             key={opcao.id}
                             onClick={() => handleSend(opcao.texto)}
-                            className="p-3 w-full text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                            className="p-3 w-full text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
+                            style={{border: '1px solid var(--secondary-100)'}}
                         >
                             {opcao.texto}
                         </button>
@@ -239,7 +243,7 @@ export default function CreateStory() {
                         {/* O BOTÃO EXTRA - caso o user não goste de nenhuma opção */}
                         <button
                             onClick={() => handleSend("Nenhuma dessas. Me dê 4 opções diferentes.")}
-                            className="p-3 w-full light-brown text-left bg-white dark:bg-red-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                            className="p-3 w-full light-brown border-b-[1px] text-left bg-white border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         >
                             Nenhuma das opções. Gerar novas ideias.
                         </button>
@@ -247,7 +251,7 @@ export default function CreateStory() {
                         {/* Botão para iniciar nova história
                         <button
                             onClick={handleNewStory}
-                            className="p-3 w-1/2 text-left bg-white dark:bg-green-950 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800 dark:text-gray-200"
+                            className="p-3 w-1/2 text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         >
                             Iniciar nova história
                         </button> */}
@@ -260,11 +264,12 @@ export default function CreateStory() {
 
                 {isLoading && (
                     <div className="flex justify-start">
-                    <div className="max-w-3xl rounded-lg px-4 py-3 bg-white border border-gray-200">
+                    <div className="flex gap-2 max-w-3xl rounded-lg px-4 py-3 light-green !bg-white">
+                        <span className="text-b1 body-semibold" style={{ fontFamily: "Judson, serif" }}>Pensando</span>
                         <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-800)] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-800)] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-800)] rounded-full animate-bounce [animation-delay:0.4s]"></div>
                         </div>
                     </div>
                     </div>
@@ -278,16 +283,18 @@ export default function CreateStory() {
         <div className="border-t border-gray-200 bg-white sticky bottom-0">
             <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col">
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
-                <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
-                className="flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
-                rows={1}
-                disabled={isLoading}
-                />
+                <div className="w-full">
+                    <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
+                    className="w-full flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
+                    rows={1}
+                    disabled={isLoading}
+                    />
+                </div>
                 <div className="flex h-full">
                     <Button icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
                 </div>
