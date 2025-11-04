@@ -58,8 +58,7 @@ describe('EditarComunidadePage', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'tag2' }));
     fireEvent.click(screen.getByText('Salvar alterações'));
     expect(await screen.findByText('O nome é obrigatório.')).toBeInTheDocument();
-    expect(screen.getByText('A descrição é obrigatória.')).toBeInTheDocument();
-    expect(screen.getByText('As tags são obrigatórias.')).toBeInTheDocument();
+    expect(screen.queryByText('As tags são obrigatórias.')).toBeNull();
   });
 
   it('mostra mensagem de sucesso ao editar', async () => {
@@ -67,6 +66,7 @@ describe('EditarComunidadePage', () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
     });
+    fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: 'Comunidade Teste Editada' } });
     fireEvent.click(screen.getByText('Salvar alterações'));
     await waitFor(() => {
       expect(screen.getByText('Comunidade editada com sucesso!')).toBeInTheDocument();
@@ -151,6 +151,7 @@ it('mostra mensagem de erro ao falhar no PATCH', async () => {
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
     expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
   });
+  fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: 'Comunidade Teste Editada' } });
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
     expect(screen.getByText(/Erro ao editar comunidade/i)).toBeInTheDocument();
@@ -164,7 +165,7 @@ it('não envia se houver erro de validação', async () => {
   });
   fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: '' } });
   fireEvent.click(screen.getByText('Salvar alterações'));
-  expect(global.fetch).toHaveBeenCalledTimes(1); 
+  expect(global.fetch).toHaveBeenCalledTimes(1);
 });
 it('envia dados para o backend ao editar comunidade', async () => {
   render(<Page />);
@@ -203,6 +204,7 @@ it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
   await waitFor(() => {
     expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
   });
+  fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: 'Comunidade Teste Editada' } });
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
     expect(screen.getByText('Comunidade editada com sucesso!')).toBeInTheDocument();

@@ -18,7 +18,24 @@ function EditCommunityPage() {
   const [isModerator, setIsModerator] = useState<boolean | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const comunidadeNome = searchParams.get('nome') || '';
+  const searchNome = searchParams.get('nome') || '';
+  let comunidadeNome = searchNome;
+  if (!comunidadeNome && typeof window !== 'undefined') {
+    try {
+      const path = window.location.pathname || '';
+      const m = path.match(/\/comunidade\/([^\/]+)/);
+      if (m && m[1]) {
+        const slug = m[1];
+        const communityTitle = slug
+          .split('-')
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        comunidadeNome = communityTitle;
+      }
+    } catch (e) {
+    }
+  }
+  const [originalData, setOriginalData] = useState<any>(null);
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -60,6 +77,7 @@ function EditCommunityPage() {
         setDescricao(data.descricao || '');
         setTags(data.tags || []);
         setFotoPreview(data.imagem_url || null);
+        setOriginalData(data || null);
         const userId = localStorage.getItem('userId');
         setIsModerator(data.moderadores?.includes(userId));
       } catch (err) {
@@ -75,8 +93,6 @@ function EditCommunityPage() {
   const validate = () => {
     const newErrors: typeof errors = {};
     if (!nome.trim()) newErrors.nome = 'O nome é obrigatório.';
-  if (!descricao.trim()) newErrors.descricao = 'A descrição é obrigatória.';
-  if (!tags || tags.length === 0) newErrors.tags = 'As tags são obrigatórias.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,19 +103,29 @@ function EditCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      let imagem_url: string | undefined = undefined;
+      const payload: Record<string, unknown> = {};
+      if (originalData) {
+        if (nome !== originalData.nome) payload.nome = nome;
+        if (descricao !== originalData.descricao) payload.descricao = descricao;
+        if (JSON.stringify(tags || []) !== JSON.stringify(originalData.tags || [])) payload.tags = tags;
+      } else {
+        payload.nome = nome;
+        payload.descricao = descricao;
+        payload.tags = tags;
+      }
+
       if (foto) {
-        imagem_url = await uploadImage(foto);
+        const imagem_url = await uploadImage(foto);
+        if (imagem_url) payload.imagem_url = imagem_url;
       }
 
-      const payload = {
-        nome,
-        descricao,
-        imagem_url: imagem_url || fotoPreview || undefined,
-        tags,
+      if (Object.keys(payload).length === 0) {
+        setMessage({ text: 'Nenhuma alteração detectada.', type: 'error' });
+        setIsLoading(false);
+        return;
       }
 
-      await updateCommunity(comunidadeNome, payload)
+      await updateCommunity(comunidadeNome, payload);
       setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {

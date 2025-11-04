@@ -33,7 +33,6 @@ describe('CreateCommunityPage', () => {
     });
     await waitFor(() => {
       expect(screen.getByText('O nome é obrigatório.')).toBeInTheDocument();
-      expect(screen.getByText('A descrição é obrigatória.')).toBeInTheDocument();
       expect(screen.getByText('As tags são obrigatórias.')).toBeInTheDocument();
     });
   });

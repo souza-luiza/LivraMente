@@ -50,7 +50,6 @@ export default function CreateCommunityPage() {
   const validate = () => {
     const newErrors: typeof errors = {};
     if (!nome.trim()) newErrors.nome = 'O nome é obrigatório.';
-    if (!descricao.trim()) newErrors.descricao = 'A descrição é obrigatória.';
     if (!tags || tags.length === 0) newErrors.tags = 'As tags são obrigatórias.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
