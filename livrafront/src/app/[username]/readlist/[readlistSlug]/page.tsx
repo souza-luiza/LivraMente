@@ -14,8 +14,8 @@ import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import EditReadlistModal from '@/components/EditReadlistModal';
 import SearchBar from '@/components/searchbar';
 import Button from '@/components/button';
-import { getUserReadlists, getPublicReadlists, getReadlistById, updateReadlist } from '@/services/readlist';
-import { ReadlistDetailResponse } from '@/types/readlist';
+import { getOwnReadlists, getPublicReadlists, getReadlistById, updateReadlist, favoriteReadlist, unfavoriteReadlist, getFavoriteReadlists } from '@/services/readlists';
+import { Readlist } from '@/types/readlist';
 import LoadingPage from '@/components/loading';
 import ErrorIcon from '@/components/icons/ErrorIcon';
 
@@ -26,12 +26,12 @@ export default function ReadlistPage() {
   const readlistSlug = params.readlistSlug as string;
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isLiked, setIsLiked] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [readlistData, setReadlistData] = useState<ReadlistDetailResponse | null>(null);
+  const [readlistData, setReadlistData] = useState<Readlist | null>(null);
   const [isOwner, setIsOwner] = useState(false);
 
   // Buscar dados da readlist ao carregar a página
@@ -57,7 +57,7 @@ export default function ReadlistPage() {
         // Se for o dono, buscar TODAS as readlists (públicas e privadas)
         // Se não for, buscar apenas as públicas
         const readlists = isUserOwner 
-          ? await getUserReadlists() 
+          ? await getOwnReadlists() 
           : await getPublicReadlists(username);
         
         // Função para normalizar texto para slug (remove acentos, minúscula, substitui espaços)
@@ -84,19 +84,22 @@ export default function ReadlistPage() {
           return;
         }
 
-
         // Se for o dono, buscar detalhes completos (com livros populados)
-        // Se não for, usar os dados já retornados pelo endpoint público
         if (isUserOwner) {
           const detailedReadlist = await getReadlistById(foundReadlist._id);
           setReadlistData(detailedReadlist);
         } else {
-          // Converter os dados básicos para o formato esperado
-          const publicReadlistData: ReadlistDetailResponse = {
-            ...foundReadlist,
-            livros: [] // TODO: Readlists públicas não vêm com livros populados
-          };
-          setReadlistData(publicReadlistData);
+          // Para readlists públicas, usar os dados já retornados
+          setReadlistData(foundReadlist);
+          
+          // Verificar se a readlist está nos favoritos do usuário
+          try {
+            const favorites = await getFavoriteReadlists();
+            const isFav = favorites.some(fav => fav._id === foundReadlist._id);
+            setIsFavorited(isFav);
+          } catch (err) {
+            console.error('Erro ao verificar favoritos:', err);
+          }
         }
 
       } catch (err) {
@@ -138,6 +141,23 @@ export default function ReadlistPage() {
     } catch (err) {
       console.error('Erro ao salvar readlist:', err);
       alert('Erro ao salvar as alterações. Tente novamente.');
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!readlistData || isOwner) return;
+
+    try {
+      if (isFavorited) {
+        await unfavoriteReadlist(readlistData._id);
+        setIsFavorited(false);
+      } else {
+        await favoriteReadlist(readlistData._id);
+        setIsFavorited(true);
+      }
+    } catch (err) {
+      console.error('Erro ao favoritar/desfavoritar:', err);
+      alert('Erro ao atualizar favorito. Tente novamente.');
     }
   };
 
@@ -196,6 +216,11 @@ export default function ReadlistPage() {
   const readBooks = 0; // TODO: Implementar lógica real de livros lidos
   const progressPercentage = totalBooks > 0 ? Math.round((readBooks / totalBooks) * 100) : 0;
 
+  // Função auxiliar para verificar se um livro está populado
+  const isPopulatedBook = (book: any): book is import('@/types/readlist').PopulatedBook => {
+    return typeof book === 'object' && book !== null && '_id' in book && 'titulo' in book;
+  };
+
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Modal de Edição */}
@@ -252,13 +277,15 @@ export default function ReadlistPage() {
                 onClick={() => setIsEditModalOpen(true)}
               />  
             )}
-            <Button
-              icon={<HeartIcon fill={isLiked ? "currentColor" : "none"} />}
-              size="large"
-              colorScheme="light-green"
-              aria-label="Curtir readlist"
-              onClick={() => setIsLiked(!isLiked)}
-            />
+            {!isOwner && (
+              <Button
+                icon={<HeartIcon fill={isFavorited ? "currentColor" : "none"} />}
+                size="large"
+                colorScheme={isFavorited ? "dark-green" : "light-green"}
+                aria-label={isFavorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                onClick={handleToggleFavorite}
+              />
+            )}
             <Button
               icon={<ShareIcon />}
               size="large"
@@ -426,35 +453,39 @@ export default function ReadlistPage() {
                   </p>
                 </div>
               ) : (
-                readlistData.livros.map((book, index) => (
-                  <div 
-                    key={book.id}
-                    className="aspect-[2/3] cursor-pointer relative overflow-hidden"
-                    style={{ 
-                      backgroundColor: 'var(--secondary-500)',
-                      borderRadius: 'var(--medium-border-radius)',
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Livro ${index + 1}`}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '0.8';
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                      e.currentTarget.style.transform = 'scale(1)';
-                    }}
-                  >
-                    <Image 
-                      src={book.cover}
-                      alt={book.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))
+                readlistData.livros.map((book, index) => {
+                  if (!isPopulatedBook(book)) return null;
+                  
+                  return (
+                    <div 
+                      key={book._id}
+                      className="aspect-[2/3] cursor-pointer relative overflow-hidden"
+                      style={{ 
+                        backgroundColor: 'var(--secondary-500)',
+                        borderRadius: 'var(--medium-border-radius)',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={book.titulo}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '0.8';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      <Image 
+                        src={book.capa_url || '/kemi-teste.jpg'}
+                        alt={book.titulo}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  );
+                })
               )}
             </div>
           ) : (
@@ -467,72 +498,78 @@ export default function ReadlistPage() {
                   </p>
                 </div>
               ) : (
-                readlistData.livros.map((book) => (
-                <div 
-                  key={book.id}
-                  className="flex flex-col sm:flex-row gap-4 cursor-pointer"
-                  style={{ 
-                    padding: 'var(--small-padding)',
-                    paddingLeft: '2px',
-                    paddingTop: '12px',
-                    borderRadius: '0px',
-                    transition: 'background-color 0.2s',
-                    borderBottom: '1px solid var(--secondary-600)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--neutral-100)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                >
-                  {/* Capa do Livro */}
-                  <div 
-                    className="relative overflow-hidden flex-shrink-0 mx-auto sm:mx-0"
-                    style={{ 
-                      width: '100px',
-                      height: '120px',
-                      borderRadius: 'var(--small-border-radius)'
-                    }}
-                  >
-                    <Image 
-                      src={book.cover}
-                      alt={book.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+                readlistData.livros.map((book) => {
+                  if (!isPopulatedBook(book)) return null;
 
-                  {/* Informações do Livro */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-b1 body-semibold" style={{ 
-                      color: 'var(--secondary-800)',
-                      marginBottom: '4px'
-                    }}>
-                      {book.title}
-                    </h3>
-                    <p className="text-b2" style={{ 
-                      color: 'var(--secondary-700)',
-                      marginBottom: '4px'
-                    }}>
-                      {book.year} • {book.pages}
-                    </p>
-                    {/* Estrelas de Avaliação */}
-                    <div className="flex gap-1 justify-center sm:justify-start">
-                      {Array(5).fill(null).map((_, i) => (
-                        <StarIcon 
-                          key={i}
-                          size={24}
-                          style={{ 
-                            fill: i < book.rating ? 'var(--warning-500)' : 'none',
-                            color: 'var(--warning-500)'
-                          }}
+                  const rating = book.avaliacoes_media || 0;
+                  
+                  return (
+                    <div 
+                      key={book._id}
+                      className="flex flex-col sm:flex-row gap-4 cursor-pointer"
+                      style={{ 
+                        padding: 'var(--small-padding)',
+                        paddingLeft: '2px',
+                        paddingTop: '12px',
+                        borderRadius: '0px',
+                        transition: 'background-color 0.2s',
+                        borderBottom: '1px solid var(--secondary-600)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--neutral-100)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {/* Capa do Livro */}
+                      <div 
+                        className="relative overflow-hidden flex-shrink-0 mx-auto sm:mx-0"
+                        style={{ 
+                          width: '100px',
+                          height: '120px',
+                          borderRadius: 'var(--small-border-radius)'
+                        }}
+                      >
+                        <Image 
+                          src={book.capa_url || '/kemi-teste.jpg'}
+                          alt={book.titulo}
+                          fill
+                          className="object-cover"
                         />
-                      ))}
+                      </div>
+
+                      {/* Informações do Livro */}
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="text-b1 body-semibold" style={{ 
+                          color: 'var(--secondary-800)',
+                          marginBottom: '4px'
+                        }}>
+                          {book.titulo}
+                        </h3>
+                        <p className="text-b2" style={{ 
+                          color: 'var(--secondary-700)',
+                          marginBottom: '4px'
+                        }}>
+                          {book.ano_publicacao || 'Ano desconhecido'} • {book.numero_paginas ? `${book.numero_paginas} páginas` : 'Páginas não informadas'}
+                        </p>
+                        {/* Estrelas de Avaliação */}
+                        <div className="flex gap-1 justify-center sm:justify-start">
+                          {Array(5).fill(null).map((_, i) => (
+                            <StarIcon 
+                              key={i}
+                              size={24}
+                              style={{ 
+                                fill: i < Math.round(rating) ? 'var(--warning-500)' : 'none',
+                                color: 'var(--warning-500)'
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}

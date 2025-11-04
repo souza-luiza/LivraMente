@@ -1,11 +1,19 @@
-/* Dados de um livro na readlist */
-export interface Book {
-  id: string
-  title: string
-  year: string
-  pages: string
-  rating: number
-  cover: string
+/* Dados de um livro populado na readlist */
+export interface PopulatedBook {
+  _id: string;
+  titulo: string;
+  isbn: string;
+  autores: any[];
+  ano_publicacao?: number;
+  sinopse?: string;
+  numero_paginas?: number;
+  generos?: string[];
+  editora?: string;
+  capa_url?: string;
+  avaliacoes_count?: number;
+  avaliacoes_media?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 /* Dados da readlist */
@@ -20,7 +28,7 @@ export interface Readlist {
     _id: string;
     username?: string;
   };
-  livros: Array<string | { _id: string; nome?: string }>;
+  livros: Array<string | PopulatedBook>;
   contribuidores?: Array<{ _id: string; username?: string }>;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -62,7 +70,7 @@ export interface ReadlistDetailResponse {
     _id: string
     username?: string
   }
-  livros: Book[] // Quando buscar detalhes, os livros vêm populados
+  livros: PopulatedBook[] // Quando buscar detalhes, os livros vêm populados
   contribuidores?: Array<{ _id: string; username?: string }>
   createdAt?: string | Date
   updatedAt?: string | Date
