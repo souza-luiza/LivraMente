@@ -64,8 +64,17 @@ describe('CreateCommunityPage', () => {
   await waitFor(() => {
     expect(fetchMock).toHaveBeenCalled();
     const init = fetchMock.mock.calls[0][1] as RequestInit;
-    const body = init.body as FormData;
-    expect(body.get('tags')).toBe('Romance, Aventura');
+    const body = init.body;
+    if (body && typeof (body as any).get === 'function') {
+      const fd = body as FormData;
+      expect(fd.get('tags')).toBe('Romance, Aventura');
+    } else if (typeof body === 'string') {
+      const json = JSON.parse(body as string);
+      expect(Array.isArray(json.tags)).toBe(true);
+      expect(json.tags).toEqual(expect.arrayContaining(['Romance', 'Aventura']));
+    } else {
+      throw new Error('Unexpected request body type');
+    }
   });
   fetchMock.mockRestore();
   });

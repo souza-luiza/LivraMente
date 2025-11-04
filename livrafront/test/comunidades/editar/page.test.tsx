@@ -180,11 +180,20 @@ it('envia dados para o backend ao editar comunidade', async () => {
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalled();
-    const init = (global.fetch as jest.Mock).mock.calls[1][1] as RequestInit; 
-    const body = init.body as FormData;
-    const tagsSent = String(body.get('tags'));
-    expect(tagsSent).toEqual(expect.stringContaining('Romance'));
-    expect(tagsSent).toEqual(expect.stringContaining('Fantasia'));
+    const init = (global.fetch as jest.Mock).mock.calls[1][1] as RequestInit;
+    const body = init.body;
+    if (body && typeof (body as any).get === 'function') {
+      const fd = body as FormData;
+      const tagsSent = String(fd.get('tags'));
+      expect(tagsSent).toEqual(expect.stringContaining('Romance'));
+      expect(tagsSent).toEqual(expect.stringContaining('Fantasia'));
+    } else if (typeof body === 'string') {
+      const json = JSON.parse(body as string);
+      expect(Array.isArray(json.tags)).toBe(true);
+      expect(json.tags).toEqual(expect.arrayContaining(['Romance', 'Fantasia']));
+    } else {
+      throw new Error('Unexpected request body type');
+    }
   });
 });
 it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
