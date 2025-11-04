@@ -5,4 +5,3 @@ export * from './post.schema';
 export * from './comentario.schema';
 export * from './quiz.schema';
 export * from './resenha.schema';
-export * from './comunidade.schemas';

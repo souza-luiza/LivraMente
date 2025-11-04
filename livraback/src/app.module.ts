@@ -13,9 +13,9 @@ import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
-import { Comunidade, ComunidadeSchema } from './schemas/comunidade.schemas';
 import { ReadlistsModule } from './readlists/readlists.module';
 import { PostsModule } from './posts/posts.module';
+import { ComunidadesModule } from './comunidades/comunidades.module';
 
 @Module({
   imports: [
@@ -33,13 +33,13 @@ import { PostsModule } from './posts/posts.module';
       { name: Post.name, schema: PostSchema },
       { name: Comentario.name, schema: ComentarioSchema },
       { name: Quiz.name, schema: QuizSchema },
-      { name: Resenha.name, schema: ResenhaSchema },
-      { name: Comunidade.name, schema: ComunidadeSchema },
+      { name: Resenha.name, schema: ResenhaSchema }
     ]),
     UsersModule,
     AuthModule,
     ReadlistsModule,
     PostsModule,
+    ComunidadesModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],
