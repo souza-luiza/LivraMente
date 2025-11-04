@@ -262,9 +262,9 @@ export default function CreateStory() {
                     <div className="flex justify-start">
                     <div className="max-w-3xl rounded-lg px-4 py-3 bg-white border border-gray-200">
                         <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                        <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                        <div className="w-2 h-2 bg-[var(--primary-600)] rounded-full animate-bounce [animation-delay:0.4s]"></div>
                         </div>
                     </div>
                     </div>
