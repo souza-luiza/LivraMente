@@ -5,6 +5,7 @@ import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
+import { createCommunity } from '@/services/comunidade';
 import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
@@ -54,14 +55,7 @@ export default function CreateCommunityPage() {
       const userId = localStorage.getItem('userId');
       if (userId) formData.append('moderadores', userId);
 
-      const response = await fetch('http://localhost:3000/comunidades', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao criar comunidade.');
-      }
+      await createCommunity(formData)
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {

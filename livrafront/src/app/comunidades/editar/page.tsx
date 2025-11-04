@@ -6,6 +6,7 @@ import Sidebar from "@/components/sidebar";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
+import { getCommunity, updateCommunity } from '@/services/comunidade';
 import Button from "@/components/button";
 import CheckIcon from "@/components/icons/CheckIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
@@ -40,12 +41,10 @@ function EditCommunityPage() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const res = await fetch(`http://localhost:3000/comunidades/${comunidadeNome}`);
-        if (!res.ok) throw new Error('Erro ao buscar comunidade');
-  const data = await res.json();
-  setNome(data.nome || '');
-  setDescricao(data.descricao || '');
-  setTags(data.tags || []);
+        const data = await getCommunity(comunidadeNome);
+        setNome(data.nome || '');
+        setDescricao(data.descricao || '');
+        setTags(data.tags || []);
         setFotoPreview(data.imagem_url || null);
         const userId = localStorage.getItem('userId');
         setIsModerator(data.moderadores?.includes(userId));
@@ -80,14 +79,7 @@ function EditCommunityPage() {
       formData.append('tags', Array.isArray(tags) ? tags.join(', ') : tags);
       if (foto) formData.append('foto', foto);
 
-      const response = await fetch('http://localhost:3000/comunidades', {
-        method: 'PATCH',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao editar comunidade.');
-      }
+      await updateCommunity(comunidadeNome, formData)
       setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
