@@ -3,7 +3,7 @@ export interface PopulatedBook {
   _id: string;
   titulo: string;
   isbn: string;
-  autores: any[];
+  autores: Array<{ _id: string; nome: string }>;
   ano_publicacao?: number;
   sinopse?: string;
   numero_paginas?: number;

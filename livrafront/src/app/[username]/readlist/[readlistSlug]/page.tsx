@@ -217,7 +217,7 @@ export default function ReadlistPage() {
   const progressPercentage = totalBooks > 0 ? Math.round((readBooks / totalBooks) * 100) : 0;
 
   // Função auxiliar para verificar se um livro está populado
-  const isPopulatedBook = (book: any): book is import('@/types/readlist').PopulatedBook => {
+  const isPopulatedBook = (book: string | import('@/types/readlist').PopulatedBook): book is import('@/types/readlist').PopulatedBook => {
     return typeof book === 'object' && book !== null && '_id' in book && 'titulo' in book;
   };
 
@@ -453,7 +453,7 @@ export default function ReadlistPage() {
                   </p>
                 </div>
               ) : (
-                readlistData.livros.map((book, index) => {
+                readlistData.livros.map((book) => {
                   if (!isPopulatedBook(book)) return null;
                   
                   return (
