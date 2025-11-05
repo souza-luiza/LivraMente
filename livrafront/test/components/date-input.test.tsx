@@ -45,13 +45,13 @@ describe('DateInput', () => {
   it('should apply default variant classes', () => {
     const { container } = render(<DateInput variant="default" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('border-gray-300', 'bg-white')
+    expect(input).toHaveClass('border-gray-300 bg-white')
   })
 
   it('should apply outline variant classes', () => {
     const { container } = render(<DateInput variant="outline" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('border-2', 'bg-transparent')
+    expect(input).toHaveClass('border-2 bg-transparent')
   })
 
   it('should apply filled variant classes', () => {
@@ -63,19 +63,19 @@ describe('DateInput', () => {
   it('should apply small size classes', () => {
     const { container } = render(<DateInput inputSize="small" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('small-box', 'text-b3')
+    expect(input).toHaveClass('small-box text-b3')
   })
 
   it('should apply medium size classes', () => {
     const { container } = render(<DateInput inputSize="medium" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('medium-box', 'text-b2')
+    expect(input).toHaveClass('medium-box text-b2')
   })
 
   it('should apply large size classes', () => {
     const { container } = render(<DateInput inputSize="large" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('large-box', 'text-b1')
+    expect(input).toHaveClass('large-box text-b1')
   })
 
   it('should apply fullWidth class', () => {
@@ -134,6 +134,6 @@ describe('DateInput', () => {
   it('should apply error styling when error prop is present', () => {
     const { container } = render(<DateInput error="Erro" />)
     const input = container.querySelector('input')
-    expect(input).toHaveClass('border-red-500', 'focus:ring-red-500')
+    expect(input).toHaveClass('border-red-500 focus:ring-red-500')
   })
 })
