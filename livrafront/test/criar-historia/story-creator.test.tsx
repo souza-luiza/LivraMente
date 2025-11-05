@@ -8,6 +8,19 @@ global.fetch = jest.fn();
 // Mock do scrollIntoView
 Element.prototype.scrollIntoView = jest.fn();
 
+const originalEnv = process.env;
+
+beforeAll(() => {
+  process.env = {
+    ...originalEnv,
+    NEXT_PUBLIC_API_BASE_URL: 'http://localhost:3001',
+  };
+});
+
+afterAll(() => {
+  process.env = originalEnv;
+});
+
 describe('CreateStory', () => {
   beforeEach(() => {
     // Limpa o localStorage antes de cada teste
