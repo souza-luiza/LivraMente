@@ -152,9 +152,12 @@ it('mostra mensagem de erro ao falhar no PATCH', async () => {
       }),
     })
   );
-  (global.fetch as jest.Mock).mockImplementationOnce(() =>
-    Promise.resolve({ ok: false })
-  );
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ isMember: true, isModerator: true }) })
+    );
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({ ok: false })
+    );
   render(<Page />);
   await waitFor(() => {
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();

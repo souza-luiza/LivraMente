@@ -7,6 +7,7 @@ import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
 import { getCommunity, updateCommunity, uploadImage, checkMemberOrMod } from '@/services/comunidade';
+import { Comunidade } from '@/types/comunidade';
 import Button from "@/components/button";
 import CheckIcon from "@/components/icons/CheckIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
@@ -32,10 +33,10 @@ function EditCommunityPage() {
           .join(' ');
         comunidadeNome = communityTitle;
       }
-    } catch (e) {
+    } catch {
     }
   }
-  const [originalData, setOriginalData] = useState<any>(null);
+  const [originalData, setOriginalData] = useState<Comunidade | null>(null);
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -81,7 +82,7 @@ function EditCommunityPage() {
         try {
           const { isModerator } = await checkMemberOrMod(data.nome).catch(() => ({ isMember: false, isModerator: false }));
           setIsModerator(Boolean(isModerator));
-        } catch (e) {
+        } catch {
           setIsModerator(false);
         }
       } catch (err) {
