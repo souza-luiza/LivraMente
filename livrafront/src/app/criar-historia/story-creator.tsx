@@ -112,10 +112,12 @@ export default function CreateStory() {
 
         if (!userMessage || isLoading) return;
 
-        setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
         setInput('');
-        setOpcoes([]);
+        
         setIsLoading(true);
+        
+        setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+        setOpcoes([]);
 
         const bodyPayload = { userWriting: userMessage, storyId: storyId };
 
@@ -296,7 +298,7 @@ export default function CreateStory() {
                         />
                     </div>
                     <div className="flex h-full">
-                        <Button icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
+                        <Button aria-label="Enviar mensagem" icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
                     </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 text-center">
