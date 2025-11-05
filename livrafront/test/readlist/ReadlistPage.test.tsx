@@ -209,8 +209,8 @@ describe('DynamicReadlistPage', () => {
       render(<ReadlistPage />);
       
       const editButton = screen.getByLabelText('Editar readlist');
-      const container = editButton.parentElement as HTMLElement | null;
-
+      const container = editButton.parentElement?.parentElement as HTMLElement | null;
+      
       expect(container).toHaveStyle({
         position: 'absolute',
         top: '10px',
@@ -337,9 +337,10 @@ describe('DynamicReadlistPage', () => {
     it('deve renderizar a barra de pesquisa', () => {
       render(<ReadlistPage />);
       
-      // The page renders a native input with this placeholder
-      const searchInput = screen.getByPlaceholderText(/Pesquisar em livros lidos/i) as HTMLInputElement;
-      expect(searchInput).toBeInTheDocument();
+  const searchInput = screen.getByPlaceholderText(/Pesquisar no livra/i);
+  expect(searchInput).toBeInTheDocument();
+  // SearchBar is mocked in this test to render a simple input with testid `mock-search`
+  expect(screen.getByTestId('mock-search')).toBeInTheDocument();
     });
 
     it('deve renderizar as estatísticas de progresso', () => {
@@ -482,12 +483,11 @@ describe('DynamicReadlistPage', () => {
     it('deve ter ícones de ação responsivos (row em mobile, col em desktop)', () => {
       render(<ReadlistPage />);
       
-  const editButton = screen.getByLabelText('Editar readlist');
-  // icons container is the parent element
-  const container = editButton.parentElement as HTMLElement | null;
+      const editButton = screen.getByLabelText('Editar readlist');
+      const container = editButton.parentElement?.parentElement as HTMLElement | null;
           
-  expect(container).toHaveClass('flex-row');
-  expect(container).toHaveClass('md:flex-col');
+      expect(container).toHaveClass('flex-row');
+      expect(container).toHaveClass('md:flex-col');
     });
   });
 
@@ -520,11 +520,11 @@ describe('DynamicReadlistPage', () => {
     it('deve permitir digitar no campo de pesquisa', () => {
       render(<ReadlistPage />);
       
-      const searchInput = screen.getByPlaceholderText(/Pesquisar em livros lidos/i) as HTMLInputElement;
-
-        fireEvent.change(searchInput, { target: { value: 'Jantar' } });
-
-        expect(searchInput.value).toBe('Jantar');
+  const searchInput = screen.getByPlaceholderText(/Pesquisar no livra/i) as HTMLInputElement;
+      
+      fireEvent.change(searchInput, { target: { value: 'Jantar' } });
+      
+      expect(searchInput.value).toBe('Jantar');
     });
   });
 
