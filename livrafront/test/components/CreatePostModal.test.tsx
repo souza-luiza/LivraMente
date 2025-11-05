@@ -60,7 +60,7 @@ describe('CreatePostModal', () => {
 
     it('deve renderizar o checkbox de pedir avaliação', () => {
       render(<CreatePostModal {...defaultProps} />);
-      expect(screen.getByText(/Pedir avaliação dos moderadores/i)).toBeInTheDocument();
+      expect(screen.getByText(/Submeter como fanart\/fanfic/i)).toBeInTheDocument();
     });
 
     it('deve renderizar os botões de cancelar e postar', () => {

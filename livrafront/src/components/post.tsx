@@ -9,8 +9,8 @@ export default function Post({ id, community, author, content, commentsCount, li
     community?: string; 
     author?: string; 
     content?: string; 
-    commentsCount?: number | any[]; 
-    likesCount?: number | any[];
+    commentsCount?: number | string[]; 
+    likesCount?: number | string[];
 }) {
 
     const totalComments = Array.isArray(commentsCount)

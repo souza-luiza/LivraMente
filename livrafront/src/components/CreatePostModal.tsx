@@ -93,10 +93,11 @@ export default function CreatePostModal({
       }
       
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao criar post:', error);
+      const message = error instanceof Error ? error.message : String(error);
       setSubmitError(
-        error.message || 'Erro ao criar postagem. Tente novamente.'
+        message || 'Erro ao criar postagem. Tente novamente.'
       );
     } finally {
       setIsSubmitting(false);
@@ -162,7 +163,7 @@ export default function CreatePostModal({
         .then((newImages) => {
           setImages([...images, ...newImages]);
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           console.error('Erro ao processar imagens:', error);
           setSubmitError('Erro ao processar imagens. Tente novamente.');
         });

@@ -31,7 +31,7 @@ export interface Post {
   imagens: string[];                                   
   tags: string[];                                     
   curtidas: string[];                                  
-  comentarios: any[];                                 
+  comentarios: string[];                                 
   publico: boolean;                                   
   data_criacao: string;                                
   data_atualizacao: string;                            
