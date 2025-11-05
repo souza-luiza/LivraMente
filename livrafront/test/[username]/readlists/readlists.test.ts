@@ -21,8 +21,27 @@ const mockReadlist = {
 };
 
 describe('readlists service endpoints', () => {
+  const localStorageMock = (() => {
+    let store: Record<string, string> = {};
+    return {
+      getItem: (key: string) => store[key] || null,
+      setItem: (key: string, value: string) => { store[key] = value.toString(); },
+      clear: () => { store = {}; },
+      removeItem: (key: string) => { delete store[key]; }
+    };
+  })();
+
+  beforeAll(() => {
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
+    localStorageMock.setItem('token', 'test-token-123');
+  });
+
+  afterEach(() => {
+    localStorageMock.clear();
   });
 
 
