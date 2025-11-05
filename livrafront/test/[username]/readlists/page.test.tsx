@@ -12,14 +12,6 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock('next/link', () => {
-	return ({ children, href, ...props }: { children: any; href: string; [key: string]: any }) => {
-		const { useRouter } = require('next/navigation')
-		const router = useRouter()
-		return <a {...props} href={href} onClick={(e: any) => { e.preventDefault(); router.push(href); }}>{children}</a>
-	}
-});
-
 describe('ReadlistsPage', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -109,6 +101,16 @@ describe('ReadlistsPage', () => {
 	it('navigates when Voltar link is clicked', async () => {
 		// component uses the route username; set it so profilePath becomes /john_doe
 		(global as any).__TEST_ROUTE_USERNAME__ = 'john_doe';
+		Object.defineProperty(window, 'localStorage', {
+			value: { 
+				getItem: (key: string) => {
+					if (key === 'userId') return '2';
+					if (key === 'username') return 'different_user';
+					return null;
+				}
+			},
+			writable: true,
+		});
 		Object.defineProperty(window, 'location', {
 			value: { search: '?userId=2', assign: jest.fn() },
 			writable: true,
@@ -126,16 +128,20 @@ describe('ReadlistsPage', () => {
 			}));
 		}) as jest.Mock;
 		mockUseReadlistsList.mockReturnValue({ readlists: [], loading: false, error: null });
-			await act(async () => {
-				render(<ReadlistsPage />);
-			});
-			await waitFor(() => {
-				const voltarBtn = screen.getByLabelText('Voltar');
-				expect(voltarBtn).toBeInTheDocument();
-				// The link renders as an anchor; verify its href instead of relying on router.push
-				const anchor = voltarBtn.closest('a');
-				expect(anchor).toHaveAttribute('href', '/john_doe');
-			});
+		await act(async () => {
+			render(<ReadlistsPage />);
+		});
+		await waitFor(() => {
+			const voltarBtn = screen.getByLabelText('Voltar');
+			expect(voltarBtn).toBeInTheDocument();
+		});
+		await act(async () => {
+			const voltarBtn = screen.getByLabelText('Voltar');
+			fireEvent.click(voltarBtn);
+		});
+		await waitFor(() => {
+			expect(mockPush).toHaveBeenCalledWith('/john_doe');
+		});
 	});
 
 	it('renders many readlists and edge-case data', async () => {

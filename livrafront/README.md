@@ -9,31 +9,19 @@ Acesso em: https://livramente.vercel.app/
 Primeiramente, instale o projeto (caso já não tenha feito)
 ```bash
 npm install
-# ou
-yarn install
-# ou
-pnpm install
-# ou
-bun install
 ```
 
 Em seguida, rode o servidor/ambiente de desenvolvimento:
 
 ```bash
 npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
-# ou
-bun dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000) com seu navegador de preferência para visualizar o resultado.
 
 Você pode começar a editar a página modificando `app/page.tsx`. A página se atualiza automaticamente conforme você atualiza o arquivo (ao rodar no modo de desenvolvimento).
 
-Este projeto está atualmente utilizando [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para otimizar automaticamente e carregar [Geist](https://vercel.com/font), uma família de fontes da Vercel. (Brevemente será trocado pelas fontes do Projeto)
+Este projeto está atualmente utilizando [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para otimizar automaticamente e carregar as fontes. (Foi trocado pelas fontes Poppins e Judson)
 
 ## Aprenda mais!
 

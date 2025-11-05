@@ -24,6 +24,6 @@ export class CreateReadlistDto {
 
     @ApiProperty({ description: 'URL da capa da readlist', required: false })
     @IsOptional()
-    @IsUrl()
+    @IsString()
     capa_url?: string;
 }
