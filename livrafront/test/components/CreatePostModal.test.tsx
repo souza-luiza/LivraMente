@@ -1,18 +1,40 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CreatePostModal from '@/components/CreatePostModal';
+import { postsService } from '@/services/posts';
+
+// Mock do serviço de posts
+jest.mock('@/services/posts', () => ({
+  postsService: {
+    createPost: jest.fn(),
+  },
+}));
+
+// Mock do localStorage
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => { store[key] = value; },
+    clear: () => { store = {}; },
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 
 describe('CreatePostModal', () => {
   const mockOnClose = jest.fn();
-  const mockOnPost = jest.fn();
+  const mockOnSuccess = jest.fn();
   const defaultProps = {
     isOpen: true,
     onClose: mockOnClose,
     communityName: 'Romance',
-    onPost: mockOnPost,
+    onSuccess: mockOnSuccess,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocalStorage.clear();
+    mockLocalStorage.setItem('token', 'fake-token-123');
   });
 
   describe('Renderização', () => {
@@ -100,10 +122,12 @@ describe('CreatePostModal', () => {
         expect(screen.getByText(/O conteúdo da postagem é obrigatório/i)).toBeInTheDocument();
       });
       
-      expect(mockOnPost).not.toHaveBeenCalled();
+      expect(postsService.createPost).not.toHaveBeenCalled();
     });
 
     it('deve permitir postar com conteúdo válido', async () => {
+      (postsService.createPost as jest.Mock).mockResolvedValueOnce({ _id: '123' });
+      
       render(<CreatePostModal {...defaultProps} />);
       const textarea = screen.getByPlaceholderText(/Texto da postagem/i);
       const postButton = screen.getByText(/Postar/i);
@@ -112,15 +136,23 @@ describe('CreatePostModal', () => {
       fireEvent.click(postButton);
       
       await waitFor(() => {
-        expect(mockOnPost).toHaveBeenCalledWith({
-          content: 'Conteúdo válido',
-          images: [],
-          requestReview: false,
-        });
+        expect(postsService.createPost).toHaveBeenCalledWith(
+          {
+            conteudo: 'Conteúdo válido',
+            comunidade: 'Romance',
+            imagens: undefined,
+            solicitacao_revisao: false,
+            categoria: 'geral',
+            publico: true,
+          },
+          'fake-token-123'
+        );
       });
     });
 
     it('deve incluir requestReview quando checkbox está marcado', async () => {
+      (postsService.createPost as jest.Mock).mockResolvedValueOnce({ _id: '123' });
+      
       render(<CreatePostModal {...defaultProps} />);
       const textarea = screen.getByPlaceholderText(/Texto da postagem/i);
       const checkbox = screen.getByRole('checkbox');
@@ -131,11 +163,49 @@ describe('CreatePostModal', () => {
       fireEvent.click(postButton);
       
       await waitFor(() => {
-        expect(mockOnPost).toHaveBeenCalledWith({
-          content: 'Post para avaliação',
-          images: [],
-          requestReview: true,
-        });
+        expect(postsService.createPost).toHaveBeenCalledWith(
+          {
+            conteudo: 'Post para avaliação',
+            comunidade: 'Romance',
+            imagens: undefined,
+            solicitacao_revisao: true,
+            categoria: 'geral',
+            publico: true,
+          },
+          'fake-token-123'
+        );
+      });
+    });
+
+    it('deve mostrar erro quando não está autenticado', async () => {
+      mockLocalStorage.clear(); // Remove o token
+      
+      render(<CreatePostModal {...defaultProps} />);
+      const textarea = screen.getByPlaceholderText(/Texto da postagem/i);
+      const postButton = screen.getByText(/Postar/i);
+      
+      fireEvent.change(textarea, { target: { value: 'Conteúdo válido' } });
+      fireEvent.click(postButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Você precisa estar logado para criar um post/i)).toBeInTheDocument();
+      });
+      
+      expect(postsService.createPost).not.toHaveBeenCalled();
+    });
+
+    it('deve mostrar erro quando a API falha', async () => {
+      (postsService.createPost as jest.Mock).mockRejectedValueOnce(new Error('Erro de rede'));
+      
+      render(<CreatePostModal {...defaultProps} />);
+      const textarea = screen.getByPlaceholderText(/Texto da postagem/i);
+      const postButton = screen.getByText(/Postar/i);
+      
+      fireEvent.change(textarea, { target: { value: 'Conteúdo válido' } });
+      fireEvent.click(postButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/Erro de rede/i)).toBeInTheDocument();
       });
     });
   });
@@ -162,6 +232,8 @@ describe('CreatePostModal', () => {
 
   describe('Reset do Formulário', () => {
     it('deve limpar o formulário após postar com sucesso', async () => {
+      (postsService.createPost as jest.Mock).mockResolvedValueOnce({ _id: '123' });
+      
       render(<CreatePostModal {...defaultProps} />);
       const textarea = screen.getByPlaceholderText(/Texto da postagem/i) as HTMLTextAreaElement;
       const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
@@ -172,11 +244,12 @@ describe('CreatePostModal', () => {
       fireEvent.click(postButton);
       
       await waitFor(() => {
-        expect(mockOnPost).toHaveBeenCalled();
+        expect(postsService.createPost).toHaveBeenCalled();
       });
       
-      // O componente chama onClose após postar com sucesso
+      // O componente chama onClose e onSuccess após postar com sucesso
       expect(mockOnClose).toHaveBeenCalled();
+      expect(mockOnSuccess).toHaveBeenCalled();
     });
 
     it('deve limpar o formulário ao cancelar', () => {

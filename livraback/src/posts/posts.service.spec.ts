@@ -62,6 +62,7 @@ describe('PostsService', () => {
 
   const mockComunidadeModel = {
     findById: jest.fn().mockResolvedValue(mockComunidade),
+    findOne: jest.fn().mockResolvedValue(null),
     findByIdAndUpdate: jest.fn().mockResolvedValue(mockComunidade),
   };
 
@@ -93,6 +94,9 @@ describe('PostsService', () => {
 
   describe('create', () => {
     it('should create a post successfully', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+      
       const createDto: CreatePostDto = {
         conteudo: 'Test post',
         comunidade: validComunidadeId,
@@ -126,6 +130,7 @@ describe('PostsService', () => {
 
     it('should throw NotFoundException if community not found', async () => {
       mockComunidadeModel.findById.mockResolvedValueOnce(null);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
 
       const createDto: CreatePostDto = {
         conteudo: 'Test post',
@@ -135,13 +140,53 @@ describe('PostsService', () => {
       await expect(service.create(validUserId, createDto)).rejects.toThrow(NotFoundException);
     });
 
+    it('should create a post using community name', async () => {
+      const createDto: CreatePostDto = {
+        conteudo: 'Test post',
+        comunidade: 'Test Community',
+        solicitacao_revisao: false,
+      };
+
+      // Criar novos mocks para este teste específico
+      const customComunidadeModel = {
+        findById: jest.fn().mockResolvedValue(null), // Não será chamado pois não é um ObjectId válido
+        findOne: jest.fn().mockResolvedValue(mockComunidade), // Retorna a comunidade pelo nome
+        findByIdAndUpdate: jest.fn().mockResolvedValue(mockComunidade),
+      };
+
+      const savedPostWithPopulate = {
+        ...mockPost,
+        populate: jest.fn().mockResolvedValue(mockPost),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        customComunidadeModel as any
+      );
+
+      const result = await customService.create(validUserId, createDto);
+      
+      expect(customComunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'Test Community' });
+      expect(mockConstructor).toHaveBeenCalled();
+      expect(mockSave).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
     it('should throw ForbiddenException if user is not a member', async () => {
       const otherUserId = '507f1f77bcf86cd799439014';
-      mockComunidadeModel.findById.mockResolvedValueOnce({
+      const comunidadeSemUsuario = {
         ...mockComunidade,
-        membros: [],
+        membros: [], // Usuário validUserId não está nos membros
         criador: otherUserId,
-      });
+      };
+      
+      mockComunidadeModel.findById.mockResolvedValueOnce(comunidadeSemUsuario);
 
       const createDto: CreatePostDto = {
         conteudo: 'Test post',
@@ -152,6 +197,14 @@ describe('PostsService', () => {
     });
 
     it('should throw BadRequestException if more than 4 images', async () => {
+      // Garantir que o usuário é membro da comunidade
+      const comunidadeComUsuario = {
+        ...mockComunidade,
+        membros: [validUserId], // Usuário é membro
+      };
+      
+      mockComunidadeModel.findById.mockResolvedValueOnce(comunidadeComUsuario);
+      
       const createDto: CreatePostDto = {
         conteudo: 'Test post',
         comunidade: validComunidadeId,
@@ -162,6 +215,9 @@ describe('PostsService', () => {
     });
 
     it('should set status to PENDENTE_MODERACAO if solicitacao_revisao is true', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findByIdAndUpdate.mockResolvedValueOnce(mockComunidade);
+      
       const createDto: CreatePostDto = {
         conteudo: 'Test fanart',
         comunidade: validComunidadeId,
