@@ -13,6 +13,16 @@ export class ComunidadesService {
         return await this.comunidadeModel.find().exec();
     }
 
+    async findOne(comunidadeNome: string) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome });
+
+        if (!comunidade) {
+            throw new NotFoundException(`Comunidade "${comunidadeNome}" não encontrada`);
+        }
+
+        return comunidade;
+    }
+
     async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
         const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
         if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');
@@ -57,6 +67,27 @@ export class ComunidadesService {
         const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).populate('membros').exec();
         if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
         return comunidade.membros;
+    }
+
+    async findAllComunidadeModeradores(comunidadeNome: string) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).populate('moderadores').exec();
+        if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
+        return comunidade.moderadores;
+    }
+
+    async verifyMemberOrMod(userId: string, comunidadeNome: string) {
+        if (!userId) throw new UnauthorizedException('Usuário não autenticado');
+
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).select('membros moderadores').exec();
+        if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+        const membros = comunidade.membros.map((m) => m.toString());
+        const isMember = membros.includes(userId);
+
+        const moderadores = comunidade.moderadores.map((m) => m.toString());
+        const isModerador = moderadores.includes(userId);
+
+        return { isMember, isModerador };
     }
 
     async addMembro(userId: string, comunidadeNome: string) {

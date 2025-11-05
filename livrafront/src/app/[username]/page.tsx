@@ -173,7 +173,7 @@ export default function UserProfilePage(){
                 <p className="pb-4 text-b1 body-quotation">{userData.pronouns || "Pronomes não definidos"}</p>
                 
                 {isOwnProfile && (
-                    <Link href={`/${username}/edit-profile`}>
+                    <Link href={`/${username}/editar-perfil`}>
                         <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
                     </Link>
                 )}

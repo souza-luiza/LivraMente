@@ -12,6 +12,14 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush }),
 }));
 
+jest.mock('next/link', () => {
+	return ({ children, href, ...props }: { children: any; href: string; [key: string]: any }) => {
+		const { useRouter } = require('next/navigation')
+		const router = useRouter()
+		return <a {...props} href={href} onClick={(e: any) => { e.preventDefault(); router.push(href); }}>{children}</a>
+	}
+});
+
 describe('ReadlistsPage', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
