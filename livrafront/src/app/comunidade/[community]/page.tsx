@@ -213,7 +213,7 @@ export default function CommunityPage(){
                                         icon={<EditIcon />}
                                         colorScheme="dark-brown"
                                         size="medium"
-                                        path={`/${community}/editar-comunidade` /* PROVISÓRIO */}
+                                        path={`/comunidade/${community}/editar`}
                                     />}
                                 </div>
                             </div>
