@@ -47,7 +47,7 @@ es-unifesp-2025-2-grupo-alpha/
 ## 💻 Pré-requisitos (até o momento)
 
 - Node.js (versão 18 ou superior)
-- npm ou yarn
+- Npm
 - Git
 
 ## 👥 Equipe
