@@ -11,7 +11,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // remove propriedades não permitidas
@@ -31,6 +31,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
   // ####################################################################
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();
