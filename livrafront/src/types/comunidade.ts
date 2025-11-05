@@ -4,7 +4,7 @@ export interface Comunidade {
   descricao: string;
   moderadores: string[];  // User[] ?
   membros: string[];
-  posts: any[];           // mudar pra Post[] quando o modelo existir
+  posts: unknown;           // mudar pra Post[] quando o modelo existir
   imagem_url: string;
   tags: string[];
   createdAt: string;
