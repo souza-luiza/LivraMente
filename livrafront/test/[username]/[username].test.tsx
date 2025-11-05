@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
-import UserProfilePage from '@/app/usuario/[username]/page'
+import UserProfilePage from '@/app/[username]/page'
 import { notFound } from 'next/navigation'
 
 // Mock next/navigation
@@ -35,9 +35,21 @@ jest.mock('@/components/sidebar', () => {
 })
 
 jest.mock('@/components/button', () => {
-  return function MockButton({ text, icon }: { text: string; icon?: React.ReactNode }) {
+  return function MockButton({ text, icon, onClick, path }: any) {
+    const { useRouter } = require('next/navigation')
+    const router = useRouter()
     return (
-      <button data-testid="edit-button">
+      <button
+        data-testid="edit-button"
+        onClick={(e: any) => {
+          if (path) {
+            e.preventDefault()
+            router.push(path)
+            return
+          }
+          if (onClick) onClick(e)
+        }}
+      >
         {icon}
         {text}
       </button>
@@ -290,13 +302,15 @@ describe('UserProfilePage', () => {
       })
     })
 
-    it('edit button link has correct href', async () => {
+    it('edit button navigates to edit profile when clicked', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/john_doe/editar-perfil"]')
-        expect(link).toBeInTheDocument()
+        const editBtn = screen.getByTestId('edit-button')
+        expect(editBtn).toBeInTheDocument()
+        fireEvent.click(editBtn)
+        expect(mockPush).toHaveBeenCalledWith('/john_doe/editar-perfil')
       })
     })
   })
@@ -576,23 +590,27 @@ describe('UserProfilePage', () => {
   })
 
   describe('Navigation Links', () => {
-    it('has three navigation links', async () => {
+    it('has navigation links and edit button', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
         const links = container.querySelectorAll('a')
-        expect(links.length).toBeGreaterThanOrEqual(3)
+        // Readlists and Posts should be anchors; Edit is now a button
+        expect(links.length).toBeGreaterThanOrEqual(2)
+        expect(screen.getByTestId('edit-button')).toBeInTheDocument()
       })
     })
 
-    it('edit profile link includes username', async () => {
+    it('edit button includes username in destination when clicked', async () => {
       const params = Promise.resolve({ username: 'jane_smith' })
       const { container } = render(await UserProfilePage({ params }))
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/jane_smith/editar-perfil"]')
-        expect(link).toBeInTheDocument()
+        const editBtn = screen.getByTestId('edit-button')
+        expect(editBtn).toBeInTheDocument()
+        fireEvent.click(editBtn)
+        expect(mockPush).toHaveBeenCalledWith('/jane_smith/editar-perfil')
       })
     })
 

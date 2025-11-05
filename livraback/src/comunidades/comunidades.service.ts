@@ -69,6 +69,12 @@ export class ComunidadesService {
         return comunidade.membros;
     }
 
+    async findAllComunidadeModeradores(comunidadeNome: string) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).populate('moderadores').exec();
+        if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
+        return comunidade.moderadores;
+    }
+
     async verifyMemberOrMod(userId: string, comunidadeNome: string) {
         if (!userId) throw new UnauthorizedException('Usuário não autenticado');
 

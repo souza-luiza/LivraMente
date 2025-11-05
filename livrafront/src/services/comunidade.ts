@@ -37,6 +37,16 @@ export async function getMembers(comunidadeNome: string) {
   return res.json();
 }
 
+export async function getModerators(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/moderadores`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao buscar moderadores");
+  return res.json();
+}
+
 export async function checkMemberOrMod(comunidadeNome: string) {
   const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${encodeURIComponent(comunidadeNome)}`, {
     headers: {

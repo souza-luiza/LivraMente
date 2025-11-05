@@ -11,6 +11,7 @@ import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import LoadingPage from "@/components/loading";
 import Post from "@/components/post";
+import CommunityMember from "@/components/community-member";
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
 
 // Ícones
@@ -22,9 +23,10 @@ import EditIcon from "@/components/icons/EditIcon";
 import CommunityIcon from "@/components/icons/CommunityIcon";
 import CheckIcon from "@/components/icons/CheckIcon";
 import PenToolIcon from "@/components/icons/PenToolIcon";
+import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 
 // Chamadas da API
-import { getComunidadeByName, checkMemberOrMod, getMembers, getPosts, enterCommunity, leaveCommunity } from "@/services/comunidade";
+import { getComunidadeByName, checkMemberOrMod, getMembers, getPosts, getModerators, enterCommunity, leaveCommunity } from "@/services/comunidade";
 
 function slugToTitle(slug: string): string {
   return slug
@@ -42,73 +44,86 @@ export default function CommunityPage(){
     const [communityInfo, setCommunityInfo] = useState<any>(null);
     const [members, setMembers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
+    const [moderators, setModerators] = useState<any[]>([]);
     const [isMember, setIsMember] = useState(false);
     const [isModerator, setIsModerator] = useState(false);
 
     // Tab Membros
-    const [memberCount, setMemberCount] = useState(234);
+    const [memberCount, setMemberCount] = useState(0);
     const [valueMembers, setValueMembers] = useState('members');
 
     // Tab Postagens
     const [valuePosts, setValuePosts] = useState('community-feed');
 
     useEffect(() => {
-    if (!community) {
-      router.replace("/not-found");
-      return;
-    }
-
-    const fetchData = async () => {
-        try {
-            const communityTitle = slugToTitle(community);
-
-            // Busca da comunidade
-            const info = await getComunidadeByName(communityTitle);
-            if (!info) {
-                console.log("Comunidade não encontrada:", communityTitle);
-                router.replace("/not-found");
-                return;
-            }
-            setCommunityInfo(info);
-
-            // Verifica se usuário é membro ou moderador
-            const { isMember, isModerator } = await checkMemberOrMod(info.nome);
-            setIsMember(isMember);
-            setIsModerator(isModerator);
-
-            // Busca membros e posts
-            const [fetchedMembers, fetchedPosts] = await Promise.all([
-                getMembers(info.nome),
-                getPosts(info.nome),
-            ]);
-            setMembers(fetchedMembers);
-            setPosts(fetchedPosts);
-
-        } catch (err) {
-
-            console.error("Erro ao carregar comunidade:", err);
+        if (!community) {
             router.replace("/not-found");
-
-        } finally {
-
-            setLoading(false);
+            return;
         }
+
+        const fetchData = async () => {
+            try {
+                const communityTitle = slugToTitle(community);
+
+                // Busca da comunidade
+                const info = await getComunidadeByName(communityTitle);
+                if (!info) {
+                    console.log("Comunidade não encontrada:", communityTitle);
+                    router.replace("/not-found");
+                    return;
+                }
+                setCommunityInfo(info);
+
+                // Verifica se usuário é membro ou moderador
+                const { isMember, isModerator } = await checkMemberOrMod(info.nome);
+                setIsMember(isMember);
+                setIsModerator(isModerator);
+
+                // Busca membros, moderadores e posts
+                const [fetchedMembers, fetchedPosts, fetchedModerators] = await Promise.all([
+                    getMembers(info.nome),
+                    getPosts(info.nome),
+                    getModerators(info.nome),
+                ]);
+                setMembers(fetchedMembers);
+                setModerators(fetchedModerators);
+                setPosts(fetchedPosts);
+
+                // Seta contagem de membros
+                setMemberCount(fetchedMembers.length);
+
+            } catch (err) {
+
+                console.error("Erro ao carregar comunidade:", err);
+                router.replace("/not-found");
+
+            } finally {
+
+                setLoading(false);
+            }
         };
 
         fetchData();
     }, [community, router]);
 
-    const handleClick = () => {
-        if (isMember) {
-            leaveCommunity(communityInfo.nome)
-                .then(() => setIsMember(false))
-                .catch(err => console.error("Erro ao sair da comunidade:", err));
-        } else {
-            enterCommunity(communityInfo.nome)
-                .then(() => setIsMember(true))
-                .catch(err => console.error("Erro ao entrar na comunidade:", err));
+    const handleClick = async () => {
+        try {
+            if (isMember) {
+                await leaveCommunity(communityInfo.nome);
+                setIsMember(false);
+            } else {
+                await enterCommunity(communityInfo.nome);
+                setIsMember(true);
+            }
+
+            const updatedMembers = await getMembers(communityInfo.nome);
+            setMembers(updatedMembers);
+            setMemberCount(updatedMembers.length);
+
+        } catch (err) {
+            console.error("Erro ao atualizar participação na comunidade:", err);
         }
-    }
+    };
 
     const handleMembersTabChange = (newValue: string) => {
         setValueMembers(newValue);
@@ -208,32 +223,101 @@ export default function CommunityPage(){
 
                     <div className="w-full flex flex-row mt-4 flex-1 min-h-0">
 
-                        {/*Postagens*/}
+                        {/*Tabs Lado Esquerdo - Postagens*/}
                         <div className="w-5/7 px-4 flex-1 overflow-auto">
                             <TabProvider value={valuePosts} onChange={handlePostsTabChange}>
                                 <TabList>
                                     <Tab label="Postagens" icon={<Edit2Icon />} size="small" value="community-feed" />
-                                    <Tab label="Artes" icon={<PenToolIcon />} size="small" value="art" />
+                                    <Tab label="Fanarts" icon={<PenToolIcon />} size="small" value="fanart" />
+                                    <Tab label="Fanfics" icon={<ClosedBookIcon />} size="small" value="fanfic" />
                                 </TabList>
-                    
+                                
+                                {/*Postagens*/}
                                 <TabPanel value="community-feed">
-                                    {/*Postagens - iterar sobre lista 'posts' se categoria = geral*/}
-                                    <p className="text-b3">Lista de posts da comunidade será exibida aqui.</p>
-                                </TabPanel>
-                    
-                                <TabPanel value="fanart">
-                                    {/*Fanarts - iterar sobre lista 'posts' se categoria = fanart*/}
-                                    <p className="text-b3">Lista de fanarts da comunidade será exibida aqui.</p>
-                                </TabPanel>
+                                    {(() => {
+                                        const filteredPosts = posts.filter((post) => post.categoria === "geral");
 
+                                        posts.forEach(p => console.log(p));
+
+                                        return filteredPosts.length === 0 ? (
+                                        <p className="text-b3 light-neutral">
+                                            Nenhum post ainda nesta categoria.
+                                        </p>
+                                        ) : (
+                                        <div className="flex flex-col gap-4">
+                                            {filteredPosts.map((post) => (
+                                            <Post
+                                                key={post._id}
+                                                id={post._id}
+                                                community={post.comunidade.nome}
+                                                author={post.autor.username}
+                                                content={post.conteudo}
+                                                commentsCount={post.comentarios.length}
+                                                likesCount={post.curtidas}
+                                            />
+                                            ))}
+                                        </div>
+                                        );
+                                    })()}
+                                </TabPanel>
+                                
+                                {/*Fanarts*/}
+                                <TabPanel value="fanart">
+                                    {(() => {
+                                        const filteredPosts = posts.filter((post) => post.categoria === "fanart");
+
+                                        return filteredPosts.length === 0 ? (
+                                        <p className="text-b3 light-neutral">
+                                            Nenhuma fanart ainda nesta comunidade.
+                                        </p>
+                                        ) : (
+                                        <div className="flex flex-col gap-4">
+                                            {filteredPosts.map((post) => (
+                                            <Post
+                                                key={post._id}
+                                                id={post._id}
+                                                community={post.comunidade.nome}
+                                                author={post.autor.username}
+                                                content={post.conteudo}
+                                                commentsCount={post.comentarios.length}
+                                                likesCount={post.curtidas}
+                                            />
+                                            ))}
+                                        </div>
+                                        );
+                                    })()}
+                                </TabPanel>
+                                
+                                {/*Fanfics*/}
                                 <TabPanel value="fanfic">
-                                    {/*Fanfics - iterar sobre lista 'posts' se categoria = fanfic*/}
-                                    <p className="text-b3">Lista de fanfics da comunidade será exibida aqui.</p>
+                                    {(() => {
+                                        const filteredPosts = posts.filter((post) => post.categoria === "fanfic");
+
+                                        return filteredPosts.length === 0 ? (
+                                        <p className="text-b1 body-quotation light-neutral text-center">
+                                            Nenhuma fanfic ainda nesta comunidade.
+                                        </p>
+                                        ) : (
+                                        <div className="flex flex-col gap-4">
+                                            {filteredPosts.map((post) => (
+                                            <Post
+                                                key={post._id}
+                                                id={post._id}
+                                                community={post.comunidade.nome}
+                                                author={post.autor.username}
+                                                content={post.conteudo}
+                                                commentsCount={post.comentarios.length}
+                                                likesCount={post.curtidas}
+                                            />
+                                            ))}
+                                        </div>
+                                        );
+                                    })()}
                                 </TabPanel>
                             </TabProvider>
                         </div>
 
-                        {/*Membors da Comunidade*/}
+                        {/*Tabs Lado Direito - Membros*/}
                         <div className="w-2/7 px-4">
                             <div className="sticky top-2">
                                 <TabProvider value={valueMembers} onChange={handleMembersTabChange}>
@@ -241,13 +325,41 @@ export default function CommunityPage(){
                                         <Tab label={`Membros (${memberCount})`} icon={<CommunityIcon />} size="small" value="members" />
                                         <Tab label="Moderadores" icon={<CheckIcon />} size="small" value="mods" />
                                     </TabList>
-                        
+                                    
+                                    {/*Membros da Comunidade*/}
                                     <TabPanel value="members">
-                                        <p className="text-b3">Lista de membros da comunidade será exibida aqui.</p>
+                                        {members.length === 0 ? (
+                                            <p className="text-b1 body-quotation light-neutral text-center">
+                                                Nenhum membro ainda nesta comunidade.
+                                            </p>
+                                        ) : (
+                                            <div className="flex flex-col gap-2">
+                                                {members.map((member) => (
+                                                    <CommunityMember
+                                                        key={member._id}
+                                                        username={member.username}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
                                     </TabPanel>
-                        
+                                    
+                                    {/*Moderadores da Comunidade*/}
                                     <TabPanel value="mods">
-                                        <p className="text-b3">Lista de moderadores da comunidade será exibida aqui.</p>
+                                        {moderators.length === 0 ? (
+                                            <p className="text-b1 body-quotation light-neutral text-center">
+                                                Nenhum moderador ainda nesta comunidade.
+                                            </p>
+                                        ) : (
+                                            <div className="flex flex-col gap-2">
+                                                {moderators.map((moderador) => (
+                                                    <CommunityMember
+                                                        key={moderador._id}
+                                                        username={moderador.username}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
                                     </TabPanel>
                                 </TabProvider>
                             </div>

@@ -140,6 +140,27 @@ export class ComunidadesController {
         return this.comunidadesService.findAllComunidadeMembros(comunidadeNome);
     }
 
+    @Get(':comunidadeNome/moderadores')
+    @ApiOperation({
+        summary: 'Lista todos os moderadores',
+        description: 'Retorna todos os moderadores de uma comunidade pelo nome da comunidade'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Lista de moderadores retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    async findAllComunidadeModeradores(@Param('comunidadeNome') comunidadeNome: string) {
+        return this.comunidadesService.findAllComunidadeModeradores(comunidadeNome);
+    }
+
     @Get('verificar-membro/:comunidadeNome')
     @ApiOperation({
         summary: 'Verifica se o usuário é membro e/ou moderador',
