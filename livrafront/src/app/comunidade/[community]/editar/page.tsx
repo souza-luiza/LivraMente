@@ -129,8 +129,9 @@ function EditCommunityPage() {
         setIsLoading(false);
         return;
       }
-
-      await updateCommunity(comunidadeNome, payload);
+      // Usar nome original para identificar comunidade na API
+      const identifier = originalData?.nome || comunidadeNome;
+      await updateCommunity(identifier, payload);
       setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {

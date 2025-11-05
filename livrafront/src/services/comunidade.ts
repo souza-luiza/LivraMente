@@ -16,19 +16,19 @@ export async function getComunidadeByName(comunidadeNome: string): Promise<Comun
 }
 
 export async function getPosts(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/posts`);
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`);
   if (!res.ok) throw new Error("Erro ao buscar posts");
   return res.json();
 }
 
 export async function getMembers(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`);
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`);
   if (!res.ok) throw new Error("Erro ao buscar membros");
   return res.json();
 }
 
 export async function checkMemberOrMod(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${comunidadeNome}`, {
+  const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${encodeURIComponent(comunidadeNome)}`, {
     headers: {
       ...(getAuthHeaders() || {}),
     },
@@ -38,7 +38,7 @@ export async function checkMemberOrMod(comunidadeNome: string) {
 } 
 
 export async function enterCommunity(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`, {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
     method: "PATCH",
     headers: {
       ...(getAuthHeaders() || {}),
@@ -49,7 +49,7 @@ export async function enterCommunity(comunidadeNome: string) {
 }
 
 export async function leaveCommunity(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}/membros`, {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
     method: "DELETE",
     headers: {
       ...(getAuthHeaders() || {}),
@@ -78,7 +78,7 @@ export async function createCommunity(payload: Record<string, unknown>) {
 }
 
 export async function getCommunity(comunidadeNome: string) {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}`, {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
     headers: {
       ...(getAuthHeaders() || {}),
     },
@@ -91,7 +91,7 @@ export async function getCommunity(comunidadeNome: string) {
 }
 
 export async function updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${comunidadeNome}`, {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

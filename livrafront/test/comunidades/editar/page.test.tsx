@@ -193,6 +193,9 @@ it('envia dados para o backend ao editar comunidade', async () => {
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalled();
+      const calledUrl = (global.fetch as jest.Mock).mock.calls[2][0] as string;
+      expect(calledUrl).toEqual(expect.stringContaining(`/comunidades/${encodeURIComponent('Comunidade Teste')}`));
+
       const init = (global.fetch as jest.Mock).mock.calls[2][1] as RequestInit;
     const body = init.body;
     if (body && typeof (body as any).get === 'function') {
