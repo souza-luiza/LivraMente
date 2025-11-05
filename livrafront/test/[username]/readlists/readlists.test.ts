@@ -119,7 +119,7 @@ describe('readlists service endpoints', () => {
     global.fetch = jest.fn(() =>
       Promise.resolve(new Response('', { status: 404 }))
     ) as jest.Mock;
-    await expect(getPublicReadlists('1')).rejects.toThrow('Usuário não encontrado');
+    await expect(getPublicReadlists('1')).rejects.toThrow('Erro ao buscar readlists públicas');
   });
 
   it('getPublicReadlists lança erro em caso de exceção', async () => {
