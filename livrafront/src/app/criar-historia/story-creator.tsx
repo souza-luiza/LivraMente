@@ -3,8 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useState } from "react";
 import Button from "@/components/button";
-import SaveIcon from "@/components/icons/SaveIcon";
-import ShareIcon from "@/components/icons/ShareIcon";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 import FantasyIcon from "@/components/icons/FantasyIcon";
 import HeartIcon from "@/components/icons/HeartIcon";
@@ -13,7 +11,6 @@ import TerrorIcon from "@/components/icons/TerrorIcon";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import AdventureIcon from "@/components/icons/AdventureIcon";
 import MultipleUsersIcon from "@/components/icons/MultipleUsersIcon";
-import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 import AddIcon from "@/components/icons/AddIcon";
 import ZombieIcon from "@/components/icons/ZombieIcon";
 
