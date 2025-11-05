@@ -39,9 +39,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps){
                 </div>
                 <h4 className="text-3xl font-bold pb-2 text-h5">@{username}</h4>
                 <p className="pb-4 text-b1 body-quotation">{userProfile.pronouns}</p>
-                <Link href={`/${username}/editar-perfil`}>
-                    <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
-                </Link>
+                    <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} path={`/${username}/editar-perfil`} />
                 <div className="w-full flex justify-center items-stretch mt-8 gap-4">
                     <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
                         <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/readlists`}>Readlists<ChevronRightIcon width={24} height={24}/></Link>
