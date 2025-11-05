@@ -9,10 +9,10 @@ async function bootstrap() {
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
   app.enableCors({
     origin: allowedOrigins,  
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // remove propriedades não permitidas
@@ -32,6 +32,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
   // ####################################################################
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

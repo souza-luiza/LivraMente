@@ -132,7 +132,7 @@ export const TabPanel: React.FC<TabPanelProps> = ({ value, children, className =
   if (!isActive) return null;
 
   return (
-    <div className={`pt-6 ${className}`} role="tabpanel">
+    <div className={`pt-2 ${className}`} role="tabpanel">
       {children}
     </div>
   );

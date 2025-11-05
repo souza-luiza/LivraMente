@@ -16,6 +16,7 @@ import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { ReadlistsModule } from './readlists/readlists.module';
 import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
+import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ComunidadesModule } from './comunidades/comunidades.module';
     ReadlistsModule,
     PostsModule,
     ComunidadesModule,
+    LlmModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

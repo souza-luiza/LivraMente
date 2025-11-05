@@ -12,24 +12,12 @@ jest.mock('next/navigation', () => ({
 	useRouter: () => ({ push: mockPush }),
 }));
 
-// Mock Next.js Link to call router.push on click
 jest.mock('next/link', () => {
-	return function MockLink({ href, children, ...props }: any) {
-		return (
-			<a 
-				href={href} 
-				onClick={(e) => {
-					e.preventDefault();
-					const { useRouter } = require('next/navigation');
-					const router = useRouter();
-					router.push(href);
-				}}
-				{...props}
-			>
-				{children}
-			</a>
-		);
-	};
+	return ({ children, href, ...props }: { children: any; href: string; [key: string]: any }) => {
+		const { useRouter } = require('next/navigation')
+		const router = useRouter()
+		return <a {...props} href={href} onClick={(e: any) => { e.preventDefault(); router.push(href); }}>{children}</a>
+	}
 });
 
 describe('ReadlistsPage', () => {
