@@ -228,7 +228,7 @@ describe('TabPanel', () => {
       </TabProvider>
     );
     const panel = screen.getByRole('tabpanel');
-    expect(panel).toHaveClass('pt-6');
+    expect(panel).toHaveClass('pt-2');
   });
 
   it('should apply custom className', () => {
