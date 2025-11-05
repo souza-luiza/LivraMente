@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
-import ChevronRightIcon from './icons/ChevronRightIcon';
 import { postsService } from '@/services/posts';
+import Edit2Icon from './icons/Edit2Icon';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -28,6 +28,7 @@ export default function CreatePostModal({
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!isOpen) return null;
 
@@ -181,6 +182,10 @@ export default function CreatePostModal({
     onClose();
   };
 
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -299,7 +304,7 @@ export default function CreatePostModal({
             className="text-b2 cursor-pointer"
             style={{ color: 'var(--secondary-800)' }}
           >
-            Pedir avaliação dos moderadores (para seção de fanarts)
+            Submeter como fanart/fanfic
           </label>
         </div>
 
@@ -315,26 +320,26 @@ export default function CreatePostModal({
           {/* Botão de Adicionar Imagem */}
           <div>
             <input
-              id="image-upload"
+              ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*"  
               multiple
-              className="hidden"
               onChange={handleImageChange}
               disabled={images.length >= 4}
+              style={{ display: "none" }}
             />
             <Button
-              text={`Adicionar imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
+              text={`Adicionar Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
               icon={<ImageIcon />}
               size="medium"
               colorScheme="light-green"
-              onClick={() => document.getElementById('image-upload')?.click()}
+              onClick={handleButtonClick}
               aria-label="Adicionar imagens"
               disabled={images.length >= 4 || isSubmitting}
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {/* Botão de Cancelar */}
             <Button
               text="Cancelar"
@@ -349,7 +354,7 @@ export default function CreatePostModal({
             {/* Botão de Postar */}
             <Button
               text={isSubmitting ? "Postando..." : "Postar"}
-              icon={<ChevronRightIcon />}
+              icon={<Edit2Icon />}
               size="medium"
               colorScheme="dark-green"
               onClick={handlePost}
