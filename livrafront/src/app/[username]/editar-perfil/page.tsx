@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/user-store";
 import Sidebar from "@/components/sidebar";
-import SearchBar from "@/components/searchbar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
+import SearchBar from "@/components/searchbar";
 import { toast } from "react-toastify";
 import  TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
@@ -178,8 +178,9 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex items-center h-screen bg-gray-50">
       <Sidebar />
+
       <main className="flex-grow flex flex-col overflow-hidden">
         <div className="p-4 border-b border-neutral-200">
           <div className="max-w-2xl mx-auto">
@@ -192,8 +193,8 @@ export default function SettingsProfilePage() {
         </div>
 
         <div className="flex-grow overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg p-8 shadow-sm">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="max-w-2xl mx-auto bg-white large-border-radius p-8 shadow-sm">
+            <h1 className="text-h4 font-bold text-[#23160A] mb-6">
               Editar Perfil
             </h1>
 
@@ -229,13 +230,10 @@ export default function SettingsProfilePage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700 flex items-center">
-                  Nome de Usuário
-                  <span className="ml-2 text-xs text-gray-500">(Nome de usuário atual: {username})</span>
-                </label>
-
                 <Input
                   name="name"
+                  label="Nome de Usuário"
+                  helperText={`Nome de usuário atual: ${username}`}
                   value={formData.name}
                   onChange={handleInputChange}
                   error={errors.name}
@@ -244,13 +242,10 @@ export default function SettingsProfilePage() {
                 />
               </div>
 
-              <label className="text-sm font-medium text-gray-700 flex items-center">
-                Pronomes
-                <span className="ml-2 text-xs text-gray-500">(Pronomes atuais: {pronouns})</span>
-              </label>
-
               <Input
                 name="pronouns"
+                label="Pronomes"
+                helperText={`Pronomes atuais: ${pronouns}`}
                 value={formData.pronouns}
                 onChange={handleInputChange}
                 error={errors.pronouns}

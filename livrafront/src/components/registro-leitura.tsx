@@ -18,7 +18,7 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
     const [step, setStep] = useState(1)
     const [show, setShow] = useState(false)
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-    const [xp, /*setXp*/] = useState(0)
+    const [xp, setXp] = useState(0)
 
     const [formData, setFormData] = useState({
         pagesRead: '',
@@ -94,13 +94,64 @@ export default function RegistroLeitura({ isLoggedIn }: RegistroLeituraProps) {
 
     if (!show) return null
 
-    const handleOnSubmit = (e: React.FormEvent) => {
+    const handleOnSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         try {
-            // TODO: INTEGRAÇÃO COM A API
-            // let xp = resposta da API
-            // setXp(xp)
+            const token = localStorage.getItem('token')
+            if (!token) {
+                setStatus('error')
+                return
+            }
+
+            let opcao;
+            if (step === 1) {
+                opcao = 0;
+            } else {
+                opcao = 1;
+            }
+
+            let qtd;
+            if (step === 1) {
+                qtd = Number(formData.pagesRead);
+            } else {
+                qtd = Number(formData.minutesRead);
+            }
+
+            if (isNaN(qtd) || qtd <= 0) {
+                let field;
+                if (step === 1) {
+                    field = 'pagesRead';
+                } else {
+                    field = 'minutesRead';
+                }
+                setErrors(prev => ({
+                    ...prev,
+                    [field]: 'Informe um número válido',
+                }));
+                return;
+            }
+
+            // requisição da api do next
+            const response = await fetch('/api/gamificacao/registro-de-leitura', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ opcao, qtd }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                console.error('Erro ao registrar leitura:', data.error || data.message)
+                setStatus('error')
+                return
+            }
+
+            const xpGanho = data?.ganhoXP ?? 0
+            setXp(xpGanho)
             setStatus('success')
         } catch (error) {
             console.error('Falha ao conectar com o servidor.')

@@ -1,4 +1,3 @@
-import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
 import SettingsTabs from "./settings-tabs";
 

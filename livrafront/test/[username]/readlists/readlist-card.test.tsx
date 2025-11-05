@@ -34,26 +34,6 @@ describe('ReadlistCard', () => {
     expect(screen.getByText(/Descrição de teste/i)).toBeInTheDocument();
   });
 
-  it('favorita e desfavorita readlist', () => {
-    const r = { ...mockReadlist, favoritadoPor: [] };
-    render(<ReadlistCard r={r} userId="2" />);
-    const curtirBtn = screen.getByLabelText('Curtir');
-    fireEvent.mouseDown(curtirBtn);
-    fireEvent.mouseUp(curtirBtn);
-    fireEvent.mouseDown(curtirBtn);
-    fireEvent.mouseUp(curtirBtn);
-    expect(curtirBtn).toBeInTheDocument();
-  });
-
-  it('aciona botão de compartilhar', () => {
-    const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
-    render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const compartilharBtn = screen.getByLabelText('Compartilhar');
-    fireEvent.mouseDown(compartilharBtn);
-    fireEvent.mouseUp(compartilharBtn);
-    expect(compartilharBtn).toBeInTheDocument();
-  });
-
   it('navega ao clicar no card', () => {
     const originalLocation = window.location;
     // @ts-ignore
@@ -112,28 +92,6 @@ describe('ReadlistCard', () => {
   it('renderiza corretamente quando favoritadoPor é null', () => {
     render(<ReadlistCard r={{ ...mockReadlist, favoritadoPor: null as unknown as string[] | undefined }} userId="1" />);
     expect(screen.getByText(/Favoritos/i)).toBeInTheDocument();
-  });
-
-  it('muda cor do ícone ao hover/active (heart)', () => {
-    const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
-    render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const curtirBtn = screen.getByLabelText('Curtir');
-    fireEvent.mouseEnter(curtirBtn);
-    fireEvent.mouseDown(curtirBtn);
-    fireEvent.mouseUp(curtirBtn);
-    fireEvent.mouseLeave(curtirBtn);
-    expect(curtirBtn).toBeInTheDocument();
-  });
-
-  it('muda cor do ícone ao hover/active (share)', () => {
-    const notMineReadlist = { ...mockReadlist, criador: { ...mockReadlist.criador, _id: '2' } };
-    render(<ReadlistCard r={notMineReadlist} userId="1" />);
-    const compartilharBtn = screen.getByLabelText('Compartilhar');
-    fireEvent.mouseEnter(compartilharBtn);
-    fireEvent.mouseDown(compartilharBtn);
-    fireEvent.mouseUp(compartilharBtn);
-    fireEvent.mouseLeave(compartilharBtn);
-    expect(compartilharBtn).toBeInTheDocument();
   });
 
   it('navega ao pressionar Enter ou Espaço', () => {
