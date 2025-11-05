@@ -94,10 +94,10 @@ export default function CreateStory() {
     useEffect(() => {
         const textarea = textareaRef.current;
         if (textarea) {
-            textarea.style.height = '60px';
+            textarea.style.height = '40px';
             const scrollHeight = textarea.scrollHeight;
             textarea.style.height = Math.min(scrollHeight, 280) + 'px';
-            setButtonAlign(scrollHeight > 60 ? 'flex-end' : 'center');
+            setButtonAlign(scrollHeight > 40 ? 'flex-end' : 'center');
         }
     }, [input]);
 
@@ -207,10 +207,10 @@ export default function CreateStory() {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                     <div
-                        className={`max-w-3xl rounded-lg px-4 py-3 ${
+                        className={`relative max-w-3xl rounded-lg px-4 py-3 ${
                         message.role === 'user'
-                            ? 'light-green'
-                            : 'bg-white border border-gray-200 text-gray-900'
+                            ? 'light-green speech-bubble-user rounded-tr-none'
+                            : 'bg-white border border-gray-200 text-gray-900 speech-bubble-assistant rounded-tl-none'
                         }`}
                     >
                         <div className="flex items-start gap-3">
@@ -282,26 +282,26 @@ export default function CreateStory() {
         {/* Input Area */}
         <div className="border-t border-gray-200 bg-white sticky bottom-0">
             <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col">
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
-                <div className="w-full">
-                    <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
-                    className="w-full flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[60px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
-                    rows={1}
-                    disabled={isLoading}
-                    />
+                <div className="flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
+                    <div className="w-full">
+                        <textarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyPress}
+                            placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
+                            className="w-full flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[40px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
+                            rows={1}
+                            disabled={isLoading}
+                        />
+                    </div>
+                    <div className="flex h-full">
+                        <Button icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
+                    </div>
                 </div>
-                <div className="flex h-full">
-                    <Button icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
-                </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-                O Criador de Histórias é alimentado por IA e pode gerar conteúdo impreciso ou inadequado. Use com cautela.
-            </p>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                    O Criador de Histórias é alimentado por IA e pode gerar conteúdo impreciso ou inadequado. Use com cautela.
+                </p>
             </div>
         </div>
         </div>
