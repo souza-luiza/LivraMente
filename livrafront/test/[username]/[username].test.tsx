@@ -304,7 +304,7 @@ describe('UserProfilePage', () => {
 
     it('edit button navigates to edit profile when clicked', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      render(await UserProfilePage({ params }))
       
       await waitFor(() => {
         const editBtn = screen.getByTestId('edit-button')
