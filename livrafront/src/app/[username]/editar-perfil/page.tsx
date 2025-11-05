@@ -182,16 +182,6 @@ export default function SettingsProfilePage() {
       <Sidebar />
 
       <main className="flex-grow flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-neutral-200">
-          <div className="max-w-2xl mx-auto">
-            <SearchBar
-              placeholder="Pesquisar livros, autores, amigos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
         <div className="flex-grow overflow-y-auto p-8">
           <div className="max-w-2xl mx-auto bg-white large-border-radius p-8 shadow-sm">
             <h1 className="text-h4 font-bold text-[#23160A] mb-6">
