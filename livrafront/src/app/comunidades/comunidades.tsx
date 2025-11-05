@@ -1,5 +1,3 @@
-'use client';
-
 import Comunidade from "@/components/comunidade-card";
 import { Comunidade as ComunidadeType } from "@/types/comunidade";
 

@@ -13,16 +13,11 @@ import HeartIcon from "@/components/icons/HeartIcon";
 import AdventureIcon from "@/components/icons/AdventureIcon";
 import { Comunidade } from "@/types/comunidade";
 import { getComunidades } from "@/services/comunidades";
-import LoadingPage from "@/components/loading";
-import ErrorIcon from "@/components/icons/ErrorIcon";
-import Button from "@/components/button";
-import HomeIcon from "@/components/icons/HomeIcon";
 
 export default function ComunidadesTabs() {
     const [value, setValue] = useState('romance');
     const [comunidades, setComunidades] = useState<Comunidade[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     const handleChange = (newValue: string) => {
         setValue(newValue);
@@ -34,28 +29,14 @@ export default function ComunidadesTabs() {
                 setLoading(true);
                 const data = await getComunidades();
                 setComunidades(data);
-            } catch(err: any) {
-                setError("Não foi possível carregar as comunidades.");
+            } catch(err: unknown) {
+                setComunidades([]);
             } finally {
                 setLoading(false);
             }
         }
         fetchComunidades();
     }, []);
-
-    if (loading) return (
-        <div className="fixed inset-0">
-            <LoadingPage />
-        </div>
-    );
-
-    if (error) return (
-        <div className="flex flex-col items-center h-[70vh] justify-center">
-            <div className="mb-4 flex justify-center"><ErrorIcon size={120} fill='var(--error-600)' aria-label="Logo" role='img'/></div>
-            <h4 className="text-h4 text-[var(--error-600)] mb-6">{error}</h4>
-            <Button text="Página Inicial" icon={<HomeIcon />} size="medium" colorScheme="dark-brown" path="/" />
-        </div>
-    );
 
     return (
         <TabProvider value={value} onChange={handleChange}>
