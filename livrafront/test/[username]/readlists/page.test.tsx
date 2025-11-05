@@ -101,6 +101,16 @@ describe('ReadlistsPage', () => {
 	it('navigates when Voltar link is clicked', async () => {
 		// component uses the route username; set it so profilePath becomes /john_doe
 		(global as any).__TEST_ROUTE_USERNAME__ = 'john_doe';
+		Object.defineProperty(window, 'localStorage', {
+			value: { 
+				getItem: (key: string) => {
+					if (key === 'userId') return '2';
+					if (key === 'username') return 'different_user';
+					return null;
+				}
+			},
+			writable: true,
+		});
 		Object.defineProperty(window, 'location', {
 			value: { search: '?userId=2', assign: jest.fn() },
 			writable: true,
@@ -124,7 +134,12 @@ describe('ReadlistsPage', () => {
 		await waitFor(() => {
 			const voltarBtn = screen.getByLabelText('Voltar');
 			expect(voltarBtn).toBeInTheDocument();
-			(voltarBtn as HTMLElement).click();
+		});
+		await act(async () => {
+			const voltarBtn = screen.getByLabelText('Voltar');
+			fireEvent.click(voltarBtn);
+		});
+		await waitFor(() => {
 			expect(mockPush).toHaveBeenCalledWith('/john_doe');
 		});
 	});

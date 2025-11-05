@@ -10,8 +10,9 @@ import SearchBar from "@/components/searchbar";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import LoadingPage from "@/components/loading";
-import Post from "@/components/post";
+import PostComponent from "@/components/post";
 import CommunityMember from "@/components/community-member";
+import CreatePostModal from "@/components/CreatePostModal";
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
 
 // Ícones
@@ -27,7 +28,10 @@ import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 
 // Chamadas da API
 import { getComunidadeByName, checkMemberOrMod, getMembers, getPosts, getModerators, enterCommunity, leaveCommunity } from "@/services/comunidade";
+
+// Types
 import { User } from "@/types/auth";
+import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
 
 function slugToTitle(slug: string): string {
@@ -45,10 +49,11 @@ export default function CommunityPage(){
     const [loading, setLoading] = useState(true);
     const [communityInfo, setCommunityInfo] = useState<Comunidade>();
     const [members, setMembers] = useState<User[]>([]);
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<Post[]>([]);
     const [moderators, setModerators] = useState<User[]>([]);
     const [isMember, setIsMember] = useState(false);
     const [isModerator, setIsModerator] = useState(false);
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
     // Tab Membros
     const [memberCount, setMemberCount] = useState(0);
@@ -136,6 +141,19 @@ export default function CommunityPage(){
         setValuePosts(newValue);
     };
 
+    const handleOpenPostModal = () => {
+        setIsPostModalOpen(true);
+    }
+
+    const handleClosePostModal = () => {
+        setIsPostModalOpen(false);
+    }
+
+    const handlePostSuccess = () => {
+        console.log('Post criado com sucesso!');
+        // TODO: Recarregar posts da comunidade + atualizar lista de posts
+    }
+
     if (loading) return <LoadingPage />;
     if (!communityInfo) return null;
 
@@ -202,14 +220,14 @@ export default function CommunityPage(){
                                         icon={<Edit2Icon />}
                                         colorScheme="light-green"
                                         size="medium"
-                                        path={`/${community}/postar` /* PROVISÓRIO */}
+                                        onClick={handleOpenPostModal}
                                     />
                                     <Button
                                         text="Wiki"
                                         icon={<OpenBookIcon />}
                                         colorScheme="light-green"
                                         size="medium"
-                                        path={`/wiki/${community}` /* PROVISÓRIO */}
+                                        path={`/wiki/${communityInfo.nome}` /* PROVISÓRIO */}
                                     />
                                     {isModerator && 
                                     <Button
@@ -217,8 +235,15 @@ export default function CommunityPage(){
                                         icon={<EditIcon />}
                                         colorScheme="dark-brown"
                                         size="medium"
-                                        path={`/${community}/editar-comunidade` /* PROVISÓRIO */}
+                                        path={`/${communityInfo.nome}/editar-comunidade` /* PROVISÓRIO */}
                                     />}
+                                    {/* Modal de Criação de Post */}
+                                    <CreatePostModal
+                                        isOpen={isPostModalOpen}
+                                        onClose={handleClosePostModal}
+                                        communityName={communityInfo.nome}
+                                        onSuccess={handlePostSuccess}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -246,17 +271,20 @@ export default function CommunityPage(){
                                         </p>
                                         ) : (
                                         <div className="flex flex-col gap-4">
-                                            {filteredPosts.map((post) => (
-                                            <Post
-                                                key={post._id}
-                                                id={post._id}
-                                                community={post.comunidade.nome}
-                                                author={post.autor.username}
-                                                content={post.conteudo}
-                                                commentsCount={post.comentarios.length}
-                                                likesCount={post.curtidas}
-                                            />
-                                            ))}
+                                            {filteredPosts.map((post) => {
+                                                const communityName = typeof post.comunidade === 'string' ? post.comunidade : post.comunidade.nome;
+                                                return (
+                                                    <PostComponent
+                                                        key={post._id}
+                                                        id={post._id}
+                                                        community={communityName}
+                                                        author={post.autor.username}
+                                                        content={post.conteudo}
+                                                        commentsCount={post.comentarios.length}
+                                                        likesCount={post.curtidas}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                         );
                                     })()}
@@ -273,17 +301,20 @@ export default function CommunityPage(){
                                         </p>
                                         ) : (
                                         <div className="flex flex-col gap-4">
-                                            {filteredPosts.map((post) => (
-                                            <Post
-                                                key={post._id}
-                                                id={post._id}
-                                                community={post.comunidade.nome}
-                                                author={post.autor.username}
-                                                content={post.conteudo}
-                                                commentsCount={post.comentarios.length}
-                                                likesCount={post.curtidas}
-                                            />
-                                            ))}
+                                            {filteredPosts.map((post) => {
+                                                const communityName = typeof post.comunidade === 'string' ? post.comunidade : post.comunidade.nome;
+                                                return (
+                                                    <PostComponent
+                                                        key={post._id}
+                                                        id={post._id}
+                                                        community={communityName}
+                                                        author={post.autor.username}
+                                                        content={post.conteudo}
+                                                        commentsCount={post.comentarios.length}
+                                                        likesCount={post.curtidas}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                         );
                                     })()}
@@ -300,17 +331,20 @@ export default function CommunityPage(){
                                         </p>
                                         ) : (
                                         <div className="flex flex-col gap-4">
-                                            {filteredPosts.map((post) => (
-                                            <Post
-                                                key={post._id}
-                                                id={post._id}
-                                                community={post.comunidade.nome}
-                                                author={post.autor.username}
-                                                content={post.conteudo}
-                                                commentsCount={post.comentarios.length}
-                                                likesCount={post.curtidas}
-                                            />
-                                            ))}
+                                            {filteredPosts.map((post) => {
+                                                const communityName = typeof post.comunidade === 'string' ? post.comunidade : post.comunidade.nome;
+                                                return (
+                                                    <PostComponent
+                                                        key={post._id}
+                                                        id={post._id}
+                                                        community={communityName}
+                                                        author={post.autor.username}
+                                                        content={post.conteudo}
+                                                        commentsCount={post.comentarios.length}
+                                                        likesCount={post.curtidas}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                         );
                                     })()}

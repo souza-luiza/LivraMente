@@ -14,6 +14,7 @@ import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { ReadlistsModule } from './readlists/readlists.module';
+import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
 import { LlmModule } from './llm/llm.module';
 
@@ -38,6 +39,7 @@ import { LlmModule } from './llm/llm.module';
     UsersModule,
     AuthModule,
     ReadlistsModule,
+    PostsModule,
     ComunidadesModule,
     LlmModule,
   ],                                                                                
