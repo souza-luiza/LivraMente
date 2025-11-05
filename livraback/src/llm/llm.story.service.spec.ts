@@ -22,7 +22,7 @@ const mockStoryModel = jest.fn().mockImplementation(() => ({
   save: mockSave,
 }));
 
-(mockStoryModel as any).findByIdAndUpdate= jest.fn(() => ({
+(mockStoryModel as any).findByIdAndUpdate = jest.fn(() => ({
   exec: mockExec,
 }));
 
