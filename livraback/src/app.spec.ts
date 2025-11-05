@@ -62,7 +62,7 @@ describe('App Integration with Mocks', () => {
     },
   };
 
-  // Mock do model Readlist
+  // Mock do model Comunidade
   const mockComunidadeModel = {
     findOne: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue(null),
