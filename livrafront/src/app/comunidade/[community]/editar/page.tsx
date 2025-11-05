@@ -7,6 +7,7 @@ import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
 import { getCommunity, updateCommunity, uploadImage, checkMemberOrMod } from '@/services/comunidade';
+import { titleToSlug } from '@/lib/slugify';
 import { Comunidade } from '@/types/comunidade';
 import Button from "@/components/button";
 import CheckIcon from "@/components/icons/CheckIcon";
@@ -110,12 +111,16 @@ function EditCommunityPage() {
     try {
       const payload: Record<string, unknown> = {};
       if (originalData) {
-        if (nome !== originalData.nome) payload.nome = nome;
-        if (descricao !== originalData.descricao) payload.descricao = descricao;
+        if (nome !== originalData.nome) {
+          payload.nome = nome;
+          payload.slug = titleToSlug(nome);
+        }
+        if (descricao !== originalData.descricao && descricao.trim() !== '') payload.descricao = descricao;
         if (JSON.stringify(tags || []) !== JSON.stringify(originalData.tags || [])) payload.tags = tags;
       } else {
         payload.nome = nome;
-        payload.descricao = descricao;
+        payload.slug = titleToSlug(nome);
+        if (descricao && descricao.trim() !== '') payload.descricao = descricao;
         payload.tags = tags;
       }
 

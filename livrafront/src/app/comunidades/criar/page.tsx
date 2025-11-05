@@ -6,6 +6,7 @@ import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
 import { createCommunity, uploadImage } from '@/services/comunidade';
+import { titleToSlug } from '@/lib/slugify';
 import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
@@ -65,11 +66,14 @@ export default function CreateCommunityPage() {
       if (foto) {
         imagem_url = await uploadImage(foto);
       }
-      const payload = {
+      const payload: Record<string, unknown> = {
         nome,
-        descricao,
         imagem_url: imagem_url || fotoPreview || undefined,
         tags,
+        slug: titleToSlug(nome),
+      };
+      if (descricao && descricao.trim() !== '') {
+        payload['descricao'] = descricao;
       }
       await createCommunity(payload)
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
