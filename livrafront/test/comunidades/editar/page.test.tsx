@@ -7,8 +7,14 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: () => 'comunidade-teste' }),
 }));
 
-global.fetch = jest.fn(() =>
-  Promise.resolve({
+global.fetch = jest.fn((url: any) => {
+  if (typeof url === 'string' && url.includes('/verificar-membro/')) {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ isMember: true, isModerator: true }),
+    });
+  }
+  return Promise.resolve({
     ok: true,
     json: () => Promise.resolve({
       nome: 'Comunidade Teste',
@@ -17,8 +23,8 @@ global.fetch = jest.fn(() =>
       imagem_url: 'url-imagem',
       moderadores: ['user-id'],
     }),
-  })
-) as jest.Mock;
+  });
+}) as jest.Mock;
 
 jest.mock('@/components/sidebar', () => () => <div data-testid="sidebar" />);
 jest.mock('@/components/loading', () => () => <div data-testid="loading" />);

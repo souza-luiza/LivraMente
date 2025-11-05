@@ -6,7 +6,7 @@ import Sidebar from "@/components/sidebar";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
-import { getCommunity, updateCommunity, uploadImage } from '@/services/comunidade';
+import { getCommunity, updateCommunity, uploadImage, checkMemberOrMod } from '@/services/comunidade';
 import Button from "@/components/button";
 import CheckIcon from "@/components/icons/CheckIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
@@ -78,8 +78,12 @@ function EditCommunityPage() {
         setTags(data.tags || []);
         setFotoPreview(data.imagem_url || null);
         setOriginalData(data || null);
-        const userId = localStorage.getItem('userId');
-        setIsModerator(data.moderadores?.includes(userId));
+        try {
+          const { isModerator } = await checkMemberOrMod(data.nome).catch(() => ({ isMember: false, isModerator: false }));
+          setIsModerator(Boolean(isModerator));
+        } catch (e) {
+          setIsModerator(false);
+        }
       } catch (err) {
         setMessage({ text: 'Erro ao carregar comunidade', type: 'error' });
       } finally {
