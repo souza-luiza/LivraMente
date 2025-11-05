@@ -12,7 +12,7 @@ export class LlmApiService implements OnModuleInit {
   constructor(private configService: ConfigService) { } // Para ler o .env
 
   onModuleInit() {
-    const apiKey = this.configService.get<string>('GOOGLE_API_KEY')
+    const apiKey = this.configService.get<string>('GOOGLE_API_KEY');
     if (!apiKey) {
       throw new Error('GOOGLE_API_KEY was not found on .env')
     }
