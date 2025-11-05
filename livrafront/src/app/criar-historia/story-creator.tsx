@@ -144,15 +144,16 @@ export default function CreateStory() {
         setOpcoes(data.novasOpcoes);
         setStoryId(data.storyId);
 
-        } catch (err: any) {
+        } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao gerar história';
         setMessages((prev) => [
             ...prev,
-            { role: 'assistant', content: `Ops, algo deu errado: ${err.message}` },
+            { role: 'assistant', content: `Ops, algo deu errado: ${errorMessage}` },
         ]);
-        } finally {
+    } finally {
         setIsLoading(false);
-        }
-    };
+    }
+};
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
