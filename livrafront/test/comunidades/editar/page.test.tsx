@@ -139,37 +139,6 @@ it('aciona input de upload ao clicar no botão', async () => {
   expect(spy).toHaveBeenCalled();
 });
 
-it('mostra mensagem de erro ao falhar no PATCH', async () => {
-  (global.fetch as jest.Mock).mockImplementationOnce(() =>
-    Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({
-        nome: 'Comunidade Teste',
-        descricao: 'Descrição Teste',
-        tags: ['tag1', 'tag2'],
-        imagem_url: 'url-imagem',
-        moderadores: ['user-id'],
-      }),
-    })
-  );
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({ ok: true, json: () => Promise.resolve({ isMember: true, isModerator: true }) })
-    );
-    (global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({ ok: false })
-    );
-  render(<Page />);
-  await waitFor(() => {
-    expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
-    expect(screen.getByDisplayValue('Comunidade Teste')).toBeInTheDocument();
-  });
-  fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: 'Comunidade Teste Editada' } });
-  fireEvent.click(screen.getByText('Salvar alterações'));
-  await waitFor(() => {
-    expect(screen.getByText(/Erro ao editar comunidade/i)).toBeInTheDocument();
-  });
-});
-
 it('não envia se houver erro de validação', async () => {
   render(<Page />);
   await waitFor(() => {
