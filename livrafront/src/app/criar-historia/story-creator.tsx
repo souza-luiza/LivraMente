@@ -144,7 +144,7 @@ export default function CreateStory() {
         setOpcoes(data.novasOpcoes);
         setStoryId(data.storyId);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
         setMessages((prev) => [
             ...prev,
             { role: 'assistant', content: `Ops, algo deu errado: ${err.message}` },
