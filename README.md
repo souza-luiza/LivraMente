@@ -60,6 +60,7 @@ es-unifesp-2025-2-grupo-alpha/
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
 
+## System Design
 <img width="1127" height="503" alt="image" src="https://github.com/user-attachments/assets/df642396-1a71-47df-bac8-4638a6bd0f31" />
 <img width="1158" height="686" alt="image" src="https://github.com/user-attachments/assets/6e0ce131-c944-4363-b798-80b577bcb2ef" />
 <img width="1242" height="792" alt="image" src="https://github.com/user-attachments/assets/9cf017fa-c4a3-4c9c-9092-919545d8c079" />

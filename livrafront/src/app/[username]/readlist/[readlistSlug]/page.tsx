@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
-import SearchIcon from '@/components/icons/SearchIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import ListIcon from '@/components/icons/ListIcon';
 import GridIcon from '@/components/icons/GridIcon';
@@ -12,6 +11,8 @@ import StarIcon from '@/components/icons/StarIcon';
 import HeartIcon from '@/components/icons/HeartIcon';
 import EditIcon from '@/components/icons/EditIcon';
 import EditReadlistModal from '@/components/EditReadlistModal';
+import SearchBar from '@/components/searchbar';
+import Button from '@/components/button';
 
 // Função para converter slug em título
 function slugToTitle(slug: string): string {
@@ -100,37 +101,15 @@ export default function ReadlistPage() {
       />
 
       {/* Sidebar Fixa */}
-      <div>
-        <Sidebar />
-      </div>
+      <Sidebar />
 
       {/* Conteúdo Principal */}
       <div 
-        className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 md:py-12 w-full max-w-[1600px] mx-auto" 
+        className="flex-1 overflow-y-auto px-4 w-full" 
         style={{ }}
       >
         {/* SEÇÃO 1: Barra de Pesquisa */}
-        <div style={{ marginBottom: 'var(--large-padding)' }}>
-          <div 
-            className="flex items-center gap-3 w-full"
-            style={{ 
-              backgroundColor: 'var(--primary-300)',
-              borderRadius: '999px',
-              padding: '12px var(--large-padding)'
-            }}
-          >
-            <SearchIcon size={20} style={{ color: 'var(--primary-700)' }} />
-            <input 
-              type="text" 
-              placeholder="Pesquisar em livros lidos"
-              className="bg-transparent flex-1 outline-none text-b2"
-              style={{ 
-                color: 'var(--primary-800)',
-                border: 'none'
-              }}
-            />
-          </div>
-        </div>
+        <SearchBar placeholder="Pesquisar no livra..." className="mb-2" />
 
         {/* SEÇÃO 2: Header da Readlist */}
         <div
@@ -146,7 +125,7 @@ export default function ReadlistPage() {
         >
           {/* Ícones de Ação */}
           <div
-            className="flex flex-row md:flex-col gap-2 md:gap-0"
+            className="flex flex-row md:flex-col gap-2 md:gap-2"
             style={{
               position: 'absolute',
               top: '10px',
@@ -154,88 +133,28 @@ export default function ReadlistPage() {
             }}
           >
             {isOwner && (
-              <button 
-                className="textless-medium"
-                style={{ 
-                  backgroundColor: 'transparent',
-                  transition: 'all 0.3s ease'
-                }}
+              <Button
+                icon={<EditIcon />}
+                size="large"
+                colorScheme="light-green"
                 aria-label="Editar readlist"
                 onClick={() => setIsEditModalOpen(true)}
-              >
-                <EditIcon
-                  size={30}
-                  style={{ 
-                    color: 'var(--primary-600)',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--primary-700)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--primary-600)';
-                  }}
-                />
-              </button>
+              />  
             )}
-            <button 
-              className="textless-medium"
-              style={{ 
-                backgroundColor: 'transparent',
-                transition: 'all 0.3s ease'
-              }}
-              aria-label="Curtir"
+            <Button
+              icon={<HeartIcon fill={isLiked ? "currentColor" : "none"} />}
+              size="large"
+              colorScheme="light-green"
+              aria-label="Curtir readlist"
               onClick={() => setIsLiked(!isLiked)}
-            >
-              <HeartIcon
-                size={30}
-                style={{ 
-                  color: 'var(--primary-600)', 
-                  fill: isLiked ? 'var(--primary-600)' : 'none',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }} 
-                onMouseEnter={(e) => {
-                  if (!isLiked) {
-                    e.currentTarget.style.fill = 'var(--primary-400)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLiked) {
-                    e.currentTarget.style.fill = 'none';
-                  }
-                }}
-              />
-            </button>
-            <button 
-              className="textless-medium"
-              style={{ 
-                backgroundColor: 'transparent',
-                padding: '0px',
-                transition: 'all 0.3s ease'
-              }}
-              aria-label="Compartilhar"
+            />
+            <Button
+              icon={<ShareIcon />}
+              size="large"
+              colorScheme="light-green"
+              aria-label="Compartilhar readlist"
               onClick={() => setIsShared(!isShared)}
-            >
-              <ShareIcon 
-                size={30}
-                style={{ 
-                  color: 'var(--primary-600)', 
-                  opacity: isShared ? 1 : 0.7,
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isShared) {
-                    e.currentTarget.style.opacity = '0.7';
-                  }
-                }}
-              />
-            </button>
+            />
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center w-full max-w-4xl">
@@ -258,8 +177,7 @@ export default function ReadlistPage() {
 
             {/* Informações */}
             <div className="flex flex-col items-center md:items-start justify-center flex-1">
-              <h1 className="text-h1 text-center md:text-left" style={{ 
-                color: 'var(--secondary-700)',
+              <h1 className="text-h1 text-center md:text-left" style={{
                 marginBottom: 'var(--extra-small-padding)',
                 marginTop: '0px'
               }}>
