@@ -34,8 +34,9 @@ export default function CommunityPageButtons({ community, isMember, isMod }: Com
         setIsPostModalOpen(false);
     }
 
-    const handlePost = (data: { content: string; images: string[]; requestReview: boolean }) => {
-        // TODO: Implementar lógica de criação de post na API
+    const handlePostSuccess = () => {
+        console.log('Post criado com sucesso!');
+        // TODO: Recarregar posts da comunidade + atualizar lista de posts
     }
 
     return (
@@ -82,7 +83,7 @@ export default function CommunityPageButtons({ community, isMember, isMod }: Com
                 isOpen={isPostModalOpen}
                 onClose={handleClosePostModal}
                 communityName={community}
-                onPost={handlePost}
+                onSuccess={handlePostSuccess}
             />
         </div>
     )

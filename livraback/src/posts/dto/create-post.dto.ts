@@ -21,10 +21,10 @@ export class CreatePostDto {
   imagens?: string[];
 
   @ApiProperty({ 
-    description: 'ID da comunidade onde o post será criado' 
+    description: 'ID ou nome da comunidade onde o post será criado' 
   })
   @IsNotEmpty({ message: 'A comunidade é obrigatória' })
-  @IsMongoId({ message: 'ID da comunidade inválido' })
+  @IsString({ message: 'Comunidade deve ser uma string (ID ou nome)' })
   comunidade: string;
 
   @ApiProperty({ 

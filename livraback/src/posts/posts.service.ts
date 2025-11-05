@@ -14,8 +14,18 @@ export class PostsService {
   ) {}
 
   async create(userId: string, createPostDto: CreatePostDto) {
-    // Validar que a comunidade existe
-    const comunidade = await this.comunidadeModel.findById(createPostDto.comunidade);
+    let comunidade;
+    
+    // Tentar buscar por ID primeiro
+    if (Types.ObjectId.isValid(createPostDto.comunidade)) {
+      comunidade = await this.comunidadeModel.findById(createPostDto.comunidade);
+    }
+    
+    // Se não encontrou, tentar buscar por nome
+    if (!comunidade) {
+      comunidade = await this.comunidadeModel.findOne({ nome: createPostDto.comunidade });
+    }
+    
     if (!comunidade) {
       throw new NotFoundException('Comunidade não encontrada');
     }
@@ -47,7 +57,7 @@ export class PostsService {
     const post = new this.postModel({
       ...createPostDto,
       autor: new Types.ObjectId(userId),
-      comunidade: new Types.ObjectId(createPostDto.comunidade),
+      comunidade: comunidade._id, 
       categoria,
       status,
       imagens: createPostDto.imagens || [],
@@ -59,7 +69,7 @@ export class PostsService {
 
     // Adicionar post à comunidade
     await this.comunidadeModel.findByIdAndUpdate(
-      createPostDto.comunidade,
+      comunidade._id,
       { $push: { posts: savedPost._id } }
     );
 

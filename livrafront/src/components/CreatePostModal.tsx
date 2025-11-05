@@ -6,29 +6,28 @@ import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
 import ChevronRightIcon from './icons/ChevronRightIcon';
+import { postsService } from '@/services/posts';
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   communityName: string;
-  onPost: (data: {
-    content: string;
-    images: string[];
-    requestReview: boolean;
-  }) => void;
+  onSuccess?: () => void; 
 }
 
 export default function CreatePostModal({
   isOpen,
   onClose,
   communityName,
-  onPost,
+  onSuccess,
 }: CreatePostModalProps) {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [requestReview, setRequestReview] = useState(false);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   if (!isOpen) return null;
 
@@ -49,23 +48,107 @@ export default function CreatePostModal({
     }
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
+    // Validar conteúdo
     if (!validateContent(content)) {
       return;
     }
 
-    onPost({
-      content: content.trim(),
-      images,
-      requestReview,
-    });
+    // Obter token do localStorage
+    const token = localStorage.getItem('token');
     
-    // Reset form
-    setContent('');
-    setImages([]);
-    setRequestReview(false);
-    setContentError('');
-    onClose();
+    // Validar autenticação
+    if (!token) {
+      setSubmitError('Você precisa estar logado para criar um post');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      // Criar o post via API
+      const createdPost = await postsService.createPost(
+        {
+          conteudo: content.trim(),
+          comunidade: communityName,
+          imagens: images.length > 0 ? images : undefined,
+          solicitacao_revisao: requestReview,
+          categoria: 'geral', // Categoria inicial, pode ser alterada pelo moderador se for solicitado
+          publico: true,
+        },
+        token
+      );
+
+      // Reset do modal
+      setContent('');
+      setImages([]);
+      setRequestReview(false);
+      setContentError('');
+      setSubmitError('');
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Erro ao criar post:', error);
+      setSubmitError(
+        error.message || 'Erro ao criar postagem. Tente novamente.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Função para comprimir imagem
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Falha ao criar contexto canvas'));
+            return;
+          }
+
+          // Definir tamanho máximo
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          // Calcular novas dimensões mantendo aspect ratio
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Comprimir para JPEG com 70% de qualidade
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,28 +156,14 @@ export default function CreatePostModal({
     if (files) {
       const remainingSlots = 4 - images.length;
       const filesToProcess = Array.from(files).slice(0, remainingSlots);
-      
-      const readFileAsDataURL = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (reader.result) {
-              resolve(reader.result as string);
-            } else {
-              reject(new Error('Failed to read file'));
-            }
-          };
-          reader.onerror = () => reject(new Error('FileReader error'));
-          reader.readAsDataURL(file);
-        });
-      };
 
-      Promise.all(filesToProcess.map(readFileAsDataURL))
+      Promise.all(filesToProcess.map(compressImage))
         .then((newImages) => {
           setImages([...images, ...newImages]);
         })
         .catch((error) => {
-          console.error('Error reading files:', error);
+          console.error('Erro ao processar imagens:', error);
+          setSubmitError('Erro ao processar imagens. Tente novamente.');
         });
     }
   };
@@ -108,6 +177,7 @@ export default function CreatePostModal({
     setImages([]);
     setRequestReview(false);
     setContentError('');
+    setSubmitError('');
     onClose();
   };
 
@@ -222,6 +292,7 @@ export default function CreatePostModal({
             style={{
               accentColor: 'var(--primary-600)',
             }}
+            disabled={isSubmitting}
           />
           <label
             htmlFor="review-checkbox"
@@ -231,6 +302,13 @@ export default function CreatePostModal({
             Pedir avaliação dos moderadores (para seção de fanarts)
           </label>
         </div>
+
+        {/* Mensagem de erro */}
+        {submitError && (
+          <p className="text-b3 mb-4" style={{ color: 'var(--error-500)' }}>
+            {submitError}
+          </p>
+        )}
 
         {/* Botões de Ação */}
         <div className="flex flex-row items-center justify-between gap-2">
@@ -252,7 +330,7 @@ export default function CreatePostModal({
               colorScheme="light-green"
               onClick={() => document.getElementById('image-upload')?.click()}
               aria-label="Adicionar imagens"
-              disabled={images.length >= 4}
+              disabled={images.length >= 4 || isSubmitting}
             />
           </div>
 
@@ -265,16 +343,18 @@ export default function CreatePostModal({
               colorScheme="dark-brown"
               onClick={handleCancel}
               aria-label="Cancelar"
+              disabled={isSubmitting}
             />
 
             {/* Botão de Postar */}
             <Button
-              text="Postar"
+              text={isSubmitting ? "Postando..." : "Postar"}
               icon={<ChevronRightIcon />}
               size="medium"
               colorScheme="dark-green"
               onClick={handlePost}
               aria-label="Postar"
+              disabled={isSubmitting}
             />
           </div>
         </div>
