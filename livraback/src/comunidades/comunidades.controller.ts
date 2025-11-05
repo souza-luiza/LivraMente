@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ComunidadesService } from './comunidades.service';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
