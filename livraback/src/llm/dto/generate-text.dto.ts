@@ -1,4 +1,4 @@
-import { IsArray, IsString, IsNumber, IsOptional, ArrayNotEmpty, Min, Max } from 'class-validator';
+import { IsArray, IsString, IsNumber, IsOptional, Min, Max } from 'class-validator';
 
 export class GenerateTextDTO {
   @IsArray()
