@@ -6,7 +6,7 @@ import Sidebar from "@/components/sidebar";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
-import { getCommunity, updateCommunity, uploadImage, checkMemberOrMod } from '@/services/comunidade';
+import { updateCommunity, uploadImage, checkMemberOrMod, getComunidadeByName } from '@/services/comunidade';
 import { titleToSlug } from '@/lib/slugify';
 import { useEditCommunity } from '@/hooks/useEditCommunity';
 import { Comunidade } from '@/types/comunidade';
@@ -75,7 +75,7 @@ function EditCommunityPage() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const data = await getCommunity(comunidadeNome);
+        const data = await getComunidadeByName(comunidadeNome);
         setNome(data.nome || '');
         setDescricao(data.descricao || '');
         setTags(data.tags || []);
@@ -83,7 +83,7 @@ function EditCommunityPage() {
         setOriginalData(data || null);
         try {
           const { isModerator } = await checkMemberOrMod(data.nome).catch(() => ({ isMember: false, isModerator: false }));
-          setIsModerator(Boolean(isModerator));
+          setIsModerator(isModerator);
         } catch {
           setIsModerator(false);
         }
