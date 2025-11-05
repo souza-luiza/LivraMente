@@ -9,24 +9,12 @@ Acesso em: https://livramente.vercel.app/
 Primeiramente, instale o projeto (caso já não tenha feito)
 ```bash
 npm install
-# ou
-yarn install
-# ou
-pnpm install
-# ou
-bun install
 ```
 
 Em seguida, rode o servidor/ambiente de desenvolvimento:
 
 ```bash
 npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
-# ou
-bun dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000) com seu navegador de preferência para visualizar o resultado.
