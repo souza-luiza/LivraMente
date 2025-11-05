@@ -212,8 +212,8 @@ export default function CreateStory() {
                     <div
                         className={`relative max-w-3xl rounded-lg px-4 py-3 ${
                         message.role === 'user'
-                            ? 'light-green speech-bubble-user rounded-tr-none'
-                            : 'bg-white border border-gray-200 text-gray-900 speech-bubble-assistant rounded-tl-none'
+                            ? 'light-green text-b2 speech-bubble-user rounded-tr-none'
+                            : 'text-b2 bg-white border border-gray-200 text-gray-900 speech-bubble-assistant rounded-tl-none'
                         }`}
                     >
                         <div className="flex items-start gap-3">
@@ -235,7 +235,7 @@ export default function CreateStory() {
                         <button
                             key={opcao.id}
                             onClick={() => handleSend(opcao.texto)}
-                            className="p-3 w-full text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
+                            className="text-b2 p-3 w-full text-center bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                             style={{border: '1px solid var(--secondary-100)'}}
                         >
                             {opcao.texto}
@@ -246,7 +246,7 @@ export default function CreateStory() {
                         {/* O BOTÃO EXTRA - caso o user não goste de nenhuma opção */}
                         <button
                             onClick={() => handleSend("Nenhuma dessas. Me dê 4 opções diferentes.")}
-                            className="p-3 w-full light-brown border-b-[1px] text-left bg-white border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
+                            className="text-b2 p-3 w-full light-brown border-b-[1px] text-left bg-white border rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         >
                             Nenhuma das opções. Gerar novas ideias.
                         </button>
@@ -293,7 +293,7 @@ export default function CreateStory() {
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyPress}
                             placeholder="Descreva sua ideia de história, peça reviravoltas de enredo, desenvolvimento de personagens..."
-                            className="w-full flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[40px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
+                            className="text-b2 w-full flex-1 items-center resize-none bg-transparent border-none outline-none px-2 py-2 min-h-[40px] max-h-[280px] overflow-y-auto text-gray-900 placeholder-gray-500"
                             rows={1}
                             disabled={isLoading}
                         />
@@ -302,7 +302,7 @@ export default function CreateStory() {
                         <Button aria-label="Enviar mensagem" icon={<ArrowRightIcon />} size="medium" colorScheme="dark-green" onClick={() => handleSend()} disabled={isLoading || !input.trim()} />
                     </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">
+                <p className="text-b3 text-gray-500 mt-2 text-center">
                     O Criador de Histórias é alimentado por IA e pode gerar conteúdo impreciso ou inadequado. Use com cautela.
                 </p>
             </div>
