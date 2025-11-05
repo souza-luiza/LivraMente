@@ -27,6 +27,8 @@ import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 
 // Chamadas da API
 import { getComunidadeByName, checkMemberOrMod, getMembers, getPosts, getModerators, enterCommunity, leaveCommunity } from "@/services/comunidade";
+import { User } from "@/types/auth";
+import { Comunidade } from "@/types/comunidade";
 
 function slugToTitle(slug: string): string {
   return slug
@@ -41,10 +43,10 @@ export default function CommunityPage(){
     const { community } = params as { community: string };
 
     const [loading, setLoading] = useState(true);
-    const [communityInfo, setCommunityInfo] = useState<any>(null);
-    const [members, setMembers] = useState<any[]>([]);
+    const [communityInfo, setCommunityInfo] = useState<Comunidade>();
+    const [members, setMembers] = useState<User[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
-    const [moderators, setModerators] = useState<any[]>([]);
+    const [moderators, setModerators] = useState<User[]>([]);
     const [isMember, setIsMember] = useState(false);
     const [isModerator, setIsModerator] = useState(false);
 
@@ -106,6 +108,8 @@ export default function CommunityPage(){
     }, [community, router]);
 
     const handleClick = async () => {
+        if (!communityInfo) return;
+
         try {
             if (isMember) {
                 await leaveCommunity(communityInfo.nome);
