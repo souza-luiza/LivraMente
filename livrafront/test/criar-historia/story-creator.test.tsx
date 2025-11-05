@@ -97,13 +97,11 @@ describe('CreateStory', () => {
     
     // Aguarda o botão estar habilitado
     await waitFor(() => {
-      const buttons = screen.getAllByRole('button');
       const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
 
       expect(sendButton).toBeDefined();
     });
 
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
@@ -181,7 +179,6 @@ describe('CreateStory', () => {
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Teste');
     
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
 
     
@@ -207,7 +204,6 @@ describe('CreateStory', () => {
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Teste');
     
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
@@ -236,7 +232,6 @@ describe('CreateStory', () => {
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Rascunho');
     
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
@@ -310,7 +305,6 @@ describe('CreateStory', () => {
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Teste');
     
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
@@ -361,7 +355,6 @@ describe('CreateStory', () => {
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Início');
     
-    const buttons = screen.getAllByRole('button');
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
