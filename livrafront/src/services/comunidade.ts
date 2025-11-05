@@ -8,22 +8,42 @@ function getAuthHeaders(): { [key: string]: string } | undefined {
 }
 
 export async function getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`);
-  if (!response.ok) {
-    throw new Error(`Erro ao buscar comunidade: ${response.statusText}`);
-  }
-  return response.json();
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error(`Erro ao buscar comunidade`);
+  return res.json();
 }
 
 export async function getPosts(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`);
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
   if (!res.ok) throw new Error("Erro ao buscar posts");
   return res.json();
 }
 
 export async function getMembers(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`);
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
   if (!res.ok) throw new Error("Erro ao buscar membros");
+  return res.json();
+}
+
+export async function getModerators(comunidadeNome: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/moderadores`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao buscar moderadores");
   return res.json();
 }
 
