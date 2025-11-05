@@ -21,7 +21,6 @@ export default function SettingsProfilePage() {
   const { username, pronouns, profileImageUrl, setUsername, setPronouns, setProfileImageUrl } = useUserStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     pronouns: "",

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/user-store";
+import { getPublicReadlists } from "@/services/readlists";
+import type { Readlist } from "@/types/readlist";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
 import ProfileIcon from "@/components/profile-icon";
@@ -39,6 +41,7 @@ export default function UserProfilePage(){
     const { setUsername, setPronouns } = useUserStore();
     
     const [userData, setUserData] = useState<UserData | null>(null);
+    const [readlists, setReadlists] = useState<Readlist[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -90,6 +93,11 @@ export default function UserProfilePage(){
                     setUsername(data.username);
                     setPronouns(data.pronouns || '');
                 }
+
+                // Buscar readlists públicas do usuário
+                const userReadlists = await getPublicReadlists(username);
+                console.log('Readlists recebidas:', userReadlists);
+                setReadlists(userReadlists);
             } catch (err) {
                 console.error('Erro ao carregar perfil:', err);
                 setError(err instanceof Error ? err.message : 'Erro ao carregar perfil do usuário');
@@ -184,7 +192,7 @@ export default function UserProfilePage(){
                             Readlists<ChevronRightIcon width={24} height={24}/>
                         </Link>
                         <div className="flex-1 overflow-y-auto">
-                            <ProfileReadlists />
+                            <ProfileReadlists readlists={readlists} username={username} />
                         </div>
                     </div>
                     <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">

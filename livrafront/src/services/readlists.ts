@@ -3,8 +3,19 @@ import { Readlist } from '../types/readlist';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
 function getAuthHeaders(): { [key: string]: string } | undefined {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : undefined;
+  if (typeof window === 'undefined') return undefined;
+  
+  // Buscar o token do storage do Zustand
+  const authStorage = localStorage.getItem('auth-storage');
+  if (!authStorage) return undefined;
+  
+  try {
+    const { state } = JSON.parse(authStorage);
+    const token = state?.token;
+    return token ? { Authorization: `Bearer ${token}` } : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 // Buscar readlists públicas de um usuário

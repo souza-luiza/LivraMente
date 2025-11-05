@@ -1,67 +1,43 @@
-import Readlist from "./readlist";
+"use client";
+import { useEffect, useState } from "react";
+import Readlist from "@/components/readlist";
 
-const readlists = [
-    {
-        id: "1",
-        title: "Minha lista de fantasia",
-        author: "usuario123",
-        imageUrl: ""
-    },
-    {
-        id: "2",
-        title: "Livros de ficção científica",
-        author: "usuario456",
-        imageUrl: ""
-    },
-    {
-        id: "3",
-        title: "Romances clássicos",
-        author: "usuario789",
-        imageUrl: ""
-    },
-    {
-        id: "4",
-        title: "Thrillers emocionantes",
-        author: "usuario101",
-        imageUrl: ""
-    },
-    {
-        id: "5",
-        title: "Histórias de mistério",
-        author: "usuario202",
-        imageUrl: ""
-    },
-    {
-        id: "6",
-        title: "Livros de não-ficção",
-        author: "usuario303",
-        imageUrl: ""
-    },
-    {
-        id: "7",
-        title: "Contos de horror",
-        author: "usuario404",
-        imageUrl: ""
-    },
-    {
-        id: "8",
-        title: "Aventuras épicas",
-        author: "usuario505",
-        imageUrl: ""
-    }
-];
+interface Readlist {
+  _id: string;
+  title: string;
+  description?: string;
+  slug: string;
+  isPublic: boolean;
+  createdAt: string;
+  owner: {
+    username: string;
+  };
+}
 
-export default function ProfileReadlists() {
+interface ProfileReadlistsProps {
+  readlists: Readlist[];
+  username: string;
+}
+
+export default function ProfileReadlists({ readlists, username }: ProfileReadlistsProps) {
+  if (readlists.length === 0) {
     return (
-        <div className="w-full h-fit grid grid-cols-4 gap-2 relative">
-            {readlists.map((readlist) => (
-                <Readlist 
-                    key={readlist.id} 
-                    id={readlist.id}
-                    title={readlist.title} 
-                    author={readlist.author} 
-                    image={readlist.imageUrl} />
-            ))}
-        </div>
-    )
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-gray-500 text-b1">Nenhuma readlist pública encontrada</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {readlists.map((readlist) => (
+        <Readlist
+          key={readlist._id}
+          title={readlist.title}
+          author={readlist.owner?.username || username}
+          link={`/${username}/readlist/${readlist.slug}`}
+        />
+      ))}
+    </div>
+  );
 }
