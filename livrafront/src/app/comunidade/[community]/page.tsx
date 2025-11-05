@@ -68,7 +68,6 @@ export default function CommunityPage(){
                 // Busca da comunidade
                 const info = await getComunidadeByName(communityTitle);
                 if (!info) {
-                    console.log("Comunidade não encontrada:", communityTitle);
                     router.replace("/not-found");
                     return;
                 }
@@ -236,8 +235,6 @@ export default function CommunityPage(){
                                 <TabPanel value="community-feed">
                                     {(() => {
                                         const filteredPosts = posts.filter((post) => post.categoria === "geral");
-
-                                        posts.forEach(p => console.log(p));
 
                                         return filteredPosts.length === 0 ? (
                                         <p className="text-b3 light-neutral">
