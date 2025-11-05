@@ -92,6 +92,9 @@ describe('EditarComunidadePage', () => {
         }),
       })
     );
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ isMember: false, isModerator: false }) })
+    );
     render(<Page />);
     await waitFor(() => {
       expect(screen.getByText('Apenas moderadores podem editar esta comunidade.')).toBeInTheDocument();
@@ -171,7 +174,7 @@ it('não envia se houver erro de validação', async () => {
   });
   fireEvent.change(screen.getByPlaceholderText('Digite o nome da comunidade'), { target: { value: '' } });
   fireEvent.click(screen.getByText('Salvar alterações'));
-  expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
 });
 it('envia dados para o backend ao editar comunidade', async () => {
   render(<Page />);
@@ -187,7 +190,7 @@ it('envia dados para o backend ao editar comunidade', async () => {
   fireEvent.click(screen.getByText('Salvar alterações'));
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalled();
-    const init = (global.fetch as jest.Mock).mock.calls[1][1] as RequestInit;
+      const init = (global.fetch as jest.Mock).mock.calls[2][1] as RequestInit;
     const body = init.body;
     if (body && typeof (body as any).get === 'function') {
       const fd = body as FormData;
