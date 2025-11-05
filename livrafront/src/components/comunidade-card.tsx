@@ -21,12 +21,11 @@ export default function Comunidade({ id, nome, descricao, image }: ComunidadeCar
     return (
         <Link href={`/comunidade/${titleToSlug(nome)}`} className="w-full flex items-center p-4 gap-2 hover:shadow-md transition-shadow medium-border-radius">
             {/*Coluna da Imagem*/}
-            <div className="w-1/5 overflow-hidden rounded-full border-[3px] text-[var(--primary-700)] bg-[#3D552F]" style={{width: 80, height: 80}}>
+            <div className="w-1/5 aspect-square relative overflow-hidden rounded-full border-[3px] text-[var(--primary-700)] bg-[#3D552F]">
                 {image ? (<Image
                     src={image}
                     alt={"Imagem da Comunidade"}
-                    width={80}
-                    height={80}
+                    fill
                     className="object-cover"
                 />) : null}
             </div>
