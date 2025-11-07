@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LlmPromptService } from './llm.prompt.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Story, StoryDocument } from '../schemas/story.schema';
+import { Story, StoryDocument } from '../../schemas/story.schema';
 import { NotFoundException } from '@nestjs/common';
 
 const mockStory = {

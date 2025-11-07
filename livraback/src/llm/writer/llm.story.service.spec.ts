@@ -3,8 +3,8 @@ import { LlmStoryService } from './llm.story.service';
 import { LlmPromptService } from './llm.prompt.service';
 import { LlmApiService } from './llm.api.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Story, StoryDocument } from '../schemas/story.schema';
-import { GenerateTextDTO } from './dto/generate-text.dto';
+import { Story, StoryDocument } from '../../schemas/story.schema';
+import { GenerateTextDTO } from '../writer/dto/generate-text.dto';
 import { NotFoundException } from '@nestjs/common';
 
 const mockPromptService = {

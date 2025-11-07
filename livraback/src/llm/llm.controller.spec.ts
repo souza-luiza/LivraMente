@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LlmController } from './llm.controller';
-import { GenerateTextDTO } from './dto/generate-text.dto';
-import { LlmResponseDTO } from './dto/llm-response.dto';
-import { LlmStoryService } from './llm.story.service';
+import { GenerateTextDTO } from './writer/dto/generate-text.dto';
+import { LlmResponseDTO } from './writer/dto/llm-response.dto';
+import { LlmStoryService } from './writer/llm.story.service';
 
 const mockStoryService = {
   generateAndSaveStory: jest.fn(),
