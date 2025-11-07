@@ -175,7 +175,7 @@ it('envia dados para o backend ao editar comunidade', async () => {
     } else if (typeof body === 'string') {
       const json = JSON.parse(body as string);
       expect(Array.isArray(json.tags)).toBe(true);
-      expect(json.tags).toEqual(expect.arrayContaining(['Romance', 'Fantasia']));
+      expect(json.tags).toEqual(expect.arrayContaining(['romance', 'fantasia']));
     } else {
       throw new Error('Unexpected request body type');
     }

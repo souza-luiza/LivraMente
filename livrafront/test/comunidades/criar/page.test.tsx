@@ -70,7 +70,7 @@ describe('CreateCommunityPage', () => {
     } else if (typeof body === 'string') {
       const json = JSON.parse(body as string);
       expect(Array.isArray(json.tags)).toBe(true);
-      expect(json.tags).toEqual(expect.arrayContaining(['Romance', 'Aventura']));
+      expect(json.tags).toEqual(expect.arrayContaining(['romance', 'aventura']));
     } else {
       throw new Error('Unexpected request body type');
     }
