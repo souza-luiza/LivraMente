@@ -111,12 +111,12 @@ function EditCommunityPage() {
           payload.slug = titleToSlug(nome);
         }
         if (descricao !== originalData.descricao && descricao.trim() !== '') payload.descricao = descricao;
-        if (JSON.stringify(tags || []) !== JSON.stringify(originalData.tags || [])) payload.tags = tags;
+        if (JSON.stringify(tags || []) !== JSON.stringify(originalData.tags || [])) payload.tags = tags.map(tag => tag.toLowerCase());
       } else {
         payload.nome = nome;
         payload.slug = titleToSlug(nome);
         if (descricao && descricao.trim() !== '') payload.descricao = descricao;
-        payload.tags = tags;
+        payload.tags = tags.map(tag => tag.toLowerCase());
       }
 
       if (foto) {

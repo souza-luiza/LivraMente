@@ -73,7 +73,7 @@ export default function CreateCommunityPage() {
         nome: nome,
         descricao,
         imagem_url: imagem_url || fotoPreview || undefined,
-        tags,
+        tags: tags.map(tag => tag.toLowerCase()),
         slug: slug,
       }
       const result = await createCommunity(payload)
