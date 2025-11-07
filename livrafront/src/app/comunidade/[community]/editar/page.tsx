@@ -8,7 +8,6 @@ import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
 import { updateCommunity, uploadImage, checkMemberOrMod, getComunidadeByName } from '@/services/comunidade';
 import { titleToSlug } from '@/lib/slugify';
-import { useEditCommunity } from '@/hooks/useEditCommunity';
 import { Comunidade } from '@/types/comunidade';
 import Button from "@/components/button";
 import CheckIcon from "@/components/icons/CheckIcon";
@@ -104,22 +103,45 @@ function EditCommunityPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const { handleEditCommunity, isLoading: isEditing } = useEditCommunity();
-
   // Envio do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    setIsLoading(true);
     try {
-      const identifier = originalData?.nome || comunidadeNome;
-      const result = await handleEditCommunity(identifier, { nome, descricao, tags, foto }, originalData || undefined);
-      if (result) {
-        setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
+      const payload: Record<string, unknown> = {};
+      if (originalData) {
+        if (nome !== originalData.nome) {
+          payload.nome = nome;
+          payload.slug = titleToSlug(nome);
+        }
+        if (descricao !== originalData.descricao && descricao.trim() !== '') payload.descricao = descricao;
+        if (JSON.stringify(tags || []) !== JSON.stringify(originalData.tags || [])) payload.tags = tags;
       } else {
-        setMessage({ text: 'Nenhuma alteração detectada ou erro ao editar.', type: 'error' });
+        payload.nome = nome;
+        payload.slug = titleToSlug(nome);
+        if (descricao && descricao.trim() !== '') payload.descricao = descricao;
+        payload.tags = tags;
       }
+
+      if (foto) {
+        const imagem_url = await uploadImage(foto);
+        if (imagem_url) payload.imagem_url = imagem_url;
+      }
+
+      if (Object.keys(payload).length === 0) {
+        setMessage({ text: 'Nenhuma alteração detectada.', type: 'error' });
+        setIsLoading(false);
+        return;
+      }
+      // Usar nome original para identificar comunidade na API
+      const identifier = originalData?.nome || comunidadeNome;
+      await updateCommunity(identifier, payload);
+      setMessage({ text: 'Comunidade editada com sucesso!', type: 'success' });
+      setIsLoading(false);
     } catch (err) {
       setMessage({ text: 'Erro ao editar comunidade.', type: 'error' });
+      setIsLoading(false);
     }
   };
   if (isLoading) {

@@ -6,7 +6,6 @@ import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
 import { createCommunity, uploadImage } from '@/services/comunidade';
-import { useCreateCommunity } from '@/hooks/useCreateCommunity';
 import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
@@ -56,21 +55,28 @@ export default function CreateCommunityPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const { handleCreateCommunity, isLoading: isCreating } = useCreateCommunity();
-
   // Envio do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    setIsLoading(true);
     try {
-      const result = await handleCreateCommunity({ nome, descricao, tags, foto });
-      if (result) {
-        setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
-      } else {
-        setMessage({ text: 'Erro ao criar comunidade.', type: 'error' });
+      let imagem_url: string | undefined = undefined;
+      if (foto) {
+        imagem_url = await uploadImage(foto);
       }
+      const payload = {
+        nome,
+        descricao,
+        imagem_url: imagem_url || fotoPreview || undefined,
+        tags,
+      }
+      await createCommunity(payload)
+      setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
+      setIsLoading(false);
     } catch (err) {
       setMessage({ text: 'Erro ao criar comunidade.', type: 'error' });
+      setIsLoading(false);
     }
   };
   return (
