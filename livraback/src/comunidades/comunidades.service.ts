@@ -14,7 +14,13 @@ export class ComunidadesService {
     }
 
     async findOne(comunidadeNome: string) {
-        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome });
+        // Tenta buscar por slug primeiro, depois por nome
+        const comunidade = await this.comunidadeModel.findOne({
+            $or: [
+                { slug: comunidadeNome },
+                { nome: comunidadeNome }
+            ]
+        });
 
         if (!comunidade) {
             throw new NotFoundException(`Comunidade "${comunidadeNome}" não encontrada`);

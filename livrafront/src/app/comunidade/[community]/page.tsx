@@ -72,10 +72,11 @@ export default function CommunityPage(){
 
         const fetchData = async () => {
             try {
-                const communityTitle = slugToTitle(community);
+                // Utiliza o nome da comunidade para buscar
+                const communityIdentifier = decodeURIComponent(community);
 
                 // Busca da comunidade
-                const info = await getComunidadeByName(communityTitle);
+                const info = await getComunidadeByName(communityIdentifier);
                 if (!info) {
                     router.replace("/not-found");
                     return;
