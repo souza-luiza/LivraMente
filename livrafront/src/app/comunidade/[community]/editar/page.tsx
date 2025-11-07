@@ -176,7 +176,7 @@ function EditCommunityPage() {
               {message.text}
             </div>
             <Button
-              text="Voltar para comunidades"
+              text="Voltar para a comunidade"
               icon={<ArrowLeftIcon />}
               size="large"
               colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}

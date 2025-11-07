@@ -218,17 +218,6 @@ export default function CreateCommunityPage() {
                 <LoadingPage />
               </div>
             )}
-            {communitySlug && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  icon=<ShareIcon />
-                  text="Ir para a comunidade"
-                  onClick={() => router.push(`/comunidade/${communitySlug}`)}
-                  size="large"
-                  colorScheme="dark-green"
-                />
-              </div>
-            )}
           </>
         )}
       </div>
