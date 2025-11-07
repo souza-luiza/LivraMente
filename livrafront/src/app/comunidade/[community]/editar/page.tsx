@@ -27,12 +27,7 @@ function EditCommunityPage() {
       const path = window.location.pathname || '';
       const m = path.match(/\/comunidade\/([^\/]+)/);
       if (m && m[1]) {
-        const slug = m[1];
-        const communityTitle = slug
-          .split('-')
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ');
-        comunidadeNome = communityTitle;
+        comunidadeNome = decodeURIComponent(m[1]);
       }
     } catch {
     }
