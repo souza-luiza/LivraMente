@@ -299,7 +299,12 @@ describe('ComunidadesService', () => {
 
       const result = await service.findOne('fantasia');
 
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { slug: 'fantasia' },
+          { nome: 'fantasia' }
+        ]
+      });
       expect(result).toEqual(comunidadeMock);
     });
 
@@ -310,7 +315,12 @@ describe('ComunidadesService', () => {
       await expect(service.findOne('comunidade-inexistente'))
         .rejects.toThrow(NotFoundException);
       
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'comunidade-inexistente' });
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { slug: 'comunidade-inexistente' },
+          { nome: 'comunidade-inexistente' }
+        ]
+      });
     });
   });
 
