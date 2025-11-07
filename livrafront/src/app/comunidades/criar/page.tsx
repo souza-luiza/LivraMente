@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
+import ArrowRightIcon from '@/components/icons/ArrowRightIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
 import { createCommunity, uploadImage } from '@/services/comunidade';
@@ -10,6 +11,7 @@ import Button from '@/components/button';
 import CheckIcon from '@/components/icons/CheckIcon';
 import ShareIcon from '@/components/icons/ShareIcon';
 import LoadingPage from '@/components/loading';
+import { titleToSlug } from '@/lib/slugify';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -22,6 +24,7 @@ export default function CreateCommunityPage() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [previewObjectUrl, setPreviewObjectUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; foto?: string }>({});
+  const [communitySlug, setCommunitySlug] = useState<string | null>(null);
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value);
   const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setDescricao(e.target.value);
@@ -66,12 +69,14 @@ export default function CreateCommunityPage() {
         imagem_url = await uploadImage(foto);
       }
       const payload = {
-        nome,
+        nome: nome,
         descricao,
         imagem_url: imagem_url || fotoPreview || undefined,
         tags,
+        slug: titleToSlug(nome),
       }
-      await createCommunity(payload)
+      const result = await createCommunity(payload)
+      setCommunitySlug(nome);
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
@@ -83,6 +88,18 @@ export default function CreateCommunityPage() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 p-10 flex flex-col">
+        <div className="flex items-center mb-6">
+          <Button
+            text="Voltar"
+            icon={<ArrowLeftIcon />}
+            size="medium"
+            colorScheme="light-green"
+            onClick={() => router.push('/comunidades')}
+          />
+          <div className="w-6" />
+          <h1 className="text-h3">Crie sua nova comunidade</h1>
+        </div>
+
         {message.text ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div
@@ -95,30 +112,33 @@ export default function CreateCommunityPage() {
             >
               {message.text}
             </div>
-            <Button
-              text="Voltar para comunidades"
-              icon={<ArrowLeftIcon />}
-              size="large"
-              colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}
-              onClick={() => {
-                setMessage({ text: '', type: null });
-                router.push('/comunidades');
-              }}
-            />
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center mb-6">
-              <Button
-                text="Voltar"
-                icon={<ArrowLeftIcon />}
-                size="medium"
-                colorScheme="light-green"
-                onClick={() => router.push('/comunidades')}
-              />
-              <div className="w-6" />
-              <h1 className="text-h3">Crie sua nova comunidade</h1>
+            <div className="flex gap-4">
+                <Button
+                  text="Voltar para comunidades"
+                  icon={<ArrowLeftIcon />}
+                  size="large"
+                  colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}
+                  onClick={() => {
+                    setMessage({ text: '', type: null });
+                    router.push('/comunidades');
+                  }}
+                />
+                {message.type === 'success' && communitySlug && (
+                  <Button
+                    text="Ir para comunidade"
+                    size="large"
+                    colorScheme="dark-green"
+                    icon={<ArrowRightIcon />}
+                    onClick={() => {
+                      setMessage({ text: '', type: null });
+                      router.push(`/comunidade/${communitySlug}`);
+                    }}
+                  />
+                )}
+              </div>
             </div>
+          ) : (
+            <>
             {/* Formulário de criação de comunidade */}
             <form className="mt-4" onSubmit={handleSubmit}>
               <div className="mb-4 flex flex-row items-start gap-40">
@@ -196,6 +216,17 @@ export default function CreateCommunityPage() {
             {isLoading && (
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
                 <LoadingPage />
+              </div>
+            )}
+            {communitySlug && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  icon=<ShareIcon />
+                  text="Ir para a comunidade"
+                  onClick={() => router.push(`/comunidade/${encodeURIComponent(communitySlug)}`)}
+                  size="large"
+                  colorScheme="dark-green"
+                />
               </div>
             )}
           </>

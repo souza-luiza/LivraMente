@@ -165,7 +165,7 @@ function EditCommunityPage() {
               icon={<ArrowLeftIcon />}
               size="large"
               colorScheme="light-green"
-              onClick={() => router.push(`/comunidades/${comunidadeNome}`)}
+              onClick={() => router.push(`/comunidade/${originalData?.slug || titleToSlug(comunidadeNome)}`)}
             />
           </div>
         ) : message.text ? (
@@ -187,7 +187,7 @@ function EditCommunityPage() {
               colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}
               onClick={() => {
                 setMessage({ text: '', type: null });
-                router.push(`/comunidades/${comunidadeNome}`);
+                router.push(`/comunidade/${originalData?.slug || titleToSlug(comunidadeNome)}`);
               }}
             />
           </div>
@@ -199,7 +199,7 @@ function EditCommunityPage() {
                 icon={<ArrowLeftIcon />}
                 size="medium"
                 colorScheme="light-green"
-                onClick={() => router.push(`/comunidades/${comunidadeNome}`)}
+                onClick={() => router.push(`/comunidade/${originalData?.slug || titleToSlug(comunidadeNome)}`)}
               />
               <div className="w-6" />
               <h1 className="text-h3">Editar comunidade</h1>
