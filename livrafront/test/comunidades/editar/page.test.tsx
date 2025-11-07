@@ -195,7 +195,7 @@ it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
   });
   const voltarBtn = await screen.findByRole('button', { name: 'Voltar para comunidades' });
   fireEvent.click(voltarBtn);
-  expect(mockPush).toHaveBeenCalledWith('/comunidades/comunidade-teste');
+  expect(mockPush).toHaveBeenCalledWith('/comunidade/comunidade-teste');
 
   // Erro
   (global.fetch as jest.Mock).mockImplementationOnce(() => Promise.resolve({ ok: false }));
@@ -205,6 +205,6 @@ it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
   });
   const voltarBtnErro = await screen.findByRole('button', { name: 'Voltar' });
   fireEvent.click(voltarBtnErro);
-  expect(mockPush).toHaveBeenCalledWith('/comunidades/comunidade-teste');
+  expect(mockPush).toHaveBeenCalledWith('/comunidade/comunidade-teste');
 });
 });
