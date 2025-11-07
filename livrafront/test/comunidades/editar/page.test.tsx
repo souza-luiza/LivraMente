@@ -193,7 +193,7 @@ it('redireciona para /comunidades ao clicar no botão de voltar', async () => {
   await waitFor(() => {
     expect(screen.getByText('Comunidade editada com sucesso!')).toBeInTheDocument();
   });
-  const voltarBtn = await screen.findByRole('button', { name: 'Voltar para comunidades' });
+  const voltarBtn = await screen.findByRole('button', { name: 'Voltar para a comunidade' });
   fireEvent.click(voltarBtn);
   expect(mockPush).toHaveBeenCalledWith('/comunidade/comunidade-teste');
 
