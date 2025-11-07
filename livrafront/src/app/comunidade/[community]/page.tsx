@@ -34,6 +34,8 @@ import { User } from "@/types/auth";
 import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
 
+import { titleToSlug } from "@/lib/slugify";
+
 function slugToTitle(slug: string): string {
   return slug
     .split('-')
@@ -235,7 +237,7 @@ export default function CommunityPage(){
                                         icon={<EditIcon />}
                                         colorScheme="dark-brown"
                                         size="medium"
-                                        path={`/${communityInfo.nome}/editar-comunidade` /* PROVISÓRIO */}
+                                        path={`/comunidade/${communityInfo.slug || titleToSlug(communityInfo.nome)}/editar`}
                                     />}
                                     {/* Modal de Criação de Post */}
                                     <CreatePostModal
