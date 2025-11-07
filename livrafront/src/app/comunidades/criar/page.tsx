@@ -89,18 +89,6 @@ export default function CreateCommunityPage() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 p-10 flex flex-col">
-        <div className="flex items-center mb-6">
-          <Button
-            text="Voltar"
-            icon={<ArrowLeftIcon />}
-            size="medium"
-            colorScheme="light-green"
-            onClick={() => router.push('/comunidades')}
-          />
-          <div className="w-6" />
-          <h1 className="text-h3">Crie sua nova comunidade</h1>
-        </div>
-
         {message.text ? (
           <div className="flex flex-col items-center justify-center h-full">
             <div
@@ -140,6 +128,17 @@ export default function CreateCommunityPage() {
             </div>
           ) : (
             <>
+            <div className="flex items-center mb-6">
+              <Button
+                text="Voltar"
+                icon={<ArrowLeftIcon />}
+                size="medium"
+                colorScheme="light-green"
+                onClick={() => router.push('/comunidades')}
+              />
+              <div className="w-6" />
+              <h1 className="text-h3">Crie sua nova comunidade</h1>
+            </div>
             {/* Formulário de criação de comunidade */}
             <form className="mt-4" onSubmit={handleSubmit}>
               <div className="mb-4 flex flex-row items-start gap-40">
