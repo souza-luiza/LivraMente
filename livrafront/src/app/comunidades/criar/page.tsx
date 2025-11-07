@@ -68,15 +68,16 @@ export default function CreateCommunityPage() {
       if (foto) {
         imagem_url = await uploadImage(foto);
       }
+      const slug = titleToSlug(nome);
       const payload = {
         nome: nome,
         descricao,
         imagem_url: imagem_url || fotoPreview || undefined,
         tags,
-        slug: titleToSlug(nome),
+        slug: slug,
       }
       const result = await createCommunity(payload)
-      setCommunitySlug(nome);
+      setCommunitySlug(slug);
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
@@ -223,7 +224,7 @@ export default function CreateCommunityPage() {
                 <Button
                   icon=<ShareIcon />
                   text="Ir para a comunidade"
-                  onClick={() => router.push(`/comunidade/${encodeURIComponent(communitySlug)}`)}
+                  onClick={() => router.push(`/comunidade/${communitySlug}`)}
                   size="large"
                   colorScheme="dark-green"
                 />
