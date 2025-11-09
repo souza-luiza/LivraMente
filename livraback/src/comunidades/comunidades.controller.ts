@@ -185,7 +185,7 @@ export class ComunidadesController {
     @Patch(':comunidadeNome/membros')
     @ApiOperation({
         summary: 'Adiciona usuário autenticado na comunidade',
-        description: 'Adiciona usuário autenticado na comunidade pelo nome da comunidade'
+        description: 'Faz usuário autenticado entrar na comunidade pelo nome da comunidade'
     })
     @ApiResponse({
         status: 200,
@@ -206,7 +206,7 @@ export class ComunidadesController {
     @Delete(':comunidadeNome/membros')
     @ApiOperation({
         summary: 'Remove usuário autenticado da comunidade',
-        description: 'Remove usuário autenticado da comunidade pelo nome da comunidade'
+        description: 'Faz usuário autenticado sair da comunidade pelo nome da comunidade'
     })
     @ApiResponse({
         status: 200,
@@ -227,4 +227,67 @@ export class ComunidadesController {
     async removeMembro(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string) {
         return this.comunidadesService.removeMembro(user.userId, comunidadeNome);
     }
+
+    @Delete(':comunidadeNome/membros/:targetUserId')
+    @ApiOperation({ 
+        summary: 'Remove um membro da comunidade',
+        description: 'Permite que um moderador remova um membro específico (que não seja moderador) da comunidade pelo nome da comunidade e ID do usuário alvo' 
+    })
+     @ApiResponse({
+        status: 200,
+        description: 'Membro removido com sucesso'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Usuário alvo não é membro da comunidade',
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Usuário não é moderador ou tentou remover outro moderador',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    async removerMembroComoModerador(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string, @Param('targetUserId') targetUserId: string) {
+        return this.comunidadesService.removerMembroComoModerador(user.userId, comunidadeNome, targetUserId);
+    }
+
+    @Patch(':comunidadeNome/membros/:targetUserId/tornar-moderador')
+    @ApiOperation({ 
+        summary: 'Torna um membro moderador da comunidade',
+        description: 'Permite que um moderador torne um membro específico da comunidade em moderador pelo nome da comunidade e ID do usuário alvo' 
+    })
+     @ApiResponse({
+        status: 200,
+        description: 'Membro promovido a moderador com sucesso'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Usuário alvo não é membro da comunidade',
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Token JWT inválido'
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Usuário não é moderador',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    @ApiResponse({
+        status: 409,
+        description: 'Usuário alvo já é moderador da comunidade',
+    })
+    async tornarMembroModerador(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string, @Param('targetUserId') targetUserId: string) {
+        return this.comunidadesService.tornarMembroModerador(user.userId, comunidadeNome, targetUserId);
+    }
+
 }

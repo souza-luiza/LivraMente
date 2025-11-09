@@ -78,3 +78,25 @@ export async function leaveCommunity(comunidadeNome: string) {
   if (!res.ok) throw new Error("Erro ao sair da comunidade");
   return res.json();
 }
+
+export async function removeMember(comunidadeNome: string, targetUserId: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}`, {
+    method: "DELETE",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao remover membro como moderador");
+  return res.json();
+}
+
+export async function makeMemberModerator(comunidadeNome: string, targetUserId: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}/tornar-moderador`, {
+    method: "PATCH",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao promover membro a moderador");
+  return res.json();
+}

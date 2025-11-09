@@ -22,7 +22,7 @@ export interface Post {
     foto_perfil?: string;
   };
   conteudo: string;                                    
-  comunidade: string | {                               
+  comunidade: {                               
     _id: string;
     nome: string;
   };
