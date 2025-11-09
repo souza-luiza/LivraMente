@@ -1,7 +1,6 @@
 import { CreatePostData, Post, LikeResponse } from '@/types/post';
 
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json();
@@ -18,7 +17,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export const postsService = {
 
   async createPost(data: CreatePostData, token: string): Promise<Post> {
-    const response = await fetch(`${API_URL}/posts`, {
+    const response = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',                                 
       headers: {
         'Authorization': `Bearer ${token}`,            
@@ -32,7 +31,7 @@ export const postsService = {
 
 
   async getPostsByComunidade(comunidadeId: string, token: string): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}`;
+    const url = `${API_BASE_URL}/posts/comunidade/${comunidadeId}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -49,7 +48,7 @@ export const postsService = {
     categoria: 'geral' | 'fanart' | 'fanfic',
     token: string
   ): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}/categoria/${categoria}`;
+    const url = `${API_BASE_URL}/posts/comunidade/${comunidadeId}/categoria/${categoria}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -63,7 +62,7 @@ export const postsService = {
 
 
   async getPendentes(comunidadeId: string, token: string): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}/pendentes`;
+    const url = `${API_BASE_URL}/posts/comunidade/${comunidadeId}/pendentes`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -77,7 +76,7 @@ export const postsService = {
 
 
   async getPost(postId: string, token: string): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}`;
+    const url = `${API_BASE_URL}/posts/${postId}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -95,7 +94,7 @@ export const postsService = {
     data: Partial<CreatePostData>,
     token: string
   ): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}`;
+    const url = `${API_BASE_URL}/posts/${postId}`;
 
     const response = await fetch(url, {
       method: 'PATCH',                                
@@ -111,7 +110,7 @@ export const postsService = {
 
 
   async deletePost(postId: string, token: string): Promise<{ message: string }> {
-    const url = `${API_URL}/posts/${postId}`;
+    const url = `${API_BASE_URL}/posts/${postId}`;
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -124,13 +123,12 @@ export const postsService = {
   },
 
 
-  async curtirPost(postId: string, token: string): Promise<LikeResponse> {
-    const url = `${API_URL}/posts/${postId}/curtir`;
+  async curtirPost(postId: string): Promise<LikeResponse> {
+    const url = `${API_BASE_URL}/posts/${postId}/curtir`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({}),                       
@@ -146,7 +144,7 @@ export const postsService = {
     categoria: 'geral' | 'fanart' | 'fanfic',
     token: string
   ): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}/moderar`;
+    const url = `${API_BASE_URL}/posts/${postId}/moderar`;
 
     const response = await fetch(url, {
       method: 'PATCH',

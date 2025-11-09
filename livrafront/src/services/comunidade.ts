@@ -17,6 +17,17 @@ export async function getComunidadeByName(comunidadeNome: string): Promise<Comun
   return res.json();
 }
 
+export async function getComunidades() : Promise<Comunidade[]> {
+  const res = await fetch(`${API_BASE_URL}/comunidades`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+
+  if(!res.ok) return Promise.reject(new Error('Erro ao buscar comunidades'));
+  return await res.json();
+}
+
 export async function getPosts(comunidadeNome: string) {
   const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
     headers: {

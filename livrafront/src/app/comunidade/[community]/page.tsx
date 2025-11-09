@@ -66,11 +66,8 @@ export default function CommunityPage(){
     const [isModerator, setIsModerator] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
-    // Tab Membros
-    const [memberCount, setMemberCount] = useState(0);
+    // Tabs
     const [valueMembers, setValueMembers] = useState('members');
-
-    // Tab Postagens
     const [valuePosts, setValuePosts] = useState('community-feed');
 
     // Header Compacto
@@ -108,9 +105,6 @@ export default function CommunityPage(){
                 setMembers(fetchedMembers);
                 setModerators(fetchedModerators);
                 setPosts(fetchedPosts);
-
-                // Seta contagem de membros
-                setMemberCount(fetchedMembers.length);
 
             } catch (err) {
 
@@ -152,10 +146,9 @@ export default function CommunityPage(){
                 setIsMember(true);
             }
 
-            // Atualiza lista de membros e contagem
+            // Atualiza lista de membros
             const updatedMembers = await getMembers(communityInfo.nome);
             setMembers(updatedMembers);
-            setMemberCount(updatedMembers.length);
 
         } catch (err) {
             console.error("Erro ao atualizar participação na comunidade:", err);
@@ -197,7 +190,6 @@ export default function CommunityPage(){
             // Atualiza lista de membros e contagem
             const updatedMembers = await getMembers(communityInfo.nome);
             setMembers(updatedMembers);
-            setMemberCount(updatedMembers.length);
 
         } catch (err) {
             console.error("Erro ao remover membro da comunidade:", err);
@@ -348,14 +340,10 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <PostComponent
+                                                    <PostComponent 
                                                         key={post._id}
-                                                        id={post._id}
-                                                        community={post.comunidade.nome}
-                                                        author={post.autor.username}
-                                                        content={post.conteudo}
-                                                        commentsCount={post.comentarios.length}
-                                                        likesCount={post.curtidas}
+                                                        post={post}
+                                                        isModerator={isModerator} 
                                                     />
                                                 );
                                             })}
@@ -377,14 +365,10 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <PostComponent
+                                                    <PostComponent 
                                                         key={post._id}
-                                                        id={post._id}
-                                                        community={post.comunidade.nome}
-                                                        author={post.autor.username}
-                                                        content={post.conteudo}
-                                                        commentsCount={post.comentarios.length}
-                                                        likesCount={post.curtidas}
+                                                        post={post}
+                                                        isModerator={isModerator} 
                                                     />
                                                 );
                                             })}
@@ -406,14 +390,10 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <PostComponent
+                                                    <PostComponent 
                                                         key={post._id}
-                                                        id={post._id}
-                                                        community={post.comunidade.nome}
-                                                        author={post.autor.username}
-                                                        content={post.conteudo}
-                                                        commentsCount={post.comentarios.length}
-                                                        likesCount={post.curtidas}
+                                                        post={post}
+                                                        isModerator={isModerator} 
                                                     />
                                                 );
                                             })}
@@ -435,14 +415,9 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <PostComponent
+                                                    <PostComponent 
                                                         key={post._id}
-                                                        id={post._id}
-                                                        community={post.comunidade.nome}
-                                                        author={post.autor.username}
-                                                        content={post.conteudo}
-                                                        commentsCount={post.comentarios.length}
-                                                        likesCount={post.curtidas}
+                                                        post={post}
                                                     />
                                                 );
                                             })}
@@ -458,7 +433,7 @@ export default function CommunityPage(){
                             <div className="sticky top-16">
                                 <TabProvider value={valueMembers} onChange={handleMembersTabChange}>
                                     <TabList>
-                                        <Tab label={`Membros (${memberCount})`} icon={<CommunityIcon />} size="small" value="members" />
+                                        <Tab label="Membros" icon={<CommunityIcon />} size="small" value="members" />
                                         <Tab label="Moderadores" icon={<CheckIcon />} size="small" value="mods" />
                                     </TabList>
                                     
