@@ -16,11 +16,14 @@
     "test:sidebar": "jest sidebar.test.tsx"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.7",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.22",
+    "idb": "^8.0.3",
     "jest-fetch-mock": "^3.0.3",
     "libphonenumber-js": "^1.12.23",
     "lightningcss": "^1.28.2",
+    "localforage": "^1.10.0",
     "next": "15.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
