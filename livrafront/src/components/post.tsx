@@ -17,16 +17,23 @@ import HeartIcon from "./icons/HeartIcon";
 import CommentIcon from "./icons/CommentIcon";
 import TrashIcon from "./icons/TrashIcon";
 
+// Chamadas à API
+import { postsService } from "@/services/posts";
+import { on } from "events";
+
 interface PostProps {
     post: Post;
-    isOwner?: boolean;
+    currentUser?: string; // TODO: substituir por User
     isModerator?: boolean;
+    disableActions?: boolean;
+    onDelete?: () => void;
 }
 
 export default function PostComponent({ 
     post, 
-    isOwner = false,
-    isModerator = false
+    isModerator = false,
+    disableActions = false,
+    onDelete
 }: PostProps) {
 
     const router = useRouter();
@@ -40,6 +47,12 @@ export default function PostComponent({
     // Gerenciamento do modal de imagem
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [showImageModal, setShowImageModal] = useState(false);
+
+    // Curtidas
+    const [liked, setLiked] = useState(false); // TODO: Verificar se o usuário já curtiu o post
+    const [likeAmount, setLikeAmount] = useState(post.curtidas.length);
+
+    const isOwner = false; // TODO: Verificar se o usuário é o dono do post
 
     useEffect(() => {
         if (contentRef.current) {
@@ -65,11 +78,27 @@ export default function PostComponent({
     }
 
     const handleLikePost = async () => {
-        // Curtir post
+        try {
+            // Curtir/descurtir post
+            const { liked, likeAmount } = await postsService.likePost(post._id);
+
+            setLiked(liked);
+            setLikeAmount(likeAmount);
+
+        } catch (error) {
+            console.error("Erro ao curtir/descurtir o post:", error);
+        }
     }
 
-    const handleDeletePost = () => {
-        // Deletar post
+    const handleDeletePost = async () => {
+        try {
+            // Deletar post
+            await postsService.removePost(post._id);
+            onDelete && onDelete();
+
+        } catch (error) {
+            console.error("Erro ao excluir o post:", error);
+        }
     }
 
     return (
@@ -134,10 +163,11 @@ export default function PostComponent({
 
             <div className="flex flex-row gap-1">
                 <Button 
-                    text={String(post.curtidas.length)}
+                    text={String(likeAmount)}
                     colorScheme="dark-brown" 
                     size="small"
-                    icon={<HeartIcon />}
+                    icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} />}
+                    disabled={disableActions}
                     onClick={handleLikePost}
                 />
                 <Button 
@@ -145,13 +175,15 @@ export default function PostComponent({
                     colorScheme="dark-brown"
                     size="small"
                     icon={<CommentIcon />}
+                    disabled={disableActions}
                     onClick={handleRedirectToPost}
                 />
-                {(isModerator || isOwner) && <Button
+                {(isModerator || isOwner) && !disableActions && <Button
                     text="Excluir" 
                     colorScheme="dark-brown"
                     size="small"
                     icon={<TrashIcon />}
+                    disabled={disableActions}
                     onClick={handleDeletePost}
                 />}
             </div>

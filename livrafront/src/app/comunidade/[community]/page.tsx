@@ -39,6 +39,7 @@ import {
     removeMember,
     makeMemberModerator 
 } from "@/services/comunidade";
+import { postsService } from "@/services/posts";
 
 // Types
 import { User } from "@/types/auth";
@@ -212,6 +213,38 @@ export default function CommunityPage(){
         }  
     }
 
+    const handleApprovePost = async (postId: string) => {
+        // TODO: Lógica de aprovação do post
+    }
+
+    const handleRejectPost = async (postId: string) => {
+        if (!communityInfo || !postId) return;
+
+        try {
+            
+            // Atualmente o post rejeitado é deletado
+            await postsService.removePost(postId);
+
+            // Atualiza lista de posts
+            const updatedPosts = await getPosts(communityInfo!.nome);
+            setPosts(updatedPosts);
+
+        } catch (err) {
+            console.log("Erro ao rejeitar post:", err);
+        }
+    }
+
+    const handleDeletedPost = async () => {
+        try{
+            // Atualiza lista de posts
+            const updatedPosts = await getPosts(communityInfo!.nome);
+            setPosts(updatedPosts);
+            
+        } catch(err) {
+            console.log("Erro ao atualizar posts após exclusão:", err);
+        }
+    }
+
     if (loading) return <LoadingPage />;
     if (!communityInfo) return null;
 
@@ -343,7 +376,8 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
-                                                        isModerator={isModerator} 
+                                                        isModerator={isModerator}
+                                                        onDelete={handleDeletedPost} 
                                                     />
                                                 );
                                             })}
@@ -368,7 +402,8 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
-                                                        isModerator={isModerator} 
+                                                        isModerator={isModerator}
+                                                        onDelete={handleDeletedPost} 
                                                     />
                                                 );
                                             })}
@@ -393,7 +428,8 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
-                                                        isModerator={isModerator} 
+                                                        isModerator={isModerator}
+                                                        onDelete={handleDeletedPost} 
                                                     />
                                                 );
                                             })}
@@ -415,10 +451,29 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <PostComponent 
-                                                        key={post._id}
-                                                        post={post}
-                                                    />
+                                                    <div key={post._id} className="flex flex-col gap-1">
+                                                        <PostComponent 
+                                                            post={post}
+                                                            isModerator={isModerator}
+                                                            disableActions={true}
+                                                        />
+                                                        <div className="flex flex-row gap-1 justify-end">
+                                                            <Button
+                                                                text="Aprovar"
+                                                                icon={<CheckIcon />}
+                                                                size="medium"
+                                                                variant="aprovar"
+                                                                onClick={() => handleApprovePost(post._id)}
+                                                            />
+                                                            <Button
+                                                                text="Rejeitar"
+                                                                icon={<RemoveIcon />}
+                                                                size="medium"
+                                                                variant="rejeitar"
+                                                                onClick={() => handleRejectPost(post._id)}
+                                                            />
+                                                        </div>
+                                                    </div>
                                                 );
                                             })}
                                         </div>

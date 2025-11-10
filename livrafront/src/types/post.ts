@@ -40,10 +40,9 @@ export interface Post {
 }
 
 
-export interface LikeResponse {
-  message: string;                                    
-  totalCurtidas: number;                              
-  jaCurtiu: boolean;                                 
+export interface LikeResponse {                              
+  liked: boolean;                                 
+  likeAmount: number;                              
 }
 
 

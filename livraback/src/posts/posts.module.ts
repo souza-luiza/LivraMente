@@ -4,12 +4,14 @@ import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { Post, PostSchema } from '../schemas/post.schema';
 import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade.entity';
+import { User, UserSchema } from '../users/entities/user.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Post.name, schema: PostSchema },
       { name: Comunidade.name, schema: ComunidadeSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [PostsController],

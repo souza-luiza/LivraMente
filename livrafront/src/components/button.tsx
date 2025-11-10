@@ -9,6 +9,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
   size?: "small" | "medium" | "large";
   colorScheme?: "light-green" | "dark-green" | "light-brown" | "dark-brown"  | "light-neutral";
+  variant?: "normal" | "aprovar" | "rejeitar";
   path?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
@@ -20,6 +21,7 @@ export default function Button({
     icon, 
     size='medium', 
     colorScheme='light-green',
+    variant='normal',
     path,
     onClick, 
     loading = false,
@@ -50,6 +52,12 @@ export default function Button({
         large:  text ? "large-box"  : "small-padding large-border-radius",
     }
 
+    const variantColorScheme: Record<"normal" | "aprovar" | "rejeitar", string> = {
+        normal: "",
+        aprovar: "bg-[var(--success-100)] text-[var(--success-600)]",
+        rejeitar: "bg-[var(--error-100)] text-[var(--error-600)]"
+    };
+
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (onClick) onClick(e);
         if (loading || disabled || e.defaultPrevented || !path) return;
@@ -63,7 +71,7 @@ export default function Button({
 
     return (
         <div className="relative group">
-            <button className={`${boxSize[size]} ${colorScheme}
+            <button className={`${boxSize[size]} ${((variant == "aprovar") || (variant == "rejeitar")) ? variantColorScheme[variant] : colorScheme}
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
