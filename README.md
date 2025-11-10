@@ -61,7 +61,8 @@ es-unifesp-2025-2-grupo-alpha/
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
 
 ## System Design
-<img width="752" height="589" alt="image" src="https://github.com/user-attachments/assets/42984c15-6f17-4264-913d-ddf76468a2c5" />
+<img width="1172" height="945" alt="image" src="https://github.com/user-attachments/assets/cd6431d2-7710-4f87-a9b1-3dfbbf1a3ad9" />
+
 
 
 
