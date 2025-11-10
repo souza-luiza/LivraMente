@@ -11,6 +11,7 @@ import TagIcon from "./icons/TagIcon";
 import { Notificacao, TipoNotificacao } from "@/types/notificacao";
 import InfoIcon from "./icons/InfoIcon";
 import { formatarData } from "@/utils/formatarData";
+import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
 
 interface NotificacaoItemProps {
     notificacao: Notificacao;
@@ -23,6 +24,24 @@ export default function NotificacaoItem({
     onMarcarComoLida, 
     onRemover 
 }: NotificacaoItemProps) {
+    const [menuAberto, setMenuAberto] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    
+    useEffect(() => {
+        const handleClickFora = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setMenuAberto(false);
+            }
+        };
+
+        if (menuAberto) {
+            document.addEventListener('mousedown', handleClickFora);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickFora);
+        };
+    }, [menuAberto]);
     
     const getIcone = (tipo: TipoNotificacao) => {
         const iconProps = { 
@@ -89,6 +108,49 @@ export default function NotificacaoItem({
                 <p className="text-b3 text-neutral-400 mt-1">
                     {formatarData(notificacao.criadaEm)}
                 </p>
+            </div>
+            {/* Menu com opções: "marcar como lida" e "remover" */}
+            <div className="relative flex-shrink-0" ref={menuRef}>
+                <button
+                    onClick={() => setMenuAberto(!menuAberto)}
+                    className="p-2 text-neutral-400 transition hover:opacity-70"
+                    aria-label="Opções"
+                >
+                    <MoreHorizontalIcon size={20} />
+                </button>
+
+                {menuAberto && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg border-2 border-b-lime-950 rounded-lg z-10">
+                        {!notificacao.lida && onMarcarComoLida && (
+                            <button
+                                onClick={() => {
+                                    onMarcarComoLida(notificacao.id);
+                                    setMenuAberto(false);
+                                }}
+                                className="w-full text-left text-b2 text-secondary-800 transition flex items-center gap-2 p-4 hover:bg-primary-100"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Marcar como lida
+                            </button>
+                        )}
+                        {onRemover && (
+                            <button
+                                onClick={() => {
+                                    onRemover(notificacao.id);
+                                    setMenuAberto(false);
+                                }}
+                                className="w-full text-left text-b2 text-error-500 transition flex items-center gap-2 p-4 hover:bg-error-100"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Remover
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
