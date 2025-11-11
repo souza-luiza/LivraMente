@@ -12,8 +12,7 @@ function getAuthHeaders(): HeadersInit {
 
 //Buscar todas as notificações do usuário autenticado
 export async function getNotificacoes(): Promise<Notificacao[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/notificacoes`, {
+  const response = await fetch(`${API_BASE_URL}/notificacoes`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -23,8 +22,40 @@ export async function getNotificacoes(): Promise<Notificacao[]> {
     }
 
     return await response.json();
-  } catch (error) {
-    console.error('Erro ao buscar notificações:', error);
-    return [];
+}
+
+//Marcar uma notificação específica como lida
+export async function marcarNotificacaoComoLida(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/notificacoes/${id}/lida`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao marcar notificação como lida');
+    }
+} 
+
+//Marcar todas as notificações como lidas
+export async function marcarTodasComoLidas(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/notificacoes/marcar-todas-lidas`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao marcar todas as notificações como lidas');
+    }
   }
+
+//Remover uma notificação específica
+export async function removerNotificacao(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/notificacoes/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao remover notificação');
+    }
 }
