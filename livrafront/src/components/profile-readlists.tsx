@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
 import Readlist from "@/components/readlist";
 
 interface Readlist {
   _id: string;
-  title: string;
+  nome: string;
   description?: string;
   slug: string;
   isPublic: boolean;
@@ -29,11 +28,11 @@ export default function ProfileReadlists({ readlists, username }: ProfileReadlis
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full h-fit grid grid-cols-4 gap-2 relative">
       {readlists.map((readlist) => (
         <Readlist
           key={readlist._id}
-          title={readlist.title}
+          title={readlist.nome}
           author={readlist.owner?.username || username}
           link={`/${username}/readlist/${readlist.slug}`}
         />

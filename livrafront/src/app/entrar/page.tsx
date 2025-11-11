@@ -13,8 +13,6 @@ import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
