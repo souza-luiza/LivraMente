@@ -1,20 +1,6 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  Put, 
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -28,25 +14,44 @@ import { memoryStorage } from 'multer';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiOperation({
+    summary: 'Retorna os dados do usuário',
+    description: 'Retorna os dados do usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados do usuário retornados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async getProfile(@CurrentUser() user: CurrentUserDto) {
+    return this.usersService.findOne(user.userId);
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  // Endpoint público - DEVE vir ANTES do @Get(':id')
+  // Endpoint público
   @Get('public/:username')
+  @ApiOperation({
+    summary: 'Retorna os dados de um usuário',
+    description: 'Retorna os dados do usuário buscado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados do usuário retornados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
   getPublicProfile(@Param('username') username: string) {
     return this.usersService.getPublicByUsername(username);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -95,27 +100,30 @@ export class UsersController {
       },
     }),
   )
-  @ApiOperation({ summary: 'Upload de avatar do usuário' })
-  @ApiResponse({ status: 200, description: 'Avatar atualizado com sucesso' })
-  async updateAvatar(
-    @CurrentUser() user: CurrentUserDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!file) {
-      throw new BadRequestException('Nenhum arquivo foi enviado');
-    }
+  @ApiOperation({ 
+    summary: 'Upload de imagem de perfil do usuário',
+    description: 'Atualiza a foto de perfil do usuário autenticado'
 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Imagem de perfil atualizada com sucesso' 
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Arquivo inválido' 
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado' 
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token JWT inválido'
+  })
+  async updateAvatar(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Nenhum arquivo foi enviado');
     return this.usersService.updateAvatar(user.userId, file);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
   }
 
   @UseGuards(JwtAuthGuard)

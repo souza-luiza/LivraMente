@@ -1,16 +1,11 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { User, UserDocument } from './entities/user.entity';
+import { Model } from 'mongoose';
 import { Readlist, ReadlistDocument } from '../readlists/entities/readlist.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +13,7 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
     private readonly cloudinary: CloudinaryService,
-  ) {} // dentro dessa variavel tem todos os metodos do mongo
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = new this.userModel(createUserDto); // insere variaveis no modelo
@@ -46,27 +41,23 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     const { email, username } = updateUserDto;
 
-    // Verifica se já existe user com msm email (excluindo o próprio usuário):
-    if(email) {
-      const emailExists = await this.userModel.findOne({ 
-        email,
-        _id: { $ne: id } // Exclui o próprio usuário da busca
-      }).exec();
-      
-      if(emailExists) {
-        throw new ConflictException('E-mail já está em uso');
+    // Verifica se já existe user com msm email:
+    if(email) { // se quer atualizar email
+      const userComEmail = await this.getByEmail(email);
+      if(userComEmail) {
+        if(userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
+          throw new ConflictException('Email em uso');
+        }
       }
     }
 
-    // Verifica se já existe user com msm username (excluindo o próprio usuário):
-    if(username) {
-      const usernameExists = await this.userModel.findOne({ 
-        username,
-        _id: { $ne: id } // Exclui o próprio usuário da busca
-      }).exec();
-      
-      if(usernameExists) {
-        throw new ConflictException('Nome de usuário já está em uso');
+    // Verifica se já existe user com msm username:
+    if(username) { // se quer atualizar username
+      const userComUsername = await this.getByUsername(username);
+      if(userComUsername) {
+        if(userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
+          throw new ConflictException('Nome de usuário em uso');
+        }
       }
     }
 
@@ -83,9 +74,7 @@ export class UsersService {
       },
     ).select('-senha').exec();
 
-    if (!updated) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
+    if (!updated) throw new NotFoundException('Usuário não encontrado');
     
     return updated;
   }
@@ -174,7 +163,7 @@ export class UsersService {
   }
 
   async updateAvatar(id: string, file: Express.Multer.File) {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.findOne(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
     if (!file?.buffer) throw new BadRequestException('Arquivo inválido');
 
@@ -190,7 +179,7 @@ export class UsersService {
     await user.save();
 
     const obj = user.toObject();
-    delete (obj as any).senha;
+    delete (obj as any).senha; //talvez problema de build
     return obj;
   }
 

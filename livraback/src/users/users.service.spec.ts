@@ -4,9 +4,16 @@ import { getModelToken } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Readlist } from '../readlists/entities/readlist.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('UsersService', () => {
   let service: UsersService;
+  let cloudinaryService: CloudinaryService;
+
+  const mockCloudinaryService = {
+    uploadImage: jest.fn().mockResolvedValue('mocked.com/fake.png'),
+    deleteImage: jest.fn()
+  };
 
   const mockUser = {
     _id: 'user-id',
@@ -48,10 +55,15 @@ describe('UsersService', () => {
           provide: getModelToken(Readlist.name),
           useValue: mockReadlistModel,
         },
+        {
+          provide: CloudinaryService,
+          useValue: mockCloudinaryService
+        }
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+    cloudinaryService = module.get<CloudinaryService>(CloudinaryService);
   });
 
   afterEach(() => {
@@ -135,7 +147,6 @@ describe('UsersService', () => {
     it('should update a user and return the updated user', async () => {
       const updateUserDto = { username: 'Updated Name' };
 
-      // Simula que não há usuário com esse username (evita conflito)
       mockUserModel.findOne.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
       });
@@ -172,21 +183,6 @@ describe('UsersService', () => {
       await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
     });
 
-    it('should throw BadRequestException if email is in use by the same user', async () => {
-      const updateUserDto = { email: 'test@test.com' };
-
-      const sameUser = {
-        ...mockUser,
-        _id: {
-          toString: () => 'user-id',
-        },
-      } as any;
-
-      jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(sameUser);
-
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
-    });
-
     it('should throw ConflictException if username is in use by another user', async () => {
       const updateUserDto = { username: 'Test User' };
 
@@ -200,21 +196,6 @@ describe('UsersService', () => {
       jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(otherUser);
 
       await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
-    });
-
-    it('should throw BadRequestException if username is in use by the same user', async () => {
-      const updateUserDto = { username: 'Test User' };
-
-      const sameUser = {
-        ...mockUser,
-        _id: {
-          toString: () => 'user-id',
-        },
-      } as any;
-
-      jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(sameUser);
-
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if user is not found during update', async () => {
@@ -610,4 +591,62 @@ describe('UsersService', () => {
       await expect(service.findReadlistsFavoritas('user-id')).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('updateAvatar', () => {
+    const file: Express.Multer.File = {fieldname: 'avatar',
+      originalname: 'teste.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fakeimage'),
+      size: 1234,
+      stream: null as any,
+      destination: '',
+      filename: '',
+      path: ''
+    };
+
+    it('deve lançar erro se o usuário não for encontrado', async () => {
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.updateAvatar('user-id', file)).rejects.toThrow(NotFoundException);
+    })
+
+    it('deve lançar erro se o arquivo for inválido', async () => {
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockUser),
+      });
+
+      await expect(service.updateAvatar('1', {} as any)).rejects.toThrow(BadRequestException);
+    })
+
+    it('deve fazer upload e atualizar avatar corretamente', async () => {
+      const mockUser = {
+        avatarPublicId: 'old_public_id',
+        save: jest.fn(),
+        toObject: jest.fn().mockReturnValue({ username: 'john', senha: '123' }),
+      };
+
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockUser),
+      });
+
+      const result = await service.updateAvatar('1', file);
+
+      expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
+        file.buffer,
+        'livra/avatars',
+      );
+      expect(cloudinaryService.deleteImage).toHaveBeenCalledWith('old_public_id');
+      expect(mockUser.save).toHaveBeenCalled();
+      expect(result).toEqual({ username: 'john' });
+    });
+  })
 });

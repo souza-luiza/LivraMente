@@ -1,7 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-export type UserDocument = User & Document;
+export type UserDocument = HydratedDocument<User>; // referencia de userDocument fica User
 
 // Subdocumento (_id: false)
 @Schema({ _id: false })         
@@ -45,7 +45,6 @@ export class User {
   @Prop({ required: true })
   senha: string;
 
-  // Novo: pronomes
   @Prop({ required: false, default: '' })
   pronouns?: string;
 
