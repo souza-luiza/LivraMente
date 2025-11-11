@@ -86,9 +86,10 @@ export default function NotificacaoItem({
     };
     return (
         <div 
-            className={`flex items-center gap-4 bg-white rounded-lg border-2 border-b-lime-950 p-4 hover:shadow-lg transition-shadow ${
+            className={`flex items-center gap-4 bg-white rounded-lg border-2 p-4 hover:shadow-lg transition-shadow ${
                 !notificacao.lida ? 'light-green' : ''
             }`}
+            style={{ borderColor: 'var(--primary-800)' }}
         >
             {/* Ícone à esquerda */}
             <div className="flex-shrink-0">
@@ -120,7 +121,10 @@ export default function NotificacaoItem({
                 </button>
 
                 {menuAberto && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg border-2 border-b-lime-950 rounded-lg z-10">
+                    <div 
+                        className="absolute right-0 mt-2 w-48 bg-white shadow-lg border-2 rounded-lg z-10"
+                        style={{ borderColor: 'var(--primary-800)' }}
+                    >
                         {!notificacao.lida && onMarcarComoLida && (
                             <button
                                 onClick={() => {

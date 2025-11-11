@@ -15,7 +15,7 @@ export default function NotificacaoList({
     
     if (notificacoes.length === 0) {
         return (
-            <div className="flex items-center justify-center min-h-[200px] bg-white rounded-lg border-2 border-b-lime-950 p-8">
+            <div className="flex items-center justify-center min-h-[200px] p-8">
                 <p className="text-b1 text-neutral-400">Nenhuma notificação a ser exibida.</p>
             </div>
         );
