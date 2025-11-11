@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 describe('UsersController', () => {
@@ -28,6 +27,8 @@ describe('UsersController', () => {
       { _id: 'r1', nome: 'Readlist 1' },
       { _id: 'r2', nome: 'Readlist 2' },
     ]),
+    getPublicByUsername: jest.fn().mockResolvedValue(mockUser),
+    updateAvatar: jest.fn().mockResolvedValue({ avatarUrl: 'mocked.com/test.png' })
   };
 
   beforeEach(async () => {
@@ -52,53 +53,6 @@ describe('UsersController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
-
-  /*describe('create', () => {
-    it('should create a user', async () => {
-      const dto: CreateUserDto = {
-        username: 'Test User',
-        email: 'test@test.com',
-        senha: '123456',
-      };
-
-      const result = await controller.create(dto);
-      expect(usersService.create).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(mockUser);
-    });
-  });
-
-  describe('findAll', () => {
-    it('should return all users', async () => {
-      const result = await controller.findAll();
-      expect(usersService.findAll).toHaveBeenCalled();
-      expect(result).toEqual([mockUser]);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a user by ID', async () => {
-      const result = await controller.findOne('user-id');
-      expect(usersService.findOne).toHaveBeenCalledWith('user-id');
-      expect(result).toEqual(mockUser);
-    });
-  });
-
-  describe('update', () => {
-    it('should update a user', async () => {
-      const dto: UpdateUserDto = { username: 'Updated' };
-      const result = await controller.update('user-id', dto);
-      expect(usersService.update).toHaveBeenCalledWith('user-id', dto);
-      expect(result).toEqual({ ...mockUser, name: 'Updated' });
-    });
-  });
-
-  describe('remove', () => {
-    it('should delete a user', async () => {
-      const result = await controller.remove('user-id');
-      expect(usersService.remove).toHaveBeenCalledWith('user-id');
-      expect(result).toEqual({ deletedCount: 1 });
-    });
-  });*/
 
   describe('getProfile', () => {
     it('should return the current user profile', async () => {
@@ -194,6 +148,65 @@ describe('UsersController', () => {
 
       expect(usersService.findReadlistsFavoritas).toHaveBeenCalledWith(currentUser.userId);
       expect(result).toEqual(mockReadlists);
+    });
+  });
+
+  describe('getPublicProfile', () => {
+    it('deve retornar os dados públicos de um usuário', async () => {
+      const username = 'testuser';
+      const mockPublicUser = { username: 'testuser', avatarUrl: 'url.jpg', gamificação: 100 };
+      
+      mockUsersService.getPublicByUsername = jest.fn().mockResolvedValue(mockPublicUser);
+
+      const result = await controller.getPublicProfile(username);
+
+      expect(usersService.getPublicByUsername).toHaveBeenCalledWith(username);
+      expect(result).toEqual(mockPublicUser);
+    });
+
+    it('deve propagar erro se o usuário não for encontrado', async () => {
+      const username = 'notfound';
+      mockUsersService.getPublicByUsername = jest.fn().mockRejectedValue(new Error('Usuário não encontrado'));
+
+      await expect(controller.getPublicProfile(username)).rejects.toThrow('Usuário não encontrado');
+    });
+  });
+
+  describe('updateAvatar', () => {
+    const fakeUser = { userId: 'user-id' };
+
+    const fakeFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: 'avatar.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fake-image'),
+      size: 1234,
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    };
+
+    it('deve lançar BadRequestException se nenhum arquivo for enviado', async () => {
+      await expect(controller.updateAvatar(fakeUser as any, undefined as any)).rejects.toThrow(
+        'Nenhum arquivo foi enviado'
+      );
+    });
+
+    it('deve chamar o service e retornar o resultado', async () => {
+      const mockResponse = { avatarUrl: 'mocked.com/teste.png' };
+      mockUsersService.updateAvatar = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.updateAvatar(fakeUser as any, fakeFile);
+
+      expect(usersService.updateAvatar).toHaveBeenCalledWith(fakeUser.userId, fakeFile);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar erro do service', async () => {
+      mockUsersService.updateAvatar = jest.fn().mockRejectedValue(new Error('Erro interno'));
+      await expect(controller.updateAvatar(fakeUser as any, fakeFile)).rejects.toThrow('Erro interno');
     });
   });
 });
