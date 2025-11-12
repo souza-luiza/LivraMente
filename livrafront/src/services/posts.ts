@@ -1,4 +1,4 @@
-import { CreatePostData, Post, LikeResponse } from '@/types/post';
+import { CreatePostData, Post, LikeResponse, PostCategoria, ModeratePostResponse } from '@/types/post';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
@@ -48,8 +48,35 @@ export const postsService = {
 
     if (!response.ok) throw new Error(`Erro ao excluir post`);
     return response.json();
-  }
+  },
 
   // Editar post
+  async updatePost(postId: string, data: Partial<CreatePostData>): Promise<Post> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/editar`, {
+      method: 'PATCH',
+      headers: {
+        ...(getAuthHeaders() || {}),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
+    if (!response.ok) throw new Error(`Erro ao editar post`);
+    return response.json();
+  },
+
+  // Moderar post
+  async moderatePost(postId: string, aprovar: boolean, categoria: PostCategoria): Promise<ModeratePostResponse> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/moderar`, {
+      method: 'PATCH',
+      headers: {
+        ...(getAuthHeaders() || {}),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ aprovar, categoria }),
+    });
+
+    if (!response.ok) throw new Error(`Erro ao moderar post`);
+    return response.json();
+  }
 };

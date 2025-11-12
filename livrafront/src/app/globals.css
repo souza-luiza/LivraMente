@@ -137,10 +137,6 @@
 
 }
 
-html {
-  scrollbar-gutter: stable;
-}
-
 /* Temas Padrão */
 .light-neutral {
   background: var(--background);

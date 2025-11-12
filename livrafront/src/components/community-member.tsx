@@ -28,7 +28,6 @@ export default function communityMember({
     const router = useRouter();
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const containerRef = useRef<HTMLDivElement>(null);
 
     const handleClick = (e: React.MouseEvent) => {
         if (!isCurrentUserModerator || isTargetUserModerator) {
@@ -36,20 +35,24 @@ export default function communityMember({
             return;
         }
 
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        if (!containerRect) return;
+        const { clientX, clientY } = e;
+        const menuWidth = 250;
+        const menuHeight = 200;
 
-        setClickPosition({ 
-            x: e.clientX - containerRect.left, 
-            y: e.clientY - containerRect.top 
-        });
+        const x = clientX + menuWidth > window.innerWidth 
+            ? window.innerWidth - menuWidth - 10 
+            : clientX;
 
-        setShowOptions(true);
+        const y = clientY + menuHeight > window.innerHeight 
+            ? window.innerHeight - menuHeight - 10 
+            : clientY;
+
+        setClickPosition({ x, y });
+        setShowOptions((prev) => !prev);
     };
 
     return (
-        <motion.div 
-            ref={containerRef}
+        <motion.div
             className="flex flex-col items-center gap-2"
             onHoverEnd={() => setShowOptions(false)}
         >
@@ -65,11 +68,11 @@ export default function communityMember({
                 {isTargetUserModerator && <StarIcon size={20}/>}
                 @{username}
             </motion.div>
-
+            
             <AnimatePresence mode="wait">
                 {isCurrentUserModerator && !isTargetUserModerator && showOptions &&
                 <motion.div 
-                    className="absolute flex flex-col flex-shrink-0 items-center medium-box medium-border-width border-gray-300 bg-[#FFFFFF] gap-1"
+                    className="fixed max-w-64 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
                     style={{
                         top: clickPosition.y,
                         left: clickPosition.x
@@ -83,21 +86,21 @@ export default function communityMember({
                         text={username ? `Visitar perfil de @${username}` : 'Visitar Perfil'}
                         icon={<SingleUserIcon />}
                         size="small"
-                        colorScheme="light-neutral"
+                        colorScheme="light-brown"
                         path={username ? `/${username}` : '/not-found'}
                     />
                     <Button
                         text={username ? `Remover @${username} da comunidade` : 'Remover da Comunidade'}
                         icon={<RemoveIcon />}
                         size="small"
-                        colorScheme="light-neutral"
+                        colorScheme="light-brown"
                         onClick={() => handleRemoveMember?.(userId!)}
                     />
                     <Button
                         text={username ? `Tornar @${username} moderador` : 'Tornar Moderador'}
                         icon={<ToolIcon />}
                         size="small"
-                        colorScheme="light-neutral"
+                        colorScheme="light-brown"
                         onClick={() => handleMakeModerator?.(userId!)}
                     />
                 </motion.div>}

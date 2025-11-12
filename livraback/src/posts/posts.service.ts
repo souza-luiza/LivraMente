@@ -5,6 +5,7 @@ import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
 import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
+import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
@@ -69,11 +70,17 @@ export class PostsService {
 
     const savedPost = await post.save();
 
-    // Adicionar post à comunidade
-    await this.comunidadeModel.findByIdAndUpdate(
-      comunidade._id,
-      { $push: { posts: savedPost._id } }
-    );
+    // Associar post à comunidade e ao usuário
+    await Promise.all([
+      this.comunidadeModel.findByIdAndUpdate(
+        comunidade._id,
+        { $push: { posts: savedPost._id } }
+      ),
+      this.userModel.findByIdAndUpdate(
+        userId,
+        { $push: { posts: savedPost._id } }
+      ),
+    ]);
 
     return savedPost.populate('autor', 'username nome_exibicao imagem_perfil');
   }
@@ -125,8 +132,6 @@ export class PostsService {
 
     if (!isOwner && !isModerator) throw new ForbiddenException('Usuário não tem permissão para deletar este post');
 
-    await this.postModel.findByIdAndDelete(postId);
-
     await Promise.all([
       this.postModel.findByIdAndDelete(postId),
       this.comunidadeModel.updateOne(
@@ -142,8 +147,93 @@ export class PostsService {
     return { message: 'Post removido com sucesso' };
   }
 
-  async editPost(userId: string, postId: string, updatePostDto: UpdatePostDto) {
+  async updatePost(userId: string, postId: string, updatePostDto: UpdatePostDto) {
+    const post = await this.postModel.findById(postId).populate('autor comunidade');
+    if (!post) throw new NotFoundException('Post não encontrado');
 
+    const id = new Types.ObjectId(userId);
+
+    // Verificar se o usuário é o autor do post
+    const isOwner = post.autor._id.equals(id);
+    if (!isOwner) throw new ForbiddenException('Apenas o autor do post pode editá-lo');
+
+    // Só permite edição se: 1) comunidade existir, 2) usuário for membro da comunidade e 3) post não estiver pendente de moderação
+    const comunidade = await this.comunidadeModel.findById(post.comunidade._id);
+    if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+    const isMembro = comunidade.membros.some((membroId) => membroId.equals(id));
+    if (!isMembro) throw new ForbiddenException('Você precisa ser membro da comunidade para editar o post');
+
+    if (post.status === PostStatus.PENDENTE_MODERACAO) throw new ForbiddenException('Posts pendentes de moderação não podem ser editados');
+    
+    // Atualizar post
+    const allowedFields: (keyof UpdatePostDto)[] = ['conteudo', 'imagens', 'solicitacao_revisao', 'publico', 'tags', 'livro_referenciado'];
+
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updatePostDto).filter(([key]) =>
+        allowedFields.includes(key as keyof UpdatePostDto)
+      )
+    );
+
+    if (Object.keys(filteredUpdates).length === 0) throw new BadRequestException('Nenhum campo válido para atualização foi fornecido.');
+
+    const updatedPost = await this.postModel.findOneAndUpdate(
+      { _id: postId, autor: id },
+      { $set: filteredUpdates },
+      { new: true }
+    ).populate('autor comunidade');
+
+    return {
+      message: 'Post atualizado com sucesso',
+      post: updatedPost 
+    };
   }
-  
+
+  async moderatePost(moderatorId: string, postId: string, moderarPostDto: ModerarPostDto) {
+    const post = await this.postModel.findById(postId).populate('autor comunidade');
+    if (!post) throw new NotFoundException('Post não encontrado');
+
+    const id = new Types.ObjectId(moderatorId);
+
+    // Verifica se comunidade existe
+    const comunidade = await this.comunidadeModel.findById(post.comunidade._id, 'moderadores');
+    if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+    // Verifica se usuário é moderador da comunidade
+    const isModerator = comunidade.moderadores.some((modId) => modId.equals(id));
+    if (!isModerator) throw new ForbiddenException('Usuário não tem permissão para moderar este post');
+
+    // Atualizar informações do post conforme decisão da moderação
+    post.solicitacao_revisao = false;
+
+    if (moderarPostDto.aprovar) {
+      if (!moderarPostDto.categoria) throw new BadRequestException('Categoria deve ser fornecida ao aprovar o post');
+      
+      post.status = PostStatus.PUBLICADO;
+      post.categoria = moderarPostDto.categoria;
+
+      await post.save();
+
+    } else {
+      // Rejeitar post => Apagar post
+      post.status = PostStatus.REJEITADO;
+
+      await Promise.all([
+        this.postModel.findByIdAndDelete(postId),
+        this.comunidadeModel.updateOne(
+          { _id: post.comunidade._id },
+          { $pull: { posts: post._id } }
+        ),
+        this.userModel.updateOne(
+          { _id: post.autor._id },
+          { $pull: { posts: post._id } }
+        ),
+      ]);
+    }
+
+    return { 
+      message: 'Post moderado com sucesso', 
+      status: moderarPostDto.aprovar ? 'Aprovado' : 'Rejeitado'
+    };
+  }
 }

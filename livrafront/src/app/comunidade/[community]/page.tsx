@@ -45,6 +45,7 @@ import { postsService } from "@/services/posts";
 import { User } from "@/types/auth";
 import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
+import { PostCategoria } from "@/types/post";
 
 function slugToTitle(slug: string): string {
   return slug
@@ -176,8 +177,8 @@ export default function CommunityPage(){
         if (!communityInfo) return;
 
         // Atualiza lista de posts
-        const updatedPosts = await getPosts(communityInfo.nome);
-        setPosts(updatedPosts);
+        handleRefreshPosts();
+
         console.log('Post criado com sucesso!');
     }
 
@@ -213,35 +214,29 @@ export default function CommunityPage(){
         }  
     }
 
-    const handleApprovePost = async (postId: string) => {
-        // TODO: Lógica de aprovação do post
-    }
-
-    const handleRejectPost = async (postId: string) => {
+    const handleReviewPost = async (postId: string, aprovar: boolean, categoria: PostCategoria) => {
         if (!communityInfo || !postId) return;
 
         try {
-            
-            // Atualmente o post rejeitado é deletado
-            await postsService.removePost(postId);
+            // Aprova ou rejeita solicitação de revisão
+            await postsService.moderatePost(postId, aprovar, categoria);
 
             // Atualiza lista de posts
-            const updatedPosts = await getPosts(communityInfo!.nome);
-            setPosts(updatedPosts);
+            handleRefreshPosts();
 
         } catch (err) {
-            console.log("Erro ao rejeitar post:", err);
+            console.error("Erro ao revisar o post:", err);
         }
     }
 
-    const handleDeletedPost = async () => {
+    const handleRefreshPosts = async () => {
         try{
             // Atualiza lista de posts
             const updatedPosts = await getPosts(communityInfo!.nome);
             setPosts(updatedPosts);
             
         } catch(err) {
-            console.log("Erro ao atualizar posts após exclusão:", err);
+            console.log("Erro ao atualizar posts:", err);
         }
     }
 
@@ -313,6 +308,13 @@ export default function CommunityPage(){
                                         size="medium"
                                         onClick={handleOpenPostModal}
                                     />}
+                                    <Button
+                                        text="Criar História"
+                                        icon={<PenToolIcon />}
+                                        colorScheme="light-green"
+                                        size="medium"
+                                        path="/criar-historia"
+                                    />
                                     {isModerator && <Button
                                         text="Editar"
                                         icon={<EditIcon />}
@@ -377,7 +379,8 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
-                                                        onDelete={handleDeletedPost} 
+                                                        onDelete={handleRefreshPosts}
+                                                        onUpdate={handleRefreshPosts} 
                                                     />
                                                 );
                                             })}
@@ -403,7 +406,7 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
-                                                        onDelete={handleDeletedPost} 
+                                                        onDelete={handleRefreshPosts} 
                                                     />
                                                 );
                                             })}
@@ -429,7 +432,7 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
-                                                        onDelete={handleDeletedPost} 
+                                                        onDelete={handleRefreshPosts} 
                                                     />
                                                 );
                                             })}
@@ -459,18 +462,25 @@ export default function CommunityPage(){
                                                         />
                                                         <div className="flex flex-row gap-1 justify-end">
                                                             <Button
-                                                                text="Aprovar"
+                                                                text="Aprovar como Fanart"
                                                                 icon={<CheckIcon />}
-                                                                size="medium"
+                                                                size="small"
                                                                 variant="aprovar"
-                                                                onClick={() => handleApprovePost(post._id)}
+                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANART)}
+                                                            />
+                                                            <Button
+                                                                text="Aprovar como Fanfic"
+                                                                icon={<CheckIcon />}
+                                                                size="small"
+                                                                variant="aprovar"
+                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANFIC)}
                                                             />
                                                             <Button
                                                                 text="Rejeitar"
                                                                 icon={<RemoveIcon />}
-                                                                size="medium"
+                                                                size="small"
                                                                 variant="rejeitar"
-                                                                onClick={() => handleRejectPost(post._id)}
+                                                                onClick={() => handleReviewPost(post._id, false, PostCategoria.GERAL)}
                                                             />
                                                         </div>
                                                     </div>

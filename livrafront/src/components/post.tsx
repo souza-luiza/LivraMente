@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 // Componentes
 import Button from "./button";
 import PostImage from "./post-image";
+import EditPostModal from "./EditPostModal";
 
 // Types
 import { Post } from "@/types/post";
@@ -16,10 +18,15 @@ import CodeIcon from "./icons/CodeIcon";
 import HeartIcon from "./icons/HeartIcon";
 import CommentIcon from "./icons/CommentIcon";
 import TrashIcon from "./icons/TrashIcon";
+import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
+import EditIcon from "./icons/EditIcon";
 
 // Chamadas à API
 import { postsService } from "@/services/posts";
-import { on } from "events";
+
+// Data
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface PostProps {
     post: Post;
@@ -27,13 +34,22 @@ interface PostProps {
     isModerator?: boolean;
     disableActions?: boolean;
     onDelete?: () => void;
+    onUpdate?: () => void;
+}
+
+function getTimeAgo(createdAt: string): string {
+  return formatDistanceToNow(new Date(createdAt), {
+    addSuffix: true,
+    locale: ptBR,
+  });
 }
 
 export default function PostComponent({ 
     post, 
     isModerator = false,
     disableActions = false,
-    onDelete
+    onDelete,
+    onUpdate
 }: PostProps) {
 
     const router = useRouter();
@@ -52,7 +68,15 @@ export default function PostComponent({
     const [liked, setLiked] = useState(false); // TODO: Verificar se o usuário já curtiu o post
     const [likeAmount, setLikeAmount] = useState(post.curtidas.length);
 
-    const isOwner = false; // TODO: Verificar se o usuário é o dono do post
+    const isOwner = true; // TODO: Verificar se o usuário é o dono do post
+
+    // Botão Mais
+    const [showOptions, setShowOptions] = useState(false);
+    const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const menuRef = useRef<HTMLDivElement | null>(null);
+
+    // Edição do post
+    const [showEditModal, setShowEditModal] = useState(false);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -63,6 +87,28 @@ export default function PostComponent({
             setIsOverflowed(el.scrollHeight > maxVisibleHeight);
         }
     }, [post.conteudo, expanded]);
+
+    useEffect(() => {
+        if (showOptions && menuRef.current) {
+            const rect = menuRef.current.getBoundingClientRect();
+            const menuWidth = rect.width;
+            const menuHeight = rect.height;
+
+            setClickPosition((prev) => {
+                let x = prev.x;
+                let y = prev.y;
+
+                if (x + menuWidth > window.innerWidth) {
+                    x = window.innerWidth - menuWidth - 10;
+                }
+                if (y + menuHeight > window.innerHeight) {
+                    y = window.innerHeight - menuHeight - 10;
+                }
+
+                return { x, y };
+            });
+        }
+    }, [showOptions]);
 
     const handleRedirectToPost = () => {
         router.push(`/${post.comunidade.nome}/posts/${post._id}`);
@@ -90,7 +136,25 @@ export default function PostComponent({
         }
     }
 
+    const handleMoreOptions = (e: React.MouseEvent) => {
+        const { clientX, clientY } = e;
+        const menuWidth = 150;
+        const menuHeight = 100;
+
+        const x = clientX + menuWidth > window.innerWidth 
+            ? window.innerWidth - menuWidth - 10 
+            : clientX;
+
+        const y = clientY + menuHeight > window.innerHeight 
+            ? window.innerHeight - menuHeight - 10 
+            : clientY;
+
+        setClickPosition({ x, y });
+        setShowOptions((prev) => !prev);
+    };
+
     const handleDeletePost = async () => {
+        setShowOptions(false);
         try {
             // Deletar post
             await postsService.removePost(post._id);
@@ -101,93 +165,146 @@ export default function PostComponent({
         }
     }
 
+    const handleEditPost = async () => {
+        setShowOptions(false);
+        setShowEditModal(true);
+    }
+
+    const handleEditSuccess = () => {
+        setShowEditModal(false);
+        onUpdate && onUpdate();
+    }
+
     return (
-        <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
-            <div className="flex flex-row gap-2">
-                <h6 className="text-h6">
-                    {post.comunidade.nome}
-                </h6>
-                <CodeIcon size={24} />
-                <h6 
-                    className="text-h6 hover:cursor-pointer"
-                    onClick={handleRedirectToProfile}
-                >
-                    @{post.autor.username}
-                </h6>
-            </div>
-            <div className="flex-1 overflow-hidden">
-                <p
-                    ref={contentRef}
-                    style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                    className="text-b2 whitespace-pre-line"
-                >
-                    {post.conteudo}
-                </p>
-                {isOverflowed && (
-                    <span
-                        className="text-b2 body-semibold text-[var(--primary-700)] hover:cursor-pointer"
-                        onClick={() => setExpanded(prev => !prev)}
-                    >
-                        {expanded ? "Ver menos..." : "Ver mais..."}
-                    </span>
-                )}
-            </div>
-
-            {/*Imagens*/}
-            {post.imagens && post.imagens.length > 0 && (
-            <div className="flex flex-nowrap gap-2 overflow-x-auto">
-                {post.imagens.map((imgUrl, index) => (
-                <div 
-                    key={index} 
-                    className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
-                    onClick={() => handleOpenImageModal(imgUrl)}
-                >
-                    <Image
-                    src={imgUrl}
-                    alt={`Imagem do post ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    />
+        <motion.div onHoverEnd={() => setShowOptions(false)}>
+            <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
+                <div className="flex flex-row items-center justify-between">
+                    <div className="flex flex-row gap-2">
+                        <h6 className="text-h6">
+                            {post.comunidade.nome}
+                        </h6>
+                        <CodeIcon size={24} />
+                        <h6 
+                            className="text-h6 hover:cursor-pointer"
+                            onClick={handleRedirectToProfile}
+                        >
+                            @{post.autor.username}
+                        </h6>
+                    </div>
+                    <div onClick={handleMoreOptions}>
+                        <MoreHorizontalIcon size={24} />
+                    </div>
                 </div>
-                ))}
+                <div className="flex-1 overflow-hidden">
+                    <p
+                        ref={contentRef}
+                        style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                        className="text-b2 whitespace-pre-line"
+                    >
+                        {post.conteudo}
+                    </p>
+                    {isOverflowed && (
+                        <span
+                            className="text-b2 body-semibold text-[var(--primary-700)] hover:cursor-pointer"
+                            onClick={() => setExpanded(prev => !prev)}
+                        >
+                            {expanded ? "Ver menos..." : "Ver mais..."}
+                        </span>
+                    )}
+                </div>
+
+                {/*Imagens*/}
+                {post.imagens && post.imagens.length > 0 && (
+                <div className="flex flex-nowrap gap-2 overflow-x-auto">
+                    {post.imagens.map((imgUrl, index) => (
+                    <div 
+                        key={index} 
+                        className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
+                        onClick={() => handleOpenImageModal(imgUrl)}
+                    >
+                        <Image
+                        src={imgUrl}
+                        alt={`Imagem do post ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        />
+                    </div>
+                    ))}
+                </div>
+                )}
+
+                {showImageModal && selectedImage && (
+                <PostImage 
+                    post={post} 
+                    image={selectedImage} 
+                    onClose={() => setShowImageModal(false)} 
+                />
+                )}
+
+                <div className="flex flex-row items-end justify-between">
+                    <div className="flex flex-row gap-1">
+                        <Button 
+                            text={String(likeAmount)}
+                            colorScheme="dark-brown" 
+                            size="small"
+                            icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} />}
+                            disabled={disableActions}
+                            onClick={handleLikePost}
+                        />
+                        <Button 
+                            text={String(post.comentarios.length)}
+                            colorScheme="dark-brown"
+                            size="small"
+                            icon={<CommentIcon />}
+                            disabled={disableActions}
+                            onClick={handleRedirectToPost}
+                        />
+                    </div>
+                    <p className="text-b3 body-semibold light-neutral">
+                        {getTimeAgo(post.createdAt)}
+                    </p>
+                </div>
             </div>
-            )}
-
-            {showImageModal && selectedImage && (
-            <PostImage 
-                post={post} 
-                image={selectedImage} 
-                onClose={() => setShowImageModal(false)} 
-            />
-            )}
-
-            <div className="flex flex-row gap-1">
-                <Button 
-                    text={String(likeAmount)}
-                    colorScheme="dark-brown" 
-                    size="small"
-                    icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} />}
-                    disabled={disableActions}
-                    onClick={handleLikePost}
-                />
-                <Button 
-                    text={String(post.comentarios.length)}
-                    colorScheme="dark-brown"
-                    size="small"
-                    icon={<CommentIcon />}
-                    disabled={disableActions}
-                    onClick={handleRedirectToPost}
-                />
-                {(isModerator || isOwner) && !disableActions && <Button
-                    text="Excluir" 
-                    colorScheme="dark-brown"
-                    size="small"
-                    icon={<TrashIcon />}
-                    disabled={disableActions}
-                    onClick={handleDeletePost}
+            <AnimatePresence mode="wait">
+                {showEditModal && 
+                <EditPostModal 
+                    post={post}
+                    onClose={() => setShowEditModal(false)}
+                    onSuccess={handleEditSuccess}
+                    isOpen={showEditModal}
                 />}
-            </div>
-        </div>
-
+            </AnimatePresence>
+            <AnimatePresence mode="wait">
+                {(isModerator || isOwner) && !disableActions && showOptions &&
+                <motion.div 
+                    ref={menuRef}
+                    className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
+                    style={{
+                        top: clickPosition.y,
+                        left: clickPosition.x
+                    }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.25 }}
+                    onMouseLeave={() => setShowOptions(false)}
+                >
+                    <Button
+                        text="Excluir"
+                        icon={<TrashIcon />}
+                        size="small"
+                        colorScheme="light-brown"
+                        onClick={handleDeletePost}
+                    />
+                    {isOwner && <Button
+                        text="Editar"
+                        icon={<EditIcon />}
+                        size="small"
+                        colorScheme="light-brown"
+                        onClick={handleEditPost}
+                    />}
+                </motion.div>}
+            </AnimatePresence>
+        </motion.div>
     )
 }

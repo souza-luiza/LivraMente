@@ -7,30 +7,32 @@ import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
 import { postsService } from '@/services/posts';
 import Edit2Icon from './icons/Edit2Icon';
+import { Post } from '@/types/post';
+import CodeIcon from './icons/CodeIcon';
 
-interface CreatePostModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  communityName: string;
-  onSuccess?: () => void; 
+interface EditPostModalProps {
+    post: Post;
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void; 
 }
 
-export default function CreatePostModal({
-  isOpen,
-  onClose,
-  communityName,
-  onSuccess,
-}: CreatePostModalProps) {
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
-  const [requestReview, setRequestReview] = useState(false);
+export default function EditPostModal({
+    post,
+    isOpen,
+    onClose,
+    onSuccess,
+}: EditPostModalProps) {
+  const [content, setContent] = useState(post.conteudo);
+  const [images, setImages] = useState<string[]>(post.imagens);
+  const [requestReview, setRequestReview] = useState(post.solicitacao_revisao);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !post) return null;
 
   const validateContent = (value: string): boolean => {
     if (!value || value.trim().length === 0) {
@@ -55,28 +57,18 @@ export default function CreatePostModal({
       return;
     }
 
-    // Obter token do localStorage
-    const token = localStorage.getItem('token');
-    
-    // Validar autenticação
-    if (!token) {
-      setSubmitError('Você precisa estar logado para criar um post');
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitError('');
 
     try {
-      // Criar o post via API
-      const createdPost = await postsService.createPost(
+      // Manda dados para a edição do post
+      const editedPost = await postsService.updatePost(
+        post._id,
         {
           conteudo: content.trim(),
-          comunidade: communityName,
           imagens: images.length > 0 ? images : undefined,
           solicitacao_revisao: requestReview,
-          categoria: 'geral', // Categoria inicial, pode ser alterada pelo moderador se for solicitado
-          publico: true,
+          publico: true
         }
       );
 
@@ -193,7 +185,7 @@ export default function CreatePostModal({
       onClick={handleCancel}
     >
       <div
-        className="relative w-full max-w-2xl large-padding large-border-radius"
+        className="relative w-full max-w-1/2 large-padding large-border-radius"
         style={{
           backgroundColor: 'var(--primary-200)',
           maxHeight: '90vh',
@@ -202,12 +194,16 @@ export default function CreatePostModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Título do Modal */}
-        <h4
-          className="text-h5 mb-6"
-          style={{ color: 'var(--secondary-800)' }}
-        >
-          Criar Postagem em {communityName}
-        </h4>
+        <div className="flex flex-row justify-between text-h5 text-[var(--secondary-800)] items-center mb-6">
+            <h1>
+                Editar Postagem
+            </h1>
+            <div className="flex flex-row text-h6 medium-box light-green gap-2">
+                <h2>{post.comunidade.nome}</h2>
+                <CodeIcon size={24} />
+                <h2>@{post.autor.username}</h2>
+            </div>
+        </div>
 
         {/* Campo de Texto */}
         <div className="mb-6 relative">
@@ -353,12 +349,12 @@ export default function CreatePostModal({
 
             {/* Botão de Postar */}
             <Button
-              text={isSubmitting ? "Postando..." : "Postar"}
+              text={isSubmitting ? "Salvando..." : "Salvar Alterações"}
               icon={<Edit2Icon />}
               size="medium"
               colorScheme="dark-green"
               onClick={handlePost}
-              aria-label="Postar"
+              aria-label="Salvar Alterações"
               disabled={isSubmitting}
             />
           </div>

@@ -6,8 +6,7 @@ import { ModerarPostDto } from './dto/moderar-post.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
-import { PostCategoria } from '../schemas/post.schema';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('posts')
 @ApiBearerAuth()
@@ -25,6 +24,9 @@ export class PostsController {
   @ApiResponse({
     status: 201,
     description: 'Post criado com sucesso'
+  })
+  @ApiBody({ 
+    type: CreatePostDto
   })
   @ApiResponse({
     status: 400,
@@ -98,30 +100,66 @@ export class PostsController {
   @Patch(':id/editar')
   @ApiOperation({
     summary: 'Atualiza um post',
-    description: 'Atualiza um post. Apenas o autor pode editar.'
+    description: 'Permite a edição de um post ao seu autor.'
   })
   @ApiParam({
     name: 'id',
     description: 'ID do post'
+  })
+  @ApiBody({ 
+    type: UpdatePostDto
   })
   @ApiResponse({
     status: 200,
     description: 'Post atualizado com sucesso'
   })
   @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos'
+  })
+  @ApiResponse({
     status: 403,
-    description: 'Usuário não é o autor do post'
+    description: 'Usuário não é o autor do post, não é membro da comunidade ou post está pendente de moderação'
   })
   @ApiResponse({
     status: 404,
-    description: 'Post não encontrado'
+    description: 'Post/Comunidade não encontrado/a'
+  })
+  async update(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postsService.updatePost(user.userId, id, updatePostDto);
+  }
+
+  // MODERAR POSTAGENS
+  @Patch(':id/moderar')
+  @ApiOperation({
+    summary: 'Modera um post pendente',
+    description: 'Modera um post pendente. Apenas moderadores da comunidade podem moderar.'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID do post'
+  })
+  @ApiBody({ 
+    type: ModerarPostDto
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Post moderado com sucesso'
   })
   @ApiResponse({
     status: 400,
     description: 'Dados inválidos'
   })
-  async update(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.editPost(user.userId, id, updatePostDto);
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não é moderador da comunidade'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post/Comunidade não encontrado/a'
+  })
+  async moderatePost(@CurrentUser() user: CurrentUserDto, @Param('id') postId: string, @Body() moderarPostDto: ModerarPostDto) {
+    return this.postsService.moderatePost(user.userId, postId, moderarPostDto);
   }
 
 }

@@ -33,8 +33,8 @@ export interface Post {
   curtidas: string[];                                  
   comentarios: string[];                                 
   publico: boolean;                                   
-  data_criacao: string;                                
-  data_atualizacao: string;                            
+  createdAt: string;                                
+  updatedAt: string;                            
   livro_referenciado?: string;                         
   solicitacao_revisao: boolean;                        
 }
@@ -43,6 +43,12 @@ export interface Post {
 export interface LikeResponse {                              
   liked: boolean;                                 
   likeAmount: number;                              
+}
+
+
+export interface ModeratePostResponse {
+  message: string;
+  status: 'Aprovado' | 'Rejeitado';
 }
 
 

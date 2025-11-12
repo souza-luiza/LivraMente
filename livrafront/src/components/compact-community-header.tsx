@@ -1,12 +1,12 @@
 "use client";
-import Image from "next/image";
+
 import Button from "@/components/button";
 import Edit2Icon from "@/components/icons/Edit2Icon";
-import EditIcon from "@/components/icons/EditIcon";
 import AddIcon from "@/components/icons/AddIcon";
 import OpenBookIcon from "@/components/icons/OpenBookIcon";
 import { Comunidade } from "@/types/comunidade";
 import CommunityIcon from "./icons/CommunityIcon";
+import PenToolIcon from "./icons/PenToolIcon";
 
 interface CompactHeaderProps {
   community: Comunidade
@@ -51,10 +51,17 @@ export default function CompactCommunityHeader({
               size="small"
               onClick={onOpenPostModal}
             />}
+            <Button
+              text="Criar História"
+              icon={<AddIcon />}
+              colorScheme="dark-green"
+              size="small"
+              path="/criar-historia"
+            />
             {isModerator && (
             <Button
                 text="Editar"
-                icon={<EditIcon />}
+                icon={<PenToolIcon />}
                 colorScheme="dark-green"
                 size="small"
                 path={`/${community.nome}/editar-comunidade`}

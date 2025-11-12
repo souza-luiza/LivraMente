@@ -4,7 +4,7 @@ import { InputHTMLAttributes } from "react";
 export default function SearchBar({ ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div 
-      className="sticky top-0 z-50 w-full bg-[#FFFFFF]  py-2"
+      className="sticky top-0 z-40 w-full bg-[#FFFFFF]  py-2"
       style={{ borderBottomWidth: '1px', borderBottomColor: '#E0E0E0' }}
     >
       <search className="relative h-fit w-[min(90%,600px)] mx-auto block" role="search">
