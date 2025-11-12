@@ -8,12 +8,13 @@ import { ConfigModule } from '@nestjs/config';
 import { LlmStoryService } from './writer/llm.story.service';
 import { LlmToolsService } from './assistant/llm.tools.service';
 import { LlmAgentService } from './assistant/llm.agent.service';
+import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade.entity'
 
 @Module({
   imports: [
     ConfigModule,
     MongooseModule.forFeature([
-      { name: Story.name, schema: StorySchema }
+       { name: Story.name, schema: StorySchema },{ name: Comunidade.name, schema: ComunidadeSchema }
     ])
   ],
   providers: [LlmPromptService, LlmApiService, LlmStoryService, LlmToolsService, LlmAgentService],

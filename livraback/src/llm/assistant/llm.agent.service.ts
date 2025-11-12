@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LlmToolsService } from './llm.tools.service';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { AgentExecutor, createReactAgent } from 'langchain/agents';
+import { createAgent } from 'langchain';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 
@@ -76,43 +76,49 @@ export class LlmAgentService {
       this.toolsService.createGetRecentStoriesTool(),
       // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
 
-      // this.toolsService.createUsersGetMyProfileTool(),     
-      // this.toolsService.createUsersGetMyReadlistsTool(),  
-      // this.toolsService.createUsersGetMyFavoritesTool(),  
-      // this.toolsService.createGetCommunitiesTool(),        
+      // this.toolsService.createUsersGetMyProfileTool(),
+      // this.toolsService.createUsersGetMyReadlistsTool(),
+      // this.toolsService.createUsersGetMyFavoritesTool(),
+      // this.toolsService.createGetCommunitiesTool(),
       // this.toolsService.createJoinCommunityTool(),
-      // this.toolsService.createLeaveCommunityTool(),        
+      // this.toolsService.createLeaveCommunityTool(),
       // this.toolsService.createAddBookToReadlistTool(),
-      // this.toolsService.createCreateReadlistTool(),        
-      // this.toolsService.createDeleteReadlistTool(),       
-      // this.toolsService.createGravarLeituraTool(),        
+      // this.toolsService.createCreateReadlistTool(),
+      // this.toolsService.createDeleteReadlistTool(),
+      // this.toolsService.createGravarLeituraTool(),
     ];
 
-    // monta o PromptTemplate e pré-preenche {tools} e {tool_names}
-    const prompt = PromptTemplate
+    // monta o prompt final como string (pré-preenchendo variáveis)
+    const promptString = await (await PromptTemplate
       .fromTemplate(AGENT_PROMPT_TEMPLATE)
       .partial({
         tools: renderToolsBlock(tools),
         tool_names: renderToolNames(tools),
-      });
+      }))
+      // como o input vai via mensagens, deixamos estes campos vazios
+      .format({ input: '', agent_scratchpad: '' });
 
-    const agent = await createReactAgent({
-      llm: this.llm,
+    // cria o agente com a API unificada
+    const agent = createAgent({
+      model: this.llm,
       tools,
-      prompt,
-    });
-
-    const agentExecutor = AgentExecutor.fromAgentAndTools({
-      agent,
-      tools,
-      verbose: true,
+      systemPrompt: promptString, // pode ser string ou SystemMessage
     });
 
     try {
-      const result = await agentExecutor.invoke({
-        input: userPrompt,          
+      // chama o agente diretamente, passando a conversa como mensagens
+      const result: any = await (agent as any).invoke({
+        messages: [{ role: 'user', content: userPrompt }],
       });
-      return result?.output ?? String(result ?? '');
+
+      // retorna de forma resiliente independente do shape específico
+      const output =
+        result?.output ??
+        result?.final_output ??
+        result?.messages?.[result?.messages?.length - 1]?.content ??
+        result;
+
+      return typeof output === 'string' ? output : JSON.stringify(output);
     } catch (e) {
       console.error('[LlmAgentService] Erro ao executar o Agente:', e);
       return 'Desculpe, ocorreu um erro ao tentar processar sua solicitação.';
