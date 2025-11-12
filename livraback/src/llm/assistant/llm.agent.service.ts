@@ -75,6 +75,17 @@ export class LlmAgentService {
       this.toolsService.createGetPopularCommunitiesTool(),
       this.toolsService.createGetRecentStoriesTool(),
       // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
+
+      // this.toolsService.createUsersGetMyProfileTool(),     
+      // this.toolsService.createUsersGetMyReadlistsTool(),  
+      // this.toolsService.createUsersGetMyFavoritesTool(),  
+      // this.toolsService.createGetCommunitiesTool(),        
+      // this.toolsService.createJoinCommunityTool(),
+      // this.toolsService.createLeaveCommunityTool(),        
+      // this.toolsService.createAddBookToReadlistTool(),
+      // this.toolsService.createCreateReadlistTool(),        
+      // this.toolsService.createDeleteReadlistTool(),       
+      // this.toolsService.createGravarLeituraTool(),        
     ];
 
     // monta o PromptTemplate e pré-preenche {tools} e {tool_names}
