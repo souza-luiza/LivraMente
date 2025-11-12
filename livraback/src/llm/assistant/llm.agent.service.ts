@@ -35,6 +35,15 @@ Observação: o resultado da ação
 Pensamento: Eu agora sei a resposta final
 Resposta Final: a resposta final para a pergunta original do usuário
 
+REGRAS ADICIONAIS:
+- Se o usuário perguntar sobre suas histórias, use 'get_user_stories'.
+- Se o usuário perguntar sobre comunidades populares, use 'get_popular_communities'.
+- Se o usuário perguntar sobre histórias recentes, use 'get_recent_stories'.
+- Se o usuário perguntar sobre os posts mais populares de uma comunidade específica, usar a ferramenta  'get_popular_posts_in_community'
+- Se o usuário perguntar sobre alguma comunidade específica, use 'get_community'.
+- Se o usuário pedir para "entrar" ou "se juntar" a uma comunidade, use a ferramenta 'join_community'.
+- Se o usuário pedir para "sair" ou "retirar" ou "quitar" de alguma da comunidade, use a ferramenta 'leave_community'.
+
 Inicie!
 
 Pergunta: {input}
@@ -74,14 +83,16 @@ export class LlmAgentService {
       this.toolsService.createGetUserStoriesTool(userId),
       this.toolsService.createGetPopularCommunitiesTool(),
       this.toolsService.createGetRecentStoriesTool(),
+      this.toolsService.createGetCommunitiesTool(),
+      this.toolsService.createJoinCommunityTool(),
+      this.toolsService.createLeaveCommunityTool(userId),
+      this.toolsService.createGetPopularPostsCommunityTool(),
+
       // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
 
       // this.toolsService.createUsersGetMyProfileTool(),
       // this.toolsService.createUsersGetMyReadlistsTool(),
       // this.toolsService.createUsersGetMyFavoritesTool(),
-      // this.toolsService.createGetCommunitiesTool(),
-      // this.toolsService.createJoinCommunityTool(),
-      // this.toolsService.createLeaveCommunityTool(),
       // this.toolsService.createAddBookToReadlistTool(),
       // this.toolsService.createCreateReadlistTool(),
       // this.toolsService.createDeleteReadlistTool(),
