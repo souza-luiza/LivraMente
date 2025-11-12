@@ -7,7 +7,6 @@ import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
-import SearchBar from "@/components/searchbar";
 import { toast } from "react-toastify";
 import  TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
@@ -131,11 +130,11 @@ export default function SettingsProfilePage() {
 
     try {
       // Atualizar avatar se houver imagem cortada
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
       if (croppedImageBlob) {
         const formDataUpload = new FormData();
         formDataUpload.append('file', croppedImageBlob, 'avatar.jpg');
 
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
         const response = await fetch(`${API_BASE_URL}/users/avatar`, {
           method: 'PUT',
           headers: {
@@ -153,11 +152,17 @@ export default function SettingsProfilePage() {
       }
 
       // Atualizar dados do perfil
-      await api.put('/users/profile', {
-        username: formData.name,
-        pronouns: formData.pronouns,
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username: formData.name, pronouns: formData.pronouns }),
       });
-
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar dados do usuário');
+      }
+      const data = await response.json();
       setUsername(formData.name);
       setPronouns(formData.pronouns);
 

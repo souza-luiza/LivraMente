@@ -34,73 +34,45 @@ export class ReadlistsService {
         return await this.readlistModel.find({ criador: criadorId }).exec();
     }
 
-    async findOne(criadorId: string, id: string) {
-        try{
-            const readlist = await this.readlistModel.findOne({ _id: id, criador: criadorId }).exec();
-            if(!readlist) {
-                throw new NotFoundException('Readlist não encontrada');
-            }
-            return readlist;
-        } catch(error) {
-            if(error.name === 'CastError') {
-                throw new BadRequestException('ID inválido');
-            }
-            throw error;
-        }
+    async findOne(criadorId: string, slug: string) {
+        const readlist = await this.readlistModel.findOne({ slug: slug, criador: criadorId }).exec();
+        if(!readlist) throw new NotFoundException('Readlist não encontrada');
+        return readlist;
     }
 
-    async update(criadorId: string, id: string, updateReadlistDto: UpdateReadlistDto) {
-        try {
-            const updated = await this.readlistModel.findOneAndUpdate(
-                {
-                    _id: id,
-                    criador: criadorId
-                },
-                {
-                    $set: updateReadlistDto,
-                },
-                {
-                    new: true,
-                    runValidators: true,
-                },
-            ).exec();
-            if(!updated) {
-                throw new NotFoundException('Readlist não encontrada');
-            }
-            return updated;
-        } catch(error) {
-            if (error.name === 'CastError') {
-                throw new BadRequestException('ID inválido');
-            }
-            throw error;
-        }
-    }
-
-    async remove(criadorId: string, id: string) {
-        try {
-            const removed = await this.readlistModel.deleteOne({
-                _id: id,
+    async update(criadorId: string, slug: string, updateReadlistDto: UpdateReadlistDto) {
+        const updated = await this.readlistModel.findOneAndUpdate(
+            {
+                slug: slug,
                 criador: criadorId
-            }).exec();
+            },
+            {
+                $set: updateReadlistDto,
+            },
+            {
+                new: true,
+                runValidators: true,
+            },
+        ).exec();
 
-            if(removed.deletedCount==0){
-                throw new NotFoundException('Readlist não encontrada');
-            }
-            
-            //Remove ID na lista de readlists do usuário:
-            await this.userModel.findByIdAndUpdate(
-                criadorId,
-                { $pull: { readlists: id }}
-            );
+        if(!updated) throw new NotFoundException('Readlist não encontrada');
+        
+        return updated;
+    }
 
-            return removed;
+    async remove(criadorId: string, slug: string) {
+        const readlist = await this.readlistModel.findOne({ slug, criador: criadorId }).exec();
+        if(!readlist) throw new NotFoundException('Readlist não encontrada');
 
-        } catch(error) {
-            if(error.name === 'CastError') {
-                throw new BadRequestException('ID inválido');
-            }
-            throw error;
-        }
+        await this.readlistModel.deleteOne({ _id: readlist._id }).exec();
+        
+        //Remove ID na lista de readlists do usuário:
+        await this.userModel.findByIdAndUpdate(
+            criadorId,
+            { $pull: { readlists: readlist._id }}
+        );
+
+        return { deleted: true, slug };
     }
 
     async findAllPublic(username: string) {

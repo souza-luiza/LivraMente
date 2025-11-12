@@ -48,10 +48,10 @@ export class ReadlistsController {
         return this.readlistsService.findAll(user.userId);
     }
 
-    @Get(':id')
+    @Get(':slug')
     @ApiOperation({
         summary: 'Busca uma readlist',
-        description: 'Retorna detalhes de uma readlist por ID do usuário autenticado'
+        description: 'Retorna detalhes de uma readlist por slug que pertence ao usuario autenticado'
     })
     @ApiResponse({
         status: 200,
@@ -62,21 +62,17 @@ export class ReadlistsController {
         description: 'Readlist não encontrada'
     })
     @ApiResponse({
-        status: 400,
-        description: 'ID inválido'
-    })
-    @ApiResponse({
         status: 401,
         description: 'Token JWT inválido'
     })
-    async findOne(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
-        return this.readlistsService.findOne(user.userId, id);
+    async findOne(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string) {
+        return this.readlistsService.findOne(user.userId, slug);
     }
 
-    @Patch(':id')
+    @Patch(':slug')
     @ApiOperation({
         summary: 'Atualiza uma readlist',
-        description: 'Atualiza dados de uma readlist por ID do usuário autenticado'
+        description: 'Atualiza dados de uma readlist por slug do usuário autenticado'
     })
     @ApiResponse({
         status: 200,
@@ -87,21 +83,17 @@ export class ReadlistsController {
         description: 'Readlist não encontrada'
     })
     @ApiResponse({
-        status: 400,
-        description: 'ID inválido'
-    })
-    @ApiResponse({
         status: 401,
         description: 'Token JWT inválido'
     })
-    async update(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Body() updateReadlistDto: UpdateReadlistDto) {
-        return this.readlistsService.update(user.userId, id, updateReadlistDto);
+    async update(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string, @Body() updateReadlistDto: UpdateReadlistDto) {
+        return this.readlistsService.update(user.userId, slug, updateReadlistDto);
     }
 
-    @Delete(':id')
+    @Delete(':slug')
     @ApiOperation({
         summary: 'Exclui uma readlist',
-        description: 'Deleta uma readlist por ID do usuário autenticado'
+        description: 'Deleta uma readlist por slug do usuário autenticado'
     })
     @ApiResponse({
         status: 200,
@@ -112,15 +104,11 @@ export class ReadlistsController {
         description: 'Readlist não encontrada'
     })
     @ApiResponse({
-        status: 400,
-        description: 'ID inválido'
-    })
-    @ApiResponse({
         status: 401,
         description: 'Token JWT inválido'
     })
-    async remove(@CurrentUser() user: CurrentUserDto, @Param('id') id: string) {
-        return this.readlistsService.remove(user.userId, id);
+    async remove(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string) {
+        return this.readlistsService.remove(user.userId, slug);
     }
 
     @Get('public/:username')
