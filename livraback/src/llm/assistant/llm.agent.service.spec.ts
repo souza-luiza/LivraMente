@@ -33,7 +33,6 @@ jest.mock('@langchain/google-genai', () => ({
 }));
 
 // --- Mocks dos Serviços Internos ---
-
 const mockUserStoriesTool = {
   name: 'get_user_stories',
   description: 'Busca histórias do usuário',
@@ -46,16 +45,34 @@ const mockRecentStoriesTool = {
   name: 'get_recent_stories',
   description: 'Busca histórias recentes',
 };
+const mockJoinCommunityTool = {
+  name: 'join_community',
+  description: 'Entra na comunidade',
+};
+const mockGetCommunityTool = {
+  name: 'get_community',
+  description: 'Busca comunidade',
+};
+const mockLeaveCommunityTool = {
+  name: 'leave_community',
+  description: 'Sai da comunidade',
+};
 const mockToolsArray = [
   mockUserStoriesTool,
   mockPopularCommunitiesTool,
   mockRecentStoriesTool,
+  mockJoinCommunityTool,
+  mockGetCommunityTool,
+  mockLeaveCommunityTool,
 ];
 
 const mockLlmToolsService = {
   createGetUserStoriesTool: jest.fn(() => mockUserStoriesTool),
   createGetPopularCommunitiesTool: jest.fn(() => mockPopularCommunitiesTool),
   createGetRecentStoriesTool: jest.fn(() => mockRecentStoriesTool),
+  createJoinCommunityTool: jest.fn(() => mockJoinCommunityTool),
+  createGetCommunityTool: jest.fn(() => mockGetCommunityTool),
+  createLeaveCommunityTool: jest.fn(() => mockLeaveCommunityTool)
 };
 
 const mockConfigService = {
@@ -141,8 +158,8 @@ describe('LlmAgentService', () => {
 
       expect(mockPartial).toHaveBeenCalledWith(
         expect.objectContaining({
-          tools: expect.stringContaining("get_user_stories: Busca histórias do usuário"),
-          tool_names: "get_user_stories, get_popular_communities, get_recent_stories",
+          tools: expect.stringContaining("get_user_stories: Busca histórias do usuário, leave_community: Sai da comunidade"),
+          tool_names: "get_user_stories, get_popular_communities, get_recent_stories, get_community, join_community",
         }),
       );
 
