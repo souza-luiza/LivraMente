@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Notificacao } from '../types/notificacao';
 
 type EstadoNotificacoes = {
@@ -12,7 +13,9 @@ type EstadoNotificacoes = {
     contarNaoLidas: () => number;
 };
 
-export const useNotificationsStore = create<EstadoNotificacoes>((set, get) => ({
+export const useNotificationsStore = create<EstadoNotificacoes>()(
+    persist(
+        (set, get) => ({
     notificacoes: [],
 
     adicionarNotificacao: (notificacao) => set((state) => ({
@@ -46,4 +49,10 @@ export const useNotificationsStore = create<EstadoNotificacoes>((set, get) => ({
         const state = get();
         return state.notificacoes.filter(notif => !notif.lida).length;
     }
-}));   
+}),
+        {
+            name: 'notificacoes-storage', 
+            partialize: (state) => ({ notificacoes: state.notificacoes }),
+        }
+    )
+);   
