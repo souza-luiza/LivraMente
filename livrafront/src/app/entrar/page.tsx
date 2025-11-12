@@ -65,15 +65,15 @@ export default function LoginPage() {
       });
 
       // Salvar no authStore (token + autenticação)
-      setAuth(response.token, response.user.username, response.user._id);
+      setAuth(response.username, response._id);
       
       // Salvar no userStore (dados do perfil)
-      setUsername(response.user.username);
-      if (response.user.avatarUrl) {
-        setProfileImageUrl(response.user.avatarUrl);
+      setUsername(response.username);
+      if (response.avatarUrl) {
+        setProfileImageUrl(response.avatarUrl);
       }
 
-      router.push(`/${response.user.username}`);
+      router.push(`/${response.username}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao fazer login");
     } finally {

@@ -69,7 +69,7 @@ export default function UserProfilePage(){
                 
                 console.log('Buscando dados do usuário:', url);
                 
-                const response = await fetch(url);
+                const response = await fetch(url, {credentials: "include"});
                 
                 console.log('Status da resposta:', response.status);
                 

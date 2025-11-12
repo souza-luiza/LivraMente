@@ -10,6 +10,8 @@ import NotificationsIcon from "./icons/NotificationsIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
 import { useAuthStore } from "@/stores/authStore";
+import { logout } from "@/services/auth";
+import { toast } from "react-toastify";
 
 interface UserData {
     username: string;
@@ -26,7 +28,7 @@ export default function Sidebar() {
 
             try {
                 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-                const response = await fetch(`${API_BASE_URL}/users/public/${loggedUsername}`);
+                const response = await fetch(`${API_BASE_URL}/users/public/${loggedUsername}`, { credentials: "include" });
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -39,6 +41,15 @@ export default function Sidebar() {
 
         fetchUserData();
     }, [loggedUsername]);
+
+    const handleClick = async () => {
+        try {
+            await logout();
+            window.location.href = '/entrar';
+        } catch(err) {
+            toast.error('Erro ao deslogar.');
+        }
+    }
 
     return (
         <nav data-testid="sidebar" className="light-green h-[calc(100vh-1rem)] sticky top-2 flex flex-col w-fit pt-4 pb-4 m-2 large-border-radius z-50">
@@ -69,7 +80,13 @@ export default function Sidebar() {
                     <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/configuracoes" tooltip="Configurações" />
                 </div>
                 <div>
-                    <Button icon={<LogoutIcon />} colorScheme="light-green" size="large" tooltip="Sair" />
+                    <Button
+                        icon={<LogoutIcon />}
+                        colorScheme="light-green"
+                        size="large"
+                        tooltip="Sair"
+                        onClick={handleClick}
+                    />
                 </div>
             </div>
         </nav>

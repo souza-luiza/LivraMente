@@ -13,9 +13,3 @@ export interface User {
   username: string
   avatarUrl?: string
 }
-
- /* Resposta da API de login */
-export interface LoginResponse {
-  token: string
-  user: User
-}

@@ -21,9 +21,7 @@ function getAuthHeaders(): { [key: string]: string } | undefined {
 // Buscar readlists públicas de um usuário
 export async function getPublicReadlists(username: string): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/readlists/public/${username}`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao buscar readlists públicas'));
   return response.json();
@@ -32,9 +30,7 @@ export async function getPublicReadlists(username: string): Promise<Readlist[]> 
 // Buscar readlists criadas pelo usuário autenticado
 export async function getOwnReadlists(): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/readlists`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao buscar suas readlists'));
   const json = await response.json();
@@ -44,9 +40,7 @@ export async function getOwnReadlists(): Promise<Readlist[]> {
 // Buscar readlists favoritas do usuário autenticado
 export async function getFavoriteReadlists(): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/users/me/favoritar`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao buscar favoritas'));
   return response.json();

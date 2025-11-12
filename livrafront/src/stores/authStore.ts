@@ -3,10 +3,9 @@ import { persist } from 'zustand/middleware';
 
 interface AuthState {
   isAuthenticated: boolean;
-  token: string | null;
   username: string | null;
   userId: string | null;
-  setAuth: (token: string, username: string, userId: string) => void;
+  setAuth: ( username: string, userId: string) => void;
   clearAuth: () => void;
   checkAuth: () => Promise<boolean>;
 }
@@ -15,16 +14,15 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       isAuthenticated: false,
-      token: null,
       username: null,
       userId: null,
 
-      setAuth: (token: string, username: string, userId: string) => {
-        set({ isAuthenticated: true, token, username, userId });
+      setAuth: ( username: string, userId: string) => {
+        set({ isAuthenticated: true, username, userId });
       },
 
       clearAuth: () => {
-        set({ isAuthenticated: false, token: null, username: null, userId: null });
+        set({ isAuthenticated: false, username: null, userId: null });
       },
 
       checkAuth: async () => {
@@ -37,11 +35,11 @@ export const useAuthStore = create<AuthState>()(
           );
           const isValid = response.ok;
           if (!isValid) {
-            set({ isAuthenticated: false, token: null, username: null, userId: null });
+            set({ isAuthenticated: false, username: null, userId: null });
           }
           return isValid;
         } catch {
-          set({ isAuthenticated: false, token: null, username: null, userId: null });
+          set({ isAuthenticated: false, username: null, userId: null });
           return false;
         }
       },
@@ -49,7 +47,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        token: state.token,
         username: state.username,
         userId: state.userId,
         isAuthenticated: state.isAuthenticated,

@@ -1,17 +1,16 @@
 /* Faz requisições HTTP para fazer login do usuário */
 
 import { api } from '@/lib/api';
-import { LoginFormData, LoginResponse } from '@/types/auth'
+import { LoginFormData, User } from '@/types/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
+export async function loginUser(data: LoginFormData): Promise<User> {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/signin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: "include",
       body: JSON.stringify({
         email: data.email,
         senha: data.password  
@@ -31,13 +30,10 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
     const result = await response.json()
     
     return {
-      token: result.accessToken,
-      user: { 
-        _id: result.userId || result.user?.id || 'user-id', 
-        username: result.username,
-        email: data.email,
-        avatarUrl: result.avatarUrl
-      }
+      _id: result.user.id,
+      username: result.user.username,
+      email: result.user.email,
+      avatarUrl: result.user.avatarUrl
     }
 
   } catch (error) {
@@ -48,9 +44,12 @@ export async function loginUser(data: LoginFormData): Promise<LoginResponse> {
   }
 }
 
-export const logoutUser = async () => {
-  await api.post('/auth/logout');
-};
+export async function logout() {
+  await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
 
 export const getCurrentUser = async () => {
   const response = await api.get('/auth/me');
