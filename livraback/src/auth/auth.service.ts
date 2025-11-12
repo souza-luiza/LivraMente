@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
@@ -12,56 +11,38 @@ const scrypt = promisify(_scrypt);
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto) {
     const { username, email, senha } = createUserDto;
     const existingUser = await this.usersService.getByEmail(email);
-    if (existingUser) {
-      throw new BadRequestException('Email em uso');
-    }
+    if (existingUser) throw new BadRequestException('Email em uso');
+    
     const existingUsername = await this.usersService.getByUsername(username);
-    if (existingUsername) {
-      throw new BadRequestException('Nome de usuário em uso');
-    }
+    if (existingUsername) throw new BadRequestException('Nome de usuário em uso');
+    
     
     const salt = randomBytes(8).toString('hex');
     const hash = await scrypt(senha, salt, 32) as Buffer;
     const saltAndHash = `${salt}.${hash.toString('hex')}`;
 
-    const user = await this.usersService.create({
-      username,
-      email,
-      senha: saltAndHash,
-    });
+    const user = await this.usersService.create({ username, email, senha: saltAndHash });
 
-    const payload = { email: user.email, sub: user._id };
-    return { accessToken: this.jwtService.sign(payload) }; //transforma payload em token JWT
+    return user;
   }
 
   async signIn(loginDto: LoginDto) {
     const { email, senha } = loginDto;
     const user = await this.usersService.getByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
+    if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
     const [salt, storedHash] = user.senha.split('.');
     const hash = (await scrypt(senha, salt, 32)) as Buffer;
-
     const storedBuffer = Buffer.from(storedHash, 'hex');
 
-    if (storedBuffer.length !== hash.length){
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-    
-    if (!timingSafeEqual(storedBuffer, hash)) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
+    if (storedBuffer.length !== hash.length || !timingSafeEqual(storedBuffer, hash)) throw new UnauthorizedException('Credenciais inválidas');
 
-    const payload = { email: user.email, sub: user._id };
-    return { accessToken: this.jwtService.sign(payload), username: user.username };
+    return user;
   }
 }
