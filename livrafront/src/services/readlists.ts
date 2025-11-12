@@ -2,22 +2,6 @@ import { Readlist } from '../types/readlist';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
-function getAuthHeaders(): { [key: string]: string } | undefined {
-  if (typeof window === 'undefined') return undefined;
-  
-  // Buscar o token do storage do Zustand
-  const authStorage = localStorage.getItem('auth-storage');
-  if (!authStorage) return undefined;
-  
-  try {
-    const { state } = JSON.parse(authStorage);
-    const token = state?.token;
-    return token ? { Authorization: `Bearer ${token}` } : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 // Buscar readlists públicas de um usuário
 export async function getPublicReadlists(username: string): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/readlists/public/${username}`, {
@@ -50,10 +34,7 @@ export async function getFavoriteReadlists(): Promise<Readlist[]> {
 export async function createReadlist(payload: { nome: string; descricao?: string; publica: boolean }): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
@@ -69,9 +50,7 @@ export async function createReadlist(payload: { nome: string; descricao?: string
 export async function favoriteReadlist(readlistId: string) {
   const response = await fetch(`${API_BASE_URL}/users/me/favoritar/${readlistId}`, {
     method: 'PATCH',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao favoritar readlist'));
   return response.json();
@@ -81,9 +60,7 @@ export async function favoriteReadlist(readlistId: string) {
 export async function unfavoriteReadlist(readlistId: string) {
   const response = await fetch(`${API_BASE_URL}/users/me/favoritar/${readlistId}`, {
     method: 'DELETE',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao remover dos favoritos'));
   return response.json();
@@ -93,9 +70,7 @@ export async function unfavoriteReadlist(readlistId: string) {
 export async function getReadlistById(readlistId: string): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}`, {
     method: 'GET',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -116,10 +91,7 @@ export async function updateReadlist(
 ): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 
@@ -137,9 +109,7 @@ export async function updateReadlist(
 export async function deleteReadlist(readlistId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}`, {
     method: 'DELETE',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -153,9 +123,7 @@ export async function deleteReadlist(readlistId: string): Promise<void> {
 export async function addBookToReadlist(readlistId: string, livroId: string): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}/livros/${livroId}`, {
     method: 'PATCH',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) {
     if (response.status === 404) {
@@ -170,9 +138,7 @@ export async function addBookToReadlist(readlistId: string, livroId: string): Pr
 export async function removeBookFromReadlist(readlistId: string, livroId: string): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}/livros/${livroId}`, {
     method: 'DELETE',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
+    credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao remover livro da readlist'));
   return response.json();
