@@ -2,19 +2,19 @@ import { Controller, Get, Body, Patch, Param, Delete, Put, UseGuards, UseInterce
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegistroLeituraDto } from './dto/registro-leitura.dto';
 import { memoryStorage } from 'multer';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Get('me')
   @ApiOperation({
     summary: 'Retorna os dados do usuário',
@@ -30,7 +30,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
   async getProfile(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findOne(user.userId);
@@ -54,7 +54,7 @@ export class UsersController {
     return this.usersService.getPublicByUsername(username);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Put('profile')
   @ApiOperation({
     summary: 'Atualiza os dados do usuário',
@@ -84,7 +84,7 @@ export class UsersController {
     return this.usersService.update(user.userId, updateUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Put('avatar')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -126,7 +126,7 @@ export class UsersController {
     return this.usersService.updateAvatar(user.userId, file);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Patch('me/registro-leitura')
   @ApiOperation({
     summary: 'Registra leitura diária',
@@ -152,7 +152,7 @@ export class UsersController {
     return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Patch('me/favoritar/:readlistId')
   @ApiOperation({
     summary: 'Favorita uma readlist pública',
@@ -182,7 +182,7 @@ export class UsersController {
     return this.usersService.favoritarReadlist(user.userId, readlistId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Delete('me/favoritar/:readlistId')
   @ApiOperation({
     summary: 'Remove readlist dos favoritos',
@@ -208,7 +208,7 @@ export class UsersController {
     return this.usersService.desfavoritarReadlist(user.userId, readlistId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Get('me/favoritar')
   @ApiOperation({
     summary: 'Retorna readlists favoritas',

@@ -2,15 +2,42 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import mongoose from 'mongoose';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  if (!process.env.DB_URL) throw new Error('DB_URL não definido');
+  if (!process.env.SESSION_SECRET) throw new Error('SESSION_SECRET não definido');
+
+  await mongoose.connect(process.env.DB_URL);
+
+  app.use(
+    session({
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_URL,
+        collectionName: 'sessions', // colecao onde sessoes vao ficar
+      }),
+      name: 'sessionId',
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24, // 1 dia
+      },
+    }),
+  );
+
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
   app.enableCors({
     origin: allowedOrigins,  
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
   });
 
   app.useGlobalPipes(

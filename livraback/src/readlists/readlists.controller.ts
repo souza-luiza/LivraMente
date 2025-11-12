@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ReadlistsService } from './readlists.service';
 import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
 @ApiBearerAuth() // informa que usa Bearer Token
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('readlists')
 export class ReadlistsController {
     constructor(private readonly readlistsService: ReadlistsService) {}
