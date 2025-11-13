@@ -47,7 +47,7 @@ export default function Button({
     }
 
     const boxSize: Record<"small" | "medium" | "large", string> = {
-        small:  text ? "small-box"  : "small-padding small-border-radius",
+        small:  text ? "small-box"  : "p-2 small-border-radius",
         medium: text ? "medium-box" : "small-padding medium-border-radius",
         large:  text ? "large-box"  : "small-padding large-border-radius",
     }

@@ -10,6 +10,8 @@ import Edit2Icon from './icons/Edit2Icon';
 import { Post } from '@/types/post';
 import CodeIcon from './icons/CodeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
+import CommunityIcon from './icons/CommunityIcon';
+import SaveIcon from './icons/SaveIcon';
 
 interface EditPostModalProps {
     post: Post;
@@ -204,23 +206,20 @@ export default function EditPostModal({
         transition={{ duration: 0.2, ease: 'easeInOut' }}
       >
         <div
-          className="relative w-full max-w-1/2 large-padding large-border-radius"
+          className="relative flex-shrink-0 bg-gray-50 medium-padding medium-border-radius"
           style={{
-            backgroundColor: 'var(--primary-200)',
+            color: 'var(--primary-800)',
             maxHeight: '90vh',
             overflowY: 'auto',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Título do Modal */}
-          <div className="flex flex-row justify-between text-h5 text-[var(--secondary-800)] items-center mb-6">
-              <h1>
-                  Editar Postagem
-              </h1>
-              <div className="flex flex-row text-h6 medium-box light-green gap-2">
-                  <h2>{post.comunidade.nome}</h2>
-                  <CodeIcon size={24} />
-                  <h2>@{post.autor.username}</h2>
+          <div className="flex flex-row justify-between items-center text-h5 mb-4">
+              <h1>Editar Postagem</h1>
+              <div className="flex flex-row items-center gap-1">
+                <CommunityIcon size={24} />
+                <h2>{post.comunidade.nome}</h2>
               </div>
           </div>
 
@@ -233,7 +232,7 @@ export default function EditPostModal({
               }`}
               style={{ 
                 color: 'var(--primary-800)',
-                background: 'linear-gradient(to bottom, var(--primary-200) 50%, var(--background) 50%)',
+                background: 'linear-gradient(to bottom, var(--color-gray-50) 50%, var(--background) 50%)',
               }}
             >
               Conteúdo
@@ -247,7 +246,7 @@ export default function EditPostModal({
                 setIsContentFocused(false);
                 validateContent(content);
               }}
-              className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
+              className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 small-border-width border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
               style={{
                 minHeight: '200px',
                 borderColor: contentError ? 'var(--error-500)' : undefined,
@@ -285,16 +284,15 @@ export default function EditPostModal({
                       className="object-cover"
                     />
                     {/* Botão para remover imagem */}
-                    <button
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      }}
-                      aria-label="Remover imagem"
-                    >
-                      <TrashIcon size={16} color="white" />
-                    </button>
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          icon={<TrashIcon />}
+                          colorScheme="dark-brown"
+                          size="small"
+                          onClick={() => removeImage(index)}
+                          aria-label="Remover imagem"
+                        />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -331,7 +329,7 @@ export default function EditPostModal({
           )}
 
           {/* Botões de Ação */}
-          <div className="flex flex-row items-center justify-between gap-2">
+          <div className="flex flex-row items-center gap-10">
             {/* Botão de Adicionar Imagem */}
             <div>
               <input
@@ -344,7 +342,7 @@ export default function EditPostModal({
                 style={{ display: "none" }}
               />
               <Button
-                text={`Adicionar Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
+                text={`${images.length === 0 ? 'Adicionar ' : ''}Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
                 icon={<ImageIcon />}
                 size="medium"
                 colorScheme="light-green"
@@ -360,7 +358,7 @@ export default function EditPostModal({
                 text="Cancelar"
                 icon={<TrashIcon />}
                 size="medium"
-                colorScheme="dark-brown"
+                colorScheme="light-brown"
                 onClick={handleCancel}
                 aria-label="Cancelar"
                 disabled={isSubmitting}
@@ -369,9 +367,9 @@ export default function EditPostModal({
               {/* Botão de Postar */}
               <Button
                 text={isSubmitting ? "Salvando..." : "Salvar Alterações"}
-                icon={<Edit2Icon />}
+                icon={<SaveIcon />}
                 size="medium"
-                colorScheme="dark-green"
+                colorScheme="light-green"
                 onClick={handlePost}
                 aria-label="Salvar Alterações"
                 disabled={isSubmitting}

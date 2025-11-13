@@ -8,6 +8,7 @@ import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
 import { postsService } from '@/services/posts';
 import Edit2Icon from './icons/Edit2Icon';
+import CommunityIcon from './icons/CommunityIcon';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -198,21 +199,22 @@ export default function CreatePostModal({
         onClick={handleCancel}
       >
         <div
-          className="relative w-full max-w-2xl large-padding large-border-radius"
+          className="relative flex-shrink-0 bg-gray-50 medium-padding medium-border-radius"
           style={{
-            backgroundColor: 'var(--primary-200)',
+            color: 'var(--primary-800)',
             maxHeight: '90vh',
             overflowY: 'auto',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Título do Modal */}
-          <h4
-            className="text-h5 mb-6"
-            style={{ color: 'var(--secondary-800)' }}
-          >
-            Criar Postagem em {communityName}
-          </h4>
+          <div className="flex flex-row justify-between items-center text-h5 mb-4">
+              <h1>Criar Postagem</h1>
+              <div className="flex flex-row items-center gap-1">
+                <CommunityIcon size={24} />
+                <h2>{communityName}</h2>
+              </div>
+          </div>
 
           {/* Campo de Texto */}
           <div className="mb-6 relative">
@@ -223,7 +225,7 @@ export default function CreatePostModal({
               }`}
               style={{ 
                 color: 'var(--primary-800)',
-                background: 'linear-gradient(to bottom, var(--primary-200) 50%, var(--background) 50%)',
+                background: 'linear-gradient(to bottom, var(--color-gray-50) 50%, var(--background) 50%)',
               }}
             >
               Conteúdo
@@ -237,7 +239,7 @@ export default function CreatePostModal({
                 setIsContentFocused(false);
                 validateContent(content);
               }}
-              className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
+              className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 small-border-width border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
               style={{
                 minHeight: '200px',
                 borderColor: contentError ? 'var(--error-500)' : undefined,
@@ -275,16 +277,15 @@ export default function CreatePostModal({
                       className="object-cover"
                     />
                     {/* Botão para remover imagem */}
-                    <button
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      }}
-                      aria-label="Remover imagem"
-                    >
-                      <TrashIcon size={16} color="white" />
-                    </button>
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        icon={<TrashIcon />}
+                        colorScheme="dark-brown"
+                        size="small"
+                        onClick={() => removeImage(index)}
+                        aria-label="Remover imagem"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -321,7 +322,7 @@ export default function CreatePostModal({
           )}
 
           {/* Botões de Ação */}
-          <div className="flex flex-row items-center justify-between gap-2">
+          <div className="flex flex-row items-center gap-10">
             {/* Botão de Adicionar Imagem */}
             <div>
               <input
@@ -334,7 +335,7 @@ export default function CreatePostModal({
                 style={{ display: "none" }}
               />
               <Button
-                text={`Adicionar Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
+                text={`${images.length === 0 ? 'Adicionar ' : ''}Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
                 icon={<ImageIcon />}
                 size="medium"
                 colorScheme="light-green"
@@ -350,7 +351,7 @@ export default function CreatePostModal({
                 text="Cancelar"
                 icon={<TrashIcon />}
                 size="medium"
-                colorScheme="dark-brown"
+                colorScheme="light-brown"
                 onClick={handleCancel}
                 aria-label="Cancelar"
                 disabled={isSubmitting}
@@ -361,7 +362,7 @@ export default function CreatePostModal({
                 text={isSubmitting ? "Postando..." : "Postar"}
                 icon={<Edit2Icon />}
                 size="medium"
-                colorScheme="dark-green"
+                colorScheme="light-green"
                 onClick={handlePost}
                 aria-label="Postar"
                 loading={isSubmitting}

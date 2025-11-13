@@ -91,10 +91,6 @@ export default function CommunityPage(){
     // Header Compacto
     const [showCompactHeader, setShowCompactHeader] = useState(false);
 
-    // Pop Up de Confirmação de Moderação de Post
-    const [showConfirmModeratePostPopUp, setShowConfirmModeratePostPopUp] = useState(false);
-    const [postToModerate, setPostToModerate] = useState<{postId: string, postAuthor: string, aprovar: boolean, categoria: PostCategoria}>();
-
     useEffect(() => {
         if (!community) {
             router.replace("/not-found");
@@ -256,8 +252,6 @@ export default function CommunityPage(){
             // Atualiza lista de posts
             handleRefreshPosts();
 
-            setShowConfirmModeratePostPopUp(false);
-
         } catch (err) {
             console.error("Erro ao revisar o post:", err);
         }
@@ -267,6 +261,7 @@ export default function CommunityPage(){
         if (!communityInfo) return;
 
         setLoadingPosts(true);
+        console.log("Atualizando posts...");
 
         try{
             // Atualiza lista de posts
@@ -278,11 +273,6 @@ export default function CommunityPage(){
         } finally {
             setLoadingPosts(false);
         }
-    }
-
-    const handleConfirmModeratePost = (postId: string, postAuthor: string, aprovar: boolean, categoria: PostCategoria) => {
-        setPostToModerate({ postId, postAuthor, aprovar, categoria });
-        setShowConfirmModeratePostPopUp(true);
     }
 
     if (loading) return <LoadingPage />;
@@ -455,7 +445,8 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
-                                                        onDelete={handleRefreshPosts} 
+                                                        onDelete={handleRefreshPosts}
+                                                        onUpdate={handleRefreshPosts} 
                                                     />
                                                 );
                                             })}
@@ -483,7 +474,8 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
-                                                        onDelete={handleRefreshPosts} 
+                                                        onDelete={handleRefreshPosts}
+                                                        onUpdate={handleRefreshPosts} 
                                                     />
                                                 );
                                             })}
@@ -507,8 +499,7 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <div key={post._id}>
-                                                    <div className="flex flex-col gap-1">
+                                                    <div key={post._id} className="flex flex-col gap-1">
                                                         <PostComponent 
                                                             post={post}
                                                             isModerator={isModerator}
@@ -520,42 +511,23 @@ export default function CommunityPage(){
                                                                 icon={<CheckIcon />}
                                                                 size="small"
                                                                 variant="aprovar"
-                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, true, PostCategoria.FANART)}
+                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANART)}
                                                             />
                                                             <Button
                                                                 text="Aprovar como Fanfic"
                                                                 icon={<CheckIcon />}
                                                                 size="small"
                                                                 variant="aprovar"
-                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, true, PostCategoria.FANFIC)}
+                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANFIC)}
                                                             />
                                                             <Button
                                                                 text="Rejeitar"
                                                                 icon={<RemoveIcon />}
                                                                 size="small"
                                                                 variant="rejeitar"
-                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, false, PostCategoria.GERAL)}
+                                                                onClick={() => handleReviewPost(post._id, false, PostCategoria.GERAL)}
                                                             />
                                                         </div>
-                                                    </div>
-                                                    {postToModerate && <PopUp
-                                                        title={`${postToModerate!.aprovar ? "Aprovar" : "Rejeitar"} Postagem de @${postToModerate!.postAuthor}?`}
-                                                        description="Esta ação não pode ser desfeita."
-                                                        button1={{ 
-                                                            text: "Cancelar",
-                                                            icon: <TrashIcon />,
-                                                            colorScheme: "dark-brown",
-                                                            onClick: () => setShowConfirmModeratePostPopUp(false)
-                                                        }}
-                                                        button2={{
-                                                            text:  postToModerate!.aprovar ? `Aprovar como ${postToModerate!.categoria === 'fanart' ? 'Fanart' : 'Fanfic'}` : "Rejeitar",
-                                                            icon: postToModerate!.aprovar ? <CheckIcon /> : <RemoveIcon />,
-                                                            colorScheme: "dark-green",
-                                                            onClick: () => handleReviewPost(postToModerate!.postId, postToModerate!.aprovar, postToModerate!.categoria)
-                                                        }}
-                                                        isOpen={isModerator && postToModerate && showConfirmModeratePostPopUp}
-                                                        onClose={() => setShowConfirmModeratePostPopUp(false)}
-                                                    />}
                                                     </div>
                                                 );
                                             })}
