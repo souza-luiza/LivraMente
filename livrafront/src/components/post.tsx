@@ -9,6 +9,7 @@ import Image from "next/image";
 import Button from "./button";
 import PostImage from "./post-image";
 import EditPostModal from "./EditPostModal";
+import PopUp from "./pop-up";
 
 // Types
 import { Post } from "@/types/post";
@@ -27,6 +28,9 @@ import { postsService } from "@/services/posts";
 // Data
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import CommunityIcon from "./icons/CommunityIcon";
+import { text } from "stream/consumers";
+import RemoveIcon from "./icons/RemoveIcon";
 
 interface PostProps {
     post: Post;
@@ -77,6 +81,12 @@ export default function PostComponent({
 
     // Edição do post
     const [showEditModal, setShowEditModal] = useState(false);
+
+    // Pop Up de Confirmação
+    const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
+
+    // Carregando
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -153,8 +163,15 @@ export default function PostComponent({
         setShowOptions((prev) => !prev);
     };
 
+    const handleConfirmDeletePost = () => {
+        setShowOptions(false);
+        setShowConfirmDeletePopUp(true);
+    }
+
     const handleDeletePost = async () => {
         setShowOptions(false);
+        setLoading(true);
+
         try {
             // Deletar post
             await postsService.removePost(post._id);
@@ -162,6 +179,8 @@ export default function PostComponent({
 
         } catch (error) {
             console.error("Erro ao excluir o post:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -180,20 +199,25 @@ export default function PostComponent({
             <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
                 <div className="flex flex-row items-center justify-between">
                     <div className="flex flex-row gap-2">
-                        <h6 className="text-h6">
-                            {post.comunidade.nome}
-                        </h6>
+                        <div className="flex flex-row gap-1">
+                            <CommunityIcon size={24} />
+                            <h6 className="text-h6">
+                                {post.comunidade.nome}
+                            </h6>
+                        </div>
                         <CodeIcon size={24} />
-                        <h6 
-                            className="text-h6 hover:cursor-pointer"
-                            onClick={handleRedirectToProfile}
-                        >
-                            @{post.autor.username}
-                        </h6>
+                        <div className="flex flex-row gap-1">
+                            <h6 
+                                className="text-h6 hover:cursor-pointer"
+                                onClick={handleRedirectToProfile}
+                            >
+                                @{post.autor.username}
+                            </h6>
+                        </div>
                     </div>
-                    <div onClick={handleMoreOptions}>
+                    {(isOwner || isModerator) && !disableActions && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
-                    </div>
+                    </div>}
                 </div>
                 <div className="flex-1 overflow-hidden">
                     <p
@@ -245,18 +269,18 @@ export default function PostComponent({
                     <div className="flex flex-row gap-1">
                         <Button 
                             text={String(likeAmount)}
-                            colorScheme="dark-brown" 
+                            colorScheme="light-brown" 
                             size="small"
-                            icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} />}
-                            disabled={disableActions}
+                            icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} strokeWidth={3} />}
+                            disabled={disableActions || loading}
                             onClick={handleLikePost}
                         />
                         <Button 
                             text={String(post.comentarios.length)}
-                            colorScheme="dark-brown"
+                            colorScheme="light-brown"
                             size="small"
-                            icon={<CommentIcon />}
-                            disabled={disableActions}
+                            icon={<CommentIcon strokeWidth={3} />}
+                            disabled={disableActions || loading}
                             onClick={handleRedirectToPost}
                         />
                     </div>
@@ -265,17 +289,22 @@ export default function PostComponent({
                     </p>
                 </div>
             </div>
+            <EditPostModal 
+                post={post}
+                onClose={() => setShowEditModal(false)}
+                onSuccess={handleEditSuccess}
+                isOpen={showEditModal && isOwner && !disableActions}
+            />
+            <PopUp 
+                title={`Excluir Postagem${(!isOwner && isModerator) ? ` de ${post.autor.username}` : ''}?`}
+                description="Esta ação não pode ser desfeita."
+                button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "dark-brown", onClick: () => setShowConfirmDeletePopUp(false)}}
+                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "dark-green", onClick: handleDeletePost}}
+                isOpen={(isOwner || isModerator) && showConfirmDeletePopUp && !disableActions}
+                onClose={() => setShowConfirmDeletePopUp(false)}
+            />
             <AnimatePresence mode="wait">
-                {showEditModal && 
-                <EditPostModal 
-                    post={post}
-                    onClose={() => setShowEditModal(false)}
-                    onSuccess={handleEditSuccess}
-                    isOpen={showEditModal}
-                />}
-            </AnimatePresence>
-            <AnimatePresence mode="wait">
-                {(isModerator || isOwner) && !disableActions && showOptions &&
+                {(isOwner || isModerator) && !disableActions && showOptions &&
                 <motion.div 
                     ref={menuRef}
                     className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
@@ -294,7 +323,8 @@ export default function PostComponent({
                         icon={<TrashIcon />}
                         size="small"
                         colorScheme="light-brown"
-                        onClick={handleDeletePost}
+                        onClick={handleConfirmDeletePost}
+                        loading={loading}
                     />
                     {isOwner && <Button
                         text="Editar"
@@ -302,6 +332,7 @@ export default function PostComponent({
                         size="small"
                         colorScheme="light-brown"
                         onClick={handleEditPost}
+                        disabled={loading}
                     />}
                 </motion.div>}
             </AnimatePresence>

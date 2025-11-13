@@ -10,6 +10,7 @@ import SearchBar from "@/components/searchbar";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import LoadingPage from "@/components/loading";
+import LoadingComponent from "@/components/portable-loading";
 import PostComponent from "@/components/post";
 import CommunityMember from "@/components/community-member";
 import CreatePostModal from "@/components/CreatePostModal";
@@ -46,6 +47,11 @@ import { User } from "@/types/auth";
 import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
 import { PostCategoria } from "@/types/post";
+import { set } from "zod";
+import PopUp from "@/components/pop-up";
+import { text } from "stream/consumers";
+import TrashIcon from "@/components/icons/TrashIcon";
+import { se } from "date-fns/locale";
 
 function slugToTitle(slug: string): string {
   return slug
@@ -59,13 +65,23 @@ export default function CommunityPage(){
     const params = useParams();
     const { community } = params as { community: string };
 
+    // Loading
     const [loading, setLoading] = useState(true);
+    const [loadingPosts, setLoadingPosts] = useState(true);
+    const [loadingMembers, setLoadingMembers] = useState(true);
+    const [loadingModerators, setLoadingModerators] = useState(true);
+
+    // Dados da Comunidade
     const [communityInfo, setCommunityInfo] = useState<Comunidade>();
     const [members, setMembers] = useState<User[]>([]);
     const [posts, setPosts] = useState<Post[]>([]);
     const [moderators, setModerators] = useState<User[]>([]);
+
+    // Status do Usuário
     const [isMember, setIsMember] = useState(false);
     const [isModerator, setIsModerator] = useState(false);
+
+    // Criar Post
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
     // Tabs
@@ -74,6 +90,10 @@ export default function CommunityPage(){
 
     // Header Compacto
     const [showCompactHeader, setShowCompactHeader] = useState(false);
+
+    // Pop Up de Confirmação de Moderação de Post
+    const [showConfirmModeratePostPopUp, setShowConfirmModeratePostPopUp] = useState(false);
+    const [postToModerate, setPostToModerate] = useState<{postId: string, postAuthor: string, aprovar: boolean, categoria: PostCategoria}>();
 
     useEffect(() => {
         if (!community) {
@@ -114,8 +134,10 @@ export default function CommunityPage(){
                 router.replace("/not-found");
 
             } finally {
-
                 setLoading(false);
+                setLoadingPosts(false);
+                setLoadingMembers(false);
+                setLoadingModerators(false);
             }
         };
 
@@ -185,6 +207,8 @@ export default function CommunityPage(){
     const handleRemoveMember = async (targetUserId: string) => {
         if (!communityInfo || !isMember || !isModerator || !targetUserId) return;
 
+        setLoadingMembers(true);
+
         try {
             // Remove membro da comunidade
             await removeMember(communityInfo.nome, targetUserId);
@@ -195,11 +219,16 @@ export default function CommunityPage(){
 
         } catch (err) {
             console.error("Erro ao remover membro da comunidade:", err);
+
+        } finally {
+            setLoadingMembers(false);
         }
     }
 
     const handleMakeModerator = async (targetUserId: string) => {
         if (!communityInfo || !isMember || !isModerator || !targetUserId) return;
+
+        setLoadingModerators(true);
 
         try {
             // Promove membro a moderador
@@ -211,7 +240,10 @@ export default function CommunityPage(){
 
         } catch (err) {
             console.error("Erro ao tornar membro moderador da comunidade:", err);
-        }  
+
+        } finally {
+            setLoadingModerators(false);
+        }
     }
 
     const handleReviewPost = async (postId: string, aprovar: boolean, categoria: PostCategoria) => {
@@ -224,20 +256,33 @@ export default function CommunityPage(){
             // Atualiza lista de posts
             handleRefreshPosts();
 
+            setShowConfirmModeratePostPopUp(false);
+
         } catch (err) {
             console.error("Erro ao revisar o post:", err);
         }
     }
 
     const handleRefreshPosts = async () => {
+        if (!communityInfo) return;
+
+        setLoadingPosts(true);
+
         try{
             // Atualiza lista de posts
-            const updatedPosts = await getPosts(communityInfo!.nome);
+            const updatedPosts = await getPosts(communityInfo.nome);
             setPosts(updatedPosts);
             
         } catch(err) {
             console.log("Erro ao atualizar posts:", err);
+        } finally {
+            setLoadingPosts(false);
         }
+    }
+
+    const handleConfirmModeratePost = (postId: string, postAuthor: string, aprovar: boolean, categoria: PostCategoria) => {
+        setPostToModerate({ postId, postAuthor, aprovar, categoria });
+        setShowConfirmModeratePostPopUp(true);
     }
 
     if (loading) return <LoadingPage />;
@@ -365,6 +410,8 @@ export default function CommunityPage(){
                                 {/*Postagens*/}
                                 <TabPanel value="community-feed">
                                     {(() => {
+                                        if (loadingPosts) return (<LoadingComponent size="small" className="p-8" />);
+                                        
                                         const filteredPosts = posts.filter((post) => post.categoria === "geral" && post.solicitacao_revisao !== true);
 
                                         return filteredPosts.length === 0 ? (
@@ -392,6 +439,8 @@ export default function CommunityPage(){
                                 {/*Fanarts*/}
                                 <TabPanel value="fanart">
                                     {(() => {
+                                        if (loadingPosts) return (<LoadingComponent size="small" className="p-8" />);
+                                        
                                         const filteredPosts = posts.filter((post) => post.categoria === "fanart" && post.solicitacao_revisao !== true);
 
                                         return filteredPosts.length === 0 ? (
@@ -418,6 +467,8 @@ export default function CommunityPage(){
                                 {/*Fanfics*/}
                                 <TabPanel value="fanfic">
                                     {(() => {
+                                        if (loadingPosts) return (<LoadingComponent size="small" className="p-8" />);
+
                                         const filteredPosts = posts.filter((post) => post.categoria === "fanfic" && post.solicitacao_revisao !== true);
 
                                         return filteredPosts.length === 0 ? (
@@ -444,6 +495,8 @@ export default function CommunityPage(){
                                 {/*Solicitação de Revisão*/}
                                 <TabPanel value="revision">
                                     {(() => {
+                                        if (loadingPosts) return (<LoadingComponent size="small" className="p-8" />);
+
                                         const filteredPosts = posts.filter((post) => post.solicitacao_revisao === true);
 
                                         return filteredPosts.length === 0 ? (
@@ -454,7 +507,8 @@ export default function CommunityPage(){
                                         <div className="flex flex-col gap-4">
                                             {filteredPosts.map((post) => {
                                                 return (
-                                                    <div key={post._id} className="flex flex-col gap-1">
+                                                    <div key={post._id}>
+                                                    <div className="flex flex-col gap-1">
                                                         <PostComponent 
                                                             post={post}
                                                             isModerator={isModerator}
@@ -466,23 +520,42 @@ export default function CommunityPage(){
                                                                 icon={<CheckIcon />}
                                                                 size="small"
                                                                 variant="aprovar"
-                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANART)}
+                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, true, PostCategoria.FANART)}
                                                             />
                                                             <Button
                                                                 text="Aprovar como Fanfic"
                                                                 icon={<CheckIcon />}
                                                                 size="small"
                                                                 variant="aprovar"
-                                                                onClick={() => handleReviewPost(post._id, true, PostCategoria.FANFIC)}
+                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, true, PostCategoria.FANFIC)}
                                                             />
                                                             <Button
                                                                 text="Rejeitar"
                                                                 icon={<RemoveIcon />}
                                                                 size="small"
                                                                 variant="rejeitar"
-                                                                onClick={() => handleReviewPost(post._id, false, PostCategoria.GERAL)}
+                                                                onClick={() => handleConfirmModeratePost(post._id, post.autor.username, false, PostCategoria.GERAL)}
                                                             />
                                                         </div>
+                                                    </div>
+                                                    {postToModerate && <PopUp
+                                                        title={`${postToModerate!.aprovar ? "Aprovar" : "Rejeitar"} Postagem de @${postToModerate!.postAuthor}?`}
+                                                        description="Esta ação não pode ser desfeita."
+                                                        button1={{ 
+                                                            text: "Cancelar",
+                                                            icon: <TrashIcon />,
+                                                            colorScheme: "dark-brown",
+                                                            onClick: () => setShowConfirmModeratePostPopUp(false)
+                                                        }}
+                                                        button2={{
+                                                            text:  postToModerate!.aprovar ? `Aprovar como ${postToModerate!.categoria === 'fanart' ? 'Fanart' : 'Fanfic'}` : "Rejeitar",
+                                                            icon: postToModerate!.aprovar ? <CheckIcon /> : <RemoveIcon />,
+                                                            colorScheme: "dark-green",
+                                                            onClick: () => handleReviewPost(postToModerate!.postId, postToModerate!.aprovar, postToModerate!.categoria)
+                                                        }}
+                                                        isOpen={isModerator && postToModerate && showConfirmModeratePostPopUp}
+                                                        onClose={() => setShowConfirmModeratePostPopUp(false)}
+                                                    />}
                                                     </div>
                                                 );
                                             })}
@@ -504,56 +577,61 @@ export default function CommunityPage(){
                                     
                                     {/*Membros da Comunidade*/}
                                     <TabPanel value="members">
-                                        {members.length === 0 ? (
-                                            <p className="text-b1 body-quotation light-neutral text-center pt-4">
-                                                Nenhum membro ainda nesta comunidade.
-                                            </p>
-                                        ) : (
-                                            <div className="flex flex-col gap-2">
-                                                {members.map((member) => (
-                                                    <CommunityMember
-                                                        key={member._id}
-                                                        userId={member._id}
-                                                        username={member.username}
-                                                        isCurrentUserModerator={isModerator}
-                                                        isTargetUserModerator={moderators.some(mod => mod._id === member._id)}
-                                                        handleRemoveMember={handleRemoveMember}
-                                                        handleMakeModerator={handleMakeModerator}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            if (loadingMembers) return (<LoadingComponent size="small" className="p-8" />);
+                                        
+                                            return members.length === 0 ? (
+                                                <p className="text-b1 body-quotation light-neutral text-center pt-4">
+                                                    Nenhum membro ainda nesta comunidade.
+                                                </p>
+                                            ) : (
+                                                <div className="flex flex-col gap-2">
+                                                    {members.map((member) => (
+                                                        <CommunityMember
+                                                            key={member._id}
+                                                            userId={member._id}
+                                                            username={member.username}
+                                                            isCurrentUserModerator={isModerator}
+                                                            isTargetUserModerator={moderators.some(mod => mod._id === member._id)}
+                                                            handleRemoveMember={handleRemoveMember}
+                                                            handleMakeModerator={handleMakeModerator}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
                                     </TabPanel>
                                     
                                     {/*Moderadores da Comunidade*/}
                                     <TabPanel value="mods">
-                                        {moderators.length === 0 ? (
-                                            <p className="text-b1 body-quotation light-neutral text-center pt-4">
-                                                Nenhum moderador ainda nesta comunidade.
-                                            </p>
-                                        ) : (
-                                            <div className="flex flex-col gap-2">
-                                                {moderators.map((moderador) => (
-                                                    <CommunityMember
-                                                        key={moderador._id}
-                                                        userId={moderador._id}
-                                                        username={moderador.username}
-                                                        isTargetUserModerator={true}
-                                                        isCurrentUserModerator={isModerator}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            if (loadingModerators) return (<LoadingComponent size="small" className="p-8" />);
+
+                                            return moderators.length === 0 ? (
+                                                <p className="text-b1 body-quotation light-neutral text-center pt-4">
+                                                    Nenhum moderador ainda nesta comunidade.
+                                                </p>
+                                            ) : (
+                                                <div className="flex flex-col gap-2">
+                                                    {moderators.map((moderador) => (
+                                                        <CommunityMember
+                                                            key={moderador._id}
+                                                            userId={moderador._id}
+                                                            username={moderador.username}
+                                                            isTargetUserModerator={true}
+                                                            isCurrentUserModerator={isModerator}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
                                     </TabPanel>
                                 </TabProvider>
                             </div>
                         </div>
                     </div>
-
                 </main>
-
             </div>
-
         </div>
     );
 }

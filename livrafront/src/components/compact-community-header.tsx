@@ -7,6 +7,7 @@ import OpenBookIcon from "@/components/icons/OpenBookIcon";
 import { Comunidade } from "@/types/comunidade";
 import CommunityIcon from "./icons/CommunityIcon";
 import PenToolIcon from "./icons/PenToolIcon";
+import EditIcon from "./icons/EditIcon";
 
 interface CompactHeaderProps {
   community: Comunidade
@@ -24,7 +25,7 @@ export default function CompactCommunityHeader({
   onOpenPostModal
 }: CompactHeaderProps) {
   return (
-    <div className="fixed top-16 z-40 light-green flex flex-row small-padding small-border-radius shadow-lg gap-4">
+    <div className="fixed top-16 z-40 light-green flex flex-row small-border-radius shadow-lg gap-4" style={{ padding: 'var(--small-padding) var(--medium-padding)' }}>
         <button 
             className="flex flex-row gap-2 hover:cursor-pointer"
             onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })}
@@ -53,7 +54,7 @@ export default function CompactCommunityHeader({
             />}
             <Button
               text="Criar História"
-              icon={<AddIcon />}
+              icon={<PenToolIcon />}
               colorScheme="dark-green"
               size="small"
               path="/criar-historia"
@@ -61,7 +62,7 @@ export default function CompactCommunityHeader({
             {isModerator && (
             <Button
                 text="Editar"
-                icon={<PenToolIcon />}
+                icon={<EditIcon />}
                 colorScheme="dark-green"
                 size="small"
                 path={`/${community.nome}/editar-comunidade`}

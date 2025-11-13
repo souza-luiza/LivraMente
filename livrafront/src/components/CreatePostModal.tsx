@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
@@ -29,6 +30,18 @@ export default function CreatePostModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
+  useEffect(() => {
+    if (isOpen) {
+      // Desabilita scrollagem da página ao abrir o modal
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -52,15 +65,6 @@ export default function CreatePostModal({
   const handlePost = async () => {
     // Validar conteúdo
     if (!validateContent(content)) {
-      return;
-    }
-
-    // Obter token do localStorage
-    const token = localStorage.getItem('token');
-    
-    // Validar autenticação
-    if (!token) {
-      setSubmitError('Você precisa estar logado para criar um post');
       return;
     }
 
@@ -187,183 +191,185 @@ export default function CreatePostModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-      onClick={handleCancel}
-    >
-      <div
-        className="relative w-full max-w-2xl large-padding large-border-radius"
-        style={{
-          backgroundColor: 'var(--primary-200)',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-        onClick={(e) => e.stopPropagation()}
+    <AnimatePresence mode="wait">
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
+        onClick={handleCancel}
       >
-        {/* Título do Modal */}
-        <h4
-          className="text-h5 mb-6"
-          style={{ color: 'var(--secondary-800)' }}
+        <div
+          className="relative w-full max-w-2xl large-padding large-border-radius"
+          style={{
+            backgroundColor: 'var(--primary-200)',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+          }}
+          onClick={(e) => e.stopPropagation()}
         >
-          Criar Postagem em {communityName}
-        </h4>
-
-        {/* Campo de Texto */}
-        <div className="mb-6 relative">
-          <label
-            htmlFor="content-textarea"
-            className={`absolute -top-2.5 left-2 px-1 text-b3 transition-opacity duration-200 pointer-events-none ${
-              isContentFocused ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ 
-              color: 'var(--primary-800)',
-              background: 'linear-gradient(to bottom, var(--primary-200) 50%, var(--background) 50%)',
-            }}
-          >
-            Conteúdo
-          </label>
-          <textarea
-            id="content-textarea"
-            value={content}
-            onChange={handleContentChange}
-            onFocus={() => setIsContentFocused(true)}
-            onBlur={() => {
-              setIsContentFocused(false);
-              validateContent(content);
-            }}
-            className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
-            style={{
-              minHeight: '200px',
-              borderColor: contentError ? 'var(--error-500)' : undefined,
-            }}
-            placeholder="Texto da postagem..."
-            required
-          />
-          {contentError && (
-            <p className="text-b3 mt-1" style={{ color: 'var(--error-500)' }}>
-              {contentError}
-            </p>
-          )}
-        </div>
-
-        {/* Preview de Imagens */}
-        {images.length > 0 && (
-          <div className="mb-6">
-            <h5 className="text-b2 mb-2" style={{ color: 'var(--secondary-800)' }}>
-              Imagens ({images.length}/4)
-            </h5>
-            <div className="grid grid-cols-4 gap-2">
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className="relative overflow-hidden group"
-                  style={{
-                    aspectRatio: '1',
-                    borderRadius: 'var(--medium-border-radius)',
-                  }}
-                >
-                  <Image
-                    src={image}
-                    alt={`Preview ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                  {/* Botão para remover imagem */}
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    }}
-                    aria-label="Remover imagem"
-                  >
-                    <TrashIcon size={16} color="white" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Checkbox de Pedir Avaliação */}
-        <div className="mb-6 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="review-checkbox"
-            checked={requestReview}
-            onChange={(e) => setRequestReview(e.target.checked)}
-            className="w-4 h-4 cursor-pointer"
-            style={{
-              accentColor: 'var(--primary-600)',
-            }}
-            disabled={isSubmitting}
-          />
-          <label
-            htmlFor="review-checkbox"
-            className="text-b2 cursor-pointer"
+          {/* Título do Modal */}
+          <h4
+            className="text-h5 mb-6"
             style={{ color: 'var(--secondary-800)' }}
           >
-            Submeter como fanart/fanfic
-          </label>
-        </div>
+            Criar Postagem em {communityName}
+          </h4>
 
-        {/* Mensagem de erro */}
-        {submitError && (
-          <p className="text-b3 mb-4" style={{ color: 'var(--error-500)' }}>
-            {submitError}
-          </p>
-        )}
+          {/* Campo de Texto */}
+          <div className="mb-6 relative">
+            <label
+              htmlFor="content-textarea"
+              className={`absolute -top-2.5 left-2 px-1 text-b3 transition-opacity duration-200 pointer-events-none ${
+                isContentFocused ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{ 
+                color: 'var(--primary-800)',
+                background: 'linear-gradient(to bottom, var(--primary-200) 50%, var(--background) 50%)',
+              }}
+            >
+              Conteúdo
+            </label>
+            <textarea
+              id="content-textarea"
+              value={content}
+              onChange={handleContentChange}
+              onFocus={() => setIsContentFocused(true)}
+              onBlur={() => {
+                setIsContentFocused(false);
+                validateContent(content);
+              }}
+              className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
+              style={{
+                minHeight: '200px',
+                borderColor: contentError ? 'var(--error-500)' : undefined,
+              }}
+              placeholder="Texto da postagem..."
+              required
+            />
+            {contentError && (
+              <p className="text-b3 mt-1" style={{ color: 'var(--error-500)' }}>
+                {contentError}
+              </p>
+            )}
+          </div>
 
-        {/* Botões de Ação */}
-        <div className="flex flex-row items-center justify-between gap-2">
-          {/* Botão de Adicionar Imagem */}
-          <div>
+          {/* Preview de Imagens */}
+          {images.length > 0 && (
+            <div className="mb-6">
+              <h5 className="text-b2 mb-2" style={{ color: 'var(--secondary-800)' }}>
+                Imagens ({images.length}/4)
+              </h5>
+              <div className="grid grid-cols-4 gap-2">
+                {images.map((image, index) => (
+                  <div
+                    key={index}
+                    className="relative overflow-hidden group"
+                    style={{
+                      aspectRatio: '1',
+                      borderRadius: 'var(--medium-border-radius)',
+                    }}
+                  >
+                    <Image
+                      src={image}
+                      alt={`Preview ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    {/* Botão para remover imagem */}
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      }}
+                      aria-label="Remover imagem"
+                    >
+                      <TrashIcon size={16} color="white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Checkbox de Pedir Avaliação */}
+          <div className="mb-6 flex items-center gap-2">
             <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"  
-              multiple
-              onChange={handleImageChange}
-              disabled={images.length >= 4}
-              style={{ display: "none" }}
+              type="checkbox"
+              id="review-checkbox"
+              checked={requestReview}
+              onChange={(e) => setRequestReview(e.target.checked)}
+              className="w-4 h-4 cursor-pointer"
+              style={{
+                accentColor: 'var(--primary-600)',
+              }}
+              disabled={isSubmitting}
             />
-            <Button
-              text={`Adicionar Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
-              icon={<ImageIcon />}
-              size="medium"
-              colorScheme="light-green"
-              onClick={handleButtonClick}
-              aria-label="Adicionar imagens"
-              disabled={images.length >= 4 || isSubmitting}
-            />
+            <label
+              htmlFor="review-checkbox"
+              className="text-b2 cursor-pointer"
+              style={{ color: 'var(--secondary-800)' }}
+            >
+              Submeter como fanart/fanfic
+            </label>
           </div>
 
-          <div className="flex gap-1">
-            {/* Botão de Cancelar */}
-            <Button
-              text="Cancelar"
-              icon={<TrashIcon />}
-              size="medium"
-              colorScheme="dark-brown"
-              onClick={handleCancel}
-              aria-label="Cancelar"
-              disabled={isSubmitting}
-            />
+          {/* Mensagem de erro */}
+          {submitError && (
+            <p className="text-b3 mb-4" style={{ color: 'var(--error-500)' }}>
+              {submitError}
+            </p>
+          )}
 
-            {/* Botão de Postar */}
-            <Button
-              text={isSubmitting ? "Postando..." : "Postar"}
-              icon={<Edit2Icon />}
-              size="medium"
-              colorScheme="dark-green"
-              onClick={handlePost}
-              aria-label="Postar"
-              disabled={isSubmitting}
-            />
+          {/* Botões de Ação */}
+          <div className="flex flex-row items-center justify-between gap-2">
+            {/* Botão de Adicionar Imagem */}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"  
+                multiple
+                onChange={handleImageChange}
+                disabled={images.length >= 4}
+                style={{ display: "none" }}
+              />
+              <Button
+                text={`Adicionar Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
+                icon={<ImageIcon />}
+                size="medium"
+                colorScheme="light-green"
+                onClick={handleButtonClick}
+                aria-label="Adicionar imagens"
+                disabled={images.length >= 4 || isSubmitting}
+              />
+            </div>
+
+            <div className="flex gap-1">
+              {/* Botão de Cancelar */}
+              <Button
+                text="Cancelar"
+                icon={<TrashIcon />}
+                size="medium"
+                colorScheme="dark-brown"
+                onClick={handleCancel}
+                aria-label="Cancelar"
+                disabled={isSubmitting}
+              />
+
+              {/* Botão de Postar */}
+              <Button
+                text={isSubmitting ? "Postando..." : "Postar"}
+                icon={<Edit2Icon />}
+                size="medium"
+                colorScheme="dark-green"
+                onClick={handlePost}
+                aria-label="Postar"
+                loading={isSubmitting}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
