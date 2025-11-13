@@ -9,4 +9,7 @@ export class CurrentUserDto {
 
     @ApiProperty({ description: 'Email do usuário' })
     email: string;
+
+    @ApiProperty({ description: 'URL do avatar do usuário' })
+    avatarUrl: string;
 }

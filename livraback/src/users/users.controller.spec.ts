@@ -151,27 +151,6 @@ describe('UsersController', () => {
     });
   });
 
-  describe('getPublicProfile', () => {
-    it('deve retornar os dados públicos de um usuário', async () => {
-      const username = 'testuser';
-      const mockPublicUser = { username: 'testuser', avatarUrl: 'url.jpg', gamificação: 100 };
-      
-      mockUsersService.getPublicByUsername = jest.fn().mockResolvedValue(mockPublicUser);
-
-      const result = await controller.getPublicProfile(username);
-
-      expect(usersService.getPublicByUsername).toHaveBeenCalledWith(username);
-      expect(result).toEqual(mockPublicUser);
-    });
-
-    it('deve propagar erro se o usuário não for encontrado', async () => {
-      const username = 'notfound';
-      mockUsersService.getPublicByUsername = jest.fn().mockRejectedValue(new Error('Usuário não encontrado'));
-
-      await expect(controller.getPublicProfile(username)).rejects.toThrow('Usuário não encontrado');
-    });
-  });
-
   describe('updateAvatar', () => {
     const fakeUser = { userId: 'user-id' };
 

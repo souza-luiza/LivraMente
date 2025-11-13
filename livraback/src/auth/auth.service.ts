@@ -14,7 +14,7 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
-  async signUp(createUserDto: CreateUserDto) {
+  async signUp(createUserDto: CreateUserDto, session: Record<string, any>) {
     const { username, email, senha } = createUserDto;
     const existingUser = await this.usersService.getByEmail(email);
     if (existingUser) throw new BadRequestException('Email em uso');
@@ -22,17 +22,19 @@ export class AuthService {
     const existingUsername = await this.usersService.getByUsername(username);
     if (existingUsername) throw new BadRequestException('Nome de usuário em uso');
     
-    
     const salt = randomBytes(8).toString('hex');
     const hash = await scrypt(senha, salt, 32) as Buffer;
     const saltAndHash = `${salt}.${hash.toString('hex')}`;
 
     const user = await this.usersService.create({ username, email, senha: saltAndHash });
 
-    return user;
+    // salva user na sessao
+    session.user = { id: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl };
+
+    return session.user;
   }
 
-  async signIn(loginDto: LoginDto) {
+  async signIn(loginDto: LoginDto, session: Record<string, any>) {
     const { email, senha } = loginDto;
     const user = await this.usersService.getByEmail(email);
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
@@ -43,6 +45,9 @@ export class AuthService {
 
     if (storedBuffer.length !== hash.length || !timingSafeEqual(storedBuffer, hash)) throw new UnauthorizedException('Credenciais inválidas');
 
-    return user;
+    // salva user na sessao
+    session.user = { id: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl };
+
+    return session.user;
   }
 }

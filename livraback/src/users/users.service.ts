@@ -182,13 +182,4 @@ export class UsersService {
     delete (obj as any).senha; //talvez problema de build
     return obj;
   }
-
-  async getPublicByUsername(username: string) {
-    const user = await this.userModel
-      .findOne({ username })
-      .select('username pronouns avatarUrl gamificação')
-      .exec();
-    if (!user) throw new NotFoundException('Usuário não encontrado');
-    return user;
-  }
 }

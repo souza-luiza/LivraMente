@@ -4,17 +4,17 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegistroLeituraDto } from './dto/registro-leitura.dto';
 import { memoryStorage } from 'multer';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
-@ApiBearerAuth()
+@ApiCookieAuth()
+@UseGuards(SessionAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(SessionAuthGuard)
   @Get('me')
   @ApiOperation({
     summary: 'Retorna os dados do usuário',
@@ -36,25 +36,6 @@ export class UsersController {
     return this.usersService.findOne(user.userId);
   }
 
-  // Endpoint público
-  @Get('public/:username')
-  @ApiOperation({
-    summary: 'Retorna os dados de um usuário',
-    description: 'Retorna os dados do usuário buscado'
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Dados do usuário retornados com sucesso'
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Usuário não encontrado'
-  })
-  getPublicProfile(@Param('username') username: string) {
-    return this.usersService.getPublicByUsername(username);
-  }
-
-  @UseGuards(SessionAuthGuard)
   @Put('profile')
   @ApiOperation({
     summary: 'Atualiza os dados do usuário',
@@ -84,7 +65,6 @@ export class UsersController {
     return this.usersService.update(user.userId, updateUserDto);
   }
 
-  @UseGuards(SessionAuthGuard)
   @Put('avatar')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -126,7 +106,6 @@ export class UsersController {
     return this.usersService.updateAvatar(user.userId, file);
   }
 
-  @UseGuards(SessionAuthGuard)
   @Patch('me/registro-leitura')
   @ApiOperation({
     summary: 'Registra leitura diária',
@@ -152,7 +131,6 @@ export class UsersController {
     return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
-  @UseGuards(SessionAuthGuard)
   @Patch('me/favoritar/:readlistId')
   @ApiOperation({
     summary: 'Favorita uma readlist pública',
@@ -182,7 +160,6 @@ export class UsersController {
     return this.usersService.favoritarReadlist(user.userId, readlistId);
   }
 
-  @UseGuards(SessionAuthGuard)
   @Delete('me/favoritar/:readlistId')
   @ApiOperation({
     summary: 'Remove readlist dos favoritos',
@@ -208,7 +185,6 @@ export class UsersController {
     return this.usersService.desfavoritarReadlist(user.userId, readlistId);
   }
 
-  @UseGuards(SessionAuthGuard)
   @Get('me/favoritar')
   @ApiOperation({
     summary: 'Retorna readlists favoritas',

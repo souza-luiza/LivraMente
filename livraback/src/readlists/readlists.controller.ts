@@ -4,10 +4,10 @@ import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ReadlistsService } from './readlists.service';
 import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
-@ApiBearerAuth() // informa que usa Bearer Token
+@ApiCookieAuth() //Informa que usa cookies
 @UseGuards(SessionAuthGuard)
 @Controller('readlists')
 export class ReadlistsController {
