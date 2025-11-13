@@ -3,15 +3,18 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
-import ArrowRightIcon from '@/components/icons/ArrowRightIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
 import { createCommunity, uploadImage } from '@/services/comunidade';
 import Button from '@/components/button';
-import CheckIcon from '@/components/icons/CheckIcon';
-import ShareIcon from '@/components/icons/ShareIcon';
 import LoadingPage from '@/components/loading';
 import { titleToSlug } from '@/lib/slugify';
+import PopUp from '@/components/pop-up';
+import CommunityIcon from '@/components/icons/CommunityIcon';
+import TrashIcon from '@/components/icons/TrashIcon';
+import ImageIcon from '@/components/icons/ImageIcon';
+import AddIcon from '@/components/icons/AddIcon';
+import Image from 'next/image';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -86,141 +89,128 @@ export default function CreateCommunityPage() {
     }
   };
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex w-full h-screen items-center bg-white">
       <Sidebar />
-      <div className="flex-1 p-10 flex flex-col">
-        {message.text ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div
-              className={`mb-6 text-center text-h3 font-primary ${
-                message.type === 'error'
-                  ? '--error-500'
-                  : '--success-600'
-              }`}
-              role="alert"
+      {message.text ? (
+        <PopUp
+          title={message.type === 'error' ? 'Uh-oh!' : 'Sucesso!'}
+          description={message.text}
+          button1={{ text: "Voltar para Comunidades", icon: <ArrowLeftIcon />, colorScheme: message.type === 'error' ? 'light-brown' : 'dark-green', onClick: () => {
+            setMessage({ text: '', type: null });
+            router.push('/comunidades');
+          }}}
+          button2={message.type === 'success' ? { text: "Ir para Comunidade", icon: <CommunityIcon />, colorScheme: 'light-green', onClick: () => {
+            setMessage({ text: '', type: null });
+            router.push(`/comunidade/${communitySlug}`);
+          }} : undefined}
+          isOpen={true}
+        />
+        ) : (
+          <div className="w-full flex flex-col light-neutral p-10">
+            <div 
+              className="flex flex-row items-center pb-2 mb-4 gap-2"
+              style={{ borderBottomWidth: 'var(--small-border-width)', borderBottomColor: 'var(--color-gray-200)' }}
             >
-              {message.text}
+              <CommunityIcon size={32} />
+              <h1 className="text-h4">Criar Comunidade</h1>
             </div>
-            <div className="flex gap-4">
-                <Button
-                  text="Voltar para comunidades"
-                  icon={<ArrowLeftIcon />}
-                  size="large"
-                  colorScheme={message.type === 'error' ? 'light-green' : 'dark-green'}
-                  onClick={() => {
-                    setMessage({ text: '', type: null });
-                    router.push('/comunidades');
-                  }}
+            {/* Formulário de edição de comunidade */}
+            <form id="form-criar-comunidade" className="w-full flex flex-row p-4" onSubmit={handleSubmit}>
+              {/* Informações básicas */}
+              <div className="w-3/5 flex flex-col justify-between">
+                <div className="flex flex-col gap-1 mb-4">
+                  <label className="text-h6" htmlFor="nome-comunidade">Nome</label>
+                  <Input
+                    id="nome-comunidade"
+                    placeholder="Digite o nome da comunidade"
+                    className="w-full"
+                    value={nome}
+                    onChange={handleNomeChange}
+                  />
+                  {errors.nome && <span className="text-red-500 text-b3">{errors.nome}</span>}
+                </div>
+                <div className="flex flex-col gap-1 mb-4">
+                  <label className="text-h6" htmlFor="descricao-comunidade">Descrição</label>
+                  <textarea
+                    id="descricao-comunidade"
+                    placeholder="Digite a descrição da comunidade"
+                    className={`h-48 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 text-gray-900 border border-gray-300 bg-white focus:ring-green-900 focus:border-green-900 hover:border-gray-400 medium-box text-b2 w-full light-neutral resize-none`}
+                    value={descricao}
+                    onChange={handleDescricaoChange}
+                  />
+                  {errors.descricao && <span className="text-red-500 text-xs">{errors.descricao}</span>}
+                </div>
+                <div className="flex flex-col gap-1 mb-4">
+                  <label className="text-h6" id="tags-comunidade-label">Tags</label>
+                  <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
+                  {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
+                </div>
+              </div>
+              {/* Upload de Imagem de Capa */}
+              <div className="w-2/5 flex flex-col items-center justify-center">
+                <div className="relative w-40 h-40 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-b3 overflow-hidden">
+                  {fotoPreview ? (
+                    <Image
+                      src={fotoPreview}
+                      alt="Prévia"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    'Prévia'
+                  )}
+                </div>
+                <label htmlFor="upload-capa" className="text-h6 mb-1">Imagem de Capa</label>
+                <input
+                  id="upload-capa"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFotoChange}
+                  style={{ display: "none" }}
                 />
-                {message.type === 'success' && communitySlug && (
-                  <Button
-                    text="Ir para comunidade"
-                    size="large"
-                    colorScheme="dark-green"
-                    icon={<ArrowRightIcon />}
-                    onClick={() => {
-                      setMessage({ text: '', type: null });
-                      router.push(`/comunidade/${communitySlug}`);
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          ) : (
-            <>
-            <div className="flex items-center mb-6">
-              <Button
-                text="Voltar"
-                icon={<ArrowLeftIcon />}
-                size="medium"
-                colorScheme="light-green"
-                onClick={() => router.push('/comunidades')}
-              />
-              <div className="w-6" />
-              <h1 className="text-h3">Crie sua nova comunidade</h1>
-            </div>
-            {/* Formulário de criação de comunidade */}
-            <form className="mt-4" onSubmit={handleSubmit}>
-              <div className="mb-4 flex flex-row items-start gap-40">
-                {/* Informações básicas */}
-                <div className="flex-1 max-w-2xl">
-                  <div className="mb-4">
-                    <label className="text-b1" htmlFor="nome-comunidade">Nome da comunidade</label>
-                    <Input
-                      id="nome-comunidade"
-                      placeholder="Digite o nome da comunidade"
-                      className="w-full"
-                      value={nome}
-                      onChange={handleNomeChange}
-                    />
-                    {errors.nome && <span className="text-red-500 text-xs">{errors.nome}</span>}
-                  </div>
-                  <div className="mb-4">
-                    <label className="text-b1" htmlFor="descricao-comunidade">Descrição da comunidade</label>
-                    <textarea
-                      id="descricao-comunidade"
-                      placeholder="Digite a descrição da comunidade"
-                      className={`h-32 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 text-gray-900 border border-gray-300 bg-white focus:ring-green-900 focus:border-green-900 hover:border-gray-400 medium-box text-b2 w-full light-neutral resize-none`}
-                      value={descricao}
-                      onChange={handleDescricaoChange}
-                    />
-                    {errors.descricao && <span className="text-red-500 text-xs">{errors.descricao}</span>}
-                  </div>
-                    <div className="mb-4">
-                    <label className="text-b1" id="tags-comunidade-label">Tags da comunidade</label>
-                    <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
-                    {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
-                  </div>
-                </div>
-                {/* Upload de imagem de capa */}
-                <div className="flex flex-col items-start">
-                  <div className="w-40 h-40 bg-gray-200 rounded mb-2 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
-                    {fotoPreview ? (
-                      <img src={fotoPreview} alt="Prévia" className="w-full h-full object-cover" />
-                    ) : (
-                      'Prévia'
-                    )}
-                  </div>
-                  <label htmlFor="upload-capa" className="text-b1 mb-2">Imagem de capa</label>
-                  <input
-                    id="upload-capa"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFotoChange}
-                  />
-                  <Button
-                    type="button"
-                    text="Upload de capa"
-                    icon={<ShareIcon />}
-                    size="small"
-                    colorScheme="light-green"
-                    onClick={() => {
-                      const input = document.getElementById('upload-capa');
-                      if (input) input.click();
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="mb-4 flex justify-center">
                 <Button
-                  type="submit"
-                  text={isLoading ? 'Criando...' : 'Criar comunidade'}
-                  icon={<CheckIcon />}
-                  size="large"
-                  colorScheme="dark-green"
-                  disabled={isLoading}
+                  type="button"
+                  text="Fazer Upload"
+                  icon={<ImageIcon />}
+                  size="small"
+                  colorScheme="light-green"
+                  onClick={() => {
+                    const input = document.getElementById('upload-capa');
+                    if (input) input.click();
+                  }}
                 />
               </div>
             </form>
+            <div 
+              className="flex flex-row gap-1 justify-end pt-4 mt-2"
+              style={{ borderTopWidth: 'var(--small-border-width)', borderTopColor: 'var(--color-gray-200)' }}
+            >
+              <Button
+                text="Cancelar"
+                icon={<TrashIcon />}
+                size="medium"
+                colorScheme="light-brown"
+                disabled={isLoading}
+                path={`/comunidades`}
+              />
+              <Button
+                type="submit"
+                form="form-criar-comunidade"
+                text={isLoading ? 'Criando...' : 'Criar'}
+                icon={<AddIcon />}
+                size="medium"
+                colorScheme="light-green"
+                disabled={isLoading}
+              />
+            </div>
             {isLoading && (
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
                 <LoadingPage />
               </div>
             )}
-          </>
-        )}
-      </div>
+          </div>
+      )}
     </div>
   );
 }

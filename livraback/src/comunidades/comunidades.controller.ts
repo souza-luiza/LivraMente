@@ -290,4 +290,25 @@ export class ComunidadesController {
         return this.comunidadesService.tornarMembroModerador(user.userId, comunidadeNome, targetUserId);
     }
 
+    @Delete(':comunidadeNome')
+    @ApiOperation({
+        summary: 'Apaga uma comunidade',
+        description: 'Apaga uma comunidade pelo nome, sendo o usuário autenticado um moderador'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Comunidade apagada com sucesso'
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Usuário não é moderador'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    async delete(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string) {
+        return this.comunidadesService.deleteCommunity(user.userId, comunidadeNome);
+    }
+
 }

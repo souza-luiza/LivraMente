@@ -11,10 +11,10 @@ export default function ComunidadesPage() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-h2">Comunidades</h2>
                     <Button
-                        text="Criar comunidade"
+                        text="Criar Comunidade"
                         icon={<AddIcon />}
                         colorScheme="dark-green"
-                        size="small"
+                        size="medium"
                         path="/comunidades/criar"
                     />
                 </div>

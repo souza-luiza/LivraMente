@@ -66,13 +66,13 @@ export default function PopUp({
             >
                 <div 
                     className="flex flex-shrink-0 flex-col items-center justify-center bg-gray-50 medium-padding medium-border-radius gap-3"
-                    style={{ color: 'var(--primary-800)', maxWidth: '25%', maxHeight: '30%' }}
+                    style={{ color: 'var(--primary-800)', maxWidth: '30%', maxHeight: '30%' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="flex flex-row items-center justify-between gap-2">
-                        {leftIcon && <span className="icon-medium">{leftIcon}</span>}
+                        {leftIcon && <div>{leftIcon}</div>}
                         <h1 className="text-center text-h5">{title}</h1>
-                        {rightIcon && <span className="icon-medium">{rightIcon}</span>}
+                        {rightIcon && <div>{rightIcon}</div>}
                     </div>
                     {description && <p className="text-center text-b2">{description}</p>}
                     {(button1 || button2) && <div className="flex flex-row items-center justify-center gap-1">

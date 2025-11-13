@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
 import Image from "next/image";
 
 // Componentes
@@ -27,6 +26,8 @@ import CommunityIcon from "@/components/icons/CommunityIcon";
 import CheckIcon from "@/components/icons/CheckIcon";
 import PenToolIcon from "@/components/icons/PenToolIcon";
 import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
+import CompassIcon from "@/components/icons/CompassIcon";
+import TrashIcon from "@/components/icons/TrashIcon";
 
 // Chamadas da API
 import { 
@@ -38,7 +39,7 @@ import {
     enterCommunity, 
     leaveCommunity, 
     removeMember,
-    makeMemberModerator 
+    makeMemberModerator
 } from "@/services/comunidade";
 import { postsService } from "@/services/posts";
 
@@ -47,21 +48,10 @@ import { User } from "@/types/auth";
 import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
 import { PostCategoria } from "@/types/post";
-import { set } from "zod";
 import PopUp from "@/components/pop-up";
-import { text } from "stream/consumers";
-import TrashIcon from "@/components/icons/TrashIcon";
-import { se } from "date-fns/locale";
-import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 
-import { titleToSlug } from "@/lib/slugify";
-
-function slugToTitle(slug: string): string {
-  return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+// Funções
+import { slugToTitle } from '@/lib/slugify';
 
 export default function CommunityPage(){
     const router = useRouter();
@@ -94,8 +84,9 @@ export default function CommunityPage(){
     // Header Compacto
     const [showCompactHeader, setShowCompactHeader] = useState(false);
 
-    // Pop Up de Boas-Vindas
+    // Pop Ups
     const [showWelcomePopUp, setShowWelcomePopUp] = useState(false);
+    const [showLeavingPopUp, setShowLeavingPopUp] = useState(false);
 
     useEffect(() => {
         if (!community) {
@@ -105,11 +96,8 @@ export default function CommunityPage(){
 
         const fetchData = async () => {
             try {
-                // Utiliza o nome da comunidade para buscar
-                const communityIdentifier = decodeURIComponent(community);
-
                 // Busca da comunidade
-                const info = await getComunidadeByName(communityIdentifier);
+                const info = await getComunidadeByName(slugToTitle(community));
                 if (!info) {
                     router.replace("/not-found");
                     return;
@@ -167,6 +155,9 @@ export default function CommunityPage(){
                 // Sair da comunidade
                 await leaveCommunity(communityInfo.nome);
                 setIsMember(false);
+                setIsModerator(false);
+                setShowLeavingPopUp(false);
+                
             } else {
                 // Entrar na comunidade
                 await enterCommunity(communityInfo.nome);
@@ -342,7 +333,7 @@ export default function CommunityPage(){
                                         icon={<RemoveIcon />}
                                         colorScheme="light-brown"
                                         size="medium"
-                                        onClick={handleCommunityStatus}
+                                        onClick={() => setShowLeavingPopUp(true)}
                                     />}
                                     {isMember && <Button
                                         text="Postar"
@@ -363,7 +354,7 @@ export default function CommunityPage(){
                                         icon={<EditIcon />}
                                         colorScheme="light-green"
                                         size="medium"
-                                        path={`/comunidade/${communityInfo.slug || titleToSlug(communityInfo.nome)}/editar`}
+                                        path={`/comunidade/${community}/editar`}
                                     />}
                                     <Button
                                         text="Wiki"
@@ -384,8 +375,16 @@ export default function CommunityPage(){
                                         description="Seja bem-vindo à nossa comunidade!"
                                         leftIcon={<CommunityIcon size={24} />}
                                         isOpen={showWelcomePopUp}
-                                        button1={{ text: "Continuar", icon: <ArrowRightIcon />, colorScheme: "dark-green", onClick: () => setShowWelcomePopUp(false) }}
+                                        button1={{ text: "Explorar", icon: <CompassIcon />, colorScheme: "dark-green", onClick: () => setShowWelcomePopUp(false) }}
                                         onClose={() => setShowWelcomePopUp(false)}
+                                    />
+                                    <PopUp
+                                        title="De partida?"
+                                        description="Você está saindo da comunidade."
+                                        isOpen={showLeavingPopUp}
+                                        button1={{ text: "Cancelar", icon: <TrashIcon />, colorScheme: "light-green", onClick: () => setShowLeavingPopUp(false) }}
+                                        button2={{ text: "Sair", icon: <RemoveIcon />, colorScheme: "light-brown", onClick: handleCommunityStatus}}
+                                        onClose={() => setShowLeavingPopUp(false)}
                                     />
                                 </div>
                             </div>
@@ -422,7 +421,7 @@ export default function CommunityPage(){
 
                                         return filteredPosts.length === 0 ? (
                                         <p className="text-b1 body-quotation light-neutral text-center pt-4">
-                                            Nenhum post ainda nesta categoria.
+                                            Nenhum post ainda nesta comunidade.
                                         </p>
                                         ) : (
                                         <div className="flex flex-col gap-4">

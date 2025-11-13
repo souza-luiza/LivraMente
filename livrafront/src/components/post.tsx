@@ -298,8 +298,8 @@ export default function PostComponent({
             <PopUp 
                 title={`Excluir Postagem${(!isOwner && isModerator) ? ` de @${post.autor.username}` : ''}?`}
                 description="Esta ação não pode ser desfeita."
-                button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-brown", onClick: () => setShowConfirmDeletePopUp(false)}}
-                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-green", onClick: handleDeletePost}}
+                button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-green", onClick: () => setShowConfirmDeletePopUp(false)}}
+                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeletePost}}
                 isOpen={(isOwner || isModerator) && showConfirmDeletePopUp && !disableActions}
                 onClose={() => setShowConfirmDeletePopUp(false)}
             />

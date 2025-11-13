@@ -179,3 +179,14 @@ export async function uploadImage(file: File): Promise<string> {
   const json = await response.json()
   return json.url || json.imagem_url || json.data || ''
 }
+
+export async function deleteCommunity(comunidadeNome: string) {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+    method: 'DELETE',
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  })
+  if (!response.ok) throw new Error('Erro ao apagar comunidade')
+  return response.json();
+}

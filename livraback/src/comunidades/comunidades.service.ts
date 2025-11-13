@@ -1,13 +1,17 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
+import { Post } from '../schemas/post.schema';
 import { Model } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 
 @Injectable()
 export class ComunidadesService {
-    constructor(@InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>) {}
+    constructor(
+        @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
+        @InjectModel(Post.name) private postModel: Model<Post>
+) {}
 
     async findAll() {
         return await this.comunidadeModel.find().exec();
@@ -211,5 +215,19 @@ export class ComunidadesService {
         ).exec();
 
         return { message: 'Membro promovido a moderador com sucesso' };
+    }
+
+    async deleteCommunity(userId: string, comunidadeNome: string) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
+        if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+        const isModerator = comunidade.moderadores.some((m) => m.toString() === userId);
+        if (!isModerator) throw new ForbiddenException('Apenas moderadores podem apagar a comunidade');
+
+        await this.postModel.deleteMany({ comunidade: comunidade._id });
+
+        await comunidade.deleteOne();
+        
+        return { message: 'Comunidade apagada com sucesso' };
     }
 }

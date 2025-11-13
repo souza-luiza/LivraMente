@@ -8,9 +8,10 @@ import { Comunidade } from "@/types/comunidade";
 import CommunityIcon from "./icons/CommunityIcon";
 import PenToolIcon from "./icons/PenToolIcon";
 import EditIcon from "./icons/EditIcon";
+import { titleToSlug } from "@/lib/slugify";
 
 interface CompactHeaderProps {
-  community: Comunidade
+  community: Comunidade;
   isMember: boolean;
   isModerator: boolean;
   onToggleMembership: () => void;
@@ -24,6 +25,9 @@ export default function CompactCommunityHeader({
   onToggleMembership,
   onOpenPostModal
 }: CompactHeaderProps) {
+
+  const communitySlug = titleToSlug(community.nome);
+
   return (
     <div className="fixed top-16 z-40 light-green flex flex-row small-border-radius shadow-lg gap-4" style={{ padding: 'var(--small-padding) var(--medium-padding)' }}>
         <button 
@@ -65,7 +69,7 @@ export default function CompactCommunityHeader({
                 icon={<EditIcon />}
                 colorScheme="dark-green"
                 size="small"
-                path={`/${community.nome}/editar-comunidade`}
+                path={`/comunidade/${communitySlug}/editar`}
             />
             )}
             <Button
