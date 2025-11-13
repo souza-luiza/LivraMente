@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+"use client";
+
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Button from "./button";
@@ -16,7 +18,7 @@ interface CommunityMemberProps {
     handleMakeModerator?: (userId: string) => Promise<void>;
 }
 
-export default function communityMember({ 
+export default function CommunityMember({ 
     userId,
     username, 
     isCurrentUserModerator = false,

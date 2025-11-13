@@ -414,27 +414,6 @@ describe('UserProfilePage', () => {
   })
 
   describe('Posts Section', () => {
-    it('renders posts section', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      
-      render(await UserProfilePage({ params }))
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('profile-posts')).toBeInTheDocument()
-      })
-    })
-
-    it('posts section receives username prop', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      
-      render(await UserProfilePage({ params }))
-      
-      await waitFor(() => {
-        const posts = screen.getByTestId('profile-posts')
-        expect(posts).toHaveAttribute('data-username', 'john_doe')
-      })
-    })
-
     it('posts section has correct heading', async () => {
       const params = Promise.resolve({ username: 'john_doe' })
       
@@ -722,7 +701,6 @@ describe('UserProfilePage', () => {
         expect(screen.getByTestId('profile-badge')).toBeInTheDocument()
         expect(screen.getByTestId('edit-button')).toBeInTheDocument()
         expect(screen.getByTestId('profile-readlists')).toBeInTheDocument()
-        expect(screen.getByTestId('profile-posts')).toBeInTheDocument()
       })
     })
 
@@ -738,9 +716,6 @@ describe('UserProfilePage', () => {
         
         const badge = screen.getByTestId('profile-badge')
         expect(badge).toHaveAttribute('data-content', '15')
-        
-        const posts = screen.getByTestId('profile-posts')
-        expect(posts).toHaveAttribute('data-username', 'test_user')
       })
     })
   })

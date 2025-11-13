@@ -370,7 +370,7 @@ describe('ComunidadesService', () => {
       expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
       expect(result).toEqual({
         isMember: true,
-        isModerador: false
+        isModerator: false
       });
     });
 
@@ -390,7 +390,7 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: true,
-        isModerador: true
+        isModerator: true
       });
     });
 
@@ -410,7 +410,7 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: false,
-        isModerador: false
+        isModerator: false
       });
     });
 
@@ -449,7 +449,7 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: true,
-        isModerador: false
+        isModerator: false
       });
     });
   });

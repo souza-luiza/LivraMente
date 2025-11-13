@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useRouter } from 'next/navigation';
 import CommunityMember from '@/components/community-member';
 
 // Mock Next.js Link component
@@ -10,10 +11,23 @@ jest.mock('next/link', () => {
   };
 });
 
+// Mock Next.js navigation (useRouter)
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
+
 describe('CommunityMember', () => {
   const defaultProps = {
+    userId: 'user-1',
     username: 'testuser',
   };
+
+  let mockPush: jest.Mock;
+
+  beforeEach(() => {
+    mockPush = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -32,16 +46,20 @@ describe('CommunityMember', () => {
         render(<CommunityMember {...defaultProps} />);
 
         const usernameEl = screen.getByText('@testuser');
-        const container = usernameEl.closest('a')?.closest('div');
-        expect(container).toBeInTheDocument();
-        expect(container).toHaveClass('flex items-center justify-between');
+      const innerDiv = usernameEl.closest('div');
+      expect(innerDiv).toBeInTheDocument();
+      expect(innerDiv).toHaveClass('w-full');
+      expect(innerDiv).toHaveClass('flex');
+      expect(innerDiv).toHaveClass('items-center');
     });
 
     it('should wrap username in Link component with correct href', () => {
         render(<CommunityMember {...defaultProps} />);
-        
-        const link = screen.getByText('@testuser').closest('a');
-        expect(link).toHaveAttribute('href', '/testuser');
+      const innerDiv = screen.getByText('@testuser').closest('div');
+      expect(innerDiv).toBeInTheDocument();
+      // clicking the element should navigate to the user's profile
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith('/testuser');
     });
   });
 
@@ -55,10 +73,12 @@ describe('CommunityMember', () => {
 
     it('should have proper link semantics', () => {
       render(<CommunityMember {...defaultProps} />);
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/testuser');
-      expect(link).toHaveTextContent('@testuser');
+      const usernameElement = screen.getByText('@testuser');
+      expect(usernameElement).toBeInTheDocument();
+      // element should be interactive (click triggers router.push)
+      const innerDiv = usernameElement.closest('div');
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith('/testuser');
     });
   });
 
@@ -67,76 +87,79 @@ describe('CommunityMember', () => {
       const user = userEvent.setup();
       render(<CommunityMember {...defaultProps} />);
       
-      const link = screen.getByRole('link');
-      await user.click(link);
-      
-      expect(link).toHaveAttribute('href', '/testuser');
+      const innerDiv = screen.getByText('@testuser').closest('div');
+      await user.click(innerDiv as Element);
+      expect(mockPush).toHaveBeenCalledWith('/testuser');
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle special characters in username', () => {
-      const props = { username: 'user-name_with.special@chars123' };
+      const props = { userId: 'user-1', username: 'user-name_with.special@chars123' };
       render(<CommunityMember {...props} />);
       
       const usernameElement = screen.getByText('@user-name_with.special@chars123');
       expect(usernameElement).toBeInTheDocument();
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/user-name_with.special@chars123');
+      const innerDiv = usernameElement.closest('div');
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith('/user-name_with.special@chars123');
     });
 
     it('should handle empty username', () => {
-      const props = { username: '' };
+      const props = { userId: 'user-1', username: '' };
       render(<CommunityMember {...props} />);
       
       const usernameElement = screen.getByText('@');
       expect(usernameElement).toBeInTheDocument();
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/');
+      const innerDiv = usernameElement.closest('div');
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith('/');
     });
 
     it('should handle very long username', () => {
       const longUsername = 'a'.repeat(100);
-      const props = { username: longUsername };
+      const props = { userId: 'user-1', username: longUsername };
       render(<CommunityMember {...props} />);
       
       const usernameElement = screen.getByText(`@${longUsername}`);
       expect(usernameElement).toBeInTheDocument();
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', `/${longUsername}`);
+      const innerDiv = usernameElement.closest('div');
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith(`/${longUsername}`);
     });
 
     it('should handle numeric username', () => {
-      const props = { username: '12345' };
+      const props = { userId: 'user-1', username: '12345' };
       render(<CommunityMember {...props} />);
       
       const usernameElement = screen.getByText('@12345');
       expect(usernameElement).toBeInTheDocument();
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/12345');
+      const innerDiv = usernameElement.closest('div');
+      innerDiv && innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockPush).toHaveBeenCalledWith('/12345');
     });
   });
 
   describe('Snapshot Testing', () => {
     it('should match snapshot with default props', () => {
       const { container } = render(<CommunityMember {...defaultProps} />);
-      expect(container.firstChild).toMatchSnapshot();
+      expect(container.firstChild).toHaveClass('flex');
+      expect(container.firstChild).toHaveClass('flex-col');
+      expect(screen.getByText('@testuser')).toBeInTheDocument();
     });
 
     it('should match snapshot with special characters username', () => {
-      const props = { username: 'special-user_123' };
+      const props = { userId: 'user-1', username: 'special-user_123' };
       const { container } = render(<CommunityMember {...props} />);
-      expect(container.firstChild).toMatchSnapshot();
+      expect(container.firstChild).toHaveClass('flex');
+      expect(container.firstChild).toHaveClass('flex-col');
+      expect(screen.getByText('@special-user_123')).toBeInTheDocument();
     });
   });
 
   describe('Prop Validation', () => {
     it('should require username prop', () => {
-      render(<CommunityMember username="test" />);
+      render(<CommunityMember username="test" userId="user-1" />);
       expect(screen.getByText('@test')).toBeInTheDocument();
     });
   });

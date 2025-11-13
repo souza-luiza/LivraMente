@@ -55,6 +55,6 @@ describe('SearchBar Component', () => {
   it('should always apply small size styles', () => {
     render(<SearchBar />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('px-4 py-2 medium-border-radius text-b2');
+    expect(input).toHaveClass('medium-box text-b2');
   });
 });

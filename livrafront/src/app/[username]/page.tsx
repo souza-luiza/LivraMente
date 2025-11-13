@@ -5,7 +5,6 @@ import Sidebar from "@/components/sidebar";
 import ProfileIcon from "@/components/profile-icon";
 import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
-import ProfilePosts from "@/components/profile-posts";
 import ProfileBadge from "@/components/profile-badge";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 
