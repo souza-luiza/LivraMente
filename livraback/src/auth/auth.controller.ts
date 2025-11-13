@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Req, Res, Session, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Req, Res, Session, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { SessionAuthGuard } from './guards/session-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -48,6 +49,8 @@ export class AuthController {
         return await this.authService.signIn(loginDto, session);
     }
 
+    @ApiCookieAuth()
+    @UseGuards(SessionAuthGuard)
     @Get('session-info')
     @ApiOperation({
         summary: 'Retorna informações acerca da sessão do usuário',
@@ -70,6 +73,8 @@ export class AuthController {
         return session.user;
     }
 
+    @ApiCookieAuth()
+    @UseGuards(SessionAuthGuard)
     @Delete('logout')
     @ApiOperation({
         summary: 'Logout do usuário',
@@ -78,6 +83,10 @@ export class AuthController {
     @ApiResponse({
         status: 200,
         description: 'Deslogar bem-sucedido',
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Sessão inválida'
     })
     @ApiResponse({
         status: 500,

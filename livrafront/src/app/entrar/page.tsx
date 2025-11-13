@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/user-store";
 import { loginUser } from "@/services/auth";
 import React from 'react';
 import Link from 'next/link';
@@ -12,11 +10,11 @@ import Button from '@/components/button';
 import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
 import { motion } from 'framer-motion';
+import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuth } = useAuthStore();
-  const { setUsername, setProfileImageUrl } = useUserStore();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,7 +24,6 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,6 +37,8 @@ export default function LoginPage() {
     if (!formData.email) {
       setErrors((prev) => ({ ...prev, email: "Email é obrigatório" }));
       isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setErrors((prev) => ({ ...prev, email: "Email inválido" }));
     }
 
     if (!formData.password) {
@@ -56,26 +55,18 @@ export default function LoginPage() {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setError("");
 
     try {
       const response = await loginUser({
         email: formData.email,
-        password: formData.password,
+        password: formData.password
       });
-
-      // Salvar no authStore (token + autenticação)
-      setAuth(response.username, response._id);
-      
-      // Salvar no userStore (dados do perfil)
-      setUsername(response.username);
-      if (response.avatarUrl) {
-        setProfileImageUrl(response.avatarUrl);
-      }
-
       router.push(`/${response.username}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer login");
+    } catch (error) {
+      if(error instanceof Error && error.message === "Failed to fetch") 
+        toast.error("Não foi possível conectar ao servidor.");
+      else
+        toast.error(error instanceof Error ? error.message : "Erro ao fazer login.");
     } finally {
       setIsLoading(false);
     }
@@ -107,13 +98,6 @@ export default function LoginPage() {
         <div className="flex-1 bg-gray-50">
           <div className="flex flex-col items-center h-full justify-center p-8">
           <form onSubmit={handleSubmit} className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
-            
-            {/* Erro da API */}
-            {apiError && (
-              <div className="w-full p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                {apiError}
-              </div>
-            )}
 
             <div className="mb-6 mt-4">
               <h2 className="text-b1 body-semibold text-center text-gray-900">
@@ -183,6 +167,7 @@ export default function LoginPage() {
           </form>
           </div>
         </div>
+        <ToastNotification />
       </div>
   );
 }

@@ -34,18 +34,15 @@ describe('LoginPage', () => {
 
   //Teste de login com credenciais válidas
   it('deve fazer login com sucesso', async () => {
-    const user = userEvent.setup()
-    const mockResponse = {
-      token: 'token-teste',
-      user: { id: '1', username: 'teste', email: 'teste@exemplo.com' }
-    }
+    const user = userEvent.setup();
+    const mockResponse = { _id: '1', username: 'teste', email: 'teste@exemplo.com' };
     
-    mockLoginUser.mockResolvedValueOnce(mockResponse)
-    render(<LoginPage />)
+    mockLoginUser.mockResolvedValueOnce(mockResponse);
+    render(<LoginPage />);
     
-  await user.type(screen.getByLabelText('E-mail'), 'teste@exemplo.com')
-  await user.type(screen.getByLabelText('Senha'), 'senha123')
-    await user.click(screen.getByText('Entrar'))
+    await user.type(screen.getByLabelText('E-mail'), 'teste@exemplo.com');
+    await user.type(screen.getByLabelText('Senha'), 'senha123');
+    await user.click(screen.getByText('Entrar'));
     
     await waitFor(() => {
       expect(mockLoginUser).toHaveBeenCalledWith({
@@ -55,7 +52,7 @@ describe('LoginPage', () => {
     })
     
     // Verificar redirecionamento ao invés de alert
-    expect(mockPush).toHaveBeenCalledWith(`${mockResponse.user.username}`)
+    expect(mockPush).toHaveBeenCalledWith(`/${mockResponse.username}`)
   })
 
   //Teste de login com credenciais inválidas

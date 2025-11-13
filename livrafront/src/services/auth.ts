@@ -1,66 +1,68 @@
-/* Faz requisições HTTP para fazer login do usuário */
-
-import { api } from '@/lib/api';
 import { LoginFormData, User } from '@/types/auth'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
 export async function loginUser(data: LoginFormData): Promise<User> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: "include",
-      body: JSON.stringify({
-        email: data.email,
-        senha: data.password  
-      }),
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('Credenciais inválidas')
-      }
-      if (response.status === 500) {
-        throw new Error('Erro interno do servidor')
-      }
-      throw new Error('Erro na requisição')
-    }
-
-    const result = await response.json()
-    
-    return {
-      _id: result.user.id,
-      username: result.user.username,
-      email: result.user.email,
-      avatarUrl: result.user.avatarUrl
-    }
-
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error
-    }
-    throw new Error('Erro de rede')
-  }
-}
-
-export async function logout() {
-  await fetch(`${API_BASE_URL}/auth/logout`, {
-    method: "POST",
+  const response = await fetch(`${API_BASE_URL}/auth/signin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: "include",
+    body: JSON.stringify({
+      email: data.email,
+      senha: data.password
+    })
   });
+
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Credenciais inválidas.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao fazer login.');
+  }
+
+  return await response.json();
 }
 
-export const getCurrentUser = async () => {
-  const response = await api.get('/auth/me');
-  return response.data;
-};
+export async function registerUser(username: string, email: string, senha: string): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: "include",
+    body: JSON.stringify({
+      username,
+      email,
+      senha
+    })
+  });
 
-export const checkAuth = async () => {
-  try {
-    await api.get('/auth/verify');
-    return true;
-  } catch {
-    return false;
+  if(!response.ok) {
+    if (response.status === 400) throw new Error('Credenciais em uso.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao fazer cadastro.');
   }
-};
+
+  return await response.json();
+}
+
+export async function getSessionInfos(): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/auth/session-info`, { 
+    credentials: "include" 
+  });
+  if(!response.ok) {
+    if (response.status === 401) throw new Error('Usuário não autenticado.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao retornar informações do usuário.');
+  }
+  return await response.json();
+}
+
+export async function logoutUser() {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: 'DELETE',
+    credentials: "include"
+  });
+  if(!response.ok) {
+    if (response.status === 401) throw new Error('Usuário não autenticado.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao deslogar usuário.');
+  }
+}
