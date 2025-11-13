@@ -65,7 +65,8 @@ export default function PopUp({
                 onClick={onClose}
             >
                 <div 
-                    className="flex flex-shrink-0 flex-col items-center justify-center large-padding medium-border-radius light-green gap-3"
+                    className="flex flex-shrink-0 flex-col items-center justify-center bg-gray-50 medium-padding medium-border-radius gap-3"
+                    style={{ color: 'var(--primary-800)', maxWidth: '25%', maxHeight: '30%' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="flex flex-row items-center justify-between gap-2">

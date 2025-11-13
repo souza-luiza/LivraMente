@@ -52,6 +52,7 @@ import PopUp from "@/components/pop-up";
 import { text } from "stream/consumers";
 import TrashIcon from "@/components/icons/TrashIcon";
 import { se } from "date-fns/locale";
+import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 
 function slugToTitle(slug: string): string {
   return slug
@@ -90,6 +91,9 @@ export default function CommunityPage(){
 
     // Header Compacto
     const [showCompactHeader, setShowCompactHeader] = useState(false);
+
+    // Pop Up de Boas-Vindas
+    const [showWelcomePopUp, setShowWelcomePopUp] = useState(false);
 
     useEffect(() => {
         if (!community) {
@@ -164,6 +168,7 @@ export default function CommunityPage(){
                 // Entrar na comunidade
                 await enterCommunity(communityInfo.nome);
                 setIsMember(true);
+                setShowWelcomePopUp(true);
             }
 
             // Atualiza lista de membros
@@ -370,6 +375,14 @@ export default function CommunityPage(){
                                         onClose={handleClosePostModal}
                                         communityName={communityInfo.nome}
                                         onSuccess={handlePostSuccess}
+                                    />
+                                    <PopUp
+                                        title={`${communityInfo.nome}`}
+                                        description="Seja bem-vindo à nossa comunidade!"
+                                        leftIcon={<CommunityIcon size={24} />}
+                                        isOpen={showWelcomePopUp}
+                                        button1={{ text: "Continuar", icon: <ArrowRightIcon />, colorScheme: "dark-green", onClick: () => setShowWelcomePopUp(false) }}
+                                        onClose={() => setShowWelcomePopUp(false)}
                                     />
                                 </div>
                             </div>
