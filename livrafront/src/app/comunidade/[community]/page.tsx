@@ -54,6 +54,8 @@ import TrashIcon from "@/components/icons/TrashIcon";
 import { se } from "date-fns/locale";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon";
 
+import { titleToSlug } from "@/lib/slugify";
+
 function slugToTitle(slug: string): string {
   return slug
     .split('-')
@@ -103,10 +105,11 @@ export default function CommunityPage(){
 
         const fetchData = async () => {
             try {
-                const communityTitle = slugToTitle(community);
+                // Utiliza o nome da comunidade para buscar
+                const communityIdentifier = decodeURIComponent(community);
 
                 // Busca da comunidade
-                const info = await getComunidadeByName(communityTitle);
+                const info = await getComunidadeByName(communityIdentifier);
                 if (!info) {
                     router.replace("/not-found");
                     return;
@@ -360,7 +363,7 @@ export default function CommunityPage(){
                                         icon={<EditIcon />}
                                         colorScheme="light-green"
                                         size="medium"
-                                        path={`/${communityInfo.nome}/editar-comunidade` /* PROVISÓRIO */}
+                                        path={`/comunidade/${communityInfo.slug || titleToSlug(communityInfo.nome)}/editar`}
                                     />}
                                     <Button
                                         text="Wiki"

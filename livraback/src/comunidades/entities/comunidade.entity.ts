@@ -39,6 +39,10 @@ export class Comunidade {
   @Prop({ type: [String], default: [] })
   tags?: string[];
 
+  // Slug da comunidade (para a url)
+  @Prop()
+  slug?: string;
+
   // Livro principal da comunidade 
   /*@Prop({ type: Types.ObjectId, ref: 'Livro' })
   livro_principal?: Types.ObjectId; // nao precisa
