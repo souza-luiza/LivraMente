@@ -83,12 +83,6 @@ jest.mock('@/components/profile-readlists', () => {
   }
 })
 
-jest.mock('@/components/profile-posts', () => {
-  return function MockProfilePosts({ username }: { username: string }) {
-    return <div data-testid="profile-posts" data-username={username}>Profile Posts</div>
-  }
-})
-
 jest.mock('@/components/icons/EditIcon', () => {
   return function MockEditIcon() {
     return <span data-testid="edit-icon">Edit Icon</span>
