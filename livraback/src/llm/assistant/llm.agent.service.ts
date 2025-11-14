@@ -84,19 +84,19 @@ export class LlmAgentService {
       this.toolsService.createGetPopularCommunitiesTool(),
       this.toolsService.createGetRecentStoriesTool(),
       this.toolsService.createGetCommunitiesTool(),
-      this.toolsService.createJoinCommunityTool(),
+      this.toolsService.createJoinCommunityTool(userId),
       this.toolsService.createLeaveCommunityTool(userId),
       this.toolsService.createGetPopularPostsCommunityTool(),
-
-      // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
-
-      // this.toolsService.createUsersGetMyProfileTool(),
-      // this.toolsService.createUsersGetMyReadlistsTool(),
-      // this.toolsService.createUsersGetMyFavoritesTool(),
       // this.toolsService.createAddBookToReadlistTool(),
       // this.toolsService.createCreateReadlistTool(),
       // this.toolsService.createDeleteReadlistTool(),
       // this.toolsService.createGravarLeituraTool(),
+
+      // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
+      
+      // this.toolsService.createUsersGetMyReadlistsTool(),
+      // this.toolsService.createUsersGetMyProfileTool(),
+      // this.toolsService.createUsersGetMyFavoritesTool(),
     ];
 
     // monta o prompt final como string (pré-preenchendo variáveis)
