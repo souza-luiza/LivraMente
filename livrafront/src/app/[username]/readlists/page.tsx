@@ -1,161 +1,174 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { ReadlistCard } from '@/components/readlist-card';
-import { CreateReadlist } from '@/components/create-readlist';
-import { useReadlistsList } from '@/hooks/useReadlistsList';
-import { useCreateReadlist } from '@/hooks/useCreateReadlist';
-import Button from '@/components/button';
-import LoadingPage from '@/components/loading';
-import Sidebar from '@/components/sidebar';
-import PlusCheckboxIcon from '@/components/icons/PlusCheckboxIcon';
-import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
+import HeartIcon from "@/components/icons/HeartIcon";
+import OpenBookIcon from "@/components/icons/OpenBookIcon";
+import Readlist from "@/components/readlist";
+import { FavoriteReadlist, Readlist as ReadlistType } from "@/types/readlist";
+import Sidebar from "@/components/sidebar";
+import { Tab, TabList, TabPanel, TabProvider } from "@/components/tabs";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getSessionInfos } from "@/services/auth";
+import { getFavoriteReadlists, getOwnReadlists, getPublicReadlists } from "@/services/readlists";
+import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
+import LogoIcon from "@/components/icons/LogoIcon";
+import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
+import Button from "@/components/button";
+import { CreateReadlist } from "@/components/create-readlist";
+import { useCreateReadlist } from "@/hooks/useCreateReadlist";
 
-export default function UserReadlistsPage() {
-  const params = useParams() as { username?: string };
-  const routeUsername = typeof params?.username === 'string' ? params.username : '';
+export default function ReadlistsPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { username } = params as { username: string };
 
-  const loggedUserId =
-    typeof window !== 'undefined' ? localStorage.getItem('userId') || '1' : '1';
-  const loggedUsername =
-    typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '';
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-  const [profilePath, setProfilePath] = useState<string>('/');
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (routeUsername && routeUsername !== loggedUsername) {
-      setProfilePath(`/${routeUsername}`);
-    } else if (loggedUsername.trim()) {
-      setProfilePath(`/${loggedUsername}`);
-    } else {
-      setProfilePath('/');
-    }
-  }, [routeUsername, loggedUsername]);
-
-  const isMyPage = !routeUsername || routeUsername === loggedUsername;
-  type TabType = 'minhas' | 'favoritas';
-  const [activeTab, setActiveTab] = useState<TabType>('minhas');
-  const [modalOpen, setModalOpen] = useState(false);
+  const [readlists, setReadlists] = useState<ReadlistType[]>([]);
+  const [favReadlists, setFavReadlists] = useState<FavoriteReadlist[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { handleCreateReadlist } = useCreateReadlist();
 
-  const identifierForHook = isMyPage ? loggedUserId : routeUsername ?? '';
+  const [value, setValue] = useState('todas');
 
-  const { readlists, loading, error, refetch } = useReadlistsList(
-    identifierForHook,
-    isMyPage
-      ? activeTab === 'minhas'
-        ? 'criadas'
-        : 'favoritadas'
-      : 'criadas'
-  );
+  const handleChange = (newValue: string) => {
+    setValue(newValue);
+  }
 
-  const filteredReadlists = isMyPage
-    ? readlists
-    : readlists.filter((r) => r.publica);
+  useEffect(() => {
+    if(!username || username.trim() === '')
+      notFound();
 
-  return (
-    <div className="flex min-h-screen h-screen m-0 bg-white">
-      <Sidebar />
-      <div className="flex-1 p-8">
-        <div className="flex flex-row items-center gap-3 mb-4">
-          <Button
-            icon={<ArrowLeftIcon />}
-            size="medium"
-            colorScheme="dark-brown"
-            path={profilePath}
-            aria-label="Voltar"
-          />
-          <h1 className="tracking-tight text-h4 text-[#23160A]">
-            {isMyPage ? 'Minhas readlists' : `Readlists de ${routeUsername}`}
-          </h1>
-        </div>
+    const fetchData = async () => {
+      try {
+        const info = await getSessionInfos();
+        if(!info) {
+            router.replace('/entrar');
+            return;
+        }
+        const own = info.username === username;
+        setIsOwnProfile(own);
 
-        {isMyPage && (
-          <div className="flex items-center gap-6 mb-4">
-            <Button
-              type="button"
-              text="Criar readlist"
-              icon={<PlusCheckboxIcon />}
-              size="medium"
-              colorScheme="light-green"
-              onClick={() => setModalOpen(true)}
-            />
-            <div className="flex gap-2">
-              <button
-                className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${
-                  activeTab === 'minhas'
-                    ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105'
-                    : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'
-                }`}
-                onClick={() => setActiveTab('minhas')}
-              >
-                Criadas por mim
-              </button>
-              <button
-                className={`px-5 py-2 rounded-full font-bold text-b2 font-poppins transition-all shadow ${
-                  activeTab !== 'minhas'
-                    ? 'bg-[var(--secondary-300)] text-[var(--secondary-800)] scale-105'
-                    : 'bg-[var(--secondary-100)] text-[var(--secondary-700)]'
-                }`}
-                onClick={() => setActiveTab('favoritas')}
-                data-testid="favoritas-tab"
-              >
-                Favoritadas
-              </button>
+        const userReadlists = own ? await getOwnReadlists() : await getPublicReadlists(username);
+        const favoriteReadlists = own ? await getFavoriteReadlists() : [];
+        setReadlists(userReadlists);
+        setFavReadlists(favoriteReadlists);
+      } catch (error) {
+        toast.error("Erro ao carregar readlists do usuário.");
+        setError(error instanceof Error ? error.message : 'Erro ao carregar readlists do usuário');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [username, router, isModalOpen]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex bg-[#E5EEDF]">
+        <Sidebar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-48 h-48 border-16 border-[#B0CC9E] border-t-[#5C8046] rounded-full animate-[spin_1.5s_ease-in-out_infinite]" />
+            <div className="w-24 h-24 text-[#1F2A17]">
+              <LogoIcon />
             </div>
           </div>
-        )}
+        </main>
+      </div>
+    );
+  }
 
-        {isMyPage && activeTab === 'minhas' && (
-          <CreateReadlist
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
-            onCreate={async (data, setError) => {
-              await handleCreateReadlist(data, setError, () => refetch && refetch());
-            }}
-          />
-        )}
+  if(error || !readlists) {
+    return (
+      <div className="flex min-h-screen bg-[#E5EEDF]">
+        <Sidebar />
+        <main className="flex-1 flex flex-col p-8">
+          <h2 className="text-h2 mb-4">Readlists</h2>
+          <div className="flex items-center justify-center p-8">
+            <p className="text-b1">Nenhuma readlist encontrada.</p>
+          </div>
+        </main>
+      </div>
+    )
+  } 
+  // fazer um return para o caso !readlist com o botão de criar readlist
 
-        <div className="relative min-h-[200px] w-full">
-          {loading && (
-            <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-              <LoadingPage />
-            </div>
-          )}
+  const nameTab = isOwnProfile ? "Minhas" : "Todas";
+  const handleOpenCreateReadlist = () => {
+    setIsModalOpen(true);
+  }
+  
+  return (
+    <div className="flex min-h-screen bg-[#E5EEDF]">
+      <Sidebar />
+      <main className="flex-1 flex flex-col p-8">
 
-          {!loading && filteredReadlists.length === 0 && (
-            <div className="flex flex-col items-start justify-start mt-2 w-full">
-              {error ? (
-                <div className="text-b2 text-red-600 text-center mt-2" data-testid="error-msg">
-                  {error}
-                </div>
-              ) : (
-                <div className="text-b2 text-[var(--secondary-700)] mb-3 text-base font-poppins">
-                  Nenhuma readlist encontrada.
-                </div>
-              )}
-            </div>
-          )}
-
-          {!loading && filteredReadlists.length > 0 && (
-            <div className="flex flex-col gap-1 mt-8">
-              {filteredReadlists.map((r) => (
-                <ReadlistCard
-                  key={r._id}
-                  r={{
-                    ...r,
-                    favorito: activeTab === 'favoritas' ? true : r.favorito,
-                    nome: activeTab === 'favoritas' ? 'Favoritada' : r.nome,
-                  }}
-                  userId={loggedUserId}
-                />
-              ))}
-            </div>
+        {/* Cabeçalho com título e botão de criar readlist */}
+        <div className="flex justify-between mb-4 items-center">
+          <h2 className="text-h2 ">Readlists</h2>
+          {isOwnProfile && (
+            <Button
+              text="Criar readlist"
+              icon={<PlusCheckboxIcon />}
+              colorScheme="dark-green"
+              size="medium"
+              onClick={handleOpenCreateReadlist}
+            />
           )}
         </div>
-      </div>
+
+        <CreateReadlist
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={async (data, setError) => {
+            await handleCreateReadlist(data, setError);
+          }}
+        />
+
+        <TabProvider value={value} onChange={handleChange}>
+          <div className="bg-white rounded-lg shadow-sm mt-2">
+            <TabList>
+                <Tab label={nameTab} icon={<OpenBookIcon fill="currentColor"/>} value="todas" size="medium" />
+                {isOwnProfile && (
+                  <Tab label="Favoritas" icon={<HeartIcon fill="currentColor"/>} value="favoritas" size="medium" />
+                )}
+            </TabList>
+
+            <TabPanel value="todas">
+              <div className="p-3 px-6 w-full h-fit grid grid-cols-4 gap-2">
+                {readlists.map((readlist) => (
+                  <Readlist
+                    key={readlist._id}
+                    title={readlist.nome}
+                    author={username}
+                    link={`/${username}/readlist/${readlist.slug}`}
+                  />
+                ))}
+              </div>
+            </TabPanel>
+            {isOwnProfile && (
+              <TabPanel value="favoritas">
+                <div className="p-3 px-6 w-full h-fit grid grid-cols-4 gap-2">
+                  {favReadlists.map((readlist) => (
+                    <Readlist
+                      key={readlist._id}
+                      title={readlist.nome}
+                      author={readlist.criador.username}
+                      link={`/${readlist.criador.username}/readlist/${readlist.slug}`}
+                    />
+                  ))}
+                </div>
+              </TabPanel>
+            )}
+          </div>
+        </TabProvider>
+      </main>
+      <ToastNotification/>
     </div>
-  );
+  )
 }

@@ -37,14 +37,8 @@ export function useCreateReadlist() {
 
         setIsLoading(true);
         setApiError('');
-
-        const payload = {
-          nome: data.nome,
-          descricao: data.descricao,
-          publica: data.publica,
-        };
-
-        const result = await createReadlistService(payload);
+        
+        const result = await createReadlistService(data.nome, data.descricao, data.publica);
 
         if (setError) setError('');
         if (addToList) addToList(result);

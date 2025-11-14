@@ -31,6 +31,23 @@ export interface Readlist {
   slug: string;
 }
 
+/* Readlists favoritas */
+export interface FavoriteReadlist {
+  _id: string;
+  nome: string;
+  favorito: boolean;
+  publica: boolean;
+  descricao?: string;
+  capa_url?: string;
+  criador: {
+    username: string;
+  }
+  livros: Array<string | PopulatedBook>;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  slug: string;
+}
+
 /* Dados para criar uma nova readlist */
 export interface CreateReadlistData {
   nome: string

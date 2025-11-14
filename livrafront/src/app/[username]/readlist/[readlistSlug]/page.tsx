@@ -14,10 +14,13 @@ import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import EditReadlistModal from '@/components/EditReadlistModal';
 import SearchBar from '@/components/searchbar';
 import Button from '@/components/button';
-import { getOwnReadlists, getPublicReadlists, getReadlistById, updateReadlist, favoriteReadlist, unfavoriteReadlist, getFavoriteReadlists } from '@/services/readlists';
+import { getReadlistBySlug, updateReadlist, favoriteReadlist, unfavoriteReadlist, getFavoriteReadlists, getOnePublicReadlist } from '@/services/readlists';
 import { Readlist } from '@/types/readlist';
 import LoadingPage from '@/components/loading';
 import ErrorIcon from '@/components/icons/ErrorIcon';
+import { getSessionInfos } from '@/services/auth';
+import { toast } from 'react-toastify';
+import ToastNotification from '@/components/toast-notification';
 
 export default function ReadlistPage() {
   const router = useRouter();
@@ -42,10 +45,10 @@ export default function ReadlistPage() {
         setError('');
 
         // Verificar se está autenticado
-        const token = localStorage.getItem('token');
-        const currentUsername = localStorage.getItem('username');
+        const info = await getSessionInfos();
+        const currentUsername = info.username;
         
-        if (!token) {
+        if (!info) {
           setError('Você precisa estar autenticado para visualizar readlists');
           return;
         }
@@ -54,56 +57,28 @@ export default function ReadlistPage() {
         const isUserOwner = currentUsername === username;
         setIsOwner(isUserOwner);
 
-        // Se for o dono, buscar TODAS as readlists (públicas e privadas)
-        // Se não for, buscar apenas as públicas
-        const readlists = isUserOwner 
-          ? await getOwnReadlists() 
-          : await getPublicReadlists(username);
-        
-        // Função para normalizar texto para slug (remove acentos, minúscula, substitui espaços)
-        const toSlug = (str: string): string => {
-          return str
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim()
-            .replace(/\s+/g, '-');
-        };
-
-        // Encontrar a readlist comparando slugs normalizados
-        const foundReadlist = readlists.find(rl => {
-          const normalized = toSlug(rl.nome);
-          console.log(`- Comparando: "${normalized}" === "${toSlug(readlistSlug)}"?`, normalized === toSlug(readlistSlug));
-          return normalized === toSlug(readlistSlug);
-        });
-
-        console.log('- Readlist encontrada?', !!foundReadlist);
+        const foundReadlist = isUserOwner ? await getReadlistBySlug(readlistSlug) : await getOnePublicReadlist(username, readlistSlug);
 
         if (!foundReadlist) {
           setError('Readlist não encontrada');
           return;
         }
 
-        // Se for o dono, buscar detalhes completos (com livros populados)
-        if (isUserOwner) {
-          const detailedReadlist = await getReadlistById(foundReadlist._id);
-          setReadlistData(detailedReadlist);
-        } else {
-          // Para readlists públicas, usar os dados já retornados
-          setReadlistData(foundReadlist);
-          
+        setReadlistData(foundReadlist);
+
+        if(!isUserOwner) {
           // Verificar se a readlist está nos favoritos do usuário
           try {
             const favorites = await getFavoriteReadlists();
             const isFav = favorites.some(fav => fav._id === foundReadlist._id);
             setIsFavorited(isFav);
           } catch (err) {
-            console.error('Erro ao verificar favoritos:', err);
+            toast.error('Erro ao verificar favorito.');
           }
         }
 
       } catch (err) {
-        console.error('Erro ao carregar readlist:', err);
+        toast.error('Erro ao carregar readlist.');
         setError((err as Error).message);
       } finally {
         setLoading(false);
@@ -123,7 +98,7 @@ export default function ReadlistPage() {
 
     try {
       // Atualizar via API
-      await updateReadlist(readlistData._id, {
+      await updateReadlist(readlistData.slug, {
         nome: data.title,
         descricao: data.description,
         capa_url: data.coverImage,
@@ -139,8 +114,7 @@ export default function ReadlistPage() {
         publica: !data.isPrivate,
       });
     } catch (err) {
-      console.error('Erro ao salvar readlist:', err);
-      alert('Erro ao salvar as alterações. Tente novamente.');
+      toast.error('Erro ao salvar as alterações.');
     }
   };
 
@@ -149,15 +123,14 @@ export default function ReadlistPage() {
 
     try {
       if (isFavorited) {
-        await unfavoriteReadlist(readlistData._id);
+        await unfavoriteReadlist(username, readlistData.slug);
         setIsFavorited(false);
       } else {
-        await favoriteReadlist(readlistData._id);
+        await favoriteReadlist(username, readlistData.slug);
         setIsFavorited(true);
       }
     } catch (err) {
-      console.error('Erro ao favoritar/desfavoritar:', err);
-      alert('Erro ao atualizar favorito. Tente novamente.');
+      toast.error('Erro ao atualizar favorito.');
     }
   };
 
@@ -576,6 +549,7 @@ export default function ReadlistPage() {
         </div>
 
       </div>
+      <ToastNotification/>
     </div>
   );
 }
