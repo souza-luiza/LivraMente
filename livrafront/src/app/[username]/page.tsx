@@ -50,7 +50,6 @@ export default function UserProfilePage(){
                 // Carrega perfil + readlists:
                 const data = await getProfile(username);
                 setUserData(data);
-                console.log(data);
                 const userReadlists = own ? await getOwnReadlists() : await getPublicReadlists(username);
                 setReadlists(userReadlists);
             } catch (error) {
@@ -116,8 +115,8 @@ export default function UserProfilePage(){
         );
     }
 
-    const xpPercentage = calculateXPPercentage(userData.gamificacao);
-    const userLevel = userData.gamificacao?.nivel || 1;
+    const xpPercentage = calculateXPPercentage(userData.gamificação);
+    const userLevel = userData.gamificação?.nivel || 1;
 
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">

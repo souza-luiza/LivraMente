@@ -9,7 +9,7 @@ export interface UserProfile {
   email: string;
   amigos?: string[];
   posts?: string[];
-  gamificacao?: Gamificacao;
+  gamificação?: Gamificacao;
   avatarUrl: string;
   pronouns: string;
 }
