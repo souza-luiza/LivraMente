@@ -13,7 +13,6 @@ describe('ReadlistsService', () => {
   const publicReadlist = { _id: '1', nome: 'Readlist Pública', publica: true };
 
   const mockSave = jest.fn().mockResolvedValue(mockReadlist);
-  const mockSelect = jest.fn().mockReturnThis();
 
   const mockReadlistModel = {
     prototype: {
@@ -74,26 +73,52 @@ describe('ReadlistsService', () => {
   });
 
   describe('create', () => {
-    it('should create a readlist', async () => {
+    it('should create a readlist with unique slug and link to user', async () => {
       const createDto: CreateReadlistDto = { nome: 'Minha Readlist' };
+      const mockExists = jest.fn().mockResolvedValue(null);
+      const mockSavedReadlist = {
+        _id: 'readlist123',
+        nome: 'Minha Readlist',
+        slug: 'minha-readlist',
+        criador: 'user123',
+      };
+      const mockSave = jest.fn().mockResolvedValue(mockSavedReadlist);
       const mockConstructor = jest.fn().mockImplementation(() => ({
         save: mockSave,
       }));
 
-      const customService = new ReadlistsService(
+      mockConstructor.exists = mockExists;
+
+      mockUserModel.findByIdAndUpdate = jest.fn().mockResolvedValue({});
+
+      const service = new ReadlistsService(
         mockConstructor as any,
         mockUserModel as any,
         mockUsersService as any,
       );
 
-      const result = await customService.create('user123', createDto);
+      const result = await service.create('user123', createDto);
+
+      expect(mockExists).toHaveBeenCalledWith({
+        slug: 'minha-readlist',
+        criador: 'user123',
+      });
+
+      expect(mockConstructor).toHaveBeenCalledWith({
+        nome: 'Minha Readlist',
+        criador: 'user123',
+        slug: 'minha-readlist',
+      });
+
       expect(mockSave).toHaveBeenCalled();
+
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user123',
-        { $push: { readlists: mockReadlist._id } },
-        { new: true }
+        { $push: { readlists: 'readlist123' } },
+        { new: true },
       );
-      expect(result).toEqual(mockReadlist);
+
+      expect(result).toEqual(mockSavedReadlist);
     });
   });
 
@@ -231,7 +256,7 @@ describe('ReadlistsService', () => {
       expect(mockPopulate).toHaveBeenCalledWith({
         path: 'readlists',
         match: { publica: true },
-        select: '-favorito',
+        select: '-favorito -capa_public_id',
       });
       expect(result).toEqual([publicReadlist]);
     });

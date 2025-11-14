@@ -2,17 +2,17 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
 import { Model } from 'mongoose';
-import { Readlist, ReadlistDocument } from '../readlists/entities/readlist.entity';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ReadlistsService } from '../readlists/readlists.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
     private readonly cloudinary: CloudinaryService,
+    private readonly readlistsService: ReadlistsService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -135,13 +135,13 @@ export class UsersService {
     return { ganhoXP };
   }
 
-  async favoritarReadlist(userId: string, readlistId: string) {
+  async favoritarReadlist(userId: string, readlistSlug: string, username: string) {
     const user = await this.findOne(userId);
 
-    const readlist = await this.readlistModel.findById(readlistId);
-    if (!readlist) throw new NotFoundException('Readlist não encontrada');
+    const readlist = await this.readlistsService.findOnePublic(username, readlistSlug);
+    
+    if (!readlist) throw new NotFoundException('Readlist não encontrada ou não é pública');
     if (readlist.criador.toString() === userId) throw new BadRequestException('Readlist é do próprio usuário');
-    if (!readlist.publica) throw new BadRequestException('Readlist não é pública');
 
     if (user.readlists_favoritas.includes(readlist._id)) throw new ConflictException('Readlist já favoritada');
 
@@ -153,19 +153,23 @@ export class UsersService {
     return { message: 'Readlist favoritada com sucesso' }; 
   }
 
-  async desfavoritarReadlist(userId: string, readlistId: string) {
+  async desfavoritarReadlist(userId: string, readlistSlug: string, username: string) {
     await this.findOne(userId); // lanca excecao se nao existir
+
+    const readlist = await this.readlistsService.findOnePublic(username, readlistSlug);
+
+    if (!readlist) throw new NotFoundException('Readlist não encontrada ou não é pública');
 
     await this.userModel.updateOne(
       { _id: userId },
-      { $pull: { readlists_favoritas: readlistId }}
+      { $pull: { readlists_favoritas: readlist._id }}
     );
 
     return { message: 'Readlist removida dos favoritos com sucesso' };
   }
 
   async findReadlistsFavoritas(userId: string) {
-    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito' }).select('readlists_favoritas').exec();
+    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
     if(!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
   }

@@ -25,7 +25,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async create(@CurrentUser() user: CurrentUserDto, @Body() createReadlistDto: CreateReadlistDto) {
         return this.readlistsService.create(user.userId, createReadlistDto);
@@ -63,7 +63,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async findOne(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string) {
         return this.readlistsService.findOne(user.userId, slug);
@@ -84,7 +84,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async update(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string, @Body() updateReadlistDto: UpdateReadlistDto) {
         return this.readlistsService.update(user.userId, slug, updateReadlistDto);
@@ -105,7 +105,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async remove(@CurrentUser() user: CurrentUserDto, @Param('slug') slug: string) {
         return this.readlistsService.remove(user.userId, slug);
@@ -126,6 +126,27 @@ export class ReadlistsController {
     })
     async findAllPublic(@Param('username') username: string) {
         return this.readlistsService.findAllPublic(username);
+    }
+
+    @Get('public/:username/:slug')
+    @ApiOperation({ 
+        summary: 'Lista uma readlist pública de um usuário por username e slug',
+        description: 'Retorna toda readlist pública de um usuário por username para um usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Readlist pública retornada com sucesso'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Readlist não encontrada'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Sessão inválida'
+    })
+    async findOnePublic(@Param('username') username: string, @Param('slug') slug: string) {
+        return this.readlistsService.findOnePublic(username, slug);
     }
 
     @Patch(':id/livros/:livroId')

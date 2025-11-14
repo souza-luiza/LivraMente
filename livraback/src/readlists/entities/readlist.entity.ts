@@ -1,7 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Model } from 'mongoose';
-import slugify from 'slugify';
 
 export type ReadlistDocument = HydratedDocument<Readlist>;
 
@@ -38,22 +36,3 @@ export class Readlist {
 }
 
 export const ReadlistSchema = SchemaFactory.createForClass(Readlist);
-
-ReadlistSchema.pre('save', async function (next) {
-  // Gera slug apenas se criar readlist ou modificar nome
-  if(this.isModified('nome')) {
-    const baseSlug = slugify(this.nome, { lower: true, strict: true });
-    let slug = baseSlug;
-    let cont = 1;
-
-    // Garante unicidade de slugs entre readlists do mesmo usuario
-    const Model = this.constructor as Model<ReadlistDocument>;
-    while(await Model.exists({ slug, criador: this.criador })) {
-      slug = `${baseSlug}-${cont++}`;
-    }
-
-    this.slug = slug;
-  }
-
-  next();
-})

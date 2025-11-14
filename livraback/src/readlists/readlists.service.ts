@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Readlist, ReadlistDocument } from './entities/readlist.entity';
 import { Model } from 'mongoose';
@@ -6,6 +6,7 @@ import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { User, UserDocument } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import slugify from 'slugify';
 
 @Injectable()
 export class ReadlistsService {
@@ -13,14 +14,23 @@ export class ReadlistsService {
     constructor(
         @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-        private readonly usersService: UsersService,
+        @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
     ) {}
 
     async create(criadorId: string, createReadlistDto: CreateReadlistDto) {
-        const readlist = new this.readlistModel({...createReadlistDto, criador: criadorId});
+        const baseSlug = slugify(createReadlistDto.nome, { lower: true, strict: true });
+        let slug = baseSlug;
+        let cont = 1;
+
+        // unica slug entre readlists do usuario
+        while(await this.readlistModel.exists({ slug, criador: criadorId })) {
+            slug = `${baseSlug}-${cont++}`;
+        }
+
+        const readlist = new this.readlistModel({...createReadlistDto, criador: criadorId, slug });
         const saved = await readlist.save();
 
-        // Adiciona na lista de readlists do usuário:
+        // Adiciona na lista de readlists do usuario:
         await this.userModel.findByIdAndUpdate(
             criadorId,
             { $push: { readlists: saved._id } },
@@ -66,7 +76,7 @@ export class ReadlistsService {
 
         await this.readlistModel.deleteOne({ _id: readlist._id }).exec();
         
-        //Remove ID na lista de readlists do usuário:
+        //Remove ID na lista de readlists do usuario:
         await this.userModel.findByIdAndUpdate(
             criadorId,
             { $pull: { readlists: readlist._id }}
@@ -78,8 +88,16 @@ export class ReadlistsService {
     async findAllPublic(username: string) {
         const user = await this.usersService.getByUsername(username);
         if (!user) throw new NotFoundException('Usuário não encontrado');
-        const resultado = await this.userModel.findById(user._id).populate({ path:'readlists', match: { publica: true }, select: '-favorito' }).exec();
+        const resultado = await this.userModel.findById(user._id).populate({ path:'readlists', match: { publica: true }, select: '-favorito -capa_public_id' }).exec();
         return resultado?.readlists;
+    }
+
+    async findOnePublic(username: string, slug: string) {
+        const user = await this.usersService.getByUsername(username);
+        if (!user) throw new NotFoundException('Usuário não encontrado');
+        const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-favorito -capa_public_id').exec();
+        if(!readlist) throw new NotFoundException('Readlist não encontrada');
+        return readlist;
     }
 
     async addLivro(criadorId: string, readlistId: string, livroId: string) {

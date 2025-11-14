@@ -68,7 +68,7 @@ describe('UsersController', () => {
 
   describe('updateProfile', () => {
     it('should update the current user profile', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const updateUserDto: UpdateUserDto = { username: 'Updated' };
       const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
@@ -81,7 +81,7 @@ describe('UsersController', () => {
 
   describe('registroLeitura', () => {
     it('should register reading and return XP gained', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const dto = { opcao: 0, qtd: 30 }; // ex: 30 páginas -> 30 XP
 
       const result = await controller.registroLeitura(currentUser, dto);
@@ -93,7 +93,7 @@ describe('UsersController', () => {
     it('should register reading by minutes and return XP gained (limited to 60)', async () => {
       mockUsersService.registroLeitura.mockResolvedValueOnce({ ganhoXP: 25 }); // 50 minutos = 25 XP
 
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const dto = { opcao: 1, qtd: 50 };
 
       const result = await controller.registroLeitura(currentUser, dto);
@@ -105,39 +105,41 @@ describe('UsersController', () => {
 
   describe('favoritarReadlist', () => {
     it('deve favoritar uma readlist', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const readlistId = 'readlist-id';
+      const userDono = 'username';
 
       mockUsersService.favoritarReadlist = jest.fn().mockResolvedValue({
         message: 'Readlist favoritada com sucesso',
       });
 
-      const result = await controller.favoritarReadlist(currentUser, readlistId);
+      const result = await controller.favoritarReadlist(currentUser, readlistId, userDono);
 
-      expect(usersService.favoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(usersService.favoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId, userDono);
       expect(result).toEqual({ message: 'Readlist favoritada com sucesso' });
     });
   });
 
   describe('desfavoritarReadlist', () => {
     it('deve desfavoritar uma readlist', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const readlistId = 'readlist-id';
+      const usernameDono = 'username';
 
       mockUsersService.desfavoritarReadlist = jest.fn().mockResolvedValue({
         message: 'Readlist removida dos favoritos com sucesso',
       });
 
-      const result = await controller.desfavoritarReadlist(currentUser, readlistId);
+      const result = await controller.desfavoritarReadlist(currentUser, readlistId, usernameDono);
 
-      expect(usersService.desfavoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(usersService.desfavoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId, usernameDono);
       expect(result).toEqual({ message: 'Readlist removida dos favoritos com sucesso' });
     });
   });
 
   describe('findReadlistsFavoritas', () => {
     it('deve retornar as readlists favoritas do usuário', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
 
       const mockReadlists = [
         { _id: 'r1', nome: 'Readlist 1' },

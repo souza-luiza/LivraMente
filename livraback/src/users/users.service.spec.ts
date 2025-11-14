@@ -5,10 +5,12 @@ import { User } from './entities/user.entity';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Readlist } from '../readlists/entities/readlist.entity';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ReadlistsService } from '../readlists/readlists.service';
 
 describe('UsersService', () => {
   let service: UsersService;
   let cloudinaryService: CloudinaryService;
+  let readlistsService: ReadlistsService;
 
   const mockCloudinaryService = {
     uploadImage: jest.fn().mockResolvedValue('mocked.com/fake.png'),
@@ -58,12 +60,19 @@ describe('UsersService', () => {
         {
           provide: CloudinaryService,
           useValue: mockCloudinaryService
+        },
+        {
+          provide: ReadlistsService,
+          useValue: {
+            findOnePublic: jest.fn()
+          }
         }
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
     cloudinaryService = module.get<CloudinaryService>(CloudinaryService);
+    readlistsService = module.get<ReadlistsService>(ReadlistsService);
   });
 
   afterEach(() => {
@@ -468,102 +477,115 @@ describe('UsersService', () => {
 
   describe('favoritarReadlist', () => {
     it('deve favoritar uma readlist pública de outro usuário', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: [] };
       const readlist = {
         _id: 'readlist-id',
-        criador: 'outro-user-id',
+        slug: 'slug-da-readlist',
+        criador: 'dono-id',
         publica: true,
       };
 
-      const user = {
-        _id: 'user-id',
-        readlists_favoritas: [],
-      };
-
       jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
       mockUserModel.updateOne.mockResolvedValue({});
 
-      const result = await service.favoritarReadlist('user-id', 'readlist-id');
+      const result = await service.favoritarReadlist(
+        'user-id',
+        'slug-da-readlist',
+        'username',
+      );
 
       expect(result).toEqual({ message: 'Readlist favoritada com sucesso' });
       expect(mockUserModel.updateOne).toHaveBeenCalledWith(
         { _id: 'user-id' },
-        { $addToSet: { readlists_favoritas: 'readlist-id' } }
+        { $addToSet: { readlists_favoritas: 'readlist-id' } },
       );
     });
 
     it('deve lançar erro se readlist não existir', async () => {
       jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(null);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(null);
 
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(NotFoundException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-inexistente', 'username'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('deve lançar erro se readlist for do próprio usuário', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: [] };
       const readlist = {
         _id: 'readlist-id',
+        slug: 'slug-da-readlist',
         criador: 'user-id',
         publica: true,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
 
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(BadRequestException);
-    });
-
-    it('deve lançar erro se readlist não for pública', async () => {
-      const readlist = {
-        _id: 'readlist-id',
-        criador: 'outro-user-id',
-        publica: false,
-      };
-
-      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
-
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('deve lançar erro se readlist já estiver favoritada', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: ['readlist-id'] };
       const readlist = {
         _id: 'readlist-id',
-        criador: 'outro-user-id',
+        slug: 'slug-da-readlist',
+        criador: 'dono-id',
         publica: true,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue({
-        _id: 'user-id',
-        readlists_favoritas: ['readlist-id'],
-      } as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
 
-      mockReadlistModel.findById.mockResolvedValue(readlist);
-
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(ConflictException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
   describe('desfavoritarReadlist', () => {
     it('deve remover readlist dos favoritos', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue({} as any);
+      const user = { _id: 'user-id', readlists_favoritas: ['readlist-id'] };
+      const readlist = { _id: 'readlist-id', slug: 'slug-da-readlist', criador: 'dono-id', publica: true };
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
       mockUserModel.updateOne.mockResolvedValue({});
 
-      const result = await service.desfavoritarReadlist('user-id', 'readlist-id');
+      const result = await service.desfavoritarReadlist(
+        'user-id',
+        'slug-da-readlist',
+        'username',
+      );
 
       expect(mockUserModel.updateOne).toHaveBeenCalledWith(
         { _id: 'user-id' },
-        { $pull: { readlists_favoritas: 'readlist-id' } }
+        { $pull: { readlists_favoritas: 'readlist-id' } },
       );
 
-      expect(result).toEqual({ message: 'Readlist removida dos favoritos com sucesso' });
+      expect(result).toEqual({
+        message: 'Readlist removida dos favoritos com sucesso',
+      });
+    });
+
+    it('deve lançar erro se readlist não existir', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id' } as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(null);
+
+      await expect(
+        service.desfavoritarReadlist('user-id', 'slug-inexistente', 'username'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar erro se usuário não existir', async () => {
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException('Usuário não encontrado'));
+
+      await expect(
+        service.desfavoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

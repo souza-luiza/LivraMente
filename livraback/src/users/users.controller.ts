@@ -127,9 +127,9 @@ export class UsersController {
     return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
-  @Patch('me/favoritar/:readlistId')
+  @Patch('me/favoritar/:username/:readlistSlug')
   @ApiOperation({
-    summary: 'Favorita uma readlist pública',
+    summary: 'Favorita uma readlist pública de acordo com username dono da readlist e readlist slug',
     description: 'Adiciona uma readlist pública na lista de favoritos do usuário autenticado'
   })
   @ApiResponse({
@@ -138,7 +138,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Readlist não encontrada'
+    description: 'Readlist ou usuário não encontrado'
   })
   @ApiResponse({
     status: 400,
@@ -150,15 +150,15 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async favoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
-    return this.usersService.favoritarReadlist(user.userId, readlistId);
+  async favoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistSlug') readlistSlug: string, @Param('username') username: string) {
+    return this.usersService.favoritarReadlist(user.userId, readlistSlug, username);
   }
 
-  @Delete('me/favoritar/:readlistId')
+  @Delete('me/favoritar/:username/:readlistSlug')
   @ApiOperation({
-    summary: 'Remove readlist dos favoritos',
+    summary: 'Remove readlist dos favoritos de acordo com username dono da readlist e readlist slug',
     description: 'Remove readlist dos favoritos do usuário autenticado'
   })
   @ApiResponse({
@@ -167,18 +167,14 @@ export class UsersController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Usuário não encontrado'
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'ID inválido'
+    description: 'Usuário ou readlist não encontrado'
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async desfavoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
-    return this.usersService.desfavoritarReadlist(user.userId, readlistId);
+  async desfavoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistSlug') readlistSlug: string, @Param('username') username: string) {
+    return this.usersService.desfavoritarReadlist(user.userId, readlistSlug, username);
   }
 
   @Get('me/favoritar')
@@ -196,7 +192,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
   async findReadlistsFavoritas(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findReadlistsFavoritas(user.userId);
