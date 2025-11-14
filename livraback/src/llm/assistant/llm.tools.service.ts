@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Story, StoryDocument } from '../../schemas/story.schema';
 import { Comunidade, ComunidadeDocument } from 'src/comunidades/entities/comunidade.entity';
+import { DynamicStructuredTool } from 'langchain';
 
 @Injectable()
 export class LlmToolsService {
@@ -13,35 +14,40 @@ export class LlmToolsService {
   ) { }
 
   //ferramenta para buscar as histórias do usuário logado
-  public createGetUserStoriesTool(userId: string): any {
-    return {
+  public createGetUserStoriesTool(userId: string): DynamicStructuredTool {
+    return new DynamicStructuredTool({
       name: 'get_user_stories',
       description: 'Busca todas as histórias (título e resumo) criadas pelo usuário logado.',
+      schema: z.object({}),
       func: async () => {
         try {
-          const stories = await this.storyModel.find({ userId }).select('title summary').limit(50).exec();
+          const stories = await this.storyModel
+            .find({ userId })
+            .select('title summary')
+            .limit(50).exec();
           return JSON.stringify(stories);
         } catch (e) {
           return `Erro ao buscar histórias: ${e instanceof Error ? e.message : String(e)}`;
         }
-      }
-    };
+      },
+    });
   }
 
   //ferramenta para buscar as n comunidades mais populares
-  public createGetPopularCommunitiesTool(): any {
+  public createGetPopularCommunitiesTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       count: z.number().default(5).describe("O número de comunidades a buscar"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'get_popular_communities',
       description: 'Busca as "count" comunidades mais populares do site Livramente. Se o usuário não especificar um número, o padrão é 5.',
-      args: toolSchema,
+      schema: toolSchema,
       func: async ({ count }: { count: number }) => {
         try {
-          const comunidades = await this.communityModel.find()
+          const comunidades = await this.communityModel
+            .find()
             .sort({ members: -1 })
             .limit(count) //é dinâmico
             .exec();
@@ -50,20 +56,20 @@ export class LlmToolsService {
           return `Erro ao buscar comunidades: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 
   //ferramenta para buscar as n histórias mais recentes
-  public createGetRecentStoriesTool(): any {
+  public createGetRecentStoriesTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       count: z.number().default(3).describe("O número de histórias a buscar"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'get_recent_stories',
       description: 'Busca as "count" histórias mais recentes criadas no site Livramente. Se o usuário não especificar um número, o padrão é 3.',
-      args: toolSchema,
+      schema: toolSchema,
       func: async ({ count }: { count: number }) => {
         try {
           const stories = await this.storyModel.find()
@@ -75,21 +81,21 @@ export class LlmToolsService {
           return `Erro ao buscar histórias recentes: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 
   //ferramenta para entrar na comunidade
-  public createJoinCommunityTool(): any {
+  public createJoinCommunityTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       communityId: z.string().describe("O ID da comunidade que o usuário deseja entrar"),
       userId: z.string().describe("O ID do usuário que deseja entrar na comunidade"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'join_community',
       description: 'Adiciona o usuário especificado à comunidade indicada; retorna a comunidade atualizada ou uma mensagem de erro.',
-      args: toolSchema,
+      schema: toolSchema,
       func: async ({ communityId, userId }: { communityId: string; userId: string }) => {
         try {
           const community = await this.communityModel.findById(communityId).exec();
@@ -107,19 +113,20 @@ export class LlmToolsService {
           return `Erro ao juntar usuário na comunidade: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 
   //ferramenta para achar comunidade
-  public createGetCommunitiesTool(): any {
+  public createGetCommunitiesTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       communityId: z.string().describe("O ID da comunidade que o usuário deseja encontrar"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'get_community',
       description: 'Encontra a comunidade que o usuário esta procurando; retorna a comunidade ou uma mensagem de erro.',
+      schema: toolSchema,
       func: async ({ communityId }: { communityId: string }) => {
         try {
           const community = await this.communityModel.findById(communityId).exec();
@@ -130,20 +137,20 @@ export class LlmToolsService {
           return `Erro ao encontrar a comunidade: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 
   //ferramenta para sair da comunidade
   //obs.: rever essa ferramenta que podera ser usado por moderador da comunidade
-  public createLeaveCommunityTool(userId: string): any {
+  public createLeaveCommunityTool(userId: string): DynamicStructuredTool {
     const toolSchema = z.object({
       communityId: z.string().describe("O ID da comunidade que o usuário deseja sair"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'leave_community',
       description: 'Remove o usuário autenticado da comunidade indicada; retorna a comunidade atualizada ou uma mensagem de erro.',
-      args: toolSchema,
+      schema: toolSchema,
       func: async ({ communityId }: { communityId: string }) => {
         try {
           const community = await this.communityModel.findById(communityId).exec();
@@ -165,22 +172,22 @@ export class LlmToolsService {
           return `Error leaving community: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 
   //ferramenta para buscar os posts mais populares da comunidade
   // rever sobre essa ferramenta e ver se da para usar em uma parte específica do feed
-  public createGetPopularPostsCommunityTool(): any {
+  public createGetPopularPostsCommunityTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       communityId: z.string().optional().describe("O ID da comunidade; se não fornecido, busca no site inteiro"),
       count: z.number().default(10).describe("Número máximo de posts a retornar"),
     });
 
-    return {
+    return new DynamicStructuredTool({
       name: 'get_popular_posts_in_community',
       description: 'Busca os posts mais populares. Se communityId não for informado, pedir para informar a comunidade específica.',
-      args: toolSchema,
+      schema: toolSchema,
       func: async ({ communityId, count }: { communityId?: string; count: number }) => {
         try {
           // busca por comunidade específica
@@ -205,6 +212,6 @@ export class LlmToolsService {
           return `Erro ao buscar posts na comunidade: ${e instanceof Error ? e.message : String(e)}`;
         }
       },
-    };
+    });
   }
 }

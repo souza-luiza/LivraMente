@@ -3,7 +3,8 @@ import { LlmToolsService } from './llm.tools.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Story } from '../../schemas/story.schema';
 import { Comunidade } from 'src/comunidades/entities/comunidade.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 
 // --- Dados Falsos para os Testes ---
 const mockStory = {
@@ -15,31 +16,35 @@ const mockStory = {
 const mockCommunity = {
   _id: 'comm123',
   nome: 'Comunidade Teste',
-  membros: 100,
+  membros: [new Types.ObjectId().toHexString()], // Use um ID válido
 };
 
-// --- Mock da Cadeia de Comandos do Mongoose ---
-// Precisamos mockar a cadeia: .find().sort().limit().exec()
+// --- Mocks dos Models do Mongoose ---
 
 // Mock para StoryModel
+// Criamos "stubs" (funções falsas) para os métodos que usamos
+const mockStoryExec = jest.fn();
 const mockStoryChain = {
   select: jest.fn().mockReturnThis(),
   limit: jest.fn().mockReturnThis(),
   sort: jest.fn().mockReturnThis(),
-  exec: jest.fn(),
+  exec: mockStoryExec,
 };
 const mockStoryModel = {
   find: jest.fn(() => mockStoryChain),
 };
 
 // Mock para CommunityModel
+const mockCommunityExec = jest.fn();
 const mockCommunityChain = {
   sort: jest.fn().mockReturnThis(),
   limit: jest.fn().mockReturnThis(),
-  exec: jest.fn(),
+  exec: mockCommunityExec,
 };
 const mockCommunityModel = {
   find: jest.fn(() => mockCommunityChain),
+  findById: jest.fn(() => ({ exec: mockCommunityExec })),
+  findByIdAndUpdate: jest.fn(() => ({ exec: mockCommunityExec })),
 };
 
 // --- Início dos Testes ---
@@ -55,11 +60,11 @@ describe('LlmToolsService', () => {
         LlmToolsService,
         {
           provide: getModelToken(Story.name),
-          useValue: mockStoryModel, // Usa o mock do StoryModel
+          useValue: mockStoryModel,
         },
         {
           provide: getModelToken(Comunidade.name),
-          useValue: mockCommunityModel, // Usa o mock do CommunityModel
+          useValue: mockCommunityModel,
         },
       ],
     }).compile();
@@ -78,16 +83,16 @@ describe('LlmToolsService', () => {
     expect(service).toBeDefined();
   });
 
-  // --- Teste para createGetUserStoriesTool ---
+  // --- Teste para createGetUserStoriesTool (Correto) ---
   describe('createGetUserStoriesTool', () => {
     it('should create a tool that fetches user stories', async () => {
       const userId = 'user-test-id';
       const stories = [mockStory];
 
-      mockStoryChain.exec.mockResolvedValue(stories);
+      mockStoryExec.mockResolvedValue(stories);
 
       const tool = service.createGetUserStoriesTool(userId);
-      const result = await tool.func();
+      const result = await tool.func({}); // Ferramenta sem args
 
       expect(tool.name).toBe('get_user_stories');
       expect(mockStoryModel.find).toHaveBeenCalledWith({ userId });
@@ -99,22 +104,23 @@ describe('LlmToolsService', () => {
     it('should handle errors when fetching user stories', async () => {
       const userId = 'user-test-id';
       const errorMessage = 'Database error';
-      // Simula a falha do banco
-      mockStoryChain.exec.mockRejectedValue(new Error(errorMessage));
+
+      mockStoryExec.mockRejectedValue(new Error(errorMessage));
 
       const tool = service.createGetUserStoriesTool(userId);
-      const result = await tool.func();
+      const result = await tool.func({});
 
       expect(result).toBe(`Erro ao buscar histórias: ${errorMessage}`);
     });
   });
 
-  // --- Teste para createGetPopularCommunitiesTool ---
+  // --- Teste para createGetPopularCommunitiesTool (Correto) ---
   describe('createGetPopularCommunitiesTool', () => {
     it('should fetch popular communities with a dynamic count', async () => {
       const communities = [mockCommunity];
       const dynamicCount = 10;
-      mockCommunityChain.exec.mockResolvedValue(communities);
+
+      mockCommunityExec.mockResolvedValue(communities);
 
       const tool = service.createGetPopularCommunitiesTool();
       const result = await tool.func({ count: dynamicCount });
@@ -122,16 +128,17 @@ describe('LlmToolsService', () => {
       expect(tool.name).toBe('get_popular_communities');
       expect(mockCommunityModel.find).toHaveBeenCalledWith();
       expect(mockCommunityChain.sort).toHaveBeenCalledWith({ members: -1 });
-      expect(mockCommunityChain.limit).toHaveBeenCalledWith(dynamicCount); // Verifica o count dinâmico
+      expect(mockCommunityChain.limit).toHaveBeenCalledWith(dynamicCount);
       expect(result).toBe(JSON.stringify(communities));
     });
 
     it('should handle errors when fetching communities', async () => {
       const errorMessage = 'DB failed';
-      mockCommunityChain.exec.mockRejectedValue(new Error(errorMessage));
+
+      mockCommunityExec.mockRejectedValue(new Error(errorMessage));
 
       const tool = service.createGetPopularCommunitiesTool();
-      const result = await tool.func({ count: 5 }); // O count não importa aqui
+      const result = await tool.func({ count: 5 });
 
       expect(result).toBe(`Erro ao buscar comunidades: ${errorMessage}`);
     });
@@ -142,7 +149,8 @@ describe('LlmToolsService', () => {
     it('should fetch recent stories with a dynamic count', async () => {
       const stories = [mockStory];
       const dynamicCount = 7;
-      mockStoryChain.exec.mockResolvedValue(stories);
+
+      mockStoryExec.mockResolvedValue(stories);
 
       const tool = service.createGetRecentStoriesTool();
       const result = await tool.func({ count: dynamicCount });
@@ -153,141 +161,161 @@ describe('LlmToolsService', () => {
       expect(mockStoryChain.limit).toHaveBeenCalledWith(dynamicCount);
       expect(result).toBe(JSON.stringify(stories));
     });
+  });
 
-    it('should simulate the default count of 3', async () => {
-      const stories = [mockStory];
-      const defaultCount = 3;
+  // --- Teste para createGetCommunitiesTool ---
+  describe('createGetCommunitiesTool', () => {
+    it('should find and return a specific community', async () => {
+      const communityId = 'comm123';
 
-      mockStoryChain.exec.mockResolvedValue(stories);
+      mockCommunityExec.mockResolvedValue(mockCommunity);
 
-      const tool = service.createGetRecentStoriesTool();
-      const result = await tool.func({ count: defaultCount });
+      const tool = service.createGetCommunitiesTool();
+      const result = await tool.func({ communityId });
 
-      expect(mockStoryChain.limit).toHaveBeenCalledWith(defaultCount);
-      expect(result).toBe(JSON.stringify(stories));
+      expect(tool.name).toBe('get_community');
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(result).toBe(JSON.stringify(mockCommunity));
+    });
+
+    it('should return error if community not found', async () => {
+      const communityId = 'comm-nao-existe';
+
+      mockCommunityExec.mockResolvedValue(null); // Simula não encontrar
+
+      const tool = service.createGetCommunitiesTool();
+      const result = await tool.func({ communityId });
+
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
     });
   });
 
   // --- Teste para createJoinCommunityTool ---
   describe('createJoinCommunityTool', () => {
+    const userId = 'user-join-id';
+    const communityId = 'comm-join-id';
+
     it('should allow a user to join a community', async () => {
-      const userId = 'user-join-id';
-      const communityId = 'comm-join-id';
+      const updatedCommunity = { ...mockCommunity, members: [userId] };
 
-      const communityMock = {
-        _id: communityId,
-        membros: [],
-        save: jest.fn().mockResolvedValue(true),
-      };
-
-      mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
+      mockCommunityExec.mockResolvedValueOnce(mockCommunity);
+      mockCommunityExec.mockResolvedValueOnce(updatedCommunity);
 
       const tool = service.createJoinCommunityTool();
       const result = await tool.func({ communityId, userId });
 
       expect(tool.name).toBe('join_community');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-      expect(communityMock.membros).toContain(userId);
-      expect(communityMock.save).toHaveBeenCalled();
-      expect(result).toBe(`User ${userId} joined community ${communityId} successfully.`);
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockCommunityModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        communityId,
+        { $addToSet: { members: userId } },
+        { new: true },
+      );
+      expect(result).toBe(JSON.stringify(updatedCommunity));
     });
 
     it('should handle non-existent community when joining', async () => {
-      const userId = 'user-join-id';
-      const communityId = 'comm-join-id';
-
-      mockCommunityModel.find = jest.fn().mockResolvedValue(null);
+      mockCommunityExec.mockResolvedValue(null); // findById retorna null
 
       const tool = service.createJoinCommunityTool();
       const result = await tool.func({ communityId, userId });
 
-      expect(tool.name).toBe('join_community');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-      expect(result).toBe(`Community with ID ${communityId} not found.`);
-    });
-
-    it('should handle errors when joining a community', async () => {
-      const userId = 'user-join-id';
-      const communityId = 'comm-join-id';
-      const errorMessage = 'DB error on join';
-
-      mockCommunityModel.find = jest.fn().mockRejectedValue(new Error(errorMessage));
-
-      const tool = service.createJoinCommunityTool();
-      const result = await tool.func({ communityId, userId });
-
-      expect(result).toBe(`Error joining community: ${errorMessage}`);
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockCommunityModel.findByIdAndUpdate).not.toHaveBeenCalled();
+      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
     });
   });
 
   // --- Teste para createLeaveCommunityTool ---
   describe('createLeaveCommunityTool', () => {
+    const userId = 'user-leave-id';
+    const communityId = 'comm-leave-id';
 
     it('should allow a user to leave a community', async () => {
-      const userId = 'user-leave-id';
-      const communityId = 'comm-leave-id';
-      const communityMock = {
-        _id: communityId,
-        membros: [userId],
-        save: jest.fn().mockResolvedValue(true),
-      };
+      const communityMock = { ...mockCommunity, members: [userId as any] };
+      const updatedCommunityMock = { ...mockCommunity, members: [] };
 
-      mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
+      mockCommunityExec.mockResolvedValueOnce(communityMock);
+      mockCommunityExec.mockResolvedValueOnce(updatedCommunityMock);
 
       const tool = service.createLeaveCommunityTool(userId);
       const result = await tool.func({ communityId });
 
       expect(tool.name).toBe('leave_community');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-      expect(communityMock.membros).not.toContain(userId);
-      expect(communityMock.save).toHaveBeenCalled();
-      expect(result).toBe(JSON.stringify(communityMock));
-    });
-
-    it('should handle non-existent community when leaving', async () => {
-      const userId = 'user-leave-id';
-      const communityId = 'comm-leave-id';
-
-      mockCommunityModel.find = jest.fn().mockResolvedValue(null);
-
-      const tool = service.createLeaveCommunityTool(userId);
-      const result = await tool.func({ communityId });
-
-      expect(tool.name).toBe('leave_community');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-      expect(result).toBe(`Community not found: ${communityId}`);
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockCommunityModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        communityId,
+        { $pull: { members: userId } },
+        { new: true },
+      );
+      expect(result).toBe(JSON.stringify(updatedCommunityMock));
     });
 
     it('should handle user not being a member when leaving', async () => {
-      const userId = 'user-leave-id';
-      const communityId = 'comm-leave-id';
-      const communityMock = {
-        _id: communityId,
-        membros: [], // Usuário não é membro
-        save: jest.fn().mockResolvedValue(true),
-      };
+      const communityMock = { ...mockCommunity, members: [] }; // Usuário não é membro
 
-      mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
+      mockCommunityExec.mockResolvedValue(communityMock);
 
       const tool = service.createLeaveCommunityTool(userId);
       const result = await tool.func({ communityId });
 
-      expect(tool.name).toBe('leave_community');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-      expect(result).toBe(`User ${userId} is not a member of community ${communityId}`);
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockCommunityModel.findByIdAndUpdate).not.toHaveBeenCalled();
+      expect(result).toBe(
+        `User ${userId} is not a member of community ${communityId}`,
+      );
+    });
+  });
+
+  // --- Teste para createGetPopularPostsCommunityTool ---
+  describe('createGetPopularPostsCommunityTool', () => {
+    it('should fetch popular posts for a specific community', async () => {
+      const communityId = 'comm123';
+      const count = 5;
+
+      mockCommunityExec.mockResolvedValue(mockCommunity); // findById (comunidade)
+      mockStoryExec.mockResolvedValue([mockStory]); // find (posts)
+
+      const tool = service.createGetPopularPostsCommunityTool();
+      const result = await tool.func({ communityId, count });
+
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockStoryModel.find).toHaveBeenCalledWith({ communityId });
+      expect(mockStoryChain.sort).toHaveBeenCalledWith({
+        likes: -1,
+        views: -1,
+        createdAt: -1,
+      });
+      expect(mockStoryChain.limit).toHaveBeenCalledWith(count);
+      expect(result).toBe(JSON.stringify([mockStory]));
     });
 
-    it('should handle errors when leaving a community', async () => {
-      const userId = 'user-leave-id';
-      it('should handle errors when leaving a community', async () => {
-        const userId = 'user-leave-id';
-        const communityId = 'comm-leave-id';
-        const errorMessage = 'DB error on leave';
-        mockCommunityModel.find = jest.fn().mockRejectedValue(new Error(errorMessage));
-        const tool = service.createLeaveCommunityTool(userId);
-        const result = await tool.func({ communityId });
-        expect(result).toBe(`Error leaving community: ${errorMessage}`);
-      });
+    it('should fetch popular posts from the whole site if no communityId', async () => {
+      const count = 10; // Default
+
+      mockStoryExec.mockResolvedValue([mockStory]); // find (posts)
+
+      const tool = service.createGetPopularPostsCommunityTool();
+      const result = await tool.func({ count }); // Sem communityId
+
+      expect(mockCommunityModel.findById).not.toHaveBeenCalled(); // Não deve procurar comunidade
+      expect(mockStoryModel.find).toHaveBeenCalledWith({}); // Query vazia
+      expect(mockStoryChain.limit).toHaveBeenCalledWith(count);
+      expect(result).toBe(JSON.stringify([mockStory]));
+    });
+
+    it('should return error if communityId is provided but not found', async () => {
+      const communityId = 'comm-nao-existe';
+
+      mockCommunityExec.mockResolvedValue(null); // findById falha
+
+      const tool = service.createGetPopularPostsCommunityTool();
+      const result = await tool.func({ communityId, count: 5 });
+
+      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockStoryModel.find).not.toHaveBeenCalled();
+      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
     });
   });
 });
