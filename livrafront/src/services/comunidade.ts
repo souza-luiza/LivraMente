@@ -17,6 +17,17 @@ export async function getComunidadeByName(comunidadeNome: string): Promise<Comun
   return res.json();
 }
 
+export async function getComunidades() : Promise<Comunidade[]> {
+  const res = await fetch(`${API_BASE_URL}/comunidades`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+
+  if(!res.ok) return Promise.reject(new Error('Erro ao buscar comunidades'));
+  return await res.json();
+}
+
 export async function getPosts(comunidadeNome: string) {
   const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
     headers: {
@@ -77,4 +88,105 @@ export async function leaveCommunity(comunidadeNome: string) {
   });
   if (!res.ok) throw new Error("Erro ao sair da comunidade");
   return res.json();
+}
+
+export async function removeMember(comunidadeNome: string, targetUserId: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}`, {
+    method: "DELETE",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao remover membro como moderador");
+  return res.json();
+}
+
+export async function makeMemberModerator(comunidadeNome: string, targetUserId: string) {
+  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}/tornar-moderador`, {
+    method: "PATCH",
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  });
+  if (!res.ok) throw new Error("Erro ao promover membro a moderador");
+  return res.json();
+}
+
+export async function createCommunity(payload: Record<string, unknown>) {
+  const response = await fetch(`${API_BASE_URL}/comunidades`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(getAuthHeaders() || {}),
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao criar comunidade')
+    return Promise.reject(new Error(text || 'Erro ao criar comunidade'))
+  }
+
+  return response.json()
+}
+
+export async function getCommunity(comunidadeNome: string) {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao buscar comunidade')
+    return Promise.reject(new Error(text || 'Erro ao buscar comunidade'))
+  }
+  return response.json()
+}
+
+export async function updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(getAuthHeaders() || {}),
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao editar comunidade')
+    return Promise.reject(new Error(text || 'Erro ao editar comunidade'))
+  }
+
+  return response.json()
+}
+
+export async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+    body: formData,
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Erro ao enviar imagem')
+    return Promise.reject(new Error(text || 'Erro ao enviar imagem'))
+  }
+  const json = await response.json()
+  return json.url || json.imagem_url || json.data || ''
+}
+
+export async function deleteCommunity(comunidadeNome: string) {
+  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+    method: 'DELETE',
+    headers: {
+      ...(getAuthHeaders() || {}),
+    },
+  })
+  if (!response.ok) throw new Error('Erro ao apagar comunidade')
+  return response.json();
 }

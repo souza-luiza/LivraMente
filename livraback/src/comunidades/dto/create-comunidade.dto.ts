@@ -22,4 +22,9 @@ export class CreateComunidadeDto {
     @IsOptional() // é opcional
     @IsArray()
     tags?: string[];
+
+    @ApiProperty({ description: 'Slug da comunidade (para a URL)'} )
+    @IsOptional()
+    @IsString()
+    slug?: string;
 }

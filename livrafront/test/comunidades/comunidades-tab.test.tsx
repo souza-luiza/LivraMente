@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 // Mock do servico inteiro
-jest.mock("@/services/comunidades", () => ({
+jest.mock("@/services/comunidade", () => ({
   getComunidades: jest.fn(),
 }));
 
@@ -10,7 +10,7 @@ jest.mock("@/components/loading", () => () => <div data-testid="loading">Loading
 jest.mock("@/components/button", () => ({ text }: any) => <button>{text}</button>);
 jest.mock("@/components/icons/HomeIcon", () => () => <span>HomeIcon</span>);
 
-import { getComunidades } from "@/services/comunidades";
+import { getComunidades } from "@/services/comunidade";
 import ComunidadesTabs from "@/app/comunidades/comunidades-tab";
 
 const mockComunidades = [

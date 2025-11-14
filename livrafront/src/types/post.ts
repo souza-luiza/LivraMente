@@ -22,7 +22,7 @@ export interface Post {
     foto_perfil?: string;
   };
   conteudo: string;                                    
-  comunidade: string | {                               
+  comunidade: {                               
     _id: string;
     nome: string;
   };
@@ -33,17 +33,22 @@ export interface Post {
   curtidas: string[];                                  
   comentarios: string[];                                 
   publico: boolean;                                   
-  data_criacao: string;                                
-  data_atualizacao: string;                            
+  createdAt: string;                                
+  updatedAt: string;                            
   livro_referenciado?: string;                         
   solicitacao_revisao: boolean;                        
 }
 
 
-export interface LikeResponse {
-  message: string;                                    
-  totalCurtidas: number;                              
-  jaCurtiu: boolean;                                 
+export interface LikeResponse {                              
+  liked: boolean;                                 
+  likeAmount: number;                              
+}
+
+
+export interface ModeratePostResponse {
+  message: string;
+  status: 'Aprovado' | 'Rejeitado';
 }
 
 

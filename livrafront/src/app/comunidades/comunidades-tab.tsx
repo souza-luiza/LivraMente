@@ -12,7 +12,7 @@ import DystopiaIcon from "@/components/icons/DystopiaIcon";
 import HeartIcon from "@/components/icons/HeartIcon";
 import AdventureIcon from "@/components/icons/AdventureIcon";
 import { Comunidade } from "@/types/comunidade";
-import { getComunidades } from "@/services/comunidades";
+import { getComunidades } from "@/services/comunidade";
 
 export default function ComunidadesTabs() {
     const [value, setValue] = useState('romance');

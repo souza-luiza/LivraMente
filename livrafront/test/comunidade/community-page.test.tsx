@@ -67,21 +67,11 @@ jest.mock('@/components/loading', () => ({
 
 jest.mock('@/components/post', () => ({
   __esModule: true,
-  default: ({ 
-    id, 
-    community, 
-    author, 
-    content 
-  }: { 
-    id: string; 
-    community: string; 
-    author: string; 
-    content: string;
-  }) => (
-    <div data-testid={`post-${id}`}>
-      <div>Community: {community}</div>
-      <div>Author: {author}</div>
-      <div>Content: {content}</div>
+  default: ({ post }: { post: any }) => (
+    <div data-testid={`post-${post._id}`}>
+      <div>Community: {post.comunidade?.nome ?? post.comunidade}</div>
+      <div>Author: {post.autor?.username ?? post.autor}</div>
+      <div>Content: {post.conteudo ?? post.content}</div>
     </div>
   ),
 }));

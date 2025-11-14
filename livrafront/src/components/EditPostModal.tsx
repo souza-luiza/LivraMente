@@ -1,37 +1,41 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
 import { postsService } from '@/services/posts';
 import Edit2Icon from './icons/Edit2Icon';
+import { Post } from '@/types/post';
+import CodeIcon from './icons/CodeIcon';
+import { motion, AnimatePresence } from 'framer-motion';
 import CommunityIcon from './icons/CommunityIcon';
+import SaveIcon from './icons/SaveIcon';
 
-interface CreatePostModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  communityName: string;
-  onSuccess?: () => void; 
+interface EditPostModalProps {
+    post: Post;
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void; 
 }
 
-export default function CreatePostModal({
-  isOpen,
-  onClose,
-  communityName,
-  onSuccess,
-}: CreatePostModalProps) {
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
-  const [requestReview, setRequestReview] = useState(false);
+export default function EditPostModal({
+    post,
+    isOpen,
+    onClose,
+    onSuccess,
+}: EditPostModalProps) {
+
+  const [content, setContent] = useState(post.conteudo);
+  const [images, setImages] = useState<string[]>(post.imagens);
+  const [requestReview, setRequestReview] = useState(post.solicitacao_revisao);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  
+
   useEffect(() => {
     if (isOpen) {
       // Desabilita scrollagem da página ao abrir o modal
@@ -44,7 +48,7 @@ export default function CreatePostModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !post) return null;
 
   const validateContent = (value: string): boolean => {
     if (!value || value.trim().length === 0) {
@@ -73,15 +77,14 @@ export default function CreatePostModal({
     setSubmitError('');
 
     try {
-      // Criar o post via API
-      const createdPost = await postsService.createPost(
+      // Manda dados para a edição do post
+      const editedPost = await postsService.updatePost(
+        post._id,
         {
           conteudo: content.trim(),
-          comunidade: communityName,
           imagens: images.length > 0 ? images : undefined,
           solicitacao_revisao: requestReview,
-          categoria: 'geral', // Categoria inicial, pode ser alterada pelo moderador se for solicitado
-          publico: true,
+          publico: true
         }
       );
 
@@ -197,6 +200,10 @@ export default function CreatePostModal({
         className="fixed inset-0 z-50 flex items-center justify-center"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
         onClick={handleCancel}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeInOut' }}
       >
         <div
           className="relative flex-shrink-0 bg-gray-50 medium-padding medium-border-radius"
@@ -209,10 +216,10 @@ export default function CreatePostModal({
         >
           {/* Título do Modal */}
           <div className="flex flex-row justify-between items-center text-h5 mb-4">
-              <h1>Criar Postagem</h1>
+              <h1>Editar Postagem</h1>
               <div className="flex flex-row items-center gap-1">
                 <CommunityIcon size={24} />
-                <h2>{communityName}</h2>
+                <h2>{post.comunidade.nome}</h2>
               </div>
           </div>
 
@@ -278,13 +285,13 @@ export default function CreatePostModal({
                     />
                     {/* Botão para remover imagem */}
                     <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        icon={<TrashIcon />}
-                        colorScheme="dark-brown"
-                        size="small"
-                        onClick={() => removeImage(index)}
-                        aria-label="Remover imagem"
-                      />
+                        <Button
+                          icon={<TrashIcon />}
+                          colorScheme="dark-brown"
+                          size="small"
+                          onClick={() => removeImage(index)}
+                          aria-label="Remover imagem"
+                        />
                     </div>
                   </div>
                 ))}
@@ -359,13 +366,13 @@ export default function CreatePostModal({
 
               {/* Botão de Postar */}
               <Button
-                text={isSubmitting ? "Postando..." : "Postar"}
-                icon={<Edit2Icon />}
+                text={isSubmitting ? "Salvando..." : "Salvar Alterações"}
+                icon={<SaveIcon />}
                 size="medium"
                 colorScheme="light-green"
                 onClick={handlePost}
-                aria-label="Postar"
-                loading={isSubmitting}
+                aria-label="Salvar Alterações"
+                disabled={isSubmitting}
               />
             </div>
           </div>
