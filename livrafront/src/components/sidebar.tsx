@@ -27,7 +27,7 @@ export default function Sidebar() {
             } catch (error) {}
         }
         fetchUserInfo();
-    }, []);
+    }, [userInfo]);
 
     const handleClick = async () => {
         try {

@@ -80,17 +80,19 @@ describe('AuthService', () => {
     }, mockSession);
 
     expect(result).toEqual({
-      id: 'user-id',
+      userId: 'user-id',
       username: 'teste',
       email: 'teste@test.com',
       avatarUrl: undefined, 
+      pronouns: undefined
     });
 
     expect(mockSession.user).toEqual({
-      id: 'user-id',
+      userId: 'user-id',
       username: 'teste',
       email: 'teste@test.com',
       avatarUrl: undefined,
+      pronouns: undefined
     });
   });
 
@@ -124,23 +126,26 @@ describe('AuthService', () => {
       email: 'teste@test.com',
       username: 'teste',
       avatarUrl: 'mock.com/avatar.jpg',
+      pronouns: 'eu/eu',
       senha: storedPassword,
     });
 
     const result = await service.signIn({ email: 'teste@test.com', senha }, mockSession);
 
     expect(result).toEqual({
-      id: 'user-id',
+      userId: 'user-id',
       username: 'teste',
       email: 'teste@test.com',
       avatarUrl: 'mock.com/avatar.jpg', 
+      pronouns: 'eu/eu',
     });
     
     expect(mockSession.user).toEqual({
-      id: 'user-id',
+      userId: 'user-id',
       username: 'teste',
       email: 'teste@test.com',
       avatarUrl: 'mock.com/avatar.jpg',
+      pronouns: 'eu/eu',
     });
   });
 

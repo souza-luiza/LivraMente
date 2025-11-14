@@ -1,23 +1,28 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/user-store";
+import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
 import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 import  TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
 import EditIcon from "@/components/icons/EditIcon";
-import { api } from "@/lib/api";
 import ImageCropModal from "@/components/ImageCropModal";
+import { updateAvatar, updateProfile } from "@/services/userService";
+import { User } from "@/types/auth";
+import { getSessionInfos } from "@/services/auth";
 
 export default function SettingsProfilePage() {
   const router = useRouter();
-  const { isAuthenticated, token } = useAuthStore();
-  const { username, pronouns, profileImageUrl, setUsername, setPronouns, setProfileImageUrl } = useUserStore();
+  const params = useParams();
+  const { username } = params as { username: string };
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<User>();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -25,25 +30,47 @@ export default function SettingsProfilePage() {
     pronouns: "",
     profileImageUrl: "",
   });
+
   const [errors, setErrors] = useState({ name: "", pronouns: "", profileImageUrl: "" });
-  const [isLoading, setIsLoading] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string>("");
   const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
 
   useEffect(() => {
-    setFormData({
-      name: username,
-      pronouns: pronouns,
-      profileImageUrl: profileImageUrl,
-    });
-  }, [username, pronouns, profileImageUrl]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !username) {
-      router.push("/login");
+    if(!username) {
+      router.replace('/not-found');
+      return;
     }
-  }, [isAuthenticated, username, router]);
+
+    const fetchData = async () => {
+      try {
+        const info = await getSessionInfos();
+        if(!info) {
+          router.replace('/not-found');
+          return;
+        }
+        if(info.username !== username) { // se tenta acessar editar perfil de outra pessoa
+          router.replace('/not-found');
+          return;
+        }
+        setUserInfo(info);
+        setFormData({
+          name: info.username || '',
+          pronouns: info.pronouns || '',
+          profileImageUrl: info.avatarUrl || '',
+        });
+
+      } catch (error) {
+          toast.error("Erro ao carregar dados do usuário.");
+          router.replace('/entrar');
+          return;
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [username, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -115,8 +142,8 @@ export default function SettingsProfilePage() {
     // Resetar formulário para valores originais
     setFormData({
       name: username,
-      pronouns: pronouns,
-      profileImageUrl: profileImageUrl,
+      pronouns: userInfo?.pronouns || '',
+      profileImageUrl: userInfo?.avatarUrl || '',
     });
     
     router.back();
@@ -130,56 +157,28 @@ export default function SettingsProfilePage() {
 
     try {
       // Atualizar avatar se houver imagem cortada
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
       if (croppedImageBlob) {
         const formDataUpload = new FormData();
         formDataUpload.append('file', croppedImageBlob, 'avatar.jpg');
 
-        const response = await fetch(`${API_BASE_URL}/users/avatar`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formDataUpload,
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao fazer upload da imagem');
-        }
-
-        const data = await response.json();
-        setProfileImageUrl(data.avatarUrl);
+        await updateAvatar(formDataUpload);
       }
 
       // Atualizar dados do perfil
-      const response = await fetch(`${API_BASE_URL}/users/profile`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ username: formData.name, pronouns: formData.pronouns }),
-      });
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar dados do usuário');
-      }
-      const data = await response.json();
-      setUsername(formData.name);
-      setPronouns(formData.pronouns);
+      await updateProfile({ username: formData.name, pronouns: formData.pronouns })
 
       toast.success("Perfil atualizado com sucesso!");
       router.push(`/${formData.name}`);
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
-      toast.error(error instanceof Error ? error.message : "Erro ao atualizar perfil");
+      if(error instanceof Error && error.message === "Failed to fetch") 
+        toast.error("Não foi possível conectar ao servidor.");
+      else
+        toast.error(error instanceof Error ? error.message : "Erro ao atualizar dados do usuário.");
     } finally {
       setIsLoading(false);
       setCroppedImageBlob(null);
     }
   };
-
-  if (!isAuthenticated || !username) {
-    return null;
-  }
 
   return (
     <div className="flex items-center h-screen bg-gray-50">
@@ -214,9 +213,9 @@ export default function SettingsProfilePage() {
                 />
                 
                 <Button 
-                  icon={<EditIcon size={16}/>} 
+                  icon={<EditIcon />} 
                   colorScheme="dark-green" 
-                  size="small" 
+                  size="medium" 
                   text='Alterar Foto' 
                   onClick={handleImageClick}
                   type="button"
@@ -239,7 +238,7 @@ export default function SettingsProfilePage() {
               <Input
                 name="pronouns"
                 label="Pronomes"
-                helperText={`Pronomes atuais: ${pronouns}`}
+                helperText={`Pronomes atuais: ${userInfo?.pronouns}`}
                 value={formData.pronouns}
                 onChange={handleInputChange}
                 error={errors.pronouns}
@@ -249,17 +248,17 @@ export default function SettingsProfilePage() {
 
               <div className="flex justify-end gap-4 pt-4 border-t border-neutral-200">
                 <Button 
-                  icon={<TrashIcon size={16}/>} 
+                  icon={<TrashIcon />} 
                   colorScheme="light-brown" 
-                  size="small" 
+                  size="medium" 
                   text='Cancelar' 
                   onClick={handleCancel}
                   type="button"
                 />
                 <Button 
-                  icon={<SaveIcon size={16}/>} 
+                  icon={<SaveIcon />} 
                   colorScheme="dark-green" 
-                  size="small" 
+                  size="medium" 
                   text='Salvar Alterações' 
                   onClick={handleSaveChanges} 
                   loading={isLoading}
@@ -276,7 +275,7 @@ export default function SettingsProfilePage() {
         onClose={handleCropCancel}
         onSave={handleCropSave}
       />
+      <ToastNotification />
     </div>
   );
 }
-

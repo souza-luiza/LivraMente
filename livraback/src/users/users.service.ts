@@ -30,6 +30,12 @@ export class UsersService {
     return user;
   }
 
+  async findOneUser(username: string) {
+    const user = await this.userModel.findOne({ username }).select('-senha -_id -avatarPublicId -readlists_favoritas -readlists').exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    return user;
+  }
+
   async getByEmail(email: string) {
     return await this.userModel.findOne({ email }).exec();
   }
@@ -38,7 +44,7 @@ export class UsersService {
     return await this.userModel.findOne({ username }).exec();
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, session: Record<string, any>) {
     const { email, username } = updateUserDto;
 
     // Verifica se já existe user com msm email:
@@ -75,6 +81,8 @@ export class UsersService {
     ).select('-senha').exec();
 
     if (!updated) throw new NotFoundException('Usuário não encontrado');
+
+    session.user = { userId: updated._id, username: updated.username, email: updated.email, avatarUrl: updated.avatarUrl, pronouns: updated.pronouns };
     
     return updated;
   }
@@ -162,7 +170,7 @@ export class UsersService {
     return user.readlists_favoritas;
   }
 
-  async updateAvatar(id: string, file: Express.Multer.File) {
+  async updateAvatar(id: string, file: Express.Multer.File, session: Record<string, any>) {
     const user = await this.findOne(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
     if (!file?.buffer) throw new BadRequestException('Arquivo inválido');
@@ -178,6 +186,7 @@ export class UsersService {
     user.avatarPublicId = uploaded.public_id;
     await user.save();
 
+    session.user = { userId: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl, pronouns: user.pronouns };
     const obj = user.toObject();
     delete (obj as any).senha; //talvez problema de build
     return obj;

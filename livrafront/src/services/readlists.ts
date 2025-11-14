@@ -1,24 +1,31 @@
-import { Readlist } from '../types/readlist';
+import { Readlist } from '@/types/readlist';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
 // Buscar readlists públicas de um usuário
 export async function getPublicReadlists(username: string): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/readlists/public/${username}`, {
-    credentials: "include",
+    credentials: "include"
   });
-  if (!response.ok) return Promise.reject(new Error('Erro ao buscar readlists públicas'));
-  return response.json();
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Usuário não autenticado.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao buscar readlists do usuário.');
+  }
+  return await response.json();
 }
 
 // Buscar readlists criadas pelo usuário autenticado
 export async function getOwnReadlists(): Promise<Readlist[]> {
   const response = await fetch(`${API_BASE_URL}/readlists`, {
-    credentials: "include",
+    credentials: "include"
   });
-  if (!response.ok) return Promise.reject(new Error('Erro ao buscar suas readlists'));
-  const json = await response.json();
-  return json;
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Usuário não autenticado.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao buscar readlists do usuário.');
+  }
+  return await response.json();
 }
 
 // Buscar readlists favoritas do usuário autenticado

@@ -12,4 +12,7 @@ export class CurrentUserDto {
 
     @ApiProperty({ description: 'URL do avatar do usuário' })
     avatarUrl: string;
+
+    @ApiProperty({ description: 'Pronomes do usuário' })
+    pronouns: string;
 }

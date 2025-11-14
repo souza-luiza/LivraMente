@@ -13,12 +13,14 @@ describe('ReadlistsService', () => {
   const publicReadlist = { _id: '1', nome: 'Readlist Pública', publica: true };
 
   const mockSave = jest.fn().mockResolvedValue(mockReadlist);
+  const mockSelect = jest.fn().mockReturnThis();
 
   const mockReadlistModel = {
     prototype: {
       save: mockSave,
     },
     find: jest.fn().mockImplementation((filter) => ({
+      select: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue([mockReadlist]),
     })),
     findOne: jest.fn().mockReturnValue({
@@ -97,6 +99,12 @@ describe('ReadlistsService', () => {
 
   describe('findAll', () => {
     it('should return all readlists for user', async () => {
+      mockReadlistModel.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue([mockReadlist]),
+      }),
+    });
+
       const result = await service.findAll('user123');
       expect(mockReadlistModel.find).toHaveBeenCalledWith({ criador: 'user123' });
       expect(result).toEqual([mockReadlist]);

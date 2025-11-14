@@ -1,20 +1,9 @@
 "use client";
 import Readlist from "@/components/readlist";
-
-interface Readlist {
-  _id: string;
-  nome: string;
-  description?: string;
-  slug: string;
-  isPublic: boolean;
-  createdAt: string;
-  owner: {
-    username: string;
-  };
-}
+import { Readlist as ReadlistType } from '@/types/readlist';
 
 interface ProfileReadlistsProps {
-  readlists: Readlist[];
+  readlists: ReadlistType[];
   username: string;
 }
 
@@ -22,7 +11,7 @@ export default function ProfileReadlists({ readlists, username }: ProfileReadlis
   if (readlists.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
-        <p className="text-gray-500 text-b1">Nenhuma readlist pública encontrada</p>
+        <p className="text-gray-500 text-b1">Nenhuma readlist encontrada</p>
       </div>
     );
   }
@@ -33,7 +22,7 @@ export default function ProfileReadlists({ readlists, username }: ProfileReadlis
         <Readlist
           key={readlist._id}
           title={readlist.nome}
-          author={readlist.owner?.username || username}
+          author={username}
           link={`/${username}/readlist/${readlist.slug}`}
         />
       ))}

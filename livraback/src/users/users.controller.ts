@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Session } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,10 +15,10 @@ import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('me')
+  @Get(':username')
   @ApiOperation({
-    summary: 'Retorna os dados do usuário',
-    description: 'Retorna os dados do usuário autenticado'
+    summary: 'Retorna os dados de um usuário',
+    description: 'Retorna os dados de um usuário por username'
   })
   @ApiResponse({
     status: 200,
@@ -32,11 +32,11 @@ export class UsersController {
     status: 401,
     description: 'Sessão inválida'
   })
-  async getProfile(@CurrentUser() user: CurrentUserDto) {
-    return this.usersService.findOne(user.userId);
+  async getProfile(@Param('username') username: string) {
+    return this.usersService.findOneUser(username);
   }
 
-  @Put('profile')
+  @Patch('profile')
   @ApiOperation({
     summary: 'Atualiza os dados do usuário',
     description: 'Atualiza os dados do usuário autenticado'
@@ -54,15 +54,11 @@ export class UsersController {
     description: 'Email ou nome de usuário em uso'
   })
   @ApiResponse({
-    status: 400,
-    description: 'Email ou nome de usuário em uso pelo próprio usuário'
-  })
-  @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(user.userId, updateUserDto);
+  async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto, @Session() session: Record<string, any>) {
+    return this.usersService.update(user.userId, updateUserDto, session);
   }
 
   @Put('avatar')
@@ -101,9 +97,9 @@ export class UsersController {
     status: 401,
     description: 'Token JWT inválido'
   })
-  async updateAvatar(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File) {
+  async updateAvatar(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File, @Session() session: Record<string, any>) {
     if (!file) throw new BadRequestException('Nenhum arquivo foi enviado');
-    return this.usersService.updateAvatar(user.userId, file);
+    return this.usersService.updateAvatar(user.userId, file, session);
   }
 
   @Patch('me/registro-leitura')

@@ -18,6 +18,7 @@ describe('UsersController', () => {
     create: jest.fn().mockResolvedValue(mockUser),
     findAll: jest.fn().mockResolvedValue([mockUser]),
     findOne: jest.fn().mockResolvedValue(mockUser),
+    findOneUser: jest.fn().mockResolvedValue(mockUser),
     update: jest.fn().mockResolvedValue({ ...mockUser, username: 'Updated' }),
     remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
     registroLeitura: jest.fn().mockResolvedValue({ ganhoXP: 30 }),
@@ -55,12 +56,12 @@ describe('UsersController', () => {
   });
 
   describe('getProfile', () => {
-    it('should return the current user profile', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+    it('should return a user profile', async () => {
+      const username = 'username-test' 
 
-      const result = await controller.getProfile(currentUser);
+      const result = await controller.getProfile(username);
 
-      expect(usersService.findOne).toHaveBeenCalledWith(currentUser.userId);
+      expect(usersService.findOneUser).toHaveBeenCalledWith(username);
       expect(result).toEqual(mockUser);
     });
   });
@@ -69,10 +70,11 @@ describe('UsersController', () => {
     it('should update the current user profile', async () => {
       const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
       const updateUserDto: UpdateUserDto = { username: 'Updated' };
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      const result = await controller.updateProfile(currentUser, updateUserDto);
+      const result = await controller.updateProfile(currentUser, updateUserDto, mockSession as any);
 
-      expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto);
+      expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto, mockSession as any);
       expect(result).toEqual({ ...mockUser, username: 'Updated' });
     });
   });
@@ -175,11 +177,12 @@ describe('UsersController', () => {
 
     it('deve chamar o service e retornar o resultado', async () => {
       const mockResponse = { avatarUrl: 'mocked.com/teste.png' };
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
       mockUsersService.updateAvatar = jest.fn().mockResolvedValue(mockResponse);
 
-      const result = await controller.updateAvatar(fakeUser as any, fakeFile);
+      const result = await controller.updateAvatar(fakeUser as any, fakeFile, mockSession as any);
 
-      expect(usersService.updateAvatar).toHaveBeenCalledWith(fakeUser.userId, fakeFile);
+      expect(usersService.updateAvatar).toHaveBeenCalledWith(fakeUser.userId, fakeFile, mockSession as any);
       expect(result).toEqual(mockResponse);
     });
 

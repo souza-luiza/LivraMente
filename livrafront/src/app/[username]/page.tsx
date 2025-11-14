@@ -2,9 +2,7 @@
 import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/user-store";
-import { getPublicReadlists } from "@/services/readlists";
+import { getOwnReadlists, getPublicReadlists } from "@/services/readlists";
 import type { Readlist } from "@/types/readlist";
 import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
@@ -17,97 +15,59 @@ import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import LogoIcon from "@/components/icons/LogoIcon";
 import ArrowLeftIcon from "@/components/icons/ArrowLeftIcon";
 import ErrorIcon from "@/components/icons/ErrorIcon";
-
-interface Gamification {
-    level: number;
-    XP: number;
-    XP_next_level: number;
-}
-
-interface UserData {
-    username: string;
-    pronouns?: string;
-    email: string;
-    _id: string;
-    avatarUrl?: string;
-    gamification: Gamification;
-}
+import { Gamificacao, UserProfile } from "@/types/users";
+import { getSessionInfos } from "@/services/auth";
+import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
+import { getProfile } from "@/services/userService";
 
 export default function UserProfilePage(){
-    const params = useParams();
     const router = useRouter();
-    const username = params?.username as string;
-    const { username: loggedUsername } = useAuthStore();
-    const { setUsername, setPronouns } = useUserStore();
-    
-    const [userData, setUserData] = useState<UserData | null>(null);
-    const [readlists, setReadlists] = useState<Readlist[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    
-    // Verificar se é o próprio usuário logado
-    const isOwnProfile = loggedUsername === username;
+    const params = useParams();
+    const { username } = params as { username: string };
 
-    const calculateXPPercentage = (gamification?: Gamification) => {
-        if (!gamification) return 0;
-        return Math.round((gamification.XP / gamification.XP_next_level) * 100);
-    };
+    const [isLoading, setIsLoading] = useState(true);
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
+    
+    const [userData, setUserData] = useState<UserProfile | null>(null);
+    const [readlists, setReadlists] = useState<Readlist[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function fetchUserData() {
-            if (!username || username.trim() === '') {
-                notFound();
-                return;
-            }
-
+        if(!username || username.trim() === '') 
+          notFound();
+    
+        const fetchData = async () => {
             try {
-                setIsLoading(true);
-                setError(null);
-                
-                const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-                const url = `${API_BASE_URL}/users/public/${username}`;
-                
-                console.log('Buscando dados do usuário:', url);
-                
-                const response = await fetch(url, {credentials: "include"});
-                
-                console.log('Status da resposta:', response.status);
-                
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        notFound();
-                        return;
-                    }
-                    
-                    const errorData = await response.json().catch(() => ({}));
-                    console.error('Erro na resposta:', errorData);
-                    throw new Error(errorData.message || 'Erro ao buscar dados do usuário');
+                const info = await getSessionInfos();
+                if(!info) {
+                    router.replace('/entrar');
+                    return;
                 }
+                const own = info.username === username;
+                setIsOwnProfile(own);
 
-                const data = await response.json();
-                console.log('Dados recebidos:', data);
-                
+                // Carrega perfil + readlists:
+                const data = await getProfile(username);
                 setUserData(data);
-
-                if (isOwnProfile) {
-                    setUsername(data.username);
-                    setPronouns(data.pronouns || '');
-                }
-
-                // Buscar readlists públicas do usuário
-                const userReadlists = await getPublicReadlists(username);
-                console.log('Readlists recebidas:', userReadlists);
+                console.log(data);
+                const userReadlists = own ? await getOwnReadlists() : await getPublicReadlists(username);
                 setReadlists(userReadlists);
-            } catch (err) {
-                console.error('Erro ao carregar perfil:', err);
-                setError(err instanceof Error ? err.message : 'Erro ao carregar perfil do usuário');
+            } catch (error) {
+                toast.error("Erro ao carregar dados do usuário.");
+                setError(error instanceof Error ? error.message : 'Erro ao carregar perfil do usuário');
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
+    
+        fetchData();
+    }, [username, router]);
 
-        fetchUserData();
-    }, [username, isOwnProfile, setUsername, setPronouns]);
+    const calculateXPPercentage = (gamification?: Gamificacao) => {
+        if (!gamification) return 0;
+        return Math.round((gamification.XP / gamification.XP_proximo_nivel) * 100);
+    };
 
     const handleGoBack = () => {
         router.back();
@@ -156,8 +116,8 @@ export default function UserProfilePage(){
         );
     }
 
-    const xpPercentage = calculateXPPercentage(userData.gamification);
-    const userLevel = userData.gamification?.level || 1;
+    const xpPercentage = calculateXPPercentage(userData.gamificacao);
+    const userLevel = userData.gamificacao?.nivel || 1;
 
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">
@@ -181,9 +141,7 @@ export default function UserProfilePage(){
                 <p className="pb-4 text-b1 body-quotation">{userData.pronouns || ""}</p>
                 
                 {isOwnProfile && (
-                    <Link href={`/${username}/editar-perfil`}>
-                        <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} />
-                    </Link>
+                    <Button text="Editar Perfil" colorScheme="dark-brown" size="medium" icon={<EditIcon />} path={`/${username}/editar-perfil`} />
                 )}
                 
                 <div className="w-full flex justify-center items-stretch mt-8 gap-4">
@@ -205,6 +163,7 @@ export default function UserProfilePage(){
                     </div>
                 </div>
             </main>
+            <ToastNotification/>
         </div>
     );
 }

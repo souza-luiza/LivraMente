@@ -156,8 +156,9 @@ describe('UsersService', () => {
           exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
         }),
       });
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      const result = await service.update('user-id', updateUserDto);
+      const result = await service.update('user-id', updateUserDto, mockSession as any);
 
       expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
@@ -177,10 +178,11 @@ describe('UsersService', () => {
           toString: () => 'different-id',
         },
       } as any;
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
       jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(otherUser);
 
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.update('user-id', updateUserDto, mockSession as any)).rejects.toThrow(ConflictException);
     });
 
     it('should throw ConflictException if username is in use by another user', async () => {
@@ -192,10 +194,11 @@ describe('UsersService', () => {
           toString: () => 'different-id',
         },
       } as any;
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
       jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(otherUser);
 
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.update('user-id', updateUserDto, mockSession as any)).rejects.toThrow(ConflictException);
     });
 
     it('should throw NotFoundException if user is not found during update', async () => {
@@ -212,8 +215,9 @@ describe('UsersService', () => {
           exec: jest.fn().mockResolvedValue(null),
         }),
       });
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      await expect(service.update('no-existing-id', updateUserDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('no-existing-id', updateUserDto, mockSession as any)).rejects.toThrow(NotFoundException);
 
       expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
@@ -604,6 +608,7 @@ describe('UsersService', () => {
       filename: '',
       path: ''
     };
+    const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
     it('deve lançar erro se o usuário não for encontrado', async () => {
       mockUserModel.findById.mockReturnValue({
@@ -612,7 +617,7 @@ describe('UsersService', () => {
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.updateAvatar('user-id', file)).rejects.toThrow(NotFoundException);
+      await expect(service.updateAvatar('user-id', file, mockSession as any)).rejects.toThrow(NotFoundException);
     })
 
     it('deve lançar erro se o arquivo for inválido', async () => {
@@ -622,7 +627,7 @@ describe('UsersService', () => {
         exec: jest.fn().mockResolvedValue(mockUser),
       });
 
-      await expect(service.updateAvatar('1', {} as any)).rejects.toThrow(BadRequestException);
+      await expect(service.updateAvatar('1', {} as any, mockSession as any)).rejects.toThrow(BadRequestException);
     })
 
     it('deve fazer upload e atualizar avatar corretamente', async () => {
@@ -638,7 +643,7 @@ describe('UsersService', () => {
         exec: jest.fn().mockResolvedValue(mockUser),
       });
 
-      const result = await service.updateAvatar('1', file);
+      const result = await service.updateAvatar('1', file, mockSession as any);
 
       expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
         file.buffer,

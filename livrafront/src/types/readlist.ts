@@ -24,15 +24,11 @@ export interface Readlist {
   publica: boolean;
   descricao?: string;
   capa_url?: string;
-  criador: {
-    _id: string;
-    username?: string;
-  };
+  criador: string;
   livros: Array<string | PopulatedBook>;
-  contribuidores?: Array<{ _id: string; username?: string }>;
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  favoritadoPor?: string[]; 
+  slug: string;
 }
 
 /* Dados para criar uma nova readlist */

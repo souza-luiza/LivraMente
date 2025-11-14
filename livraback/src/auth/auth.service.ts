@@ -10,9 +10,7 @@ const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly usersService: UsersService,
-  ) {}
+  constructor( private readonly usersService: UsersService ) {}
 
   async signUp(createUserDto: CreateUserDto, session: Record<string, any>) {
     const { username, email, senha } = createUserDto;
@@ -29,7 +27,7 @@ export class AuthService {
     const user = await this.usersService.create({ username, email, senha: saltAndHash });
 
     // salva user na sessao
-    session.user = { id: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl };
+    session.user = { userId: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl, pronouns: user.pronouns };
 
     return session.user;
   }
@@ -46,7 +44,7 @@ export class AuthService {
     if (storedBuffer.length !== hash.length || !timingSafeEqual(storedBuffer, hash)) throw new UnauthorizedException('Credenciais inválidas');
 
     // salva user na sessao
-    session.user = { id: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl };
+    session.user = { userId: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl, pronouns: user.pronouns };
 
     return session.user;
   }

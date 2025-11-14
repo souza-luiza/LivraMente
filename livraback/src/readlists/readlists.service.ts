@@ -31,7 +31,7 @@ export class ReadlistsService {
     }
 
     async findAll(criadorId: string) {
-        return await this.readlistModel.find({ criador: criadorId }).exec();
+        return await this.readlistModel.find({ criador: criadorId }).select('-capa_public_id').exec();
     }
 
     async findOne(criadorId: string, slug: string) {

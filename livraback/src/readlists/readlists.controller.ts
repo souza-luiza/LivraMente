@@ -42,7 +42,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async findAll(@CurrentUser() user: CurrentUserDto) {
         return this.readlistsService.findAll(user.userId);
@@ -122,7 +122,7 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async findAllPublic(@Param('username') username: string) {
         return this.readlistsService.findAllPublic(username);

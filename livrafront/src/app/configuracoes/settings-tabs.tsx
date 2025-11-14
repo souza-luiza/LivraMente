@@ -1,9 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/user-store";
-import { userService, UserProfile } from "@/services/userService";
 import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
@@ -29,22 +26,25 @@ import PauseIcon from "@/components/icons/PauseIcon";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import Image from "next/image";
 import ImageCropModal from "@/components/ImageCropModal";
+import { getSessionInfos } from "@/services/auth";
+import { User } from "@/types/auth";
+import { updateAvatar, updateProfile } from "@/services/userService";
+import { useRouter } from "next/navigation";
+import LoadingPage from "@/components/loading";
 
 export default function SettingsTabs() {
-    const { username: loggedUsername, token } = useAuthStore();
-    const { setUsername, setPronouns, setProfileImageUrl } = useUserStore();
+    const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const [value, setValue] = useState('profile');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const [userData, setUserData] = useState<UserProfile | null>(null);
+    const [userData, setUserData] = useState<User>();
     
-    // Form data
     const [formData, setFormData] = useState({
         username: '',
-        pronouns: '',
         email: '',
+        pronouns: '',
         phone: '',
         country: 'BR',
         avatarUrl: ''
@@ -55,33 +55,35 @@ export default function SettingsTabs() {
     const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
     const [showCropModal, setShowCropModal] = useState(false);
 
-    // Buscar dados do usuário
     useEffect(() => {
-        async function fetchUserData() {
-            if (!loggedUsername) return;
-
+        const fetchData = async () => {
             try {
-                setIsLoading(true);
-                const data = await userService.getProfile(loggedUsername);
-                setUserData(data);
+                const info = await getSessionInfos();
+                if(!info) {
+                    router.replace('/entrar');
+                    return;
+                };
+                setUserData(info);
                 setFormData({
-                    username: data.username,
-                    pronouns: data.pronouns || '',
-                    email: data.email,
-                    phone: data.phone || '',
-                    country: data.country || 'BR',
-                    avatarUrl: data.avatarUrl || ''
+                    username: info.username || '',
+                    email: info.email || '',
+                    pronouns: info.pronouns || '',
+                    phone: '',
+                    country: 'BR',
+                    avatarUrl: info.avatarUrl || ''
                 });
+    
             } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);
-                toast.error('Erro ao carregar dados do usuário');
+                toast.error("Erro ao carregar dados do usuário.");
+                router.replace('/entrar');
+                return;
             } finally {
                 setIsLoading(false);
-            }
-        }
-
-        fetchUserData();
-    }, [loggedUsername]);
+          }
+        };
+    
+        fetchData();
+    }, [router]);
 
     const handleChange = (newValue: string) => {
         setValue(newValue);
@@ -145,15 +147,15 @@ export default function SettingsTabs() {
                 username: userData.username,
                 pronouns: userData.pronouns || '',
                 email: userData.email,
-                phone: userData.phone || '',
-                country: userData.country || 'BR',
+                phone: '',
+                country: 'BR',
                 avatarUrl: userData.avatarUrl || ''
             });
         }
     };
 
     const handleSaveChanges = async () => {
-        if (!token || !formData.username || !formData.email) {
+        if (!formData.username || !formData.email) {
             toast.error('Preencha todos os campos obrigatórios');
             return;
         }
@@ -163,43 +165,33 @@ export default function SettingsTabs() {
         try {
             // Atualizar avatar se houver imagem cortada
             if (croppedImageBlob) {
-                const { avatarUrl } = await userService.updateAvatar(croppedImageBlob, token);
-                setProfileImageUrl(avatarUrl);
-                setFormData(prev => ({ ...prev, avatarUrl }));
+                const formDataUpload = new FormData();
+                formDataUpload.append('file', croppedImageBlob, 'avatar.jpg');
+                await updateAvatar(formDataUpload);
             }
 
-            // Atualizar dados do perfil (apenas campos aceitos pelo backend)
-            const updatedData = await userService.updateProfile({
+            await updateProfile({
                 username: formData.username,
                 pronouns: formData.pronouns,
                 email: formData.email
-                // TODO: phone e country removidos pois o backend não aceita, mudar para aceitar
             });
 
-            if (!updatedData || !updatedData.username) {
-                throw new Error('Resposta inválida do servidor');
-            }
-
-            setUsername(updatedData.username);
-            setPronouns(updatedData.pronouns || '');
-            setUserData(updatedData);
-
             toast.success("Perfil atualizado com sucesso!");
-            setCroppedImageBlob(null);
         } catch (error) {
-            console.error('Erro ao atualizar perfil:', error);
-            toast.error(error instanceof Error ? error.message : "Erro ao atualizar perfil");
+            if(error instanceof Error && error.message === "Failed to fetch") 
+                toast.error("Não foi possível conectar ao servidor.");
+            else
+                toast.error(error instanceof Error ? error.message : "Erro ao atualizar dados do usuário.");
         } finally {
             setIsSaving(false);
+            setCroppedImageBlob(null);
         }
     };
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center p-8">
-                <div className="text-center">
-                    <p className="text-lg">Carregando...</p>
-                </div>
+            <div className="fixed inset-0 flex items-center justify-center">
+                <LoadingPage />
             </div>
         );
     }
