@@ -83,7 +83,7 @@ describe('LlmToolsService', () => {
     expect(service).toBeDefined();
   });
 
-  // --- Teste para createGetUserStoriesTool (Correto) ---
+  // --- Teste para createGetUserStoriesTool ---
   describe('createGetUserStoriesTool', () => {
     it('should create a tool that fetches user stories', async () => {
       const userId = 'user-test-id';
