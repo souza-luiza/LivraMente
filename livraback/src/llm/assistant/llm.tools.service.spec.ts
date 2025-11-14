@@ -219,73 +219,75 @@ describe('LlmToolsService', () => {
       expect(result).toBe(`Error joining community: ${errorMessage}`);
     });
   });
-}
-);
 
-// --- Teste para createLeaveCommunityTool ---
-describe('createLeaveCommunityTool', () => {
+  // --- Teste para createLeaveCommunityTool ---
+  describe('createLeaveCommunityTool', () => {
 
-  it('should allow a user to leave a community', async () => {
-    const userId = 'user-leave-id';
-    const communityId = 'comm-leave-id';
-    const communityMock = {
-      _id: communityId,
-      membros: [userId],
-      save: jest.fn().mockResolvedValue(true),
-    };
+    it('should allow a user to leave a community', async () => {
+      const userId = 'user-leave-id';
+      const communityId = 'comm-leave-id';
+      const communityMock = {
+        _id: communityId,
+        membros: [userId],
+        save: jest.fn().mockResolvedValue(true),
+      };
 
-    mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
+      mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
 
-    const tool = service.createLeaveCommunityTool(userId);
-    const result = await tool.func({ communityId });
+      const tool = service.createLeaveCommunityTool(userId);
+      const result = await tool.func({ communityId });
 
-    expect(tool.name).toBe('leave_community');
-    expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-    expect(communityMock.membros).not.toContain(userId);
-    expect(communityMock.save).toHaveBeenCalled();
-    expect(result).toBe(JSON.stringify(communityMock));
-  });
+      expect(tool.name).toBe('leave_community');
+      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
+      expect(communityMock.membros).not.toContain(userId);
+      expect(communityMock.save).toHaveBeenCalled();
+      expect(result).toBe(JSON.stringify(communityMock));
+    });
 
-  it('should handle non-existent community when leaving', async () => {
-    const userId = 'user-leave-id';
-    const communityId = 'comm-leave-id';
+    it('should handle non-existent community when leaving', async () => {
+      const userId = 'user-leave-id';
+      const communityId = 'comm-leave-id';
 
-    mockCommunityModel.find = jest.fn().mockResolvedValue(null);
+      mockCommunityModel.find = jest.fn().mockResolvedValue(null);
 
-    const tool = service.createLeaveCommunityTool(userId);
-    const result = await tool.func({ communityId });
+      const tool = service.createLeaveCommunityTool(userId);
+      const result = await tool.func({ communityId });
 
-    expect(tool.name).toBe('leave_community');
-    expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-    expect(result).toBe(`Community not found: ${communityId}`);
-  });
+      expect(tool.name).toBe('leave_community');
+      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
+      expect(result).toBe(`Community not found: ${communityId}`);
+    });
 
-  it('should handle user not being a member when leaving', async () => {
-    const userId = 'user-leave-id';
-    const communityId = 'comm-leave-id';
-    const communityMock = {
-      _id: communityId,
-      membros: [], // Usuário não é membro
-      save: jest.fn().mockResolvedValue(true),
-    };
+    it('should handle user not being a member when leaving', async () => {
+      const userId = 'user-leave-id';
+      const communityId = 'comm-leave-id';
+      const communityMock = {
+        _id: communityId,
+        membros: [], // Usuário não é membro
+        save: jest.fn().mockResolvedValue(true),
+      };
 
-    mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
+      mockCommunityModel.find = jest.fn().mockResolvedValue(communityMock);
 
-    const tool = service.createLeaveCommunityTool(userId);
-    const result = await tool.func({ communityId });
+      const tool = service.createLeaveCommunityTool(userId);
+      const result = await tool.func({ communityId });
 
-    expect(tool.name).toBe('leave_community');
-    expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
-    expect(result).toBe(`User ${userId} is not a member of community ${communityId}`);
-  });
+      expect(tool.name).toBe('leave_community');
+      expect(mockCommunityModel.find).toHaveBeenCalledWith(communityId);
+      expect(result).toBe(`User ${userId} is not a member of community ${communityId}`);
+    });
 
-  it('should handle errors when leaving a community', async () => {
-    const userId = 'user-leave-id';
-    const communityId = 'comm-leave-id';
-    const errorMessage = 'DB error on leave';
-    mockCommunityModel.find = jest.fn().mockRejectedValue(new Error(errorMessage));
-    const tool = service.createLeaveCommunityTool(userId);
-    const result = await tool.func({ communityId });
-    expect(result).toBe(`Error leaving community: ${errorMessage}`);
+    it('should handle errors when leaving a community', async () => {
+      const userId = 'user-leave-id';
+      it('should handle errors when leaving a community', async () => {
+        const userId = 'user-leave-id';
+        const communityId = 'comm-leave-id';
+        const errorMessage = 'DB error on leave';
+        mockCommunityModel.find = jest.fn().mockRejectedValue(new Error(errorMessage));
+        const tool = service.createLeaveCommunityTool(userId);
+        const result = await tool.func({ communityId });
+        expect(result).toBe(`Error leaving community: ${errorMessage}`);
+      });
+    });
   });
 });
