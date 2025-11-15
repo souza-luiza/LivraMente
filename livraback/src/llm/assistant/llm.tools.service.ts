@@ -219,7 +219,7 @@ export class LlmToolsService {
     });
   }
 
- //ferramenta para buscar a readlist pelo nome
+  //ferramenta para buscar a readlist pelo nome
   public createGetReadlistTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
@@ -242,7 +242,7 @@ export class LlmToolsService {
     });
   }
 
-// Ferramenta para adicionar livro na readlist
+  // Ferramenta para adicionar livro na readlist
   public createAddBookToReadlistTool(userId: string): DynamicStructuredTool {
     const toolSchema = z.object({
       readlistId: z.string().describe("O ID da readlist (obtido com 'find_readlist_by_name')"),
@@ -261,6 +261,7 @@ export class LlmToolsService {
       },
     });
   }
+
   // Ferramenta para remover livro da readlist
   public createRemoveBookFromReadlistTool(userId: string): DynamicStructuredTool {
     const toolSchema = z.object({
@@ -281,7 +282,7 @@ export class LlmToolsService {
     });
   }
 
-// ferramenta para buscar livro pelo nome
+  // ferramenta para buscar livro pelo nome - ferramenta auxiliar (MOCK)
   public createFindLivroByNameTool(): DynamicStructuredTool {
     const toolSchema = z.object({
       livroName: z.string().describe("O nome do livro a ser buscado"),
@@ -307,20 +308,20 @@ export class LlmToolsService {
       name: 'find_readlist_by_name',
       description: 'Busca uma readlist específica do usuário pelo nome.',
       schema: toolSchema,
-    func: async ({ readlistName }) => {
-      try {
-        const readlists = await this.readlistsService.findAll(userId);
-        const found = readlists.find(r => r.nome.toLowerCase() === readlistName.toLowerCase());
+      func: async ({ readlistName }) => {
+        try {
+          const readlists = await this.readlistsService.findAll(userId);
+          const found = readlists.find(r => r.nome.toLowerCase() === readlistName.toLowerCase());
 
-        if (!found) return `Readlist com nome '${readlistName}' não encontrada.`;
-        return JSON.stringify({ id: (found as any)._id, nome: found.nome });
-      } catch (e) { return `Erro ao buscar readlist: ${e.message}`; }
-    },
-  });
-}
+          if (!found) return `Readlist com nome '${readlistName}' não encontrada.`;
+          return JSON.stringify({ id: (found as any)._id, nome: found.nome });
+        } catch (e) { return `Erro ao buscar readlist: ${e.message}`; }
+      },
+    });
+  }
 
   // Ferramenta para criar nova readlist
-public createCreateReadlistTool(userId: string): DynamicStructuredTool {
+  public createCreateReadlistTool(userId: string): DynamicStructuredTool {
     const toolSchema = z.object({
       nome: z.string().describe("O nome da nova readlist a ser criada"),
       descricao: z.string().optional().describe("Uma breve descrição da readlist"),
@@ -341,7 +342,7 @@ public createCreateReadlistTool(userId: string): DynamicStructuredTool {
     });
   }
 
-// Ferramenta para deletar readlist
+  // Ferramenta para deletar readlist
   public createDeleteReadlistTool(userId: string): DynamicStructuredTool {
     const toolSchema = z.object({
       readlistId: z.string().describe("O ID da readlist a ser deletada (obtido com 'find_readlist_by_name')"),
@@ -356,6 +357,20 @@ public createCreateReadlistTool(userId: string): DynamicStructuredTool {
           await this.readlistsService.remove(userId, readlistId);
           return `Readlist (ID: ${readlistId}) foi deletada com sucesso.`;
         } catch (e) { return `Erro ao deletar readlist: ${e.message}`; }
+      },
+    });
+  }
+
+  // ferramenta para mostrar as readlists do usuário
+  public createUsersGetMyReadlistsTool(userId: string): DynamicStructuredTool {
+    return new DynamicStructuredTool({
+      name: 'users_get_my_readlists',
+      description: 'Obtém as readlists do usuário.',
+      schema: z.object({}),
+      func: async () => {
+        try {
+          return `[MOCK] Lista de readlists do usuário ${userId}. (Implementar com ReadlistsService)`;
+        } catch (e) { return `Erro ao obter readlists: ${e.message}`; }
       },
     });
   }
@@ -379,4 +394,32 @@ public createCreateReadlistTool(userId: string): DynamicStructuredTool {
     });
   }
 
+  // Ferramenta para obter o perfil do usuário
+  public createUsersGetMyProfileTool(userId: string): DynamicStructuredTool {
+    return new DynamicStructuredTool({
+      name: 'users_get_my_profile',
+      description: 'Obtém o perfil do usuário autenticado.',
+      schema: z.object({}),
+      func: async () => {
+        try {
+          return `[MOCK] Perfil do usuário ${userId}. (Implementar com UsersService)`;
+        } catch (e) { return `Erro ao obter perfil: ${e.message}`; }
+      },
+    });
+  }
+
+  // Ferramenta para obter os livros favoritos do usuário
+  public createUsersGetMyFavoritesTool(userId: string): DynamicStructuredTool {
+
+    return new DynamicStructuredTool({
+      name: 'users_get_my_favorites',
+      description: 'Obtém os livros favoritos do usuário.',
+      schema: z.object({}),
+      func: async () => {
+        try {
+          return `[MOCK] Lista de livros favoritos do usuário ${userId}. (Implementar com FavoritesService)`;
+        } catch (e) { return `Erro ao obter favoritos: ${e.message}`; }
+      },
+    });
+  }
 }

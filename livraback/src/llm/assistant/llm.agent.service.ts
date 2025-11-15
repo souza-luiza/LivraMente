@@ -51,6 +51,9 @@ REGRAS ADICIONAIS:
 - Se o usuário pedir para buscar uma readlist pelo nome, use a ferramenta 'find_readlist_by_name'.
 - Se o usuário pedir para buscar um livro pelo nome, use a ferramenta 'find_livro_by_name'.
 - Se o usuário pedir para registrar sua leitura de um livro, use a ferramenta 'gravar_leitura'.
+- Se o usuário pedir para ver seu perfil, use a ferramenta 'users_get_my_profile'.
+- Se o usuário pedir para ver seus livros favoritos, use a ferramenta 'users_get_my_favorites'.
+- Se o usuário pedir para ver suas readlists, use a ferramenta 'users_get_my_readlists'.
 
 Inicie!
 
@@ -101,19 +104,19 @@ export class LlmAgentService {
 
       // Ferramentas de Readlist (Auxiliares)
       this.toolsService.createFindReadlistByNameTool(userId),
-      this.toolsService.createFindLivroByNameTool(), // (A auxiliar que assumimos)
+      this.toolsService.createFindLivroByNameTool(),
 
       // Ferramentas de Readlist (Ação)
       this.toolsService.createAddBookToReadlistTool(userId),
       this.toolsService.createRemoveBookFromReadlistTool(userId),
       this.toolsService.createCreateReadlistTool(userId),
       this.toolsService.createDeleteReadlistTool(userId),
-      // this.toolsService.createUsersGetMyReadlistsTool(),
+      this.toolsService.createUsersGetMyReadlistsTool(userId),
 
       // Ferramentas de Leitura
       this.toolsService.createGravarLeituraTool(userId),
-      // this.toolsService.createUsersGetMyProfileTool(),
-      // this.toolsService.createUsersGetMyFavoritesTool(),
+      this.toolsService.createUsersGetMyProfileTool(userId),
+      this.toolsService.createUsersGetMyFavoritesTool(userId),
     ];
 
     // monta o prompt final como string (pré-preenchendo variáveis)
