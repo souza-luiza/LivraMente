@@ -3,10 +3,12 @@ import { LlmToolsService } from './llm.tools.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Story } from '../../schemas/story.schema';
 import { Comunidade } from 'src/comunidades/entities/comunidade.entity';
+import { Readlist } from 'src/readlists/entities/readlist.entity';
 import { Model, Types } from 'mongoose';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ComunidadesService } from 'src/comunidades/comunidades.service';
+import { ReadlistsService } from 'src/readlists/readlists.service';
 
-// --- Dados Falsos para os Testes ---
+// --- Dados Falsos ---
 const mockStory = {
   _id: 'story123',
   title: 'Minha História Teste',
@@ -16,13 +18,17 @@ const mockStory = {
 const mockCommunity = {
   _id: 'comm123',
   nome: 'Comunidade Teste',
-  membros: [new Types.ObjectId().toHexString()], // Use um ID válido
+  membros: [new Types.ObjectId().toHexString()],
 };
 
-// --- Mocks dos Models do Mongoose ---
+const mockReadlist = {
+  _id: 'readlist123',
+  nome: 'Favoritos',
+  criador: 'user123',
+  livros: [],
+};
 
-// Mock para StoryModel
-// Criamos "stubs" (funções falsas) para os métodos que usamos
+// --- Mocks dos Models ---
 const mockStoryExec = jest.fn();
 const mockStoryChain = {
   select: jest.fn().mockReturnThis(),
@@ -34,27 +40,34 @@ const mockStoryModel = {
   find: jest.fn(() => mockStoryChain),
 };
 
-// Mock para CommunityModel
-const mockCommunityExec = jest.fn();
-const mockCommunityChain = {
-  sort: jest.fn().mockReturnThis(),
-  limit: jest.fn().mockReturnThis(),
-  exec: mockCommunityExec,
+// --- Mocks dos Services ---
+const mockComunidadesService = {
+  findOne: jest.fn(),
+  findAll: jest.fn(),
+  findPopularPosts: jest.fn(),
+  addMembro: jest.fn(),
+  removeMembro: jest.fn(),
 };
-const mockCommunityModel = {
-  find: jest.fn(() => mockCommunityChain),
-  findById: jest.fn(() => ({ exec: mockCommunityExec })),
-  findByIdAndUpdate: jest.fn(() => ({ exec: mockCommunityExec })),
+
+const mockReadlistsService = {
+  findAll: jest.fn(),
+  create: jest.fn(),
+  remove: jest.fn(),
+  addLivro: jest.fn(),
+  removeLivro: jest.fn(),
+};
+
+// Mock para o futuro 'LivrosService' (para a ferramenta mockada)
+const mockLivrosService = {
+  findByName: jest.fn(),
 };
 
 // --- Início dos Testes ---
 describe('LlmToolsService', () => {
   let service: LlmToolsService;
   let storyModel: Model<Story>;
-  let communityModel: Model<Comunidade>;
 
   beforeEach(async () => {
-    // 1. Compila o módulo de teste com os mocks
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LlmToolsService,
@@ -63,19 +76,27 @@ describe('LlmToolsService', () => {
           useValue: mockStoryModel,
         },
         {
+          provide: ComunidadesService,
+          useValue: mockComunidadesService,
+        },
+        {
+          provide: ReadlistsService,
+          useValue: mockReadlistsService,
+        },
+        {
           provide: getModelToken(Comunidade.name),
-          useValue: mockCommunityModel,
+          useValue: {},
+        },
+        {
+          provide: getModelToken(Readlist.name),
+          useValue: {},
         },
       ],
     }).compile();
 
     service = module.get<LlmToolsService>(LlmToolsService);
     storyModel = module.get<Model<Story>>(getModelToken(Story.name));
-    communityModel = module.get<Model<Comunidade>>(
-      getModelToken(Comunidade.name),
-    );
 
-    // Limpa os mocks antes de cada teste
     jest.clearAllMocks();
   });
 
@@ -83,239 +104,149 @@ describe('LlmToolsService', () => {
     expect(service).toBeDefined();
   });
 
-  // --- Teste para createGetUserStoriesTool ---
-  describe('createGetUserStoriesTool', () => {
-    it('should create a tool that fetches user stories', async () => {
+  // --- Testes de Ferramentas de Story  ---
+  describe('Story Tools', () => {
+    it('createGetUserStoriesTool: should fetch user stories', async () => {
       const userId = 'user-test-id';
-      const stories = [mockStory];
-
-      mockStoryExec.mockResolvedValue(stories);
+      mockStoryExec.mockResolvedValue([mockStory]);
 
       const tool = service.createGetUserStoriesTool(userId);
-      const result = await tool.func({}); // Ferramenta sem args
+      const result = await tool.func({});
 
       expect(tool.name).toBe('get_user_stories');
       expect(mockStoryModel.find).toHaveBeenCalledWith({ userId });
       expect(mockStoryChain.select).toHaveBeenCalledWith('title summary');
       expect(mockStoryChain.limit).toHaveBeenCalledWith(50);
-      expect(result).toBe(JSON.stringify(stories));
+      expect(result).toBe(JSON.stringify([mockStory]));
     });
 
-    it('should handle errors when fetching user stories', async () => {
-      const userId = 'user-test-id';
-      const errorMessage = 'Database error';
-
-      mockStoryExec.mockRejectedValue(new Error(errorMessage));
-
-      const tool = service.createGetUserStoriesTool(userId);
-      const result = await tool.func({});
-
-      expect(result).toBe(`Erro ao buscar histórias: ${errorMessage}`);
-    });
-  });
-
-  // --- Teste para createGetPopularCommunitiesTool (Correto) ---
-  describe('createGetPopularCommunitiesTool', () => {
-    it('should fetch popular communities with a dynamic count', async () => {
-      const communities = [mockCommunity];
-      const dynamicCount = 10;
-
-      mockCommunityExec.mockResolvedValue(communities);
-
-      const tool = service.createGetPopularCommunitiesTool();
-      const result = await tool.func({ count: dynamicCount });
-
-      expect(tool.name).toBe('get_popular_communities');
-      expect(mockCommunityModel.find).toHaveBeenCalledWith();
-      expect(mockCommunityChain.sort).toHaveBeenCalledWith({ members: -1 });
-      expect(mockCommunityChain.limit).toHaveBeenCalledWith(dynamicCount);
-      expect(result).toBe(JSON.stringify(communities));
-    });
-
-    it('should handle errors when fetching communities', async () => {
-      const errorMessage = 'DB failed';
-
-      mockCommunityExec.mockRejectedValue(new Error(errorMessage));
-
-      const tool = service.createGetPopularCommunitiesTool();
-      const result = await tool.func({ count: 5 });
-
-      expect(result).toBe(`Erro ao buscar comunidades: ${errorMessage}`);
-    });
-  });
-
-  // --- Teste para createGetRecentStoriesTool ---
-  describe('createGetRecentStoriesTool', () => {
-    it('should fetch recent stories with a dynamic count', async () => {
-      const stories = [mockStory];
-      const dynamicCount = 7;
-
-      mockStoryExec.mockResolvedValue(stories);
+    it('createGetRecentStoriesTool: should fetch recent stories', async () => {
+      const count = 3;
+      mockStoryExec.mockResolvedValue([mockStory]);
 
       const tool = service.createGetRecentStoriesTool();
-      const result = await tool.func({ count: dynamicCount });
+      const result = await tool.func({ count });
 
       expect(tool.name).toBe('get_recent_stories');
       expect(mockStoryModel.find).toHaveBeenCalledWith();
       expect(mockStoryChain.sort).toHaveBeenCalledWith({ createdAt: -1 });
-      expect(mockStoryChain.limit).toHaveBeenCalledWith(dynamicCount);
-      expect(result).toBe(JSON.stringify(stories));
+      expect(mockStoryChain.limit).toHaveBeenCalledWith(count);
+      expect(result).toBe(JSON.stringify([mockStory]));
     });
   });
 
-  // --- Teste para createGetCommunitiesTool ---
-  describe('createGetCommunitiesTool', () => {
-    it('should find and return a specific community', async () => {
-      const communityId = 'comm123';
-
-      mockCommunityExec.mockResolvedValue(mockCommunity);
+  // --- Testes de Ferramentas de Comunidade  ---
+  describe('Community Tools (using ComunidadesService)', () => {
+    it('createGetCommunitiesTool: should delegate to ComunidadesService.findOne', async () => {
+      const communityName = 'Ficção Científica';
+      mockComunidadesService.findOne.mockResolvedValue(mockCommunity);
 
       const tool = service.createGetCommunitiesTool();
-      const result = await tool.func({ communityId });
+      const result = await tool.func({ communityName });
 
-      expect(tool.name).toBe('get_community');
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
+      expect(mockComunidadesService.findOne).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify(mockCommunity));
     });
 
-    it('should return error if community not found', async () => {
-      const communityId = 'comm-nao-existe';
+    it('createJoinCommunityTool: should delegate to ComunidadesService.addMembro', async () => {
+      const userId = 'user-123';
+      const communityName = 'Ficção Científica';
+      const successMsg = { message: 'Usuário adicionado' };
+      mockComunidadesService.addMembro.mockResolvedValue(successMsg);
 
-      mockCommunityExec.mockResolvedValue(null); // Simula não encontrar
+      const tool = service.createJoinCommunityTool(userId);
+      const result = await tool.func({ communityName });
 
-      const tool = service.createGetCommunitiesTool();
-      const result = await tool.func({ communityId });
-
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
-    });
-  });
-
-  // --- Teste para createJoinCommunityTool ---
-  describe('createJoinCommunityTool', () => {
-    const userId = 'user-join-id';
-    const communityId = 'comm-join-id';
-
-    it('should allow a user to join a community', async () => {
-      const updatedCommunity = { ...mockCommunity, members: [userId] };
-
-      mockCommunityExec.mockResolvedValueOnce(mockCommunity);
-      mockCommunityExec.mockResolvedValueOnce(updatedCommunity);
-
-      const tool = service.createJoinCommunityTool();
-      const result = await tool.func({ communityId, userId });
-
-      expect(tool.name).toBe('join_community');
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockCommunityModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        communityId,
-        { $addToSet: { members: userId } },
-        { new: true },
-      );
-      expect(result).toBe(JSON.stringify(updatedCommunity));
+      expect(mockComunidadesService.addMembro).toHaveBeenCalledWith(userId, communityName);
+      expect(result).toBe(JSON.stringify(successMsg));
     });
 
-    it('should handle non-existent community when joining', async () => {
-      mockCommunityExec.mockResolvedValue(null); // findById retorna null
-
-      const tool = service.createJoinCommunityTool();
-      const result = await tool.func({ communityId, userId });
-
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockCommunityModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
-    });
-  });
-
-  // --- Teste para createLeaveCommunityTool ---
-  describe('createLeaveCommunityTool', () => {
-    const userId = 'user-leave-id';
-    const communityId = 'comm-leave-id';
-
-    it('should allow a user to leave a community', async () => {
-      const communityMock = { ...mockCommunity, members: [userId as any] };
-      const updatedCommunityMock = { ...mockCommunity, members: [] };
-
-      mockCommunityExec.mockResolvedValueOnce(communityMock);
-      mockCommunityExec.mockResolvedValueOnce(updatedCommunityMock);
+    it('createLeaveCommunityTool: should delegate to ComunidadesService.removeMembro', async () => {
+      const userId = 'user-123';
+      const communityName = 'Ficção Científica';
+      const successMsg = { message: 'Usuário removido' };
+      mockComunidadesService.removeMembro.mockResolvedValue(successMsg);
 
       const tool = service.createLeaveCommunityTool(userId);
-      const result = await tool.func({ communityId });
+      const result = await tool.func({ communityName });
 
-      expect(tool.name).toBe('leave_community');
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockCommunityModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        communityId,
-        { $pull: { members: userId } },
-        { new: true },
-      );
-      expect(result).toBe(JSON.stringify(updatedCommunityMock));
+      expect(mockComunidadesService.removeMembro).toHaveBeenCalledWith(userId, communityName);
+      expect(result).toBe(JSON.stringify(successMsg));
     });
 
-    it('should handle user not being a member when leaving', async () => {
-      const communityMock = { ...mockCommunity, members: [] }; // Usuário não é membro
-
-      mockCommunityExec.mockResolvedValue(communityMock);
-
-      const tool = service.createLeaveCommunityTool(userId);
-      const result = await tool.func({ communityId });
-
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockCommunityModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(result).toBe(
-        `User ${userId} is not a member of community ${communityId}`,
-      );
-    });
-  });
-
-  // --- Teste para createGetPopularPostsCommunityTool ---
-  describe('createGetPopularPostsCommunityTool', () => {
-    it('should fetch popular posts for a specific community', async () => {
-      const communityId = 'comm123';
+    it('createGetPopularPostsCommunityTool: should delegate to ComunidadesService.findPopularPosts', async () => {
+      const communityName = 'Ficção Científica';
       const count = 5;
+      mockComunidadesService.findPopularPosts.mockResolvedValue([mockStory]);
 
-      mockCommunityExec.mockResolvedValue(mockCommunity); // findById (comunidade)
-      mockStoryExec.mockResolvedValue([mockStory]); // find (posts)
+      const tool = service.createGetPopularPostsInCommunityTool();
+      const result = await tool.func({ communityName, count });
 
-      const tool = service.createGetPopularPostsCommunityTool();
-      const result = await tool.func({ communityId, count });
-
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockStoryModel.find).toHaveBeenCalledWith({ communityId });
-      expect(mockStoryChain.sort).toHaveBeenCalledWith({
-        likes: -1,
-        views: -1,
-        createdAt: -1,
-      });
-      expect(mockStoryChain.limit).toHaveBeenCalledWith(count);
+      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName, count);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
+  });
 
-    it('should fetch popular posts from the whole site if no communityId', async () => {
-      const count = 10; // Default
+  // --- Testes de Ferramentas de Readlist ---
+  describe('Readlist Tools (using ReadlistsService)', () => {
+    const userId = 'user-123';
+    const readlistId = 'readlist-abc';
+    const readlistName = 'Favoritos';
+    const livroId = 'livro-xyz';
 
-      mockStoryExec.mockResolvedValue([mockStory]); // find (posts)
+    it('createFindReadlistByNameTool: should find a readlist by name', async () => {
+      const mockReadlists = [
+        { nome: 'Outra Lista', _id: 'errado' },
+        { nome: 'Favoritos', _id: readlistId },
+      ];
+      mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
 
-      const tool = service.createGetPopularPostsCommunityTool();
-      const result = await tool.func({ count }); // Sem communityId
+      const tool = service.createFindReadlistByNameTool(userId);
+      const result = await tool.func({ readlistName });
 
-      expect(mockCommunityModel.findById).not.toHaveBeenCalled(); // Não deve procurar comunidade
-      expect(mockStoryModel.find).toHaveBeenCalledWith({}); // Query vazia
-      expect(mockStoryChain.limit).toHaveBeenCalledWith(count);
-      expect(result).toBe(JSON.stringify([mockStory]));
+      expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
+      expect(result).toBe(JSON.stringify({ id: readlistId, nome: readlistName }));
     });
 
-    it('should return error if communityId is provided but not found', async () => {
-      const communityId = 'comm-nao-existe';
+    it('createAddBookToReadlistTool: should delegate to ReadlistsService.addLivro', async () => {
+      mockReadlistsService.addLivro.mockResolvedValue(mockReadlist);
 
-      mockCommunityExec.mockResolvedValue(null); // findById falha
+      const tool = service.createAddBookToReadlistTool(userId);
+      const result = await tool.func({ readlistId, livroId });
 
-      const tool = service.createGetPopularPostsCommunityTool();
-      const result = await tool.func({ communityId, count: 5 });
+      expect(mockReadlistsService.addLivro).toHaveBeenCalledWith(userId, readlistId, livroId);
+      expect(result).toContain('adicionado com sucesso');
+    });
 
-      expect(mockCommunityModel.findById).toHaveBeenCalledWith(communityId);
-      expect(mockStoryModel.find).not.toHaveBeenCalled();
-      expect(result).toBe(`Comunidade não encontrada: ${communityId}`);
+    it('createRemoveBookFromReadlistTool: should delegate to ReadlistsService.removeLivro', async () => {
+      mockReadlistsService.removeLivro.mockResolvedValue(mockReadlist);
+
+      const tool = service.createRemoveBookFromReadlistTool(userId);
+      const result = await tool.func({ readlistId, livroId });
+
+      expect(mockReadlistsService.removeLivro).toHaveBeenCalledWith(userId, readlistId, livroId);
+      expect(result).toContain('removido com sucesso');
+    });
+
+    it('createCreateReadlistTool: should delegate to ReadlistsService.create', async () => {
+      const dto = { nome: 'Nova Lista', descricao: 'Desc', publica: false };
+      mockReadlistsService.create.mockResolvedValue({ _id: 'novo-id', ...dto });
+
+      const tool = service.createCreateReadlistTool(userId);
+      const result = await tool.func(dto);
+
+      expect(mockReadlistsService.create).toHaveBeenCalledWith(userId, dto);
+      expect(result).toContain('criada com sucesso');
+    });
+
+    it('createDeleteReadlistTool: should delegate to ReadlistsService.remove', async () => {
+      mockReadlistsService.remove.mockResolvedValue({ deletedCount: 1 });
+
+      const tool = service.createDeleteReadlistTool(userId);
+      const result = await tool.func({ readlistId });
+
+      expect(mockReadlistsService.remove).toHaveBeenCalledWith(userId, readlistId);
+      expect(result).toContain('deletada com sucesso');
     });
   });
 });
