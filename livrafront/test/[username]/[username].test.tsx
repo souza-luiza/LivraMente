@@ -1,13 +1,17 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import UserProfilePage from '@/app/[username]/page'
-import { notFound } from 'next/navigation'
+import { notFound, useParams, useRouter } from 'next/navigation'
+import { getSessionInfos } from '@/services/auth'
+import { getProfile } from '@/services/userService'
+import { getOwnReadlists } from '@/services/readlists'
 
 // Mock next/navigation
 const mockPush = jest.fn()
 
 jest.mock('next/navigation', () => ({
   notFound: jest.fn(),
-  useRouter: () => ({ push: mockPush }),
+  useRouter: jest.fn(),
+  useParams: jest.fn(),
   useSearchParams: () => ({
     get: jest.fn(),
   }),
@@ -28,11 +32,10 @@ jest.mock('next/link', () => {
 })
 
 // Mock components
-jest.mock('@/components/sidebar', () => {
-  return function MockSidebar() {
-    return <div data-testid="sidebar">Sidebar</div>
-  }
-})
+jest.mock('@/components/sidebar', () => ({
+  __esModule: true,
+  default: () => <div data-testid="sidebar">Sidebar</div>,
+}));
 
 jest.mock('@/components/button', () => {
   return function MockButton({ text, icon, onClick, path }: any) {
@@ -101,35 +104,75 @@ jest.mock('@/components/icons/ChevronRightIcon', () => {
   }
 })
 
+jest.mock('@/services/auth', () => ({
+  getSessionInfos: jest.fn(),
+}));
+
+jest.mock('@/services/userService', () => ({
+  getProfile: jest.fn(),
+}));
+
+jest.mock('@/services/readlists', () => ({
+  getOwnReadlists: jest.fn(),
+  getPublicReadlists: jest.fn(),
+}));
+
 describe('UserProfilePage', () => {
+  const mockReplace = jest.fn();
+
+  const mockUserInfo = {
+    username: 'john_doe',
+    email: 'john_doe@test.com',
+    avatarUrl: 'test.png',
+    pronouns: 'he/him'
+  }
+
+  const mockUserData = {
+    username: 'john_doe',
+    email: 'john_doe@test.com',
+    gamificação: {
+      XP: 67,
+      XP_proximo_nivel: 100,
+      nivel: 15
+    },
+    avatarUrl: 'test.png',
+    pronouns: 'ele/dele'
+  };
+
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.clearAllMocks();
+    (useParams as jest.Mock).mockReturnValue({
+      username: 'john_doe',
+    });
+    (useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+      replace: mockReplace,
+    });
   })
 
   describe('Rendering', () => {
-    it('renders the page with username', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
+    beforeEach(async () => {
+      (getSessionInfos as jest.Mock).mockResolvedValue(mockUserInfo);
+      (getProfile as jest.Mock).mockResolvedValue(mockUserData);
+
+      render(<UserProfilePage />);
       
-      render(await UserProfilePage({ params }))
+      await waitFor(() => {
+        expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+      });
+    });
+
+    it('renders the page with username', async () => {
+      
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('@john_doe')).toBeInTheDocument()
       })
     })
 
-    it('renders sidebar component', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      
-      render(await UserProfilePage({ params }))
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('sidebar')).toBeInTheDocument()
-      })
-    })
-
     it('renders main container with correct layout', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const main = container.querySelector('main')
@@ -138,8 +181,7 @@ describe('UserProfilePage', () => {
     })
 
     it('renders with correct background color', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const wrapper = container.querySelector('.min-h-screen')
@@ -150,29 +192,17 @@ describe('UserProfilePage', () => {
 
   describe('Profile Information', () => {
     it('displays user pronouns', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('ele/dele')).toBeInTheDocument()
       })
     })
 
-    it('displays username with @ symbol', async () => {
-      const params = Promise.resolve({ username: 'jane_smith' })
-      
-      render(await UserProfilePage({ params }))
-      
-      await waitFor(() => {
-        expect(screen.getByText('@jane_smith')).toBeInTheDocument()
-      })
-    })
-
     it('username has correct typography classes', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const username = screen.getByText('@john_doe')
@@ -181,9 +211,8 @@ describe('UserProfilePage', () => {
     })
 
     it('pronouns have correct typography classes', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const pronouns = screen.getByText('ele/dele')
@@ -194,9 +223,8 @@ describe('UserProfilePage', () => {
 
   describe('Profile Icon and Badge', () => {
     it('renders profile icon with correct size', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icon = screen.getByTestId('profile-icon')
@@ -205,9 +233,8 @@ describe('UserProfilePage', () => {
     })
 
     it('renders profile icon with correct percentage', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icon = screen.getByTestId('profile-icon')
@@ -216,9 +243,8 @@ describe('UserProfilePage', () => {
     })
 
     it('renders profile icon with correct color class', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icon = screen.getByTestId('profile-icon')
@@ -227,9 +253,8 @@ describe('UserProfilePage', () => {
     })
 
     it('renders profile badge with correct level', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const badge = screen.getByTestId('profile-badge')
@@ -238,9 +263,8 @@ describe('UserProfilePage', () => {
     })
 
     it('renders profile badge with correct dimensions', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const badge = screen.getByTestId('profile-badge')
@@ -250,8 +274,7 @@ describe('UserProfilePage', () => {
     })
 
     it('profile icon container has correct size', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const iconContainer = container.querySelector('.w-48.h-48')
@@ -261,8 +284,7 @@ describe('UserProfilePage', () => {
     })
 
     it('badge is positioned correctly relative to icon', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const badgeWrapper = container.querySelector('.absolute.top-0.right-0')
@@ -273,9 +295,8 @@ describe('UserProfilePage', () => {
 
   describe('Edit Profile Button', () => {
     it('renders edit profile button', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByTestId('edit-button')).toBeInTheDocument()
@@ -283,9 +304,8 @@ describe('UserProfilePage', () => {
     })
 
     it('edit button has correct text', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('Editar Perfil')).toBeInTheDocument()
@@ -293,9 +313,8 @@ describe('UserProfilePage', () => {
     })
 
     it('edit button has edit icon', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByTestId('edit-icon')).toBeInTheDocument()
@@ -303,8 +322,7 @@ describe('UserProfilePage', () => {
     })
 
     it('edit button navigates to edit profile when clicked', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const editBtn = screen.getByTestId('edit-button')
@@ -317,9 +335,8 @@ describe('UserProfilePage', () => {
 
   describe('Readlists Section', () => {
     it('renders readlists section', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByTestId('profile-readlists')).toBeInTheDocument()
@@ -327,9 +344,8 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists section has correct heading', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('Readlists')).toBeInTheDocument()
@@ -337,9 +353,8 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists heading has Chevron icon', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icons = screen.getAllByTestId('chevron-right-icon')
@@ -350,8 +365,7 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists link has correct href', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const link = container.querySelector('a[href="/john_doe/readlists"]')
@@ -360,8 +374,7 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists heading has correct classes', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const link = container.querySelector('a[href="/john_doe/readlists"]')
@@ -370,8 +383,7 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists section is in white container', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.bg-white.rounded-lg')
@@ -380,8 +392,7 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists container has correct width', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.w-1\\/2')
@@ -390,8 +401,7 @@ describe('UserProfilePage', () => {
     })
 
     it('readlists content area has overflow scroll', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const scrollArea = container.querySelector('.overflow-y-auto')
@@ -400,8 +410,7 @@ describe('UserProfilePage', () => {
     })
 
     it('navigates to readlists page when clicking the Readlists link', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
 
       await waitFor(() => {
         const link = container.querySelector('a[href="/john_doe/readlists"]')
@@ -415,9 +424,8 @@ describe('UserProfilePage', () => {
 
   describe('Posts Section', () => {
     it('renders posts section', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByTestId('profile-posts')).toBeInTheDocument()
@@ -425,9 +433,8 @@ describe('UserProfilePage', () => {
     })
 
     it('posts section receives username prop', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const posts = screen.getByTestId('profile-posts')
@@ -436,9 +443,8 @@ describe('UserProfilePage', () => {
     })
 
     it('posts section has correct heading', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('Postagens')).toBeInTheDocument()
@@ -446,9 +452,8 @@ describe('UserProfilePage', () => {
     })
 
     it('posts heading has Chevron icon', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icons = screen.getAllByTestId('chevron-right-icon')
@@ -457,8 +462,7 @@ describe('UserProfilePage', () => {
     })
 
     it('posts link has correct href', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const link = container.querySelector('a[href="/john_doe/posts"]')
@@ -467,8 +471,7 @@ describe('UserProfilePage', () => {
     })
 
     it('posts section is in white container', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.bg-white.rounded-lg')
@@ -477,8 +480,7 @@ describe('UserProfilePage', () => {
     })
 
     it('posts container has correct width', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.w-1\\/2')
@@ -489,8 +491,7 @@ describe('UserProfilePage', () => {
 
   describe('Layout', () => {
     it('renders two-column layout for readlists and posts', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const layoutContainer = container.querySelector('.w-full.flex.justify-center')
@@ -499,8 +500,7 @@ describe('UserProfilePage', () => {
     })
 
     it('both sections have equal width', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.w-1\\/2')
@@ -509,8 +509,7 @@ describe('UserProfilePage', () => {
     })
 
     it('sections have gap between them', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const layoutContainer = container.querySelector('.gap-4')
@@ -519,8 +518,7 @@ describe('UserProfilePage', () => {
     })
 
     it('both sections are flex columns', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.flex.flex-col')
@@ -530,20 +528,10 @@ describe('UserProfilePage', () => {
   })
 
   describe('Error Handling', () => {
-    it('calls notFound when username is empty', async () => {
-      const params = Promise.resolve({ username: '' })
-      
-      render(await UserProfilePage({ params }))
-      
-      await waitFor(() => {
-        expect(notFound).toHaveBeenCalled()
-      })
-    })
 
     it('does not call notFound when username is provided', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(notFound).not.toHaveBeenCalled()
@@ -553,9 +541,8 @@ describe('UserProfilePage', () => {
 
   describe('User Profile Data', () => {
     it('uses static user profile data', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByText('ele/dele')).toBeInTheDocument()
@@ -567,9 +554,8 @@ describe('UserProfilePage', () => {
     })
 
     it('profile level is 15', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const badge = screen.getByTestId('profile-badge')
@@ -578,9 +564,8 @@ describe('UserProfilePage', () => {
     })
 
     it('profile percentage is 67', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icon = screen.getByTestId('profile-icon')
@@ -591,8 +576,7 @@ describe('UserProfilePage', () => {
 
   describe('Navigation Links', () => {
     it('has navigation links and edit button', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const links = container.querySelectorAll('a')
@@ -603,33 +587,30 @@ describe('UserProfilePage', () => {
     })
 
     it('edit button includes username in destination when clicked', async () => {
-      const params = Promise.resolve({ username: 'jane_smith' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const editBtn = screen.getByTestId('edit-button')
         expect(editBtn).toBeInTheDocument()
         fireEvent.click(editBtn)
-        expect(mockPush).toHaveBeenCalledWith('/jane_smith/editar-perfil')
+        expect(mockPush).toHaveBeenCalledWith('/john_doe/editar-perfil')
       })
     })
 
     it('readlists link includes username', async () => {
-      const params = Promise.resolve({ username: 'jane_smith' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/jane_smith/readlists"]')
+        const link = container.querySelector('a[href="/john_doe/readlists"]')
         expect(link).toBeInTheDocument()
       })
     })
 
     it('posts link includes username', async () => {
-      const params = Promise.resolve({ username: 'jane_smith' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
-        const link = container.querySelector('a[href="/jane_smith/posts"]')
+        const link = container.querySelector('a[href="/john_doe/posts"]')
         expect(link).toBeInTheDocument()
       })
     })
@@ -637,8 +618,7 @@ describe('UserProfilePage', () => {
 
   describe('Responsive Design', () => {
     it('main container is responsive', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const main = container.querySelector('main')
@@ -647,8 +627,7 @@ describe('UserProfilePage', () => {
     })
 
     it('layout container uses full width', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const layoutContainer = container.querySelector('.w-full.flex')
@@ -657,8 +636,7 @@ describe('UserProfilePage', () => {
     })
 
     it('sections stretch to fill height', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const layoutContainer = container.querySelector('.items-stretch')
@@ -669,8 +647,7 @@ describe('UserProfilePage', () => {
 
   describe('Content Sections', () => {
     it('each section has padding', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.p-4')
@@ -679,8 +656,7 @@ describe('UserProfilePage', () => {
     })
 
     it('each section has vertical margin', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.my-4')
@@ -689,8 +665,7 @@ describe('UserProfilePage', () => {
     })
 
     it('each section has rounded corners', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const sections = container.querySelectorAll('.rounded-lg')
@@ -699,8 +674,7 @@ describe('UserProfilePage', () => {
     })
 
     it('content areas use flex-1 for equal height', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
-      const { container } = render(await UserProfilePage({ params }))
+      const { container } = render(<UserProfilePage />);
       
       await waitFor(() => {
         const flexAreas = container.querySelectorAll('.flex-1')
@@ -711,9 +685,8 @@ describe('UserProfilePage', () => {
 
   describe('Integration', () => {
     it('renders complete profile page structure', async () => {
-      const params = Promise.resolve({ username: 'john_doe' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         expect(screen.getByTestId('sidebar')).toBeInTheDocument()
@@ -727,9 +700,8 @@ describe('UserProfilePage', () => {
     })
 
     it('all components receive correct props', async () => {
-      const params = Promise.resolve({ username: 'test_user' })
       
-      render(await UserProfilePage({ params }))
+      render(<UserProfilePage />);
       
       await waitFor(() => {
         const icon = screen.getByTestId('profile-icon')
@@ -740,7 +712,7 @@ describe('UserProfilePage', () => {
         expect(badge).toHaveAttribute('data-content', '15')
         
         const posts = screen.getByTestId('profile-posts')
-        expect(posts).toHaveAttribute('data-username', 'test_user')
+        expect(posts).toHaveAttribute('data-username', 'john_doe')
       })
     })
   })
