@@ -5,6 +5,7 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createAgent } from 'langchain';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { DynamicStructuredTool } from 'langchain';
 
 const AGENT_PROMPT_TEMPLATE = `
 Você é um assistente prestativo do site Livramente. Responda à pergunta do usuário da melhor forma que puder.
@@ -43,6 +44,13 @@ REGRAS ADICIONAIS:
 - Se o usuário perguntar sobre alguma comunidade específica, use 'get_community'.
 - Se o usuário pedir para "entrar" ou "se juntar" a uma comunidade, use a ferramenta 'join_community'.
 - Se o usuário pedir para "sair" ou "retirar" ou "quitar" de alguma da comunidade, use a ferramenta 'leave_community'.
+- Se o usuário pedir para "adicionar" ou "colocar" algum livro em alguma readlist, use a ferramenta 'add_book_to_readlist'.
+- Se o usuário pedir para "retirar" ou "tirar" algum livro em alguma readlist, use a ferramenta 'remove_book_to_readlist'.
+- Se o usuário pedir para "criar" ou "fazer" uma nova readlist, use a ferramenta 'create_readlist'.
+- Se o usuário pedir para "deletar" ou "apagar" alguma readlist, use a ferramenta 'delete_readlist'.
+- Se o usuário pedir para buscar uma readlist pelo nome, use a ferramenta 'find_readlist_by_name'.
+- Se o usuário pedir para buscar um livro pelo nome, use a ferramenta 'find_livro_by_name'.
+- Se o usuário pedir para registrar sua leitura de um livro, use a ferramenta 'gravar_leitura'.
 
 Inicie!
 
@@ -80,21 +88,30 @@ export class LlmAgentService {
 
   public async runAnalysisAgent(userPrompt: string, userId: string): Promise<string> {
     const tools = [
+      // Ferramentas de História
       this.toolsService.createGetUserStoriesTool(userId),
-      this.toolsService.createGetPopularCommunitiesTool(),
       this.toolsService.createGetRecentStoriesTool(),
+      this.toolsService.createGetPopularPostsInCommunityTool(),
+
+      // Ferramentas de Comunidade
       this.toolsService.createGetCommunitiesTool(),
+      this.toolsService.createGetPopularCommunitiesTool(),
       this.toolsService.createJoinCommunityTool(userId),
       this.toolsService.createLeaveCommunityTool(userId),
-      this.toolsService.createGetPopularPostsCommunityTool(),
-      // this.toolsService.createAddBookToReadlistTool(),
-      // this.toolsService.createCreateReadlistTool(),
-      // this.toolsService.createDeleteReadlistTool(),
-      // this.toolsService.createGravarLeituraTool(),
 
-      // TODO: adicionar as novas tools MCP aqui quando estiverem prontas
-      
+      // Ferramentas de Readlist (Auxiliares)
+      this.toolsService.createFindReadlistByNameTool(userId),
+      this.toolsService.createFindLivroByNameTool(), // (A auxiliar que assumimos)
+
+      // Ferramentas de Readlist (Ação)
+      this.toolsService.createAddBookToReadlistTool(userId),
+      this.toolsService.createRemoveBookFromReadlistTool(userId),
+      this.toolsService.createCreateReadlistTool(userId),
+      this.toolsService.createDeleteReadlistTool(userId),
       // this.toolsService.createUsersGetMyReadlistsTool(),
+
+      // Ferramentas de Leitura
+      this.toolsService.createGravarLeituraTool(userId),
       // this.toolsService.createUsersGetMyProfileTool(),
       // this.toolsService.createUsersGetMyFavoritesTool(),
     ];

@@ -5,6 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Story, StoryDocument } from '../../schemas/story.schema';
 import { Comunidade, ComunidadeDocument } from 'src/comunidades/entities/comunidade.entity';
 import { ComunidadesService } from 'src/comunidades/comunidades.service';
+import { Readlist, ReadlistDocument } from 'src/readlists/entities/readlist.entity';
+import { ReadlistsService } from 'src/readlists/readlists.service';
 import { DynamicStructuredTool } from 'langchain';
 
 @Injectable()
@@ -12,7 +14,9 @@ export class LlmToolsService {
   constructor(
     @InjectModel(Story.name) private storyModel: Model<StoryDocument>,
     @InjectModel(Comunidade.name) private communityModel: Model<ComunidadeDocument>,
+    @InjectModel(Readlist.name) private readlistModel: Model<ReadlistDocument>,
     private comunidadesService: ComunidadesService,
+    private readlistsService: ReadlistsService,
   ) { }
 
   //ferramenta para buscar as histórias do usuário logado
@@ -189,7 +193,7 @@ export class LlmToolsService {
 
   //ferramenta para buscar os posts mais populares da comunidade
   // rever sobre essa ferramenta e ver se da para usar em uma parte específica do feed
-  public createGetPopularPostsCommunityTool(): DynamicStructuredTool {
+  public createGetPopularPostsInCommunityTool(): DynamicStructuredTool {
 
     const toolSchema = z.object({
       communityName: z.string().describe('O nome ou slug da comunidade para buscar os posts; se não fornecido, busca no site inteiro'),
@@ -214,4 +218,165 @@ export class LlmToolsService {
       },
     });
   }
+
+ //ferramenta para buscar a readlist pelo nome
+  public createGetReadlistTool(): DynamicStructuredTool {
+
+    const toolSchema = z.object({
+      readlistName: z.string().describe('O nome ou slug da readlist para adicionar o livro; se não for especificada, pedir para especificar'),
+    });
+    return new DynamicStructuredTool({
+      name: 'get_readlist',
+      description: 'Encontra a readlist que o usuário esta procurando; retorna a readlist ou uma mensagem de erro.',
+      schema: toolSchema,
+      func: async ({ readlistName }: { readlistName: string }) => {
+        try {
+          const readlist = await this.readlistModel.findById(readlistName).exec();
+          if (!readlist) {
+            return `Readlist não encontrada: ${readlistName}`;
+          }
+        } catch (e) {
+          return `Erro ao encontrar a readlist: ${e instanceof Error ? e.message : String(e)}`;
+        }
+      },
+    });
+  }
+
+// Ferramenta para adicionar livro na readlist
+  public createAddBookToReadlistTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      readlistId: z.string().describe("O ID da readlist (obtido com 'find_readlist_by_name')"),
+      livroId: z.string().describe("O ID do livro (obtido com 'find_livro_by_name')"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'add_book_to_readlist',
+      description: 'Adiciona um livro (por ID) a uma readlist (por ID).',
+      schema: toolSchema,
+      func: async ({ readlistId, livroId }) => {
+        try {
+          const result = await this.readlistsService.addLivro(userId, readlistId, livroId);
+          return `Livro (ID: ${livroId}) adicionado com sucesso à readlist '${result.nome}'.`;
+        } catch (e) { return `Erro ao adicionar livro: ${e.message}`; }
+      },
+    });
+  }
+  // Ferramenta para remover livro da readlist
+  public createRemoveBookFromReadlistTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      readlistId: z.string().describe("O ID da readlist"),
+      livroId: z.string().describe("O ID do livro a ser removido"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'remove_book_from_readlist',
+      description: 'Remove um livro (por ID) de uma readlist (por ID).',
+      schema: toolSchema,
+      func: async ({ readlistId, livroId }) => {
+        try {
+          const result = await this.readlistsService.removeLivro(userId, readlistId, livroId);
+          return `Livro (ID: ${livroId}) removido com sucesso da readlist '${result.nome}'.`;
+        } catch (e) { return `Erro ao remover livro: ${e.message}`; }
+      },
+    });
+  }
+
+// ferramenta para buscar livro pelo nome
+  public createFindLivroByNameTool(): DynamicStructuredTool {
+    const toolSchema = z.object({
+      livroName: z.string().describe("O nome do livro a ser buscado"),
+    });
+    return new DynamicStructuredTool({
+      name: 'find_livro_by_name',
+      description: 'Busca um livro pelo nome e retorna seu ID.',
+      schema: toolSchema,
+      func: async ({ livroName }) => {
+        try {
+          return `[MOCK] Encontrou o Livro ID 'livro_id_123' para '${livroName}'`; // Substitua pelo seu service
+        } catch (e) { return `Erro: ${e.message}`; }
+      },
+    });
+  }
+
+  // ferramenta para buscar readlist pelo nome
+  public createFindReadlistByNameTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      readlistName: z.string().describe("O nome da readlist a ser buscada"),
+    });
+    return new DynamicStructuredTool({
+      name: 'find_readlist_by_name',
+      description: 'Busca uma readlist específica do usuário pelo nome.',
+      schema: toolSchema,
+    func: async ({ readlistName }) => {
+      try {
+        const readlists = await this.readlistsService.findAll(userId);
+        const found = readlists.find(r => r.nome.toLowerCase() === readlistName.toLowerCase());
+
+        if (!found) return `Readlist com nome '${readlistName}' não encontrada.`;
+        return JSON.stringify({ id: (found as any)._id, nome: found.nome });
+      } catch (e) { return `Erro ao buscar readlist: ${e.message}`; }
+    },
+  });
+}
+
+  // Ferramenta para criar nova readlist
+public createCreateReadlistTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      nome: z.string().describe("O nome da nova readlist a ser criada"),
+      descricao: z.string().optional().describe("Uma breve descrição da readlist"),
+      publica: z.boolean().default(false).describe("Se a readlist deve ser pública ou privada"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'create_readlist',
+      description: 'Cria uma nova readlist para o usuário.',
+      schema: toolSchema,
+      func: async ({ nome, descricao, publica }) => {
+        try {
+          const createDto = { nome, descricao, publica };
+          const result = await this.readlistsService.create(userId, createDto);
+          return `Readlist '${result.nome}' criada com sucesso com o ID: ${result._id}.`;
+        } catch (e) { return `Erro ao criar readlist: ${e.message}`; }
+      },
+    });
+  }
+
+// Ferramenta para deletar readlist
+  public createDeleteReadlistTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      readlistId: z.string().describe("O ID da readlist a ser deletada (obtido com 'find_readlist_by_name')"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'delete_readlist',
+      description: 'Deleta uma readlist do usuário usando o ID da readlist.',
+      schema: toolSchema,
+      func: async ({ readlistId }) => {
+        try {
+          await this.readlistsService.remove(userId, readlistId);
+          return `Readlist (ID: ${readlistId}) foi deletada com sucesso.`;
+        } catch (e) { return `Erro ao deletar readlist: ${e.message}`; }
+      },
+    });
+  }
+
+  // Assumindo a existência de um 'LeiturasService' injetado
+  public createGravarLeituraTool(userId: string): DynamicStructuredTool {
+    const toolSchema = z.object({
+      livroId: z.string().describe("O ID do livro (obtido com 'find_livro_by_name')"),
+      status: z.enum(['quero-ler', 'lendo', 'lido']).describe("O status da leitura"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'gravar_leitura',
+      description: 'Registra o status de leitura de um livro (ex: "lido", "lendo").',
+      schema: toolSchema,
+      func: async ({ livroId, status }) => {
+        try {
+          return `[MOCK] Status '${status}' salvo para o livro ${livroId}. (Implementar com LeiturasService)`;
+        } catch (e) { return `Erro ao gravar leitura: ${e.message}`; }
+      },
+    });
+  }
+
 }
