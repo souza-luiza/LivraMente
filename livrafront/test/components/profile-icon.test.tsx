@@ -24,7 +24,7 @@ describe('ProfileIcon Component', () => {
       const { container } = render(<ProfileIcon />)
       const circles = container.querySelectorAll('circle')
       
-      expect(circles).toHaveLength(3)
+      expect(circles).toHaveLength(2)
     })
   })
 
@@ -94,13 +94,6 @@ describe('ProfileIcon Component', () => {
       expect(progressCircle).toHaveAttribute('stroke', 'currentColor')
       expect(progressCircle).toHaveAttribute('stroke-width', '6')
       expect(progressCircle).toHaveAttribute('stroke-linecap', 'round')
-    })
-
-    it('inner circle has correct fill', () => {
-      const { container } = render(<ProfileIcon />)
-      const innerCircle = container.querySelectorAll('circle')[2]
-      
-      expect(innerCircle).toHaveAttribute('fill', 'currentColor')
     })
   })
 

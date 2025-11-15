@@ -3,21 +3,31 @@ import ProfileReadlists from '@/components/profile-readlists'
 
 describe('ProfileReadlists Component', () => {
   describe('Rendering', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders without crashing', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       expect(container.firstChild).toBeInTheDocument()
     })
 
     it('renders grid container with correct classes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const gridContainer = container.querySelector('.grid')
       expect(gridContainer).toHaveClass('w-full h-fit grid grid-cols-4 gap-2 relative')
     })
 
     it('renders main container as a div element', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const mainDiv = container.firstChild
       expect(mainDiv?.nodeName).toBe('DIV')
@@ -25,93 +35,37 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Readlists Data', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders all 8 readlists', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const readlists = screen.getAllByRole('link')
       expect(readlists).toHaveLength(8)
     })
-
-    it('renders first readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Minha lista de fantasia')).toBeInTheDocument()
-      expect(screen.getByText('usuario123')).toBeInTheDocument()
-    })
-
-    it('renders second readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Livros de ficção científica')).toBeInTheDocument()
-      expect(screen.getByText('usuario456')).toBeInTheDocument()
-    })
-
-    it('renders third readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Romances clássicos')).toBeInTheDocument()
-      expect(screen.getByText('usuario789')).toBeInTheDocument()
-    })
-
-    it('renders fourth readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Thrillers emocionantes')).toBeInTheDocument()
-      expect(screen.getByText('usuario101')).toBeInTheDocument()
-    })
-
-    it('renders fifth readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Histórias de mistério')).toBeInTheDocument()
-      expect(screen.getByText('usuario202')).toBeInTheDocument()
-    })
-
-    it('renders sixth readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Livros de não-ficção')).toBeInTheDocument()
-      expect(screen.getByText('usuario303')).toBeInTheDocument()
-    })
-
-    it('renders seventh readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Contos de horror')).toBeInTheDocument()
-      expect(screen.getByText('usuario404')).toBeInTheDocument()
-    })
-
-    it('renders eighth readlist with correct data', () => {
-      render(<ProfileReadlists />)
-      
-      expect(screen.getByText('Aventuras épicas')).toBeInTheDocument()
-      expect(screen.getByText('usuario505')).toBeInTheDocument()
-    })
-
-    it('renders all titles and authors together', () => {
-      render(<ProfileReadlists />)
-      
-      const expectedPairs = [
-        { title: 'Minha lista de fantasia', author: 'usuario123' },
-        { title: 'Livros de ficção científica', author: 'usuario456' },
-        { title: 'Romances clássicos', author: 'usuario789' },
-        { title: 'Thrillers emocionantes', author: 'usuario101' },
-        { title: 'Histórias de mistério', author: 'usuario202' },
-        { title: 'Livros de não-ficção', author: 'usuario303' },
-        { title: 'Contos de horror', author: 'usuario404' },
-        { title: 'Aventuras épicas', author: 'usuario505' }
-      ]
-      
-      expectedPairs.forEach(({ title, author }) => {
-        expect(screen.getByText(title)).toBeInTheDocument()
-        expect(screen.getByText(author)).toBeInTheDocument()
-      })
-    })
   })
 
   describe('Readlist Components', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('each readlist has unique key', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       const hrefs = Array.from(links).map(link => link.getAttribute('href'))
@@ -121,22 +75,22 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('readlist links have correct hrefs', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = screen.getAllByRole('link')
       
-      expect(links[0]).toHaveAttribute('href', '/readlist/1')
-      expect(links[1]).toHaveAttribute('href', '/readlist/2')
-      expect(links[2]).toHaveAttribute('href', '/readlist/3')
-      expect(links[3]).toHaveAttribute('href', '/readlist/4')
-      expect(links[4]).toHaveAttribute('href', '/readlist/5')
-      expect(links[5]).toHaveAttribute('href', '/readlist/6')
-      expect(links[6]).toHaveAttribute('href', '/readlist/7')
-      expect(links[7]).toHaveAttribute('href', '/readlist/8')
+      expect(links[0]).toHaveAttribute('href', '/john/readlist/fantasia')
+      expect(links[1]).toHaveAttribute('href', '/john/readlist/ficcao-cientifica')
+      expect(links[2]).toHaveAttribute('href', '/john/readlist/romances-classicos')
+      expect(links[3]).toHaveAttribute('href', '/john/readlist/thrillers-emocionantes')
+      expect(links[4]).toHaveAttribute('href', '/john/readlist/historias-de-misterio')
+      expect(links[5]).toHaveAttribute('href', '/john/readlist/nao-ficcao')
+      expect(links[6]).toHaveAttribute('href', '/john/readlist/contos-de-horror')
+      expect(links[7]).toHaveAttribute('href', '/john/readlist/aventuras-epicas')
     })
 
     it('all readlists use default image', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = screen.getAllByRole('img')
       
@@ -146,7 +100,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('renders correct alt texts for images', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       expect(screen.getByAltText('Capa da Readlist Minha lista de fantasia')).toBeInTheDocument()
       expect(screen.getByAltText('Capa da Readlist Livros de ficção científica')).toBeInTheDocument()
@@ -159,7 +113,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all images have correct Next.js Image attributes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -171,7 +125,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all images have object-cover and rounded-lg classes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -181,7 +135,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all readlist links have hover effect classes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -192,43 +146,53 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Layout and Grid', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders grid with 4 columns', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid-cols-4')
       expect(grid).toBeInTheDocument()
     })
 
     it('has gap between items', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.gap-2')
       expect(grid).toBeInTheDocument()
     })
 
     it('has full width', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.w-full')
       expect(grid).toBeInTheDocument()
     })
 
     it('has fit height', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.h-fit')
       expect(grid).toBeInTheDocument()
     })
 
     it('is positioned relative', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.relative')
       expect(grid).toBeInTheDocument()
     })
 
     it('each readlist card has correct flex layout', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -238,7 +202,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('each readlist card has correct padding', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -248,14 +212,14 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('image containers have correct aspect ratio', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const imageContainers = container.querySelectorAll('.aspect-\\[4\\/4\\]')
       expect(imageContainers).toHaveLength(8)
     })
 
     it('text containers are centered', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const textContainers = container.querySelectorAll('.text-center')
       
@@ -266,8 +230,18 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Data Structure', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders readlists in correct order', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const titles = screen.getAllByRole('heading', { level: 4 })
       
@@ -281,37 +255,8 @@ describe('ProfileReadlists Component', () => {
       expect(titles[7]).toHaveTextContent('Aventuras épicas')
     })
 
-    it('all readlists have IDs from 1 to 8', () => {
-      render(<ProfileReadlists />)
-      
-      const links = screen.getAllByRole('link')
-      
-      for (let i = 0; i < 8; i++) {
-        expect(links[i]).toHaveAttribute('href', `/readlist/${i + 1}`)
-      }
-    })
-
-    it('all authors have unique usernames', () => {
-      render(<ProfileReadlists />)
-      
-      const authors = [
-        'usuario123',
-        'usuario456',
-        'usuario789',
-        'usuario101',
-        'usuario202',
-        'usuario303',
-        'usuario404',
-        'usuario505'
-      ]
-      
-      authors.forEach(author => {
-        expect(screen.getByText(author)).toBeInTheDocument()
-      })
-    })
-
     it('all readlists have empty imageUrl', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -320,30 +265,30 @@ describe('ProfileReadlists Component', () => {
       })
     })
 
-    it('authors follow sequential numbering pattern', () => {
-      render(<ProfileReadlists />)
-      
-      const expectedNumbers = ['123', '456', '789', '101', '202', '303', '404', '505']
-      
-      expectedNumbers.forEach(num => {
-        expect(screen.getByText(`usuario${num}`)).toBeInTheDocument()
-      })
-    })
-
-    it('all IDs are strings', () => {
-      render(<ProfileReadlists />)
+    it('all slugs are strings', () => {
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = screen.getAllByRole('link')
       
       links.forEach((link, index) => {
-        expect(link.getAttribute('href')).toBe(`/readlist/${index + 1}`)
+        expect(link.getAttribute('href')).toBe(`/john/readlist/${mockReadlists[index].slug}`)
       })
     })
   })
 
   describe('Integration', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders complete grid structure with all readlists', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid')
       expect(grid).toBeInTheDocument()
@@ -359,7 +304,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all readlist components are children of grid', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid')
       const links = screen.getAllByRole('link')
@@ -370,7 +315,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('maintains consistent structure across all readlists', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -384,7 +329,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('each readlist has exactly one image', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -395,7 +340,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('each readlist has exactly one title', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -406,7 +351,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('each readlist has exactly one author', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -418,8 +363,18 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Content Validation', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('all titles are unique', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const titles = [
         'Minha lista de fantasia',
@@ -439,7 +394,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('renders Portuguese content correctly', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       expect(screen.getByText('Livros de ficção científica')).toBeInTheDocument()
       expect(screen.getByText('Livros de não-ficção')).toBeInTheDocument()
@@ -447,13 +402,13 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('handles special characters in titles', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       expect(screen.getByText('Livros de não-ficção')).toBeInTheDocument()
     })
 
     it('all titles have meaningful content', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const titles = screen.getAllByRole('heading', { level: 4 })
       
@@ -464,7 +419,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('renders diverse genre titles', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const genres = ['fantasia', 'ficção científica', 'clássicos', 'Thrillers', 'mistério', 'não-ficção', 'horror', 'épicas']
       
@@ -476,8 +431,18 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Accessibility', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('all images have alt text', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -488,7 +453,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all links are accessible', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = screen.getAllByRole('link')
       
@@ -499,7 +464,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('headings are properly structured', () => {
-      render(<ProfileReadlists />)
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const headings = screen.getAllByRole('heading', { level: 4 })
       
@@ -510,7 +475,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all alt texts are descriptive', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -522,7 +487,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('links have sufficient context', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -537,22 +502,32 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Performance', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('renders efficiently without errors', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       expect(container).toBeInTheDocument()
       expect(container.querySelector('.grid')).toBeInTheDocument()
     })
 
     it('does not create duplicate elements', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grids = container.querySelectorAll('.grid-cols-4')
       expect(grids).toHaveLength(1)
     })
 
     it('renders exactly 8 readlists without extras', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       const images = container.querySelectorAll('img')
@@ -566,7 +541,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('renders with minimal DOM depth', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid')
       const firstLink = grid?.querySelector('a')
@@ -578,22 +553,32 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Responsive Design', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('grid container has responsive width', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid')
       expect(grid).toHaveClass('w-full')
     })
 
     it('maintains grid layout structure', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const grid = container.querySelector('.grid')
       expect(grid).toHaveClass('grid-cols-4')
     })
 
     it('all readlist cards have full width', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = container.querySelectorAll('a')
       
@@ -603,7 +588,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('images are responsive with fill layout', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const images = container.querySelectorAll('img')
       
@@ -614,8 +599,18 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Typography', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('titles have correct typography classes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const titles = container.querySelectorAll('h4')
       
@@ -625,7 +620,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('authors have correct typography classes', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const authors = container.querySelectorAll('p')
       
@@ -635,7 +630,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('all text elements have truncate class', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const textElements = container.querySelectorAll('h4, p')
       
@@ -646,8 +641,18 @@ describe('ProfileReadlists Component', () => {
   })
 
   describe('Image Containers', () => {
+    const mockReadlists = [
+      { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+      { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+      { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+      { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+      { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+      { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+      { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+      { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+    ];
     it('all image containers have relative positioning', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const imageContainers = container.querySelectorAll('a > .relative')
       
@@ -658,7 +663,7 @@ describe('ProfileReadlists Component', () => {
     })
 
     it('image containers maintain aspect ratio', () => {
-      const { container } = render(<ProfileReadlists />)
+      const { container } = render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const imageContainers = container.querySelectorAll('.aspect-\\[4\\/4\\]')
       
@@ -670,19 +675,41 @@ describe('ProfileReadlists Component', () => {
 
   describe('Map Function Behavior', () => {
     it('maps all 8 readlist objects correctly', () => {
-      render(<ProfileReadlists />)
+      const mockReadlists = [
+        { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+        { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+        { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+        { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+        { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+        { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+        { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+        { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+      ];
+
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const links = screen.getAllByRole('link')
       
       expect(links).toHaveLength(8)
       
-      for (let i = 1; i <= 8; i++) {
-        expect(links[i - 1]).toHaveAttribute('href', `/readlist/${i}`)
+      for (let i = 0; i < 8; i++) {
+        expect(links[i]).toHaveAttribute('href', `/john/readlist/${mockReadlists[i].slug}`)
       }
     })
 
     it('preserves data order during mapping', () => {
-      render(<ProfileReadlists />)
+      const mockReadlists = [
+        { _id: '1', nome: 'Minha lista de fantasia', favorito: false, publica: true, criador: 'john', slug: 'fantasia', livros:[] },
+        { _id: '2', nome: 'Livros de ficção científica', favorito: false, publica: true, criador: 'john', slug: 'ficcao-cientifica', livros:[] },
+        { _id: '3', nome: 'Romances clássicos', favorito: false, publica: true, criador: 'john', slug: 'romances-classicos', livros:[] },
+        { _id: '4', nome: 'Thrillers emocionantes', favorito: false, publica: true, criador: 'john', slug: 'thrillers-emocionantes', livros:[] },
+        { _id: '5', nome: 'Histórias de mistério', favorito: false, publica: true, criador: 'john', slug: 'historias-de-misterio', livros:[] },
+        { _id: '6', nome: 'Livros de não-ficção', favorito: false, publica: true, criador: 'john', slug: 'nao-ficcao', livros:[] },
+        { _id: '7', nome: 'Contos de horror', favorito: false, publica: true, criador: 'john', slug: 'contos-de-horror', livros:[] },
+        { _id: '8', nome: 'Aventuras épicas', favorito: false, publica: true, criador: 'john', slug: 'aventuras-epicas', livros:[] },
+      ];
+
+      render(<ProfileReadlists readlists={mockReadlists} username={'john'} />)
       
       const titles = screen.getAllByRole('heading', { level: 4 })
       const expectedOrder = [

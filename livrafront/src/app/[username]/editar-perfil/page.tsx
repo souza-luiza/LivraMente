@@ -7,7 +7,7 @@ import Image from "next/image";
 import Input from "@/components/general-input";
 import { toast } from "react-toastify";
 import ToastNotification from '@/components/toast-notification';
-import  TrashIcon from "@/components/icons/TrashIcon";
+import TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
 import EditIcon from "@/components/icons/EditIcon";
 import ImageCropModal from "@/components/ImageCropModal";
@@ -15,7 +15,7 @@ import { updateAvatar, updateProfile } from "@/services/userService";
 import { User } from "@/types/auth";
 import { getSessionInfos } from "@/services/auth";
 
-export default function SettingsProfilePage() {
+export default function EditProfilePage() {
   const router = useRouter();
   const params = useParams();
   const { username } = params as { username: string };
