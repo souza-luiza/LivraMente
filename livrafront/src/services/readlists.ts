@@ -139,6 +139,20 @@ export async function updateReadlist(readlistSlug: string, payload: { nome?: str
   return response.json();
 }
 
+export async function updatePhoto(formDataUpload: FormData, slug: string): Promise<{ capa_url: string }> {
+  const response = await fetch(`${API_BASE_URL}/readlists/avatar/${slug}`, {
+    method: 'PUT',
+    credentials: "include",
+    body: formDataUpload
+  });
+
+  if (!response.ok) {
+    throw new Error('Erro ao fazer upload da imagem');
+  }
+
+  return response.json();
+}
+
 // Deletar uma readlist
 export async function deleteReadlist(readlistSlug: string) {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistSlug}`, {

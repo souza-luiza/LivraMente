@@ -146,6 +146,7 @@ export default function ReadlistsPage() {
                     key={readlist._id}
                     title={readlist.nome}
                     author={username}
+                    image={readlist.capa_url}
                     link={`/${username}/readlist/${readlist.slug}`}
                   />
                 ))}
@@ -159,6 +160,7 @@ export default function ReadlistsPage() {
                       key={readlist._id}
                       title={readlist.nome}
                       author={readlist.criador.username}
+                      image={readlist.capa_url}
                       link={`/${readlist.criador.username}/readlist/${readlist.slug}`}
                     />
                   ))}

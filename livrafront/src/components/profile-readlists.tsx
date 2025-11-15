@@ -15,6 +15,7 @@ export default function ProfileReadlists({ readlists = [], username }: ProfileRe
           key={readlist._id}
           title={readlist.nome}
           author={username}
+          image={readlist.capa_url}
           link={`/${username}/readlist/${readlist.slug}`}
         />
       ))}
