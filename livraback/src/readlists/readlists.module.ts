@@ -13,6 +13,7 @@ import { User, UserSchema } from '../users/entities/user.entity';
       { name: User.name, schema: UserSchema },
     ])],
   controllers: [ReadlistsController],
-  providers: [ReadlistsService]
+  providers: [ReadlistsService],
+  exports: [ReadlistsService],
 })
 export class ReadlistsModule {}

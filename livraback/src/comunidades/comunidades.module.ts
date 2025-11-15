@@ -11,6 +11,7 @@ import { Post, PostSchema } from '../schemas/post.schema';
         { name: Post.name, schema: PostSchema },
     ])],
     controllers: [ComunidadesController],
-    providers: [ComunidadesService]
+    providers: [ComunidadesService],
+    exports: [ComunidadesService],
 })
 export class ComunidadesModule {}
