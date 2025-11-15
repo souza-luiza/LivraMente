@@ -192,7 +192,7 @@ export class UsersService {
 
     session.user = { userId: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl, pronouns: user.pronouns };
     const obj = user.toObject();
-    delete (obj as any).senha; //talvez problema de build
+    delete (obj as any).senha;
     return obj;
   }
 }

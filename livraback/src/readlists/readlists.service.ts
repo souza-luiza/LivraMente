@@ -7,6 +7,7 @@ import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { User, UserDocument } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import slugify from 'slugify';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ReadlistsService {
@@ -15,6 +16,7 @@ export class ReadlistsService {
         @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
         @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
+        private readonly cloudinary: CloudinaryService,
     ) {}
 
     async create(criadorId: string, createReadlistDto: CreateReadlistDto) {
@@ -98,6 +100,25 @@ export class ReadlistsService {
         const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-favorito -capa_public_id').exec();
         if(!readlist) throw new NotFoundException('Readlist não encontrada');
         return readlist;
+    }
+
+    async updatePhoto(id: string, file: Express.Multer.File, slug: string) {
+        const readlist = await this.findOne(id, slug); // se nao encontrar, funcao ja tem o throw NotFound
+        if (!file?.buffer) throw new BadRequestException('Arquivo inválido');
+
+        const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/readlists');
+
+        // Remove avatar anterior se existir
+        if (readlist.capa_public_id) {
+            await this.cloudinary.deleteImage(readlist.capa_public_id);
+        }
+
+        readlist.capa_url = uploaded.secure_url;
+        readlist.capa_public_id = uploaded.public_id;
+        await readlist.save();
+
+        const obj = readlist.toObject();
+        return obj;
     }
 
     async addLivro(criadorId: string, readlistId: string, livroId: string) {

@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ReadlistsService } from './readlists.service';
 import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
-import { ApiOperation, ApiResponse, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
 @ApiCookieAuth() //Informa que usa cookies
@@ -147,6 +149,46 @@ export class ReadlistsController {
     })
     async findOnePublic(@Param('username') username: string, @Param('slug') slug: string) {
         return this.readlistsService.findOnePublic(username, slug);
+    }
+
+    @Put('avatar/:slug')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: memoryStorage(),
+            fileFilter: (req, file, cb) => {
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+                const ok = allowedTypes.includes(file.mimetype);
+                if (!ok) return cb(new BadRequestException('Formato de imagem inválido'), false);
+                cb(null, true);
+            },
+            limits: {
+                fileSize: 5 * 1024 * 1024, // 5MB
+            },
+        }),
+    )
+    @ApiOperation({ 
+        summary: 'Upload de imagem de readlist',
+        description: 'Atualiza a foto da readlist do usuário autenticado'
+    })
+    @ApiResponse({ 
+        status: 200, 
+        description: 'Imagem da readlist atualizada com sucesso' 
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Arquivo inválido' 
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Readlist não encontrada' 
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Sessão inválida'
+    })
+    async updatePhoto(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File, @Param('slug') slug: string) {
+        if (!file) throw new BadRequestException('Nenhum arquivo foi enviado');
+        return this.readlistsService.updatePhoto(user.userId, file, slug);
     }
 
     @Patch(':id/livros/:livroId')

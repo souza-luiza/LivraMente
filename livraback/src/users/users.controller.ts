@@ -79,7 +79,6 @@ export class UsersController {
   @ApiOperation({ 
     summary: 'Upload de imagem de perfil do usuário',
     description: 'Atualiza a foto de perfil do usuário autenticado'
-
   })
   @ApiResponse({ 
     status: 200, 
@@ -95,7 +94,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
   async updateAvatar(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File, @Session() session: Record<string, any>) {
     if (!file) throw new BadRequestException('Nenhum arquivo foi enviado');

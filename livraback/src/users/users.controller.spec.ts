@@ -170,9 +170,10 @@ describe('UsersController', () => {
       path: '',
       stream: null as any,
     };
+    const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
     it('deve lançar BadRequestException se nenhum arquivo for enviado', async () => {
-      await expect(controller.updateAvatar(fakeUser as any, undefined as any)).rejects.toThrow(
+      await expect(controller.updateAvatar(fakeUser as any, undefined as any, mockSession as any)).rejects.toThrow(
         'Nenhum arquivo foi enviado'
       );
     });
@@ -190,7 +191,7 @@ describe('UsersController', () => {
 
     it('deve propagar erro do service', async () => {
       mockUsersService.updateAvatar = jest.fn().mockRejectedValue(new Error('Erro interno'));
-      await expect(controller.updateAvatar(fakeUser as any, fakeFile)).rejects.toThrow('Erro interno');
+      await expect(controller.updateAvatar(fakeUser as any, fakeFile, mockSession as any)).rejects.toThrow('Erro interno');
     });
   });
 });

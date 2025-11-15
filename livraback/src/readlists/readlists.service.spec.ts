@@ -5,9 +5,16 @@ import { CreateReadlistDto } from './dto/create-readlist.dto';
 import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('ReadlistsService', () => {
   let service: ReadlistsService;
+  let cloudinaryService: CloudinaryService;
+
+  const mockCloudinaryService = {
+    uploadImage: jest.fn().mockResolvedValue('mocked.com/fake.png'),
+    deleteImage: jest.fn()
+  };
 
   const mockReadlist = { _id: '1', nome: 'Minha Readlist', criador: 'user123', slug: 'minha-readlist' };
   const publicReadlist = { _id: '1', nome: 'Readlist Pública', publica: true };
@@ -62,10 +69,15 @@ describe('ReadlistsService', () => {
           provide: UsersService,
           useValue: mockUsersService,
         },
+        {
+          provide: CloudinaryService,
+          useValue: mockCloudinaryService
+        }
       ],
     }).compile();
 
     service = module.get<ReadlistsService>(ReadlistsService);
+    cloudinaryService = module.get<CloudinaryService>(CloudinaryService);
   });
 
   it('should be defined', () => {
@@ -95,6 +107,7 @@ describe('ReadlistsService', () => {
         mockConstructor as any,
         mockUserModel as any,
         mockUsersService as any,
+        mockCloudinaryService as any
       );
 
       const result = await service.create('user123', createDto);
@@ -266,4 +279,56 @@ describe('ReadlistsService', () => {
       await expect(service.findAllPublic('user123')).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('updateAvatar', () => {
+    const file: Express.Multer.File = {fieldname: 'avatar',
+      originalname: 'teste.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fakeimage'),
+      size: 1234,
+      stream: null as any,
+      destination: '',
+      filename: '',
+      path: ''
+    };
+
+    it('deve lançar erro se o usuário não for encontrado', async () => {
+      mockReadlistModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.updatePhoto('user-id', file, 'slug')).rejects.toThrow(NotFoundException);
+    })
+
+    it('deve lançar erro se o arquivo for inválido', async () => {
+      mockReadlistModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(mockReadlist),
+      });
+
+      await expect(service.updatePhoto('1', {} as any, 'slug')).rejects.toThrow(BadRequestException);
+    })
+
+    it('deve fazer upload e atualizar avatar corretamente', async () => {
+      const mockReadlist = {
+        capa_public_id: 'old_public_id',
+        save: jest.fn(),
+        toObject: jest.fn().mockReturnValue({ name: 'john', slug: 'slug' }),
+      };
+
+      mockReadlistModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(mockReadlist),
+      });
+
+      const result = await service.updatePhoto('1', file, 'slug');
+
+      expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
+        file.buffer,
+        'livra/readlists',
+      );
+      expect(cloudinaryService.deleteImage).toHaveBeenCalledWith('old_public_id');
+      expect(mockReadlist.save).toHaveBeenCalled();
+      expect(result).toEqual({ name: 'john', slug: 'slug' });
+    });
+  })
 });
