@@ -4,10 +4,15 @@ import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
 import { Model } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
+import { QueueProducerService } from '../queue/queue.producer.service';
+import { ROUTING_KEYS } from '../queue/queue.constants';
 
 @Injectable()
 export class ComunidadesService {
-    constructor(@InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>) {}
+    constructor(
+        @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
+        private readonly queueProducer: QueueProducerService,
+    ) {}
 
     async findAll() {
         return await this.comunidadeModel.find().exec();
@@ -106,6 +111,21 @@ export class ComunidadesService {
             ).exec();
 
             if (!updated) throw new NotFoundException('Comunidade não encontrada');
+            
+            // notificar moderadores sobre novo membro
+            try {
+                await this.queueProducer.publish(
+                    ROUTING_KEYS.NOTIFICAR_MEMBRO_ENTROU,
+                    {
+                        userId,
+                        comunidadeId: updated._id.toString(),
+                        comunidadeNome: updated.nome,
+                        moderadores: updated.moderadores.map(m => m.toString()),
+                    }
+                );
+            } catch (error) {
+                console.error('Erro ao publicar notificação de novo membro:', error);
+            }
             
             return { message: 'Usuário adicionado à comunidade com sucesso' };
 

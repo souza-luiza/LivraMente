@@ -43,6 +43,7 @@ export const ROUTING_KEYS = {
   ANALYTICS_ACAO_USUARIO: 'analytics.acao.usuario',
 } as const;
 
+
 // Configurações de retry
 export const CONFIG_FILA = {
   MAX_TENTATIVAS: 3,

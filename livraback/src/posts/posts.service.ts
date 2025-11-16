@@ -5,12 +5,15 @@ import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
 import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { QueueProducerService } from '../queue/queue.producer.service';
+import { FILAS, ROUTING_KEYS } from '../queue/queue.constants';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(Comunidade.name) private comunidadeModel: Model<Comunidade>,
+    private readonly queueProducer: QueueProducerService,
   ) {}
 
   async create(userId: string, createPostDto: CreatePostDto) {
@@ -72,6 +75,43 @@ export class PostsService {
       comunidade._id,
       { $push: { posts: savedPost._id } }
     );
+
+    // Publicar eventos assíncronos 
+    try {
+      // Notificar membros sobre novo post 
+      if (status === PostStatus.PUBLICADO) {
+        await this.queueProducer.publish(
+          ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
+          {
+            postId: (savedPost._id as Types.ObjectId).toString(),
+            autorId: userId,
+            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
+            conteudoPreview: createPostDto.conteudo.substring(0, 100),
+          }
+        );
+
+        // Atualizar métricas da comunidade
+        await this.queueProducer.publish(
+          ROUTING_KEYS.METRICAS_POST_CRIADO,
+          {
+            postId: (savedPost._id as Types.ObjectId).toString(),
+            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
+            categoria,
+          }
+        );
+      }
+
+      // Processar imagens se houver
+      if (createPostDto.imagens && createPostDto.imagens.length > 0) {
+        await this.queueProducer.publicarNaFila(FILAS.PROCESSAR_IMAGENS, {
+          postId: (savedPost._id as Types.ObjectId).toString(),
+          imagens: createPostDto.imagens,
+          tipo: 'post',
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao publicar eventos do post:', error);
+    }
 
     return savedPost.populate('autor', 'username nome_exibicao imagem_perfil');
   }
@@ -260,6 +300,21 @@ export class PostsService {
 
     await post.save();
 
+    // 🔔 Notificar autor sobre resultado da moderação
+    try {
+      await this.queueProducer.publish(
+        ROUTING_KEYS.NOTIFICAR_POST_MODERADO,
+        {
+          postId: (post._id as Types.ObjectId).toString(),
+          autorId: post.autor.toString(),
+          aprovado: aprovar,
+          categoria: aprovar ? categoria : null,
+        }
+      );
+    } catch (error) {
+      console.error('Erro ao publicar notificação de moderação:', error);
+    }
+
     return post.populate('autor', 'username nome_exibicao imagem_perfil');
   }
 
@@ -285,6 +340,22 @@ export class PostsService {
     } else {
       // Curtir
       post.curtidas.push(new Types.ObjectId(userId));
+
+      // 🔔 Notificar autor do post (não notifica se curtiu próprio post)
+      if (post.autor.toString() !== userId) {
+        try {
+          await this.queueProducer.publish(
+            ROUTING_KEYS.NOTIFICAR_POST_CURTIDO,
+            {
+              postId: (post._id as Types.ObjectId).toString(),
+              autorPostId: post.autor.toString(),
+              usuarioCurtiuId: userId,
+            }
+          );
+        } catch (error) {
+          console.error('Erro ao publicar notificação de curtida:', error);
+        }
+      }
     }
 
     await post.save();
