@@ -17,6 +17,7 @@ import { ReadlistsModule } from './readlists/readlists.module';
 import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
 import { LlmModule } from './llm/llm.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { LlmModule } from './llm/llm.module';
     PostsModule,
     ComunidadesModule,
     LlmModule,
+    QueueModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],
