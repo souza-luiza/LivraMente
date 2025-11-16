@@ -101,7 +101,6 @@ export default function ReadlistPage() {
       await updateReadlist(readlistData.slug, {
         nome: data.title,
         descricao: data.description,
-        capa_url: data.coverImage,
         publica: !data.isPrivate,
       });
 
@@ -203,7 +202,7 @@ export default function ReadlistPage() {
         readlist={{
           title: readlistData.nome,
           description: readlistData.descricao || '',
-          coverImage: readlistData.capa_url || '/kemi-teste.jpg',
+          coverImage: readlistData.capa_url || '',
           isPrivate: !readlistData.publica,
         }}
         onSave={handleSaveReadlist}

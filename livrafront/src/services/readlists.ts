@@ -121,7 +121,7 @@ export async function getOnePublicReadlist(username: string, readlistSlug: strin
 }
 
 // Atualizar uma readlist existente
-export async function updateReadlist(readlistSlug: string, payload: { nome?: string; publica?: boolean; descricao?: string; capa_url?: string }): Promise<Readlist> {
+export async function updateReadlist(readlistSlug: string, payload: { nome?: string; publica?: boolean; descricao?: string; }): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistSlug}`, {
     method: 'PATCH',
     credentials: "include",

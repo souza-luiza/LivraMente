@@ -3,7 +3,6 @@ import UserProfilePage from '@/app/[username]/page'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { getSessionInfos } from '@/services/auth'
 import { getProfile } from '@/services/userService'
-import { getOwnReadlists } from '@/services/readlists'
 
 // Mock next/navigation
 const mockPush = jest.fn()
