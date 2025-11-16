@@ -8,7 +8,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
 
-@ApiTags('posts')
+@ApiTags('Posts')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
@@ -162,4 +162,37 @@ export class PostsController {
     return this.postsService.moderatePost(user.userId, postId, moderarPostDto);
   }
 
+  // ENCONTRAR POSTAGEM
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Encontra um post pelo ID'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Post encontrado com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post não encontrado'
+  })
+  async getPostById(@Param('id') postId: string) {
+    return this.postsService.getPostById(postId);
+  }
+
+  // ENCONTRAR COMENTÁRIOS DA POSTAGEM
+  @Get(':id/comentarios')
+  @ApiOperation({
+    summary: 'Retorna todos os comentários de um post'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Comentários retornados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post não encontrado'
+  })
+  async getComments(@Param('id') postId: string){
+    return this.postsService.getComments(postId);
+  }
 }
