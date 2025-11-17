@@ -76,24 +76,11 @@ describe('App Integration with Mocks', () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        UsersModule,
-        AuthModule,
-        ReadlistsModule,
-        ComunidadesModule,
-      ],
       controllers: [AppController],
       providers: [AppService],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)
-      .overrideProvider(getModelToken('User'))
-      .useValue(mockUserModel)
-      .overrideProvider(getModelToken('Readlist'))
-      .useValue(mockReadlistModel)
-      .overrideProvider(getModelToken('Comunidade'))
-      .useValue(mockComunidadeModel)
       .compile();
 
     app = moduleFixture.createNestApplication();
