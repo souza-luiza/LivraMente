@@ -3,6 +3,8 @@ import { LlmController } from './llm.controller';
 import { GenerateTextDTO } from './writer/dto/generate-text.dto';
 import { LlmResponseDTO } from './writer/dto/llm-response.dto';
 import { LlmStoryService } from './writer/llm.story.service';
+import { AgentInputDto } from './assistant/dto/agent-input.dto';
+import { LlmAgentService } from './assistant/llm.agent.service';
 
 const mockStoryService = {
   generateAndSaveStory: jest.fn(),
@@ -10,16 +12,32 @@ const mockStoryService = {
 
 describe('LlmController', () => {
   let controller: LlmController;
+  let storyService: LlmStoryService;
+  let agentService: LlmAgentService;
+
+  const mockStoryService = {
+    generateAndSaveStory: jest.fn(),
+  };
+
+  const mockAgentService = {
+    analyzeAgent: jest.fn(),
+  };
+
+  const mockUser = { userId: 'user-123', email: 'teste@test.com', username: 'teste' };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LlmController],
       providers: [
         { provide: LlmStoryService, useValue: mockStoryService },
+        { provide: LlmAgentService, useValue: mockAgentService },
       ],
     }).compile();
 
     controller = module.get<LlmController>(LlmController);
+    storyService = module.get<LlmStoryService>(LlmStoryService);
+    agentService = module.get<LlmAgentService>(LlmAgentService);
+
     jest.clearAllMocks();
   });
 
@@ -28,24 +46,27 @@ describe('LlmController', () => {
   });
 
   describe('gerarTexto', () => {
-    it('should call the story service and return its response', async () => {
-      const dto: GenerateTextDTO = {
-        userWriting: 'um dragão ataca',
-      };
-
-      const mockResponse: LlmResponseDTO = {
-        storyId: 'novo-id-do-banco-123',
-        textoCapitulo: 'O dragão sobrevoou a vila...',
-        novasOpcoes: [{ id: 1, texto: 'Correr' }],
-      };
-
-      mockStoryService.generateAndSaveStory.mockResolvedValue(mockResponse);
+    it('deve chamar storyService.generateAndSaveStory', async () => {
+      const dto: GenerateTextDTO = { userWriting: 'Era uma vez...' };
+      mockStoryService.generateAndSaveStory.mockResolvedValue('História gerada');
 
       const result = await controller.gerarTexto(dto);
 
-      expect(result).toEqual(mockResponse);
-      expect(mockStoryService.generateAndSaveStory).toHaveBeenCalledTimes(1);
-      expect(mockStoryService.generateAndSaveStory).toHaveBeenCalledWith(dto);
+      expect(storyService.generateAndSaveStory).toHaveBeenCalledWith(dto);
+      expect(result).toBe('História gerada');
+    });
+  });
+
+  describe('PromptAnalise', () => {
+    it('deve chamar agentService.analyzeAgent com os parâmetros corretos', async () => {
+      const dto: AgentInputDto = { userPrompt: 'Quais minhas histórias?' };
+      const expectedResponse = 'Você tem 3 histórias.';
+
+      mockAgentService.analyzeAgent.mockResolvedValue(expectedResponse);
+
+      const result = await controller.PromptAnalise(dto, mockUser);
+
+      expect((agentService as any).analyzeAgent).toHaveBeenCalledWith( dto.userPrompt, mockUser.userId );
     });
   });
 });
