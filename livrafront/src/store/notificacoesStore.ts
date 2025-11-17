@@ -2,6 +2,19 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Notificacao } from '../types/notificacao';
 
+type PreferenciasNotificacoes = {
+    curtidas: boolean;
+    comentarios: boolean;
+    mencoes: boolean;
+    novosSeguidores: boolean;
+};
+
+type EstadoPreferenciasNotificacoes = {
+    preferencias: PreferenciasNotificacoes;
+    alterarPreferencia: (tipo: keyof PreferenciasNotificacoes, valor: boolean) => void;
+    deveNotificar: (tipoNotificacao: string) => boolean;
+};
+
 type EstadoNotificacoes = {
     notificacoes: Notificacao[];
     adicionarNotificacao: (notificacao: Notificacao) => void;
