@@ -12,19 +12,18 @@ import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade
 import { Readlist, ReadlistSchema } from 'src/readlists/entities/readlist.entity';
 import { ComunidadesModule } from 'src/comunidades/comunidades.module';
 import { ReadlistsModule } from 'src/readlists/readlists.module';
-
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     ConfigModule,
     MongooseModule.forFeature([
       { name: Story.name, schema: StorySchema },
-      { name: Comunidade.name, schema: ComunidadeSchema },
-      { name: Readlist.name, schema: ReadlistSchema },
       ]
     ),
     ComunidadesModule,   // <-- add
     ReadlistsModule,     // <-- add
+    UsersModule,
   ],
   providers: [LlmPromptService, LlmApiService, LlmStoryService, LlmToolsService, LlmAgentService],
   exports: [LlmPromptService, LlmApiService, LlmStoryService,],
