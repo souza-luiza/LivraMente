@@ -59,7 +59,6 @@ describe('CloudinaryService', () => {
 
     it('deve rejeitar a Promise quando o upload falhar', async () => {
       const fakeBuffer = Buffer.from('fake-image-data');
-      const fakeError = new Error('Falha no upload');
 
       (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
         (options, callback) => {

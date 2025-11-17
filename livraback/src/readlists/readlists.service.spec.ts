@@ -299,7 +299,7 @@ describe('ReadlistsService', () => {
       });
 
       await expect(service.updatePhoto('user-id', file, 'slug')).rejects.toThrow(NotFoundException);
-    })
+    });
 
     it('deve lançar erro se o arquivo for inválido', async () => {
       mockReadlistModel.findOne.mockReturnValueOnce({
@@ -307,7 +307,7 @@ describe('ReadlistsService', () => {
       });
 
       await expect(service.updatePhoto('1', {} as any, 'slug')).rejects.toThrow(BadRequestException);
-    })
+    });
 
     it('deve fazer upload e atualizar avatar corretamente', async () => {
       const mockReadlist = {
@@ -330,5 +330,5 @@ describe('ReadlistsService', () => {
       expect(mockReadlist.save).toHaveBeenCalled();
       expect(result).toEqual({ name: 'john', slug: 'slug' });
     });
-  })
+  });
 });
