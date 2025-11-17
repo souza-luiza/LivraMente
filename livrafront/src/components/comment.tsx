@@ -1,61 +1,32 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-
-// Componentes
-import Button from "./button";
-import ImageModal from "./image-modal";
-import EditPostModal from "./EditPostModal";
-import PopUp from "./pop-up";
-
-// Types
-import { Post } from "@/types/post";
-import { User } from "@/types/auth";
-
-// Ícones
-import CodeIcon from "./icons/CodeIcon";
-import HeartIcon from "./icons/HeartIcon";
+import { Comentario } from "@/types/comentario";
 import CommentIcon from "./icons/CommentIcon";
-import TrashIcon from "./icons/TrashIcon";
+import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import ImageModal from "./image-modal";
+import { Post } from "@/types/post";
+import Button from "./button";
+import HeartIcon from "./icons/HeartIcon";
+import { getTimeAgo } from "@/lib/time";
+import { commentsService } from "@/services/comentarios";
 import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
 import EditIcon from "./icons/EditIcon";
-import CommunityIcon from "./icons/CommunityIcon";
+import TrashIcon from "./icons/TrashIcon";
+import { AnimatePresence, motion } from "framer-motion";
 import RemoveIcon from "./icons/RemoveIcon";
+import PopUp from "./pop-up";
+import EditCommentModal from "./EditCommentModal";
 
-// Chamadas à API
-import { postsService } from "@/services/posts";
-
-// Data
-import { getTimeAgo } from "@/lib/time"; 
-
-// Slugs
-import { titleToSlug } from "@/lib/slugify";
-
-interface PostProps {
+interface CommentComponentProps {
     post: Post;
-    currentUser?: User;
-    isModerator?: boolean;
-    disableActions?: boolean;
-    handleComment: () => void;
-    onDelete?: () => void;
+    comment: Comentario;
+    isModerator: boolean;
+    onDelete: () => void;
     onUpdate?: () => void;
 }
 
-export default function PostComponent({ 
-    post, 
-    isModerator = false,
-    disableActions = false,
-    handleComment,
-    onDelete,
-    onUpdate
-}: PostProps) {
+export default function CommentComponent({ post, comment, isModerator, onDelete, onUpdate } : CommentComponentProps) {
 
-    const router = useRouter();
-
-    // Gerenciamento do overflow do conteúdo do post
+    // Gerenciamento do overflow do conteúdo do comentário
     const [isOverflowed, setIsOverflowed] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [maxHeight, setMaxHeight] = useState<string | undefined>(undefined);
@@ -66,24 +37,17 @@ export default function PostComponent({
     const [showImageModal, setShowImageModal] = useState(false);
 
     // Curtidas
-    const [liked, setLiked] = useState(false); // TODO: Verificar se o usuário já curtiu o post
-    const [likeAmount, setLikeAmount] = useState(post.curtidas.length);
+    const [liked, setLiked] = useState(false); // TODO: verificar se já foi curtido pelo usuário
+    const [likeAmount, setLikeAmount] = useState(comment.curtidas.length);
 
-    const isOwner = true; // TODO: Verificar se o usuário é o dono do post
-
-    // Botão Mais
+    // Mais Opções
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const menuRef = useRef<HTMLDivElement | null>(null);
-
-    // Edição do post
-    const [showEditModal, setShowEditModal] = useState(false);
-
-    // Pop Up de Confirmação
     const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
+    const [showEditCommentModal, setShowEditCommentModal] = useState(false);
 
-    // Carregando
-    const [loading, setLoading] = useState(false);
+    const isOwner = true; // TODO: verificar se usuário é autor do comentário
 
     useEffect(() => {
         if (contentRef.current) {
@@ -93,7 +57,7 @@ export default function PostComponent({
             setMaxHeight(expanded ? `${el.scrollHeight}px` : `${maxVisibleHeight}px`);
             setIsOverflowed(el.scrollHeight > maxVisibleHeight);
         }
-    }, [post.conteudo, expanded]);
+    }, [comment.conteudo, expanded]);
 
     useEffect(() => {
         if (showOptions && menuRef.current) {
@@ -117,108 +81,87 @@ export default function PostComponent({
         }
     }, [showOptions]);
 
-    const handleRedirectToProfile = () => {
-        router.push(`/${post.autor.username}`);
-    }
-
     const handleOpenImageModal = (imageUrl: string) => {
         setSelectedImage(imageUrl);
         setShowImageModal(true);
     }
 
-    const handleLikePost = async () => {
+    const handleLikeComment = async () => {
         try {
-            // Curtir/descurtir post
-            const { liked, likeAmount } = await postsService.likePost(post._id);
-
+            const { liked, likeAmount } = await commentsService.likeComment(post._id, comment._id);
+            
             setLiked(liked);
             setLikeAmount(likeAmount);
 
         } catch (error) {
-            console.error("Erro ao curtir/descurtir o post:", error);
+            console.error("Erro ao curtir/descurtir o comentário:", error);
         }
     }
 
     const handleMoreOptions = (e: React.MouseEvent) => {
-        const { clientX, clientY } = e;
-        const menuWidth = 150;
-        const menuHeight = 100;
+        e.stopPropagation();
 
-        const x = clientX + menuWidth > window.innerWidth 
-            ? window.innerWidth - menuWidth - 10 
-            : clientX;
+        setClickPosition({ x: e.clientX, y: e.clientY });
+        setShowOptions(true);
+    }
 
-        const y = clientY + menuHeight > window.innerHeight 
-            ? window.innerHeight - menuHeight - 10 
-            : clientY;
-
-        setClickPosition({ x, y });
-        setShowOptions((prev) => !prev);
-    };
-
-    const handleConfirmDeletePost = () => {
+    const handleConfirmDeleteComment = () => {
         setShowOptions(false);
         setShowConfirmDeletePopUp(true);
     }
 
-    const handleDeletePost = async () => {
-        setShowOptions(false);
-        setLoading(true);
-
+    const handleDeleteComment = async () => {
         try {
-            // Deletar post
-            await postsService.removePost(post._id);
-            onDelete && onDelete();
+            await commentsService.deleteComment(post._id, comment._id);
 
         } catch (error) {
-            console.error("Erro ao excluir o post:", error);
+            console.error("Erro ao excluir o comentário:", error);
+
         } finally {
-            setLoading(false);
+            onDelete && onDelete();
+            setShowConfirmDeletePopUp(false);
         }
     }
-
-    const handleEditPost = async () => {
+    const handleShowEditCommentModal = () => {
         setShowOptions(false);
-        setShowEditModal(true);
+        setShowEditCommentModal(true);
     }
 
     const handleEditSuccess = () => {
-        setShowEditModal(false);
+        setShowEditCommentModal(false);
         onUpdate && onUpdate();
     }
 
     return (
         <motion.div onHoverEnd={() => setShowOptions(false)}>
-            <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
-                <div className="flex flex-row items-center justify-between">
+            <div 
+                className="flex flex-col gap-3 p-2 hover:shadow-sm"
+                style={{ 
+                    borderTop: 'var(--small-border-width) solid var(--color-gray-50)',
+                    borderBottom: 'var(--small-border-width) solid var(--color-gray-50)'
+                }}
+            >
+                {/*Cabeçalho do Comentário*/}
+                <div className="flex flex-row justify-between">
                     <div className="flex flex-row gap-2">
-                        <div className="flex flex-row gap-1">
-                            <CommunityIcon size={24} />
-                            <h6 className="text-h6">
-                                {post.comunidade.nome}
-                            </h6>
-                        </div>
-                        <CodeIcon size={24} />
-                        <div className="flex flex-row gap-1">
-                            <h6 
-                                className="text-h6 hover:cursor-pointer"
-                                onClick={handleRedirectToProfile}
-                            >
-                                @{post.autor.username}
-                            </h6>
-                        </div>
+                        <CommentIcon size={24} />
+                        <h6 className="text-h6">
+                            @{comment.autor.username}
+                        </h6>
                     </div>
-                    {(isOwner || isModerator) && !disableActions && <div onClick={handleMoreOptions}>
+                    {(isOwner || isModerator) && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
                 </div>
+
+                {/*Corpo do Comentário*/}
                 <div className="flex-1 overflow-hidden">
                     <p
                         ref={contentRef}
                         style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
                         className="text-b2 whitespace-pre-line"
                     >
-                        {post.conteudo}
+                        {comment.conteudo}
                     </p>
                     {isOverflowed && (
                         <span
@@ -231,19 +174,19 @@ export default function PostComponent({
                 </div>
 
                 {/*Imagens*/}
-                {post.imagens && post.imagens.length > 0 && (
+                {comment.imagens && comment.imagens.length > 0 && (
                 <div className="flex flex-nowrap gap-2 overflow-x-auto">
-                    {post.imagens.map((imgUrl, index) => (
+                    {comment.imagens.map((imgUrl, index) => (
                     <div 
                         key={index} 
                         className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
                         onClick={() => handleOpenImageModal(imgUrl)}
                     >
                         <Image
-                        src={imgUrl}
-                        alt={`Imagem do post ${index + 1}`}
-                        fill
-                        className="object-cover"
+                            src={imgUrl}
+                            alt={`Imagem do post ${index + 1}`}
+                            fill
+                            className="object-cover"
                         />
                     </div>
                     ))}
@@ -252,52 +195,43 @@ export default function PostComponent({
 
                 {showImageModal && selectedImage && (
                 <ImageModal 
-                    post={post} 
+                    post={post}
+                    comment={comment}
                     image={selectedImage} 
                     onClose={() => setShowImageModal(false)} 
                 />
                 )}
 
                 <div className="flex flex-row items-end justify-between">
-                    <div className="flex flex-row gap-1">
-                        <Button 
-                            text={String(likeAmount)}
-                            colorScheme="light-brown" 
-                            size="small"
-                            icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} strokeWidth={3} />}
-                            disabled={disableActions || loading}
-                            onClick={handleLikePost}
-                        />
-                        <Button 
-                            text={String(post.comentarios.length)}
-                            colorScheme="light-brown"
-                            size="small"
-                            icon={<CommentIcon strokeWidth={3} />}
-                            disabled={disableActions || loading}
-                            onClick={handleComment}
-                        />
-                    </div>
+                    <Button 
+                        text={String(likeAmount)}
+                        colorScheme="light-brown" 
+                        size="small"
+                        icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} strokeWidth={3} />}
+                        onClick={handleLikeComment}
+                    />
                     <p className="text-b3 body-semibold light-neutral">
-                        {getTimeAgo(post.createdAt)}
+                        {getTimeAgo(comment.createdAt)}
                     </p>
                 </div>
             </div>
-            <EditPostModal 
+            <EditCommentModal
                 post={post}
-                onClose={() => setShowEditModal(false)}
+                comment={comment}
+                isOpen={isOwner && showEditCommentModal}
+                onClose={() => setShowEditCommentModal(false)}
                 onSuccess={handleEditSuccess}
-                isOpen={showEditModal && isOwner && !disableActions}
             />
             <PopUp 
-                title={`Excluir Postagem${(!isOwner && isModerator) ? ` de @${post.autor.username}` : ''}?`}
+                title={`Excluir Comentário${(!isOwner && isModerator) ? ` de @${comment.autor.username}` : ''}?`}
                 description="Esta ação não pode ser desfeita."
                 button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-green", onClick: () => setShowConfirmDeletePopUp(false)}}
-                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeletePost}}
-                isOpen={(isOwner || isModerator) && showConfirmDeletePopUp && !disableActions}
+                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeleteComment}}
+                isOpen={(isOwner || isModerator) && showConfirmDeletePopUp}
                 onClose={() => setShowConfirmDeletePopUp(false)}
             />
             <AnimatePresence mode="wait">
-                {(isOwner || isModerator) && !disableActions && showOptions &&
+                {(isOwner || isModerator) && showOptions &&
                 <motion.div 
                     ref={menuRef}
                     className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
@@ -316,19 +250,17 @@ export default function PostComponent({
                         icon={<TrashIcon />}
                         size="small"
                         colorScheme="light-brown"
-                        onClick={handleConfirmDeletePost}
-                        loading={loading}
+                        onClick={handleConfirmDeleteComment}
                     />
                     {isOwner && <Button
                         text="Editar"
                         icon={<EditIcon />}
                         size="small"
                         colorScheme="light-brown"
-                        onClick={handleEditPost}
-                        disabled={loading}
+                        onClick={handleShowEditCommentModal}
                     />}
                 </motion.div>}
             </AnimatePresence>
         </motion.div>
-    )
+    );
 }

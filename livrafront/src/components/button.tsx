@@ -115,7 +115,7 @@ export default function Button({
                     {isHovered && (
                         <motion.div 
                             data-testid="tooltip" 
-                            className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
+                            className={`absolute z-40 left-full ml-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
                             role="tooltip"
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}

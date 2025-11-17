@@ -7,16 +7,18 @@ import Button from './button';
 import RemoveIcon from './icons/RemoveIcon';
 import CodeIcon from './icons/CodeIcon';
 import { motion } from 'framer-motion';
+import { Comentario } from '@/types/comentario';
 
 interface PostImageProps {
   post: Post;
+  comment?: Comentario;
   image: string;
   onClose: () => void;
 }
 
-export default function PostImage({ post, image, onClose }: PostImageProps) {
-    const [selectedImage, setSelectedImage] = useState<string>(image);
+export default function ImageModal({ post, comment, image, onClose }: PostImageProps) {
 
+    const [selectedImage, setSelectedImage] = useState<string>(image);
     const currentIndex = post.imagens.findIndex((img) => img === selectedImage);
 
     useEffect(() => {

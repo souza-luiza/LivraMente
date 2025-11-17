@@ -239,19 +239,32 @@ export class PostsService {
     };
   }
 
-  async getPostById(postId: string) {
-    const post = await this.postModel.findById(postId);
-    if (!post) throw new NotFoundException('Post não encontrado');
+  async getPostById(postId: string, communityName: string) {
+    const community = await this.comunidadeModel.findOne({ nome: communityName });
+    if (!community) throw new NotFoundException('Comunidade não encontrada');
+
+    const post = await this.postModel.findOne({
+      _id: postId,
+      comunidade: community._id,
+    }).populate('autor', 'username').populate("comunidade", "nome");;
+
+    if (!post) throw new NotFoundException('Post não encontrado na comunidade');
 
     return post;
   }
 
   async getComments(postId: string) {
-    const post = await this.postModel.exists({ _id: postId });
+    const post = await this.postModel.findOne({ _id: postId });
     if (!post) throw new NotFoundException('Post não encontrado');
 
-    const comentarios = await this.comentarioModel.find({ post: postId }).populate('autor', 'username').lean();
+    const comments = await this.comentarioModel.find({
+      post: new Types.ObjectId(postId),
+    })
+    .populate('autor', 'username')
+    .lean();
 
-    return comentarios;
+    console.log(comments);
+
+    return comments;
   }
 }

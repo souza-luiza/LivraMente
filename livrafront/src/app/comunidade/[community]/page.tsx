@@ -30,17 +30,7 @@ import CompassIcon from "@/components/icons/CompassIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 
 // Chamadas da API
-import { 
-    getComunidadeByName, 
-    checkMemberOrMod, 
-    getMembers, 
-    getPosts, 
-    getModerators, 
-    enterCommunity, 
-    leaveCommunity, 
-    removeMember,
-    makeMemberModerator
-} from "@/services/comunidade";
+import { communityService } from "@/services/comunidade";
 import { postsService } from "@/services/posts";
 
 // Types
@@ -51,7 +41,7 @@ import { PostCategoria } from "@/types/post";
 import PopUp from "@/components/pop-up";
 
 // Funções
-import { slugToTitle } from '@/lib/slugify';
+import { slugToTitle, titleToSlug } from '@/lib/slugify';
 
 export default function CommunityPage(){
     const router = useRouter();
@@ -97,7 +87,7 @@ export default function CommunityPage(){
         const fetchData = async () => {
             try {
                 // Busca da comunidade
-                const info = await getComunidadeByName(slugToTitle(community));
+                const info = await communityService.getComunidadeByName(slugToTitle(community));
                 if (!info) {
                     router.replace("/not-found");
                     return;
@@ -105,15 +95,15 @@ export default function CommunityPage(){
                 setCommunityInfo(info);
 
                 // Verifica se usuário é membro ou moderador
-                const { isMember, isModerator } = await checkMemberOrMod(info.nome);
+                const { isMember, isModerator } = await communityService.checkMemberOrMod(info.nome);
                 setIsMember(isMember);
                 setIsModerator(isModerator);
 
                 // Busca membros, moderadores e posts
                 const [fetchedMembers, fetchedPosts, fetchedModerators] = await Promise.all([
-                    getMembers(info.nome),
-                    getPosts(info.nome),
-                    getModerators(info.nome),
+                    communityService.getMembers(info.nome),
+                    communityService.getPosts(info.nome),
+                    communityService.getModerators(info.nome),
                 ]);
                 setMembers(fetchedMembers);
                 setModerators(fetchedModerators);
@@ -153,20 +143,20 @@ export default function CommunityPage(){
         try {
             if (isMember) {
                 // Sair da comunidade
-                await leaveCommunity(communityInfo.nome);
+                await communityService.leaveCommunity(communityInfo.nome);
                 setIsMember(false);
                 setIsModerator(false);
                 setShowLeavingPopUp(false);
                 
             } else {
                 // Entrar na comunidade
-                await enterCommunity(communityInfo.nome);
+                await communityService.enterCommunity(communityInfo.nome);
                 setIsMember(true);
                 setShowWelcomePopUp(true);
             }
 
             // Atualiza lista de membros
-            const updatedMembers = await getMembers(communityInfo.nome);
+            const updatedMembers = await communityService.getMembers(communityInfo.nome);
             setMembers(updatedMembers);
 
         } catch (err) {
@@ -206,10 +196,10 @@ export default function CommunityPage(){
 
         try {
             // Remove membro da comunidade
-            await removeMember(communityInfo.nome, targetUserId);
+            await communityService.removeMember(communityInfo.nome, targetUserId);
 
             // Atualiza lista de membros e contagem
-            const updatedMembers = await getMembers(communityInfo.nome);
+            const updatedMembers = await communityService.getMembers(communityInfo.nome);
             setMembers(updatedMembers);
 
         } catch (err) {
@@ -227,10 +217,10 @@ export default function CommunityPage(){
 
         try {
             // Promove membro a moderador
-            await makeMemberModerator(communityInfo.nome, targetUserId);
+            await communityService.makeMemberModerator(communityInfo.nome, targetUserId);
 
             // Atualiza lista de moderadores
-            const updatedModerators = await getModerators(communityInfo.nome);
+            const updatedModerators = await communityService.getModerators(communityInfo.nome);
             setModerators(updatedModerators);
 
         } catch (err) {
@@ -264,7 +254,7 @@ export default function CommunityPage(){
 
         try{
             // Atualiza lista de posts
-            const updatedPosts = await getPosts(communityInfo.nome);
+            const updatedPosts = await communityService.getPosts(communityInfo.nome);
             setPosts(updatedPosts);
             
         } catch(err) {
@@ -272,6 +262,10 @@ export default function CommunityPage(){
         } finally {
             setLoadingPosts(false);
         }
+    }
+
+    const handleRedirectToPost = (post: Post) => {
+        router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}/postagem/${post._id}`);
     }
 
     if (loading) return <LoadingPage />;
@@ -431,6 +425,7 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -460,6 +455,7 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -489,6 +485,7 @@ export default function CommunityPage(){
                                                         key={post._id}
                                                         post={post}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -517,6 +514,7 @@ export default function CommunityPage(){
                                                     <div key={post._id} className="flex flex-col gap-1">
                                                         <PostComponent 
                                                             post={post}
+                                                            handleComment={() => handleRedirectToPost(post)}
                                                             isModerator={isModerator}
                                                             disableActions={true}
                                                         />

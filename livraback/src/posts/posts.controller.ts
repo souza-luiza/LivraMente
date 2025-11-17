@@ -163,9 +163,10 @@ export class PostsController {
   }
 
   // ENCONTRAR POSTAGEM
-  @Get(':id')
+  @Get(':id/comunidade/:comunidadeNome')
   @ApiOperation({
-    summary: 'Encontra um post pelo ID'
+    summary: 'Encontra um post de uma comunidade pelo ID',
+    description: 'Encontra um post pertencente a uma comunidade pelo ID'
   })
   @ApiResponse({
     status: 200,
@@ -173,10 +174,10 @@ export class PostsController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Post não encontrado'
+    description: 'Post/Comunidade não encontrado/a'
   })
-  async getPostById(@Param('id') postId: string) {
-    return this.postsService.getPostById(postId);
+  async getPostById(@Param('id') postId: string, @Param('comunidadeNome') comunidadeNome: string) {
+    return this.postsService.getPostById(postId, comunidadeNome);
   }
 
   // ENCONTRAR COMENTÁRIOS DA POSTAGEM

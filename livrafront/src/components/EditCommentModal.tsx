@@ -5,31 +5,30 @@ import Image from 'next/image';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import ImageIcon from './icons/ImageIcon';
-import { postsService } from '@/services/posts';
-import Edit2Icon from './icons/Edit2Icon';
-import { Post } from '@/types/post';
-import CodeIcon from './icons/CodeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
-import CommunityIcon from './icons/CommunityIcon';
 import SaveIcon from './icons/SaveIcon';
+import { Comentario } from '@/types/comentario';
+import { commentsService } from '@/services/comentarios';
+import { Post } from '@/types/post';
 
 interface EditPostModalProps {
     post: Post;
+    comment: Comentario;
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void; 
 }
 
-export default function EditPostModal({
+export default function EditCommentModal({
     post,
+    comment,
     isOpen,
     onClose,
     onSuccess,
 }: EditPostModalProps) {
 
-  const [content, setContent] = useState(post.conteudo);
-  const [images, setImages] = useState<string[]>(post.imagens);
-  const [requestReview, setRequestReview] = useState(post.solicitacao_revisao);
+  const [content, setContent] = useState(comment.conteudo);
+  const [images, setImages] = useState<string[]>(comment.imagens);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,13 +36,13 @@ export default function EditPostModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (isOpen && post) {
-      setContent(post.conteudo);
-      setImages(post.imagens);
+    if (isOpen && comment) {
+      setContent(comment.conteudo);
+      setImages(comment.imagens);
       setContentError('');
       setSubmitError('');
     }
-  }, [isOpen, post]);
+  }, [isOpen, comment]);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,7 +56,7 @@ export default function EditPostModal({
     }
   }, [isOpen]);
 
-  if (!isOpen || !post) return null;
+  if (!isOpen || !comment) return null;
 
   const validateContent = (value: string): boolean => {
     if (!value || value.trim().length === 0) {
@@ -76,7 +75,7 @@ export default function EditPostModal({
     }
   };
 
-  const handlePost = async () => {
+  const handleUpdate = async () => {
     // Validar conteúdo
     if (!validateContent(content)) {
       return;
@@ -86,21 +85,13 @@ export default function EditPostModal({
     setSubmitError('');
 
     try {
-      // Manda dados para a edição do post
-      const editedPost = await postsService.updatePost(
-        post._id,
-        {
-          conteudo: content.trim(),
-          imagens: images.length > 0 ? images : undefined,
-          solicitacao_revisao: requestReview,
-          publico: true
-        }
-      );
+      await commentsService.updateComment(post._id, comment._id, {conteudo: content, imagens: images});
+      console.log(post._id);
+      console.log(comment._id);
 
       // Reset do modal
       setContent('');
       setImages([]);
-      setRequestReview(false);
       setContentError('');
       setSubmitError('');
       
@@ -193,7 +184,6 @@ export default function EditPostModal({
   const handleCancel = () => {
     setContent('');
     setImages([]);
-    setRequestReview(false);
     setContentError('');
     setSubmitError('');
     onClose();
@@ -224,13 +214,7 @@ export default function EditPostModal({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Título do Modal */}
-          <div className="flex flex-row justify-between items-center text-h5 mb-4">
-              <h1>Editar Postagem</h1>
-              <div className="flex flex-row items-center gap-1">
-                <CommunityIcon size={24} />
-                <h2>{post.comunidade.nome}</h2>
-              </div>
-          </div>
+          <h1 className="text-h5 mb-4">Editar Comentário</h1>
 
           {/* Campo de Texto */}
           <div className="mb-6 relative">
@@ -308,28 +292,6 @@ export default function EditPostModal({
             </div>
           )}
 
-          {/* Checkbox de Pedir Avaliação */}
-          <div className="mb-6 flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="review-checkbox"
-              checked={requestReview}
-              onChange={(e) => setRequestReview(e.target.checked)}
-              className="w-4 h-4 cursor-pointer"
-              style={{
-                accentColor: 'var(--primary-600)',
-              }}
-              disabled={isSubmitting}
-            />
-            <label
-              htmlFor="review-checkbox"
-              className="text-b2 cursor-pointer"
-              style={{ color: 'var(--secondary-800)' }}
-            >
-              Submeter como fanart/fanfic
-            </label>
-          </div>
-
           {/* Mensagem de erro */}
           {submitError && (
             <p className="text-b3 mb-4" style={{ color: 'var(--error-500)' }}>
@@ -379,7 +341,7 @@ export default function EditPostModal({
                 icon={<SaveIcon />}
                 size="medium"
                 colorScheme="light-green"
-                onClick={handlePost}
+                onClick={handleUpdate}
                 aria-label="Salvar Alterações"
                 disabled={isSubmitting}
               />

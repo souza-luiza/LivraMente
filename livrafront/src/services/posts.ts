@@ -1,3 +1,4 @@
+import { Comentario } from '@/types/comentario';
 import { CreatePostData, Post, LikeResponse, PostCategoria, ModeratePostResponse } from '@/types/post';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
@@ -77,6 +78,29 @@ export const postsService = {
     });
 
     if (!response.ok) throw new Error(`Erro ao moderar post`);
+    return response.json();
+  },
+
+  async getPostById(postId: string, communityName: string): Promise<Post> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comunidade/${encodeURIComponent(communityName)}`, {
+      headers: {
+        ...(getAuthHeaders() || {}),
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) throw new Error('Erro ao encontrar post');
+    return response.json();
+  },
+
+  async getComments(postId: string): Promise<Comentario[]> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
+      headers: {
+        ...(getAuthHeaders() || {})
+      }
+    });
+
+    if (!response.ok) throw new Error('Erro ao encontrar comentários');
     return response.json();
   }
 };

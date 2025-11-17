@@ -80,9 +80,16 @@ export class CommentsController {
     }
 
     @Patch(':postId/comentarios/:commentId')
+    @ApiOperation({
+        summary: 'Atualizar o conteúdo de um comentário'
+    })
     @ApiResponse({
         status: 200,
         description: 'Comentário atualizado com sucesso.'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Formato inadequado'
     })
     @ApiResponse({
         status: 403,
@@ -93,6 +100,7 @@ export class CommentsController {
         description: 'Post/Comentário não encontrado.'
     })
     async updateComment(@CurrentUser() user: CurrentUserDto, @Param('postId') postId: string, @Param('commentId') commentId: string, @Body() updateCommentDto: UpdateCommentDto) {
+        console.log('controller back');
         return this.commentsService.updateComment(user.userId, postId, commentId, updateCommentDto);
     }
 }
