@@ -61,63 +61,67 @@ export default function WidgetChat() {
             </div>
 
             {/* Conteúdo principal */}
-            <div className="flex-1 p-3 flex flex-col overflow-hidden">
-                {/* Cabeçalho interno */}
-                <div className="mb-2">
-                    <h2 className="text-b1 body-semibold text-gray-900 text-center">
-                    Como posso te ajudar?
-                    </h2>
-                    <p className="text-b3 text-gray-600 text-center mt-1">
-                    Faça perguntas sobre leituras, comunidades, sua conta e muito mais.
-                    </p>
-                </div>
-
-                {/* Área de mensagens */}
-                <div className="flex-1 overflow-y-auto space-y-2 pr-1 mt-2">
-                    {messages.map((m) => (
-                    <div
-                        key={m.id}
-                        className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div
-                        className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
-                            m.role === 'user'
-                            ? 'bg-[#2F855A] text-white'
-                            : 'bg-gray-50 text-gray-900 border border-gray-200'
-                        }`}
-                        >
-                        <p className="whitespace-pre-wrap">{m.content}</p>
-
+                <div className="flex-1 p-3 flex flex-col overflow-hidden">
+                    {(() => {
+                        const hasUserMessage = messages.some((m) => m.role === 'user');
+                        return !hasUserMessage ? (
+                        <div className="mb-2">
+                            <h2 className="text-b1 body-semibold text-gray-900 text-center">
+                            Como posso te ajudar?
+                            </h2>
+                            <p className="text-b3 text-gray-600 text-center mt-1">
+                            Faça perguntas sobre leituras, comunidades, sua conta e muito mais.
+                            </p>
                         </div>
+                        ) : null;
+                    })()}
+
+                    {/* Área de mensagens */}
+                    <div className="flex-1 overflow-y-auto space-y-2 pr-1 mt-2">
+                        {messages.map((m) => (
+                        <div
+                            key={m.id}
+                            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div
+                            className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
+                                m.role === 'user'
+                                ? 'bg-[#2F855A] text-white'
+                                : 'bg-gray-50 text-gray-900 border border-gray-200'
+                            }`}
+                            >
+                            <p className="whitespace-pre-wrap">{m.content}</p>
+                            </div>
+                        </div>
+                        ))}
+                        {isLoading && (
+                        <div className="text-xs text-gray-500 mt-1">
+                            Gerando resposta…
+                        </div>
+                        )}
                     </div>
-                    ))}
-                    {isLoading && (
-                    <div className="text-xs text-gray-500 mt-1">
-                        Gerando resposta…
+
+                    {/* Barra de input */}
+                    <div className="pt-2 mt-2 border-t border-gray-200 flex gap-2 items-center">
+                        <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder="Escreva aqui…"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2F855A]/70 focus:border-[#2F855A]"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') onSend();
+                        }}
+                        />
+                        <button
+                        onClick={() => onSend()}
+                        className="px-3 py-2 text-sm rounded-lg bg-[#1F2A17] text-white body-semibold hover:brightness-110 disabled:opacity-50"
+                        disabled={isLoading}
+                        >
+                        Enviar
+                        </button>
                     </div>
-                    )}
                 </div>
 
-                {/* Barra de input */}
-                <div className="pt-2 mt-2 border-t border-gray-200 flex gap-2 items-center">
-                    <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Escreva aqui…"
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2F855A]/70 focus:border-[#2F855A]"
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') onSend();
-                    }}
-                    />
-                    <button
-                    onClick={() => onSend()}
-                    className="px-3 py-2 text-sm rounded-lg bg-[#1F2A17] text-white body-semibold hover:brightness-110 disabled:opacity-50"
-                    disabled={isLoading}
-                    >
-                    Enviar
-                    </button>
-                </div>
-            </div>
 
           </motion.div>
         )}
