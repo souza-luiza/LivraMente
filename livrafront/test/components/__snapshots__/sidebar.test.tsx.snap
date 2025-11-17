@@ -105,6 +105,13 @@ exports[`Sidebar Component Snapshot Tests matches sidebar snapshot 1`] = `
       </button>
     </div>
   </div>
+  <section
+    aria-atomic="false"
+    aria-label="Notifications Alt+T"
+    aria-live="polite"
+    aria-relevant="additions text"
+    class="Toastify"
+  />
 </nav>
 `;
 
@@ -214,6 +221,13 @@ exports[`Sidebar Component Snapshot Tests matches snapshot with all buttons rend
         </button>
       </div>
     </div>
+    <section
+      aria-atomic="false"
+      aria-label="Notifications Alt+T"
+      aria-live="polite"
+      aria-relevant="additions text"
+      class="Toastify"
+    />
   </nav>
 </div>
 `;

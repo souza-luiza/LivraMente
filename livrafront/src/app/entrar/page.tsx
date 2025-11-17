@@ -1,24 +1,76 @@
-'use client'
+"use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { loginUser } from "@/services/auth";
 import React from 'react';
-import { useLoginForm } from "@/hooks/useLoginForm"; 
 import Link from 'next/link';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Button from '@/components/button';
 import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
 import { motion } from 'framer-motion';
+import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 
 export default function LoginPage() {
-  const { 
-    formData, errors, isLoading, apiError, handleChange, handleSubmit 
-  } = useLoginForm()
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  /*const iconStyle = {
-    width: '24px',
-    height: '24px',
-    display: 'block' as const
-  }*/
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    setErrors({ email: "", password: "" });
+
+    if (!formData.email) {
+      setErrors((prev) => ({ ...prev, email: "Email é obrigatório" }));
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setErrors((prev) => ({ ...prev, email: "Email inválido" }));
+    }
+
+    if (!formData.password) {
+      setErrors((prev) => ({ ...prev, password: "Senha é obrigatória" }));
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await loginUser({
+        email: formData.email,
+        password: formData.password
+      });
+      router.push(`/${response.username}`);
+    } catch (error) {
+      if(error instanceof Error && error.message === "Failed to fetch") 
+        toast.error("Não foi possível conectar ao servidor.");
+      else
+        toast.error(error instanceof Error ? error.message : "Erro ao fazer login.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
       <div className="flex min-h-screen">
@@ -46,13 +98,6 @@ export default function LoginPage() {
         <div className="flex-1 bg-gray-50">
           <div className="flex flex-col items-center h-full justify-center p-8">
           <form onSubmit={handleSubmit} className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
-            
-            {/* Erro da API */}
-            {apiError && (
-              <div className="w-full p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                {apiError}
-              </div>
-            )}
 
             <div className="mb-6 mt-4">
               <h2 className="text-b1 body-semibold text-center text-gray-900">
@@ -122,6 +167,7 @@ export default function LoginPage() {
           </form>
           </div>
         </div>
+        <ToastNotification />
       </div>
   );
 }
