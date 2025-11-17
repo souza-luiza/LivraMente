@@ -5,6 +5,7 @@ import { LlmToolsService } from './llm.tools.service';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { createAgent } from 'langchain';
+import { DuckDuckGoSearch } from 'node_modules/@langchain/community/dist/tools/duckduckgo_search';
 
 // --- Mocks das Dependências Externas ---
 const mockAgentInvoke = jest.fn();
@@ -33,6 +34,14 @@ jest.mock('@langchain/google-genai', () => ({
   })),
 }));
 
+// Isso impede que o teste tente acessar a internet de verdade
+jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
+  DuckDuckGoSearchRun: jest.fn().mockImplementation(() => ({
+    name: 'duckduckgo_search',
+    description: 'Search the web',
+  })),
+}));
+
 // --- Mocks dos Serviços Internos ---
 
 const mockTools = {
@@ -53,6 +62,7 @@ const mockTools = {
   gravar_leitura: { name: 'gravar_leitura', description: 'd15' },
   users_get_my_profile: { name: 'users_get_my_profile', description: 'd16' },
   users_get_my_favorites: { name: 'users_get_my_favorites', description: 'd17' },
+  duckduckgo_search: { name: 'duckduckgo_search', description: 'Search the web' },
 };
 
 const mockToolsArray = [
@@ -73,6 +83,7 @@ const mockToolsArray = [
   mockTools.gravar_leitura,
   mockTools.users_get_my_profile,
   mockTools.users_get_my_favorites,
+  expect.any(DuckDuckGoSearch),
 ];
 
 const mockToolNamesString = mockToolsArray.map((t) => t.name).join(', ');
@@ -98,6 +109,7 @@ const mockLlmToolsService = {
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
   createUsersGetMyFavoritesTool: jest.fn(() => mockTools.users_get_my_favorites),
+  createDuckDuckGoSearchTool: jest.fn(() => mockTools.duckduckgo_search),
 };
 
 const mockConfigService = {
@@ -177,6 +189,7 @@ describe('LlmAgentService', () => {
       expect(mockLlmToolsService.createGravarLeituraTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyProfileTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyFavoritesTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createDuckDuckGoSearchTool).toHaveBeenCalled();
     });
 
     it('deve formatar o prompt do sistema corretamente', async () => {
@@ -194,6 +207,16 @@ describe('LlmAgentService', () => {
       expect(mockFormat).toHaveBeenCalledWith({
         input: '',
         agent_scratchpad: '',
+      });
+    });
+
+    it('deve chamar createAgent com as ferramentas corretas (incluindo DuckDuckGo)', async () => {
+      await service.runAnalysisAgent(userPrompt, userId);
+
+      expect(createAgent as any).toHaveBeenCalledWith({
+        model: expect.any(Object),
+        tools: mockToolsArray,
+        prompt: expect.any(Object),
       });
     });
 

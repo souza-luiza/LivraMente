@@ -7,6 +7,7 @@ import { Readlist } from 'src/readlists/entities/readlist.entity';
 import { Model, Types } from 'mongoose';
 import { ComunidadesService } from 'src/comunidades/comunidades.service';
 import { ReadlistsService } from 'src/readlists/readlists.service';
+import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search';
 
 // --- Dados Falsos ---
 const mockStory = {
