@@ -59,3 +59,36 @@ export async function removerNotificacao(id: string): Promise<void> {
       throw new Error('Erro ao remover notificação');
     }
 }
+
+//Conectar ao servidor via SSE pra receber notificações em tempo real
+export function conectarNotificacoes(
+  onNotificacao: (notificacao: Notificacao) => void,
+  onError?: (error: Event) => void
+): () => void {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  if (!token) {
+    throw new Error('Token não encontrado.');
+  }
+
+  const eventSource = new EventSource(`${API_BASE_URL}/notificacoes/stream?token=${token}`);
+    
+  eventSource.onmessage = (event) => {
+    try {
+      const notificacao: Notificacao = JSON.parse(event.data);
+      onNotificacao(notificacao);
+    } catch (error) {
+      if (onError) {
+        onError(new Event('parse-error'));
+      }
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    onError?.(error);
+  };
+
+  return () => {
+    eventSource.close();
+  };
+}
