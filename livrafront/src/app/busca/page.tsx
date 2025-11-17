@@ -200,7 +200,7 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
             <Sidebar />
             <main className="w-full flex flex-col flex-1 p-4 overflow-x-hidden">
                 <SearchBar defaultValue={q} />
-                <div className="flex flex-col lg:flex-row gap-4 mx-4 md:mx-8">
+                <div className="flex flex-col lg:flex-row gap-4 m-8">
                     <div className="flex flex-col w-full lg:w-1/2">
                         <Link href="#" className="flex text-h3 body-underline items-center pb-4">
                             Melhor Resultado <ChevronRightIcon size={40}/>
