@@ -1,19 +1,12 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+
+export type AutorDocument = HydratedDocument<Autor>;
 
 @Schema({ timestamps: true })
-export class Autor extends Document {
+export class Autor {
   @Prop({ required: true })
   nome: string;
-
-  @Prop()
-  biografia?: string;
-
-  @Prop()
-  data_nascimento?: Date;
-
-  @Prop()
-  nacionalidade?: string;
 
   @Prop()
   foto_url?: string;

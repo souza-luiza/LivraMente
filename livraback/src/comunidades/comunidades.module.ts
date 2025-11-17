@@ -7,6 +7,7 @@ import { Comunidade, ComunidadeSchema } from './entities/comunidade.entity';
 @Module({
     imports: [MongooseModule.forFeature([{ name: Comunidade.name, schema: ComunidadeSchema }])],
     controllers: [ComunidadesController],
-    providers: [ComunidadesService]
+    providers: [ComunidadesService],
+    exports: [MongooseModule]
 })
 export class ComunidadesModule {}
