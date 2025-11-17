@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import type React from 'react';
+import { ChatShell } from '@/components/chat-shell';
+
 import { Geist, Geist_Mono, Poppins, Judson } from "next/font/google";
 import "./globals.css";
-import { ChatProvider } from '@/contexts/chat-context'
-import WidgetChat from '@/components/widget-chat'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,16 +34,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${judson.variable} antialiased`}
       >
-        <ChatProvider>
+        <ChatShell>
           {children}
-          <WidgetChat />
-        </ChatProvider>
+        </ChatShell>
       </body>
     </html>
   );
