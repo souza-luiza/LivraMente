@@ -11,7 +11,7 @@ export default function GenreCard({ label, href = "#", Icon }: GenreCardProps) {
         <Link
             href={href}
             className="flex flex-col items-center justify-center dark-green rounded-xl hover:brightness-90 transition-all
-                       w-90 h-50"
+                       w-full aspect-[6/4] p-6"
         >
             {Icon && <Icon size={60} fill="white" stroke="white" />}
             <span className="pt-4 text-h4 text-center">
