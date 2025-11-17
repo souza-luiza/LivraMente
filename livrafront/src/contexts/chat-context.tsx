@@ -1,79 +1,80 @@
 'use client';
 
-import { createContext, useContext, useMemo, useState, useCallback } from 'react';
-import { postGenerateText } from '@/services/llm';
-import type { ChatMessage, ChatState } from '@/types/chat';
+import { createContext, useContext, useMemo, useState, useCallback, ReactNode } from 'react';
+import { postAnalyzeAgent } from '@/services/llm';
+import type { ChatMessage, AgentInputDTO } from '@/types/chat';
 
-type ChatContextValue = ChatState & {
+type ChatContextValue = {
+  messages: ChatMessage[];
+  isOpen: boolean;
+  isLoading: boolean;
   toggleOpen: () => void;
-  sendMessage: (texto: string, opts?: { genres?: string[]; wordLimit?: number }) => Promise<void>;
+  sendMessage: (userPrompt: string) => Promise<void>;
   resetChat: () => void;
 };
 
-const ChatContext = createContext<ChatContextValue | null>(null);
+const ChatContext = createContext<ChatContextValue | undefined>(undefined);
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [storyId, setStoryId] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleOpen = useCallback(() => setIsOpen(v => !v), []);
+  const toggleOpen = useCallback(() => setIsOpen((v) => !v), []);
+  const resetChat = useCallback(() => setMessages([]), []);
 
-  const resetChat = useCallback(() => {
-    setMessages([]);
-    setStoryId(null);
-  }, []);
-
-  const sendMessage = useCallback(async (texto: string, opts?: { genres?: string[]; wordLimit?: number }) => {
-    if (!texto.trim()) return;
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: texto,
-      ts: Date.now(),
-    };
-    setMessages(prev => [...prev, userMsg]);
+  const sendMessage = async (userPrompt: string) => {
     setIsLoading(true);
+    
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: 'user', content: userPrompt, ts: Date.now() }, 
+    ]);
+
+    const payload: AgentInputDTO = { userPrompt };
 
     try {
-      const resp = await postGenerateText({
-        userWriting: texto,
-        storyId,
-        genres: opts?.genres,
-        wordLimit: opts?.wordLimit,
-      });
-      setStoryId(resp.storyId);
-      const assistantMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: resp.textoCapitulo,
-        options: resp.novasOpcoes,
-        ts: Date.now(),
-      };
-      setMessages(prev => [...prev, assistantMsg]);
-    } catch (err: any) {
-      const errorMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: `Erro ao gerar resposta: ${err?.message ?? 'desconhecido'}`,
-        ts: Date.now(),
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Você precisa estar logado para usar o assistente.');
+      }
+
+      const response = await postAnalyzeAgent(payload, token);
+
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: 'assistant', content: response.response, ts: Date.now() },
+      ]);
+    } catch (error) {
+      let errorMessage = 'Ocorreu um erro.';
+      if (error instanceof Error) errorMessage = error.message;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: `⚠️ ${errorMessage}`,
+          ts: Date.now(),
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
-  }, [storyId]);
+  };
 
-  const value = useMemo<ChatContextValue>(() => ({
-    messages, storyId, isOpen, isLoading, toggleOpen, sendMessage, resetChat
-  }), [messages, storyId, isOpen, isLoading, toggleOpen, sendMessage, resetChat]);
+  const value = useMemo<ChatContextValue>( () => ({
+    messages, isOpen, isLoading, toggleOpen, sendMessage, resetChat
+  }), [messages, isOpen, isLoading, toggleOpen, sendMessage, resetChat],);
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
-export function useChat() {
-  const ctx = useContext(ChatContext);
-  if (!ctx) throw new Error('useChat deve ser usado dentro de <ChatProvider>');
-  return ctx;
-}
+export const useChat = () => {
+  const context = useContext(ChatContext);
+  if (context === undefined) {
+    throw new Error('useChat deve ser usado dentro de um ChatProvider');
+  }
+  return context;
+};

@@ -13,7 +13,7 @@ export default function WidgetChat() {
     const text = preset ?? inputRef.current?.value ?? '';
     if (!text.trim()) return;
     if (inputRef.current) inputRef.current.value = '';
-    await sendMessage(text, { wordLimit: 150 });
+    await sendMessage(text);
   };
 
   return (
@@ -28,7 +28,7 @@ export default function WidgetChat() {
       >
         <span className="text-lg">💬</span>
         <span className="hidden sm:inline">
-          {isOpen ? '❌🐱' : '🐱'}
+          {isOpen ? '❌' : '🐱'}
         </span>
       </motion.button>
 
