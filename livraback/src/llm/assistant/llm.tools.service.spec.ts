@@ -67,6 +67,7 @@ const mockLivrosService = {
 describe('LlmToolsService', () => {
   let service: LlmToolsService;
   let storyModel: Model<Story>;
+  let duckDuckGoSearch: DuckDuckGoSearch;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -97,6 +98,7 @@ describe('LlmToolsService', () => {
 
     service = module.get<LlmToolsService>(LlmToolsService);
     storyModel = module.get<Model<Story>>(getModelToken(Story.name));
+    duckDuckGoSearch = module.get<DuckDuckGoSearch>(DuckDuckGoSearch);
 
     jest.clearAllMocks();
   });
@@ -248,6 +250,21 @@ describe('LlmToolsService', () => {
 
       expect(mockReadlistsService.remove).toHaveBeenCalledWith(userId, readlistId);
       expect(result).toContain('deletada com sucesso');
+    });
+
+    // --- Teste da Ferramenta de Busca Externa ---
+    describe('DuckDuckGoSearch Tool', () => {
+      it('should perform a search using DuckDuckGoSearch tool', async () => {
+        const pergunta = 'O que é NestJS?';
+        const mockSearchResults = [
+          { title: 'NestJS - Node.js Framework', link: 'https://nestjs.com', snippet: 'NestJS é um framework...' },
+        ];
+        jest.spyOn(duckDuckGoSearch, 'call').mockResolvedValue(mockSearchResults);
+        const result = await duckDuckGoSearch.call({ input: pergunta });
+
+        expect(duckDuckGoSearch.call).toHaveBeenCalledWith({ input: pergunta });
+        expect(result).toBe(mockSearchResults);
+      });
     });
   });
 });
