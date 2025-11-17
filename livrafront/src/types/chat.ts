@@ -21,6 +21,10 @@ export type LlmResponseDTO = {
   novasOpcoes: { id: number; texto: string }[];
 };
 
+export type AgentInputDTO = {
+  userPrompt: string; // A pergunta que o usuário digitou no chat
+};
+
 export type ChatState = {
   messages: ChatMessage[];
   storyId: string | null;
