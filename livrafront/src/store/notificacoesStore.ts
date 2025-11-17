@@ -69,3 +69,45 @@ export const useNotificationsStore = create<EstadoNotificacoes>()(
         }
     )
 );   
+
+export const useNotPrefStore = create<EstadoPreferenciasNotificacoes>()(
+    persist(
+        (set, get) => ({
+            preferencias: {
+                curtidas: true,
+                comentarios: true,
+                mencoes: true,
+                novosSeguidores: true,
+            },
+
+            alterarPreferencia: (tipo, valor) => set((state) => ({
+                preferencias: {
+                    ...state.preferencias,
+                    [tipo]: valor
+                }
+            })),
+
+            deveNotificar: (tipoNotificacao: string) => {
+                const { preferencias } = get();
+                
+                const mapeamento: Record<string, keyof PreferenciasNotificacoes> = {
+                    'curtida_post': 'curtidas',
+                    'curtida_resenha': 'curtidas',
+                    'comentario_post': 'comentarios',
+                    'comentario_resenha': 'comentarios',
+                    'resposta_comentario': 'comentarios',
+                    'mencao': 'mencoes',
+                    'novo_seguidor': 'novosSeguidores',
+                };
+
+                const preferencia = mapeamento[tipoNotificacao];
+                if (!preferencia) return true;
+                return preferencias[preferencia];
+            }
+        }),
+        {
+            name: 'notificacoes-preferencias-storage',
+            partialize: (state) => ({ preferencias: state.preferencias })
+        }
+    )
+);
