@@ -86,8 +86,6 @@ export default function EditCommentModal({
 
     try {
       await commentsService.updateComment(post._id, comment._id, {conteudo: content, imagens: images});
-      console.log(post._id);
-      console.log(comment._id);
 
       // Reset do modal
       setContent('');

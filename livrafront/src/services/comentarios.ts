@@ -47,12 +47,11 @@ export const commentsService = {
     },
 
     async updateComment(postId: string, commentId: string, data: UpdateCommentData) {
-        console.log(data);
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios/${commentId}`, {
             method: 'PATCH',
             headers: {
                 ...(getAuthHeaders() || {}),
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json', 
             },
             body: JSON.stringify(data),
         });

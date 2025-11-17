@@ -100,7 +100,6 @@ export class CommentsController {
         description: 'Post/Comentário não encontrado.'
     })
     async updateComment(@CurrentUser() user: CurrentUserDto, @Param('postId') postId: string, @Param('commentId') commentId: string, @Body() updateCommentDto: UpdateCommentDto) {
-        console.log('controller back');
         return this.commentsService.updateComment(user.userId, postId, commentId, updateCommentDto);
     }
 }
