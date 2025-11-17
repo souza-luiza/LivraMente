@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useNotificationsStore } from '@/store/notificacoesStore';
+import { useNotificationsStore } from '@/stores/notificacoesStore';
 import Sidebar from '@/components/sidebar';
 import NotificacaoList from '@/components/notificacao-list';
 import Button from '@/components/button';

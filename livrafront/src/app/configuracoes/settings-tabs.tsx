@@ -23,7 +23,7 @@ import RemoveIcon from "@/components/icons/RemoveIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 import PauseIcon from "@/components/icons/PauseIcon";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
-import { useNotPrefStore } from "@/store/notificacoesStore";
+import { useNotPrefStore } from "@/stores/notificacoesStore";
 
 export default function SettingsTabs() {
     const [value, setValue] = useState('profile');
