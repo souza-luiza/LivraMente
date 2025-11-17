@@ -5,7 +5,7 @@ import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
-import { createCommunity, uploadImage } from '@/services/comunidade';
+import { communityService } from '@/services/comunidade';
 import Button from '@/components/button';
 import LoadingPage from '@/components/loading';
 import { titleToSlug } from '@/lib/slugify';
@@ -69,7 +69,7 @@ export default function CreateCommunityPage() {
     try {
       let imagem_url: string | undefined = undefined;
       if (foto) {
-        imagem_url = await uploadImage(foto);
+        imagem_url = await communityService.uploadImage(foto);
       }
       const slug = titleToSlug(nome);
       const payload = {
@@ -79,7 +79,7 @@ export default function CreateCommunityPage() {
         tags: tags.map(tag => tag.toLowerCase()),
         slug: slug,
       }
-      const result = await createCommunity(payload)
+      const result = await communityService.createCommunity(payload)
       setCommunitySlug(slug);
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);

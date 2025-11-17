@@ -1,25 +1,26 @@
 "use client";
 
 import Image from 'next/image';
-import { Post } from '@/types/post';
 import { useState, useEffect } from 'react';
 import Button from './button';
 import RemoveIcon from './icons/RemoveIcon';
 import CodeIcon from './icons/CodeIcon';
 import { motion } from 'framer-motion';
-import { Comentario } from '@/types/comentario';
+import { useRouter } from 'next/navigation';
 
 interface PostImageProps {
-  post: Post;
-  comment?: Comentario;
-  image: string;
-  onClose: () => void;
+    comunidade?: string;
+    autor: string;
+    imagem: string;
+    imagens: string[];
+    onClose: () => void;
 }
 
-export default function ImageModal({ post, comment, image, onClose }: PostImageProps) {
+export default function ImageModal({ comunidade, autor, imagem, imagens, onClose }: PostImageProps) {
+    const router = useRouter();
 
-    const [selectedImage, setSelectedImage] = useState<string>(image);
-    const currentIndex = post.imagens.findIndex((img) => img === selectedImage);
+    const [selectedImage, setSelectedImage] = useState<string>(imagem);
+    const [imageArray, setSelectedImageArray] = useState<string[]>(imagens);
 
     useEffect(() => {
         // Desabilita scrollagem da página ao abrir o modal
@@ -34,17 +35,17 @@ export default function ImageModal({ post, comment, image, onClose }: PostImageP
             } else if (e.key === 'ArrowRight') {
                 // Seta direita: próxima imagem
                 setSelectedImage((prev) => {
-                    const current = post.imagens.findIndex((img) => img === prev);
-                    const next = (current + 1) % post.imagens.length;
-                    return post.imagens[next];
+                    const current = imageArray.findIndex((img) => img === prev);
+                    const next = (current + 1) % imageArray.length;
+                    return imageArray[next];
                 });
 
             } else if (e.key === 'ArrowLeft') {
                 // Seta esquerda: imagem anterior
                 setSelectedImage((prev) => {
-                    const current = post.imagens.findIndex((img) => img === prev);
-                    const next = (current - 1 + post.imagens.length) % post.imagens.length;
-                    return post.imagens[next];
+                    const current = imageArray.findIndex((img) => img === prev);
+                    const next = (current - 1 + imageArray.length) % imageArray.length;
+                    return imageArray[next];
                 });
             }
         };
@@ -56,13 +57,13 @@ export default function ImageModal({ post, comment, image, onClose }: PostImageP
             window.removeEventListener('keydown', handleKeyDown);
         };
 
-    }, [onClose, post.imagens]);
+    }, [onClose, imageArray]);
 
     const handleSelectImage = (imgUrl: string) => {
         setSelectedImage(imgUrl);
     }
 
-    if (!image || !post.imagens || post.imagens.length === 0) return null;
+    if (!imagem || !imageArray || imageArray.length === 0) return null;
 
     return (
         <motion.div 
@@ -98,18 +99,25 @@ export default function ImageModal({ post, comment, image, onClose }: PostImageP
             </div>
 
             {/*Seleção de Imagem - Miniaturas*/}
-            {post.imagens && post.imagens.length > 0 && (
+            {imageArray && imageArray.length > 0 && (
             <div className="absolute bottom-0 w-full flex flex-col gap-2 flex-shrink-0 items-center justify-center mt-2 mb-4">
                 <div 
                     className="flex flex-row gap-2 dark-green medium-box"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <h6 className="text-h6">{post.comunidade.nome}</h6>
-                    <CodeIcon size={24} />
-                    <h6 className="text-h6">@{post.autor.username}</h6>
+                    {comunidade && (<>
+                        <h6 className="text-h6">{comunidade}</h6>
+                        <CodeIcon size={24} />
+                    </>)}
+                    <h6 
+                        className="text-h6 cursor-pointer"
+                        onClick={() => router.push(`/${autor}`)}
+                    >
+                        @{autor}
+                    </h6>
                 </div>
                 <div className="flex flex-row gap-2">
-                    {post.imagens.map((imgUrl, index) => (
+                    {imageArray.map((imgUrl, index) => (
                         <div 
                             key={index} 
                             className={`relative w-24 h-24 medium-border-radius overflow-hidden hover:cursor-pointer ${imgUrl === selectedImage && 'large-border-width border-[var(--primary-700)]'}`}

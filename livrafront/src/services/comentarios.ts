@@ -47,6 +47,9 @@ export const commentsService = {
     },
 
     async updateComment(postId: string, commentId: string, data: UpdateCommentData) {
+        console.log('PostID:', postId);
+        console.log('CommentID: ', commentId);
+
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios/${commentId}`, {
             method: 'PATCH',
             headers: {
@@ -55,8 +58,8 @@ export const commentsService = {
             },
             body: JSON.stringify(data),
         });
-        
-        if (!response.ok) throw new Error(`Erro ao atualizar comentário`);
+
+        if (!response.ok) throw new Error(`Erro ao atualizar o comentário`);
         return response.json();
     }
 }

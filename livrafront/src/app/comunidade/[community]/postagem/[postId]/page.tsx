@@ -179,7 +179,6 @@ export default function PostPage() {
             
             // Recarregar comentários
             const updatedComments = await postsService.getComments(postInfo._id);
-            console.log(updatedComments);
             setComments(updatedComments);
 
             setCommentData({ conteudo: "", imagens: [] });

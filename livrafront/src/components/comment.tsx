@@ -81,8 +81,8 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
         }
     }, [showOptions]);
 
-    const handleOpenImageModal = (imageUrl: string) => {
-        setSelectedImage(imageUrl);
+    const handleOpenImageModal = (imgUrl: string) => {
+        setSelectedImage(imgUrl);
         setShowImageModal(true);
     }
 
@@ -184,7 +184,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                     >
                         <Image
                             src={imgUrl}
-                            alt={`Imagem do post ${index + 1}`}
+                            alt={`Imagem do comentário ${index + 1}`}
                             fill
                             className="object-cover"
                         />
@@ -194,10 +194,10 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                 )}
 
                 {showImageModal && selectedImage && (
-                <ImageModal 
-                    post={post}
-                    comment={comment}
-                    image={selectedImage} 
+                <ImageModal
+                    autor={comment.autor.username}
+                    imagem={selectedImage} 
+                    imagens={comment.imagens}
                     onClose={() => setShowImageModal(false)} 
                 />
                 )}

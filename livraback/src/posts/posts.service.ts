@@ -263,8 +263,6 @@ export class PostsService {
     .populate('autor', 'username')
     .lean();
 
-    console.log(comments);
-
     return comments;
   }
 }

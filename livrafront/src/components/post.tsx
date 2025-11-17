@@ -121,8 +121,8 @@ export default function PostComponent({
         router.push(`/${post.autor.username}`);
     }
 
-    const handleOpenImageModal = (imageUrl: string) => {
-        setSelectedImage(imageUrl);
+    const handleOpenImageModal = (imgUrl: string) => {
+        setSelectedImage(imgUrl);
         setShowImageModal(true);
     }
 
@@ -240,10 +240,10 @@ export default function PostComponent({
                         onClick={() => handleOpenImageModal(imgUrl)}
                     >
                         <Image
-                        src={imgUrl}
-                        alt={`Imagem do post ${index + 1}`}
-                        fill
-                        className="object-cover"
+                            src={imgUrl}
+                            alt={`Imagem do post ${index + 1}`}
+                            fill
+                            className="object-cover"
                         />
                     </div>
                     ))}
@@ -251,9 +251,11 @@ export default function PostComponent({
                 )}
 
                 {showImageModal && selectedImage && (
-                <ImageModal 
-                    post={post} 
-                    image={selectedImage} 
+                <ImageModal
+                    comunidade={post.comunidade.nome}
+                    autor={post.autor.username}
+                    imagem={selectedImage} 
+                    imagens={post.imagens} 
                     onClose={() => setShowImageModal(false)} 
                 />
                 )}

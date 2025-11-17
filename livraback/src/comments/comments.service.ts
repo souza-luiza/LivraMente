@@ -114,41 +114,38 @@ export class CommentsService {
     }
 
     async updateComment(userId: string, postId: string, commentId: string, updateCommentDto: UpdateCommentDto) {
-        const post = await this.postModel.findById(postId);
-        if (!post) throw new NotFoundException('Post não encontrado');
+        const USER_ID = new Types.ObjectId(userId);
+        const POST_ID = new Types.ObjectId(postId);
+        const COMMENT_ID = new Types.ObjectId(commentId);
 
-        const comment = await this.comentarioModel.findById(commentId);
+        // Procura comentário específico do autor no post específico
+        const comment = await this.comentarioModel.findOne({ _id: COMMENT_ID, post: POST_ID, autor: USER_ID });
         if (!comment) throw new NotFoundException('Comentário não encontrado');
 
-        if (comment.post.toString() !== postId) throw new NotFoundException('Comentário não pertence a este post');
+        // Procura post
+        const post = await this.postModel.findOne({ _id: POST_ID });
+        if (!post) throw new NotFoundException('Comentário não encontrado');
 
-        const isOwner = comment.autor.toString() === userId;
-        if (!isOwner) throw new ForbiddenException('Usuário não é autor do comentário');
-
+        // Procura comunidade associada ao post
         const comunidade = await this.comunidadeModel.findById(post.comunidade);
         if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
 
+        // Verifica se autor é membro da comunidade
         const isMember = comunidade.membros.some((membroId) => membroId.toString() === userId);
         if (!isMember) throw new ForbiddenException('Usuário não é membro da comunidade');
 
-        if (updateCommentDto.imagens && updateCommentDto.imagens.length > 4) {
-            throw new BadRequestException('Comentário deve conter no máximo 4 imagens');
+        // Verifica formato do comentário
+        if (!updateCommentDto.conteudo && !updateCommentDto.imagens) {
+            throw new BadRequestException('Nada para atualizar');
+        }
+        if (!updateCommentDto.conteudo || (updateCommentDto.imagens && updateCommentDto.imagens.length > 4)) {
+            throw new BadRequestException('Comentário deve conter texto e no máximo 4 imagens');
         }
 
-        const allowedFields: (keyof UpdateCommentDto)[] = ['conteudo', 'imagens'];
-        const filteredUpdates = Object.fromEntries(
-            Object.entries(updateCommentDto).filter(([key]) =>
-                allowedFields.includes(key as keyof UpdateCommentDto)
-            )
-        );
-        
-        if (Object.keys(filteredUpdates).length === 0) {
-            throw new BadRequestException('Nenhum campo válido para atualização foi fornecido.');
-        }
-
+        // Update atômico do comentário
         const updatedComment = await this.comentarioModel.findOneAndUpdate(
-            { _id: commentId, autor: userId },
-            { $set: filteredUpdates },
+            { _id: COMMENT_ID, post: POST_ID, autor: USER_ID },
+            { $set: updateCommentDto },
             { new: true }
         ).populate('autor', 'username');
 
