@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import SettingsTabs from '@/app/configuracoes/settings-tabs';
 import { act } from '@testing-library/react';
 
+
 // Mock do store de preferências de notificações
 let mockPreferencias = {
   curtidas: true,
@@ -351,8 +352,9 @@ describe('SettingsTabs', () => {
     });
   });
 
+
   describe('Notifications Tab', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       mockPreferencias = {
         curtidas: true,
         comentarios: true,
@@ -362,7 +364,12 @@ describe('SettingsTabs', () => {
       mockAlterarPreferencia.mockClear();
       
       render(<SettingsTabs />);
-      
+      await waitFor(() => {
+        expect(screen.queryByTestId('loading-main')).not.toBeInTheDocument();
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByText('Notificações'));
+      });
     });
 
     it('should render notifications header', () => {
