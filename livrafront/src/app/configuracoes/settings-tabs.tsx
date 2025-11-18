@@ -36,6 +36,7 @@ import { useNotPrefStore } from "@/stores/notificacoesStore";
 export default function SettingsTabs() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { preferencias, alterarPreferencia } = useNotPrefStore();
     
     const [value, setValue] = useState('profile');
     const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,6 @@ export default function SettingsTabs() {
     const [tempImageUrl, setTempImageUrl] = useState<string>("");
     const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
     const [showCropModal, setShowCropModal] = useState(false);
-    const {preferencias, alterarPreferencia} = useNotPrefStore();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -359,44 +359,44 @@ export default function SettingsTabs() {
                         </div>
                     </TabPanel>
 
-                {/* Notificações */}
-                <TabPanel value="notifications">
-                    <div className="w-full p-8">
-                        <div className="mb-8">
-                            <h4 className="text-h4 mb-2">Preferências de Notificação</h4>
-                            <p className="text-b1 text-gray-600">Gerencie como você deseja ser notificado sobre atividades</p>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            {[
-                                { icon: <HeartIcon size={40}/>, title: "Curtidas", desc: "Quando alguém curtir sua publicação", key: "curtidas" as const },
-                                { icon: <CommentIcon size={40}/>, title: "Comentários", desc: "Quando alguém comentar suas publicações", key: "comentarios" as const },
-                                { icon: <MentionIcon size={40}/>, title: "Menções", desc: "Quando alguém mencionar você", key: "mencoes" as const },
-                                { icon: <SingleUserIcon size={40}/>, title: "Novos seguidores", desc: "Quando alguém começar a seguir você", key: "novosSeguidores" as const }
-                            ].map((item) => (
-                                <div key={item.key} className="flex items-center justify-between p-5 border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-[#4a5d3c]">{item.icon}</div>
-                                        <div>
-                                            <p className="text-b1 font-semibold">{item.title}</p>
-                                            <p className="text-b2 text-gray-500">{item.desc}</p>
+                    {/* Notificações */}
+                    <TabPanel value="notifications">
+                        <div className="w-full p-8">
+                            <div className="mb-8">
+                                <h4 className="text-h4 mb-2">Preferências de Notificação</h4>
+                                <p className="text-b1 text-gray-600">Gerencie como você deseja ser notificado sobre atividades</p>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                {[
+                                    { key: 'curtidas' as const, icon: <HeartIcon size={40}/>, title: "Curtidas", desc: "Quando alguém curtir sua publicação" },
+                                    { key: 'comentarios' as const, icon: <CommentIcon size={40}/>, title: "Comentários", desc: "Quando alguém comentar suas publicações" },
+                                    { key: 'mencoes' as const, icon: <MentionIcon size={40}/>, title: "Menções", desc: "Quando alguém mencionar você" },
+                                    { key: 'novosSeguidores' as const, icon: <SingleUserIcon size={40}/>, title: "Novos seguidores", desc: "Quando alguém começar a seguir você" }
+                                ].map((item) => (
+                                    <div key={item.key} className="flex items-center justify-between p-5 border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-[#4a5d3c]">{item.icon}</div>
+                                            <div>
+                                                <p className="text-b1 font-semibold">{item.title}</p>
+                                                <p className="text-b2 text-gray-500">{item.desc}</p>
+                                            </div>
                                         </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={preferencias[item.key]} 
+                                                onChange={(e) => alterarPreferencia(item.key, e.target.checked)}
+                                                className="sr-only peer" 
+                                                aria-label={`Ativar notificações de ${item.title.toLowerCase()}`}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#4a5d3c] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4a5d3c]"></div>
+                                        </label>
                                     </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={preferencias[item.key]}
-                                            onChange={(e) => alterarPreferencia(item.key, e.target.checked)}
-                                            className="sr-only peer"
-                                            aria-label={`Ativar notificações de ${item.title.toLowerCase()}`}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#4a5d3c] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4a5d3c]"></div>
-                                    </label>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </TabPanel>
+                    </TabPanel>
 
                     {/* Segurança */}
                     <TabPanel value="security">

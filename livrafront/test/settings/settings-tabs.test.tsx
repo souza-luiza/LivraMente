@@ -4,7 +4,6 @@ import '@testing-library/jest-dom';
 import SettingsTabs from '@/app/configuracoes/settings-tabs';
 import { act } from '@testing-library/react';
 
-
 // Mock do store de preferências de notificações
 let mockPreferencias = {
   curtidas: true,
