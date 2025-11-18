@@ -17,6 +17,7 @@ import ImageIcon from "@/components/icons/ImageIcon";
 import PopUp from "@/components/pop-up";
 import RemoveIcon from "@/components/icons/RemoveIcon";
 import Image from "next/image";
+import { CommunityTags } from "@/types/comunidade";
 
 function EditCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -230,7 +231,7 @@ function EditCommunityPage() {
               </div>
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-h6" id="tags-comunidade-label">Tags</label>
-                <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
+                <TagsDropdown id="tags-comunidade" tags={CommunityTags} selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
                 {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
               </div>
             </div>

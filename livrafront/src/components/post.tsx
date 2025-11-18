@@ -31,12 +31,9 @@ import { postsService } from "@/services/posts";
 // Data
 import { getTimeAgo } from "@/lib/time"; 
 
-// Slugs
-import { titleToSlug } from "@/lib/slugify";
-
 interface PostProps {
     post: Post;
-    currentUser?: User;
+    currentUserId?: string;
     isModerator?: boolean;
     disableActions?: boolean;
     handleComment: () => void;
@@ -45,7 +42,8 @@ interface PostProps {
 }
 
 export default function PostComponent({ 
-    post, 
+    post,
+    currentUserId, 
     isModerator = false,
     disableActions = false,
     handleComment,
@@ -302,7 +300,7 @@ export default function PostComponent({
                 {(isOwner || isModerator) && !disableActions && showOptions &&
                 <motion.div 
                     ref={menuRef}
-                    className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
+                    className="fixed z-50 flex flex-col flex-shrink-0 items-center medium-box small-border-width border-gray-300 shadow-md bg-white gap-1"
                     style={{
                         top: clickPosition.y,
                         left: clickPosition.x
@@ -320,6 +318,7 @@ export default function PostComponent({
                         colorScheme="light-brown"
                         onClick={handleConfirmDeletePost}
                         loading={loading}
+                        fullwidth={true}
                     />
                     {isOwner && <Button
                         text="Editar"
@@ -328,6 +327,7 @@ export default function PostComponent({
                         colorScheme="light-brown"
                         onClick={handleEditPost}
                         disabled={loading}
+                        fullwidth={true}
                     />}
                 </motion.div>}
             </AnimatePresence>

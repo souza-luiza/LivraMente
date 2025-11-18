@@ -134,21 +134,13 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
 
     return (
         <motion.div onHoverEnd={() => setShowOptions(false)}>
-            <div 
-                className="flex flex-col gap-3 p-2 hover:shadow-sm"
-                style={{ 
-                    borderTop: 'var(--small-border-width) solid var(--color-gray-50)',
-                    borderBottom: 'var(--small-border-width) solid var(--color-gray-50)'
-                }}
-            >
+            <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm hover:shadow-md">
                 {/*Cabeçalho do Comentário*/}
                 <div className="flex flex-row justify-between">
-                    <div className="flex flex-row gap-2">
-                        <CommentIcon size={24} />
-                        <h6 className="text-h6">
-                            @{comment.autor.username}
-                        </h6>
-                    </div>
+                    {/*Imagem de Perfil*/}
+                    <h6 className="text-h6">
+                        @{comment.autor.username}
+                    </h6>
                     {(isOwner || isModerator) && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
@@ -234,7 +226,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                 {(isOwner || isModerator) && showOptions &&
                 <motion.div 
                     ref={menuRef}
-                    className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
+                    className="fixed z-50 flex flex-col flex-shrink-0 items-center medium-box small-border-width border-gray-300 shadow-md bg-white gap-1"
                     style={{
                         top: clickPosition.y,
                         left: clickPosition.x
@@ -251,6 +243,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                         size="small"
                         colorScheme="light-brown"
                         onClick={handleConfirmDeleteComment}
+                        fullwidth={true}
                     />
                     {isOwner && <Button
                         text="Editar"
@@ -258,6 +251,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                         size="small"
                         colorScheme="light-brown"
                         onClick={handleShowEditCommentModal}
+                        fullwidth={true}
                     />}
                 </motion.div>}
             </AnimatePresence>

@@ -11,3 +11,14 @@ export interface Comunidade {
     createdAt: string; 
     updatedAt: string;
 }
+
+export const CommunityTags = [
+    'Romance',
+    'Aventura',
+    'Fantasia',
+    'Drama',
+    'Terror',
+    'Suspense',
+    'Comédia',
+    'Distopia',
+]

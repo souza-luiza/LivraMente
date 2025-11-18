@@ -260,6 +260,7 @@ export class PostsService {
     const comments = await this.comentarioModel.find({
       post: new Types.ObjectId(postId),
     })
+    .sort({ createdAt: -1 })
     .populate('autor', 'username')
     .lean();
 

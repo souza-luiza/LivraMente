@@ -15,6 +15,7 @@ import TrashIcon from '@/components/icons/TrashIcon';
 import ImageIcon from '@/components/icons/ImageIcon';
 import AddIcon from '@/components/icons/AddIcon';
 import Image from 'next/image';
+import { CommunityTags } from '@/types/comunidade';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -142,7 +143,7 @@ export default function CreateCommunityPage() {
                 </div>
                 <div className="flex flex-col gap-1 mb-4">
                   <label className="text-h6" id="tags-comunidade-label">Tags</label>
-                  <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
+                  <TagsDropdown id="tags-comunidade" tags={CommunityTags} selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
                   {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
                 </div>
               </div>

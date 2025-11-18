@@ -1,23 +1,35 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+
+// Funções Auxiliares
+import { slugToTitle } from "@/lib/slugify";
+
+// Integração com a API
+import { communityService } from "@/services/comunidade";
+import { postsService } from "@/services/posts";
+import { commentsService } from "@/services/comentarios";
+
+// Types
+import { Post } from "@/types/post";
+import { Comunidade } from "@/types/comunidade";
+import { Comentario, CreateCommentData } from "@/types/comentario";
+
+// Componentes
 import Sidebar from "@/components/sidebar";
 import SearchBar from "@/components/searchbar";
-import { useState, useEffect, useRef } from "react";
-import { communityService } from "@/services/comunidade";
-import { slugToTitle } from "@/lib/slugify";
-import { Comunidade } from "@/types/comunidade";
-import { postsService } from "@/services/posts";
-import { Post } from "@/types/post";
-import { Comentario, CreateCommentData } from "@/types/comentario";
 import LoadingPage from "@/components/loading";
 import PostComponent from "@/components/post";
 import CommentComponent from "@/components/comment";
 import Button from "@/components/button";
+import LoadingComponent from "@/components/portable-loading";
+import DropdownFilter from "@/components/filter";
+
+// Ícones
 import ImageIcon from "@/components/icons/ImageIcon";
 import CommentIcon from "@/components/icons/CommentIcon";
-import { commentsService } from "@/services/comentarios";
-import Image from "next/image";
 import TrashIcon from "@/components/icons/TrashIcon";
 
 export default function PostPage() {
@@ -25,17 +37,27 @@ export default function PostPage() {
     const params = useParams();
     const { community, postId } = params as { community: string, postId: string }
 
+    // Dados principais
     const [loading, setLoading] = useState(true);
+    const [isModerator, setIsModerator] = useState(false);
     const [communityInfo, setCommunityInfo] = useState<Comunidade>()
     const [postInfo, setPostInfo] = useState<Post>()
     const [comments, setComments] = useState<Comentario[]>([])
-    const [isModerator, setIsModerator] = useState(false);
 
-    // Função Comentar
+    // Dados dos comentários
     const [commentData, setCommentData] = useState<CreateCommentData>({ conteudo: "", imagens: [] })
-    const [isSendingComment, setIsSendingComment] = useState(false);    
+    
+    // Criação de comentários
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    // Carregamento de comentários
+    const [isSendingComment, setIsSendingComment] = useState(false);    
+    const [loadingComments, setLoadingComments] = useState(true);
+
+    // Filtro de comentários
+    const filters = ["Mais Recentes", "Mais Antigos", "Mais Populares"];
+    const [currentFilter, setCurrentFilter] = useState(filters[0]);
 
     useEffect(() => {
         if (!community || !postId) {
@@ -76,12 +98,18 @@ export default function PostPage() {
                 router.replace("/not-found");
 
             } finally {
+                setLoadingComments(false);
                 setLoading(false);
             }
         }
 
         fetchData();
     }, [community, postId, router])
+
+    useEffect(() => {
+        setComments((prev) => sortComments(prev));
+        handleRefreshComments();
+    }, [currentFilter]);
 
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const el = textareaRef.current;
@@ -178,10 +206,13 @@ export default function PostPage() {
             await commentsService.createComment(postInfo._id, commentData);
             
             // Recarregar comentários
-            const updatedComments = await postsService.getComments(postInfo._id);
-            setComments(updatedComments);
+            handleRefreshComments();
 
             setCommentData({ conteudo: "", imagens: [] });
+
+            if (textareaRef.current) {
+                textareaRef.current.style.height = "auto";
+            }
 
         } catch (err) {
             console.error("Erro ao enviar comentário:", err);
@@ -191,18 +222,46 @@ export default function PostPage() {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if ((e.key === "Enter") && (!e.shiftKey)) {
+            e.preventDefault();
+            handleSendComment();
+        }
+    }
+
     const handleRefreshComments = async () => {
         if (!postInfo) return;
-
+        
         try {
+            setLoadingComments(true);
+
             const comments = await postsService.getComments(postInfo._id);
-            setComments(comments);
+            setComments(sortComments(comments));
 
         } catch (erro) {
             console.error("Erro ao enviar comentário:", erro);
 
+        } finally {
+            setLoadingComments(false);
         }
     }
+
+    const sortComments = (commentsToSort: Comentario[]) => {
+        const sorted = [...commentsToSort].sort((a, b) => {
+            if (currentFilter === "Mais Antigos") {
+                return Date.parse(a.createdAt) - Date.parse(b.createdAt);
+            }
+            if (currentFilter === "Mais Recentes") {
+                return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+            }
+            if (currentFilter === "Mais Populares") {
+                return b.curtidas.length - a.curtidas.length;
+            }
+            return 0;
+        });
+
+        return sorted;
+    };
 
     if (loading) return <LoadingPage />;
     if (!communityInfo || !postInfo) return null;
@@ -220,41 +279,57 @@ export default function PostPage() {
                 <main className="w-full h-full flex flex-row pl-2 pr-4 pt-2 gap-4">
                     {/*Seção Esquerda - Post*/}
                     <div className="w-3/4 flex flex-col h-full light-neutral justify-between">
-                        <div className="flex flex-col overflow-y-auto gap-2">
+                        <div className="flex flex-col gap-2 mx-1">
                             {/*Post*/}
-                            <div className="flex flex-col">
-                                <PostComponent
-                                    post={postInfo}
-                                    handleComment={handleComment}
-                                    isModerator={isModerator}
-                                    disableActions={loading}
+                            <PostComponent
+                                post={postInfo}
+                                handleComment={handleComment}
+                                isModerator={isModerator}
+                                disableActions={loading || isSendingComment}
+                            />
+                            {/*Seção de Comentários*/}
+                            <div className="flex flex-row justify-between">
+                                <div className="flex flex-row items-center medium-box dark-brown gap-1">
+                                    <CommentIcon size={20} />
+                                    <h6 className="text-h6">Comentários</h6>
+                                </div>
+                                {/*Filtro*/}
+                                <DropdownFilter
+                                    filters={filters}
+                                    currentFilter={currentFilter}
+                                    onChange={setCurrentFilter}
+                                    size="medium"
+                                    colorScheme="dark-brown"
                                 />
-                                {/*Seção de Comentários*/}
-                                {(comments === undefined || comments.length === 0) ? (
-                                    <p className="text-b1 body-quotation text-center pt-4">
-                                        Nenhum comentário ainda.
-                                    </p>
-                                ) : (
-                                    <div className="flex flex-col my-2">
-                                        {comments.map((comment) => (
-                                            <CommentComponent
-                                                key={comment._id}
-                                                post={postInfo}
-                                                comment={comment}
-                                                isModerator={isModerator}
-                                                onDelete={handleRefreshComments}
-                                                onUpdate={handleRefreshComments}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {/*Filtro dos Comentários*/}
+                            </div>  
+                            {loadingComments ? (
+                                <LoadingComponent 
+                                    size="small"
+                                    className="p-8"
+                                />
+                            ) : (comments === undefined || comments.length === 0) ? (
+                                <p className="text-b1 body-quotation text-center pt-4">
+                                    Nenhum comentário ainda.
+                                </p>
+                            ) : (
+                                <div className="flex flex-col gap-1">
+                                    {comments.map((comment) => (
+                                        <CommentComponent
+                                            key={comment._id}
+                                            post={postInfo}
+                                            comment={comment}
+                                            isModerator={isModerator}
+                                            onDelete={handleRefreshComments}
+                                            onUpdate={handleRefreshComments}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         {/*Input - Comentar*/}
                         <div
-                            className="sticky bottom-0 py-2 bg-white"
-                            style={{ borderTopWidth: '1px', borderTopColor: '#E0E0E0' }}
+                            className="sticky bottom-0 py-2 z-50"
+                            style={{ borderTopWidth: '1px', borderTopColor: '#E0E0E0', backgroundColor: '#FFFFFF' }}
                         >
                             <div className="flex flex-row items-end justify-between medium-box small-border-width border-gray-200 hover:border-gray-300 gap-2">
                                 <div className="w-full h-full flex flex-col gap-2">
@@ -262,9 +337,11 @@ export default function PostPage() {
                                         ref={textareaRef}
                                         value={commentData?.conteudo}
                                         onChange={handleTextareaChange}
-                                        placeholder={`Comente o post de @${postInfo.autor.username}`} 
+                                        onKeyDown={handleKeyDown}
+                                        placeholder={`Comente no post de @${postInfo.autor.username}`} 
                                         className="w-full h-fill resize-none overflow-y-auto text-b2 outline-none"
                                         style={{ maxHeight: "100px" }}
+                                        disabled={loading || isSendingComment || loadingComments}
                                     />
                                     {/*Imagens*/}
                                     {commentData.imagens.length > 0 && (
@@ -287,11 +364,11 @@ export default function PostPage() {
                                             {/* Botão para remover imagem */}
                                             <div className="absolute top-[0.9] right-[0.9] opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Button
-                                                icon={<TrashIcon />}
-                                                colorScheme="dark-brown"
-                                                size="small"
-                                                onClick={() => removeImage(index)}
-                                                aria-label="Remover imagem"
+                                                    icon={<TrashIcon />}
+                                                    colorScheme="dark-brown"
+                                                    size="small"
+                                                    onClick={() => removeImage(index)}
+                                                    aria-label="Remover imagem"
                                                 />
                                             </div>
                                         </div>
@@ -307,7 +384,7 @@ export default function PostPage() {
                                             accept="image/*"  
                                             multiple
                                             onChange={handleImageChange}
-                                            disabled={commentData.imagens.length >= 4}
+                                            disabled={loading || isSendingComment || loadingComments || commentData.imagens.length >= 4}
                                             style={{ display: "none" }}
                                         />
                                         <Button
@@ -317,7 +394,7 @@ export default function PostPage() {
                                             tooltip="Adicionar Imagens"
                                             aria-label="Adicionar Imagens"
                                             onClick={handleImageButtonClick}
-                                            disabled={isSendingComment || commentData.imagens.length >= 4}
+                                            disabled={loading || isSendingComment || loadingComments || commentData.imagens.length >= 4}
                                         />
                                     </div>
                                     <Button
@@ -326,14 +403,14 @@ export default function PostPage() {
                                         size="medium"
                                         tooltip="Comentar"
                                         onClick={handleSendComment}
-                                        disabled={isSendingComment || !commentData.conteudo.trim()}
+                                        disabled={loading || isSendingComment || loadingComments || !commentData.conteudo.trim()}
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
                     {/*Seção Direita - Recomendações, Chatbot etc...*/}
-                    <div className="w-1/4 max-h-screen flex items-center justify-center medium-box bg-gray-100">
+                    <div className="sticky top-16 w-1/4 max-h-screen flex items-center justify-center medium-box bg-gray-100">
                         <p className="text-b1 body-quotation">
                             Em breve....
                         </p>

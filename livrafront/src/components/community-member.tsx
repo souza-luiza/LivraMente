@@ -90,6 +90,7 @@ export default function CommunityMember({
                         size="small"
                         colorScheme="light-brown"
                         path={username ? `/${username}` : '/not-found'}
+                        fullwidth={true}
                     />
                     <Button
                         text={username ? `Remover @${username} da comunidade` : 'Remover da Comunidade'}
@@ -97,6 +98,7 @@ export default function CommunityMember({
                         size="small"
                         colorScheme="light-brown"
                         onClick={() => handleRemoveMember?.(userId!)}
+                        fullwidth={true}
                     />
                     <Button
                         text={username ? `Tornar @${username} moderador` : 'Tornar Moderador'}
@@ -104,6 +106,7 @@ export default function CommunityMember({
                         size="small"
                         colorScheme="light-brown"
                         onClick={() => handleMakeModerator?.(userId!)}
+                        fullwidth={true}
                     />
                 </motion.div>}
             </AnimatePresence>
