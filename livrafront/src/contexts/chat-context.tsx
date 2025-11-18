@@ -34,14 +34,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const payload: AgentInputDTO = { userPrompt };
 
     try {
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-
-      if (!token) {
-        throw new Error('Você precisa estar logado para usar o assistente.');
-      }
-
-      const response = await postAnalyzeAgent(payload, token);
-
+      const response = await postAnalyzeAgent(payload);
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: 'assistant', content: response.response, ts: Date.now() },
@@ -55,7 +48,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: `⚠️ ${errorMessage}`,
+          content: `Ops: ${errorMessage}`,
           ts: Date.now(),
         },
       ]);

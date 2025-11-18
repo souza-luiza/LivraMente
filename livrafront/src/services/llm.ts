@@ -25,20 +25,19 @@ export async function postGenerateText(
 
 export async function postAnalyzeAgent(
   payload: AgentInputDTO,
-  token: string,
   signal?: AbortSignal
 ): Promise<{ response: string }> {
   const res = await fetch(`${API_BASE_URL}/llm/analisar`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+    credentials: 'include',   // IMPORTANT: sends session cookie
     signal,
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    // Trata o erro 401 especificamente
     if (res.status === 401) {
-      throw new Error(`401: Não autorizado. O token JWT está faltando ou é inválido.`);
+      throw new Error('Usuário não autenticado (sessão inválida).');
     }
     throw new Error(`LLM ${res.status}: ${text || res.statusText}`);
   }
