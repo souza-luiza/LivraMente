@@ -49,24 +49,40 @@ export class QueueProducerService implements OnModuleDestroy {
     Configura exchanges e filas
    */
   private async setupExchangesAndQueues(channel: ConfirmChannel): Promise<void> {
-    // Cria exchange principal do tipo 'topic' (permite routing keys com padrões)
+    await channel.assertExchange(EXCHANGES.DLQ, 'fanout', { durable: true });
+    await channel.assertQueue(FILAS.DLQ, {
+      durable: true,
+      arguments: {
+        'x-message-ttl': CONFIG_FILA.TTL_MENSAGEM,
+      },
+    });
+    await channel.bindQueue(FILAS.DLQ, EXCHANGES.DLQ, '');
+
     await channel.assertExchange(EXCHANGES.EVENTOS_LIVRAMENTE, 'topic', {
-      durable: true, // Persiste após restart do RabbitMQ
+      durable: true,
     });
 
-    // Cria filas
-    const filas = Object.values(FILAS);
-    for (const nomeFila of filas) {
+    const filasComRetry = [
+      FILAS.GERAR_LLM,
+      FILAS.ENVIAR_NOTIFICACOES,
+      FILAS.PROCESSAR_IMAGENS,
+      FILAS.ENVIAR_EMAILS,
+      FILAS.ATUALIZAR_METRICAS,
+      FILAS.RASTREAR_ANALYTICS,
+    ];
+
+    for (const nomeFila of filasComRetry) {
       await channel.assertQueue(nomeFila, {
-        durable: true, 
+        durable: true,
         arguments: {
-          'x-message-ttl': CONFIG_FILA.TTL_MENSAGEM, 
+          'x-message-ttl': CONFIG_FILA.TTL_MENSAGEM,
+          'x-dead-letter-exchange': EXCHANGES.DLQ,
+          'x-dead-letter-routing-key': 'retry',
         },
       });
     }
 
     await this.criarBindings(channel);
-
   }
 
   /**

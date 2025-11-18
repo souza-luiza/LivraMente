@@ -5,11 +5,13 @@ export const FILAS = {
   ENVIAR_EMAILS: 'emails.enviar',
   ATUALIZAR_METRICAS: 'metricas.atualizar',
   RASTREAR_ANALYTICS: 'analytics.rastrear',
+  DLQ: 'dlq.mensagens.falhas',
 } as const;
 
 // Tópicos
 export const EXCHANGES = {
   EVENTOS_LIVRAMENTE: 'livramente.eventos',
+  DLQ: 'dlq.exchange',
 } as const;
 
 

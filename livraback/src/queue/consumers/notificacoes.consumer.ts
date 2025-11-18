@@ -1,10 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as amqp from 'amqp-connection-manager';
 import { ChannelWrapper } from 'amqp-connection-manager';
 import { ConfirmChannel, ConsumeMessage } from 'amqplib';
 import { ConfigService } from '@nestjs/config';
 import { getRabbitMQConfig } from '../queue.config';
-import { FILAS, ROUTING_KEYS } from '../queue.constants';
+import { FILAS, ROUTING_KEYS, CONFIG_FILA } from '../queue.constants';
 
 @Injectable()
 export class NotificacoesConsumer {
@@ -105,7 +105,17 @@ export class NotificacoesConsumer {
     } catch (error) {
       this.logger.error('Erro ao processar mensagem:', error);
       
-      channel.nack(msg, false, false); 
+      const retryCount = (msg.properties.headers?.retryCount || 0) + 1;
+      
+      if (retryCount < CONFIG_FILA.MAX_TENTATIVAS) {
+        this.logger.warn(`Tentativa ${retryCount}/${CONFIG_FILA.MAX_TENTATIVAS} - Reenfileirando...`);
+        // Rejeita e recoloca na fila para retry
+        channel.nack(msg, false, true);
+      } else {
+        this.logger.error(`Máximo de tentativas atingido - Enviando para DLQ`);
+        // Rejeita e envia para Dead Letter Queue
+        channel.nack(msg, false, false);
+      }
     }
   }
 
