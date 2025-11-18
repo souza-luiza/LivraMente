@@ -4,9 +4,9 @@ import { LlmResponseDTO } from './writer/dto/llm-response.dto';
 import { LlmStoryService } from './writer/llm.story.service';
 import { LlmAgentService } from './assistant/llm.agent.service';
 import { AgentInputDto } from './assistant/dto/agent-input.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
 @Controller('llm')
 export class LlmController {
@@ -18,7 +18,7 @@ export class LlmController {
 
   // Endpoint para gerar texto (histórias)
   @Post('gerar')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @UsePipes(new ValidationPipe())
   async gerarTexto(@Body() generateTextDto: GenerateTextDTO): Promise<LlmResponseDTO> {
     return this.storyService.generateAndSaveStory(generateTextDto);
@@ -26,7 +26,7 @@ export class LlmController {
 
   // Endpoint para o agente de análise
   @Post('analisar')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @UsePipes(new ValidationPipe())
   async PromptAnalise(
     @Body() agentInputDto: AgentInputDto,
