@@ -6,10 +6,33 @@ import NotificacaoList from '@/components/notificacao-list';
 import Button from '@/components/button';
 import SearchBar from '@/components/searchbar';
 import CheckIcon from '@/components/icons/CheckIcon';
+import { getSessionInfos } from '@/services/auth';
+import { useRouter } from 'next/navigation';
+import LoadingPage from '@/components/loading';
 
 export default function NotificacoesPage() {
+    const router = useRouter();
     const { notificacoes, marcarComoLida, marcarTodasComoLidas, removerNotificacao, contarNaoLidas } = useNotificationsStore();
     const [naoLidas, setNaoLidas] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const info = await getSessionInfos();
+                if (!info) {
+                    router.replace('/entrar');
+                    return;
+                }
+            } catch (error) {
+                router.replace('/entrar');
+                return;
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkAuth();
+    }, [router]);
 
     useEffect(() => {
         setNaoLidas(contarNaoLidas());
@@ -18,6 +41,9 @@ export default function NotificacoesPage() {
     return (
         <div className="flex min-h-screen h-screen m-0 bg-white">
             <Sidebar />
+            {isLoading ? (
+                    <LoadingPage />
+            ) : (
             <div className="flex-1 flex flex-col">
                 <SearchBar />
                 <div className="flex-1 p-8 overflow-auto">
@@ -47,6 +73,7 @@ export default function NotificacoesPage() {
                     />
                 </div>
             </div>
+            )}
         </div>
     );
 }
