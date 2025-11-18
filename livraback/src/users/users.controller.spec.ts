@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 describe('UsersController', () => {
@@ -19,6 +18,7 @@ describe('UsersController', () => {
     create: jest.fn().mockResolvedValue(mockUser),
     findAll: jest.fn().mockResolvedValue([mockUser]),
     findOne: jest.fn().mockResolvedValue(mockUser),
+    findOneUser: jest.fn().mockResolvedValue(mockUser),
     update: jest.fn().mockResolvedValue({ ...mockUser, username: 'Updated' }),
     remove: jest.fn().mockResolvedValue({ deletedCount: 1 }),
     registroLeitura: jest.fn().mockResolvedValue({ ganhoXP: 30 }),
@@ -28,6 +28,8 @@ describe('UsersController', () => {
       { _id: 'r1', nome: 'Readlist 1' },
       { _id: 'r2', nome: 'Readlist 2' },
     ]),
+    getPublicByUsername: jest.fn().mockResolvedValue(mockUser),
+    updateAvatar: jest.fn().mockResolvedValue({ avatarUrl: 'mocked.com/test.png' })
   };
 
   beforeEach(async () => {
@@ -53,79 +55,33 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  /*describe('create', () => {
-    it('should create a user', async () => {
-      const dto: CreateUserDto = {
-        username: 'Test User',
-        email: 'test@test.com',
-        senha: '123456',
-      };
-
-      const result = await controller.create(dto);
-      expect(usersService.create).toHaveBeenCalledWith(dto);
-      expect(result).toEqual(mockUser);
-    });
-  });
-
-  describe('findAll', () => {
-    it('should return all users', async () => {
-      const result = await controller.findAll();
-      expect(usersService.findAll).toHaveBeenCalled();
-      expect(result).toEqual([mockUser]);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a user by ID', async () => {
-      const result = await controller.findOne('user-id');
-      expect(usersService.findOne).toHaveBeenCalledWith('user-id');
-      expect(result).toEqual(mockUser);
-    });
-  });
-
-  describe('update', () => {
-    it('should update a user', async () => {
-      const dto: UpdateUserDto = { username: 'Updated' };
-      const result = await controller.update('user-id', dto);
-      expect(usersService.update).toHaveBeenCalledWith('user-id', dto);
-      expect(result).toEqual({ ...mockUser, name: 'Updated' });
-    });
-  });
-
-  describe('remove', () => {
-    it('should delete a user', async () => {
-      const result = await controller.remove('user-id');
-      expect(usersService.remove).toHaveBeenCalledWith('user-id');
-      expect(result).toEqual({ deletedCount: 1 });
-    });
-  });*/
-
   describe('getProfile', () => {
-    it('should return the current user profile', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+    it('should return a user profile', async () => {
+      const username = 'username-test' 
 
-      const result = await controller.getProfile(currentUser);
+      const result = await controller.getProfile(username);
 
-      expect(usersService.findOne).toHaveBeenCalledWith(currentUser.userId);
+      expect(usersService.findOneUser).toHaveBeenCalledWith(username);
       expect(result).toEqual(mockUser);
     });
   });
 
   describe('updateProfile', () => {
     it('should update the current user profile', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' }; // simula o CurrentUserDto
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const updateUserDto: UpdateUserDto = { username: 'Updated' };
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      const result = await controller.updateProfile(currentUser, updateUserDto);
+      const result = await controller.updateProfile(currentUser, updateUserDto, mockSession as any);
 
-      expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto);
+      expect(usersService.update).toHaveBeenCalledWith(currentUser.userId, updateUserDto, mockSession as any);
       expect(result).toEqual({ ...mockUser, username: 'Updated' });
     });
   });
 
   describe('registroLeitura', () => {
     it('should register reading and return XP gained', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const dto = { opcao: 0, qtd: 30 }; // ex: 30 páginas -> 30 XP
 
       const result = await controller.registroLeitura(currentUser, dto);
@@ -137,7 +93,7 @@ describe('UsersController', () => {
     it('should register reading by minutes and return XP gained (limited to 60)', async () => {
       mockUsersService.registroLeitura.mockResolvedValueOnce({ ganhoXP: 25 }); // 50 minutos = 25 XP
 
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const dto = { opcao: 1, qtd: 50 };
 
       const result = await controller.registroLeitura(currentUser, dto);
@@ -149,39 +105,41 @@ describe('UsersController', () => {
 
   describe('favoritarReadlist', () => {
     it('deve favoritar uma readlist', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const readlistId = 'readlist-id';
+      const userDono = 'username';
 
       mockUsersService.favoritarReadlist = jest.fn().mockResolvedValue({
         message: 'Readlist favoritada com sucesso',
       });
 
-      const result = await controller.favoritarReadlist(currentUser, readlistId);
+      const result = await controller.favoritarReadlist(currentUser, readlistId, userDono);
 
-      expect(usersService.favoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(usersService.favoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId, userDono);
       expect(result).toEqual({ message: 'Readlist favoritada com sucesso' });
     });
   });
 
   describe('desfavoritarReadlist', () => {
     it('deve desfavoritar uma readlist', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
       const readlistId = 'readlist-id';
+      const usernameDono = 'username';
 
       mockUsersService.desfavoritarReadlist = jest.fn().mockResolvedValue({
         message: 'Readlist removida dos favoritos com sucesso',
       });
 
-      const result = await controller.desfavoritarReadlist(currentUser, readlistId);
+      const result = await controller.desfavoritarReadlist(currentUser, readlistId, usernameDono);
 
-      expect(usersService.desfavoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(usersService.desfavoritarReadlist).toHaveBeenCalledWith(currentUser.userId, readlistId, usernameDono);
       expect(result).toEqual({ message: 'Readlist removida dos favoritos com sucesso' });
     });
   });
 
   describe('findReadlistsFavoritas', () => {
     it('deve retornar as readlists favoritas do usuário', async () => {
-      const currentUser = { userId: 'user-id', email: 'test@test.com' };
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
 
       const mockReadlists = [
         { _id: 'r1', nome: 'Readlist 1' },
@@ -194,6 +152,46 @@ describe('UsersController', () => {
 
       expect(usersService.findReadlistsFavoritas).toHaveBeenCalledWith(currentUser.userId);
       expect(result).toEqual(mockReadlists);
+    });
+  });
+
+  describe('updateAvatar', () => {
+    const fakeUser = { userId: 'user-id' };
+
+    const fakeFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: 'avatar.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fake-image'),
+      size: 1234,
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    };
+    const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
+
+    it('deve lançar BadRequestException se nenhum arquivo for enviado', async () => {
+      await expect(controller.updateAvatar(fakeUser as any, undefined as any, mockSession as any)).rejects.toThrow(
+        'Nenhum arquivo foi enviado'
+      );
+    });
+
+    it('deve chamar o service e retornar o resultado', async () => {
+      const mockResponse = { avatarUrl: 'mocked.com/teste.png' };
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
+      mockUsersService.updateAvatar = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.updateAvatar(fakeUser as any, fakeFile, mockSession as any);
+
+      expect(usersService.updateAvatar).toHaveBeenCalledWith(fakeUser.userId, fakeFile, mockSession as any);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar erro do service', async () => {
+      mockUsersService.updateAvatar = jest.fn().mockRejectedValue(new Error('Erro interno'));
+      await expect(controller.updateAvatar(fakeUser as any, fakeFile, mockSession as any)).rejects.toThrow('Erro interno');
     });
   });
 });

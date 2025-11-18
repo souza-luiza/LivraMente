@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Input from '@/components/general-input';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import SaveIcon from './icons/SaveIcon';
 import AddIcon from './icons/AddIcon';
+import ReadlistCropModal from './ReadlistCropModal';
+import ToastNotification from './toast-notification';
+import { toast } from 'react-toastify';
+import { useParams } from 'next/navigation';
+import { updatePhoto } from '@/services/readlists';
 
 interface EditReadlistModalProps {
   isOpen: boolean;
@@ -31,6 +36,9 @@ export default function EditReadlistModal({
   readlist,
   onSave,
 }: EditReadlistModalProps) {
+  const params = useParams();
+  const { readlistSlug } = params as { readlistSlug: string };
+  
   const [title, setTitle] = useState(readlist.title);
   const [description, setDescription] = useState(readlist.description);
   const [coverImage, setCoverImage] = useState(readlist.coverImage);
@@ -38,6 +46,10 @@ export default function EditReadlistModal({
   const [titleError, setTitleError] = useState('');
   const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
+
+  const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -58,9 +70,20 @@ export default function EditReadlistModal({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateTitle(title)) {
       return;
+    }
+
+    if (croppedImageBlob) {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', croppedImageBlob, 'readlist.jpg');
+      try {
+        await updatePhoto(formDataUpload, readlistSlug);
+
+      } catch(error) {
+        toast.error('Erro ao atualizar foto da readlist.');
+      }
     }
 
     onSave({
@@ -71,16 +94,42 @@ export default function EditReadlistModal({
     });
     onClose();
   };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // TODO: Implementar upload de imagem real
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCoverImage(reader.result as string);
+      setShowCropModal(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropSave = (croppedBlob: Blob) => {
+    setCroppedImageBlob(croppedBlob);
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setCoverImage(previewUrl);
+    setShowCropModal(false);
+    toast.info('Imagem pronta. Clique em "Confirmar" para salvar.');
+  };
+
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setCoverImage("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -154,6 +203,7 @@ export default function EditReadlistModal({
                 accept="image/*"
                 className="hidden"
                 onChange={handleImageChange}
+                onClick={(e) => {(e.target as HTMLInputElement).value = "";}}
               />
             </div>
           </div>
@@ -302,6 +352,13 @@ export default function EditReadlistModal({
             />
           </div>
         </div>
+        <ReadlistCropModal
+          isOpen={showCropModal}
+          imageUrl={coverImage}
+          onClose={handleCropCancel}
+          onSave={handleCropSave}
+        />
+        <ToastNotification />
       </div>
     </div>
   );

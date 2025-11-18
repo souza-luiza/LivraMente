@@ -1,12 +1,13 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import Readlist from '@/components/readlist'
 
 describe('Readlist Component', () => {
   const defaultProps = {
-    id: 'readlist-123',
+    _id: 'readlist-123',
     title: 'JavaScript Essentials',
     author: 'john_doe',
     image: '/covers/javascript.jpg',
+    link: 'javascript'
   }
 
   describe('Rendering and Props', () => {
@@ -38,13 +39,6 @@ describe('Readlist Component', () => {
       expect(image.getAttribute('src')).toContain('custom-cover.jpg')
     })
 
-    it('renders with custom id', () => {
-      render(<Readlist {...defaultProps} id="custom-123" />)
-      
-      const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/custom-123')
-    })
-
     it('uses default title when title prop is not provided', () => {
       render(<Readlist {...defaultProps} title={undefined} />)
       
@@ -74,10 +68,10 @@ describe('Readlist Component', () => {
     })
 
     it('link has correct href with id', () => {
-      render(<Readlist {...defaultProps} id="test-id-456" />)
+      render(<Readlist {...defaultProps} />)
       
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/test-id-456')
+      expect(link).toHaveAttribute('href', 'javascript')
     })
 
     it('link wraps entire component', () => {
@@ -123,7 +117,7 @@ describe('Readlist Component', () => {
     })
 
     it('image uses default when no image provided', () => {
-      render(<Readlist id="123" title="Test" author="author" />)
+      render(<Readlist title="Test" author="author" />)
       
       const image = screen.getByAltText('Capa da Readlist Test')
       expect(image.getAttribute('src')).toContain('Readlist.svg')
@@ -234,7 +228,7 @@ describe('Readlist Component', () => {
       expect(image.getAttribute('src')).toContain('Readlist.svg')
       
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/undefined')
+      expect(link).toHaveAttribute('href', '#')
     })
 
     it('empty string title shows default', () => {
@@ -257,7 +251,7 @@ describe('Readlist Component', () => {
     })
 
     it('null values show defaults', () => {
-      render(<Readlist id={null as any} title={null as any} author={null as any} image={null as any} />)
+      render(<Readlist title={null as any} author={null as any} image={null as any} />)
       
       expect(screen.getByText('Título da Readlist')).toBeInTheDocument()
       expect(screen.getByText('@AutorDaReadlist')).toBeInTheDocument()
@@ -279,26 +273,11 @@ describe('Readlist Component', () => {
       expect(screen.getByText(emojiAuthor)).toBeInTheDocument()
     })
 
-    it('handles very long id', () => {
-      const longId = 'a'.repeat(100)
-      render(<Readlist {...defaultProps} id={longId} />)
-      
-      const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', `/readlist/${longId}`)
-    })
-
     it('handles special characters in id', () => {
-      render(<Readlist {...defaultProps} id="id-with-dashes_and_underscores" />)
+      render(<Readlist {...defaultProps} link="id-with-dashes_and_underscores" />)
       
       const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/id-with-dashes_and_underscores')
-    })
-
-    it('handles numeric id', () => {
-      render(<Readlist {...defaultProps} id={12345 as any} />)
-      
-      const link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/12345')
+      expect(link).toHaveAttribute('href', 'id-with-dashes_and_underscores')
     })
 
     it('handles path-like strings in image', () => {
@@ -322,7 +301,7 @@ describe('Readlist Component', () => {
       
       const link = screen.getByRole('link')
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', `/readlist/${defaultProps.id}`)
+      expect(link).toHaveAttribute('href', `${defaultProps.link}`)
       
       const image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
       expect(image).toBeInTheDocument()
@@ -331,11 +310,12 @@ describe('Readlist Component', () => {
       expect(screen.getByText(defaultProps.author)).toBeInTheDocument()
     })
 
-    it('all elements are properly nested', () => {
+    it('all elements are properly nested', async () => {
       const { container } = render(<Readlist {...defaultProps} />)
       
       const link = container.querySelector('a')
       const image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
+      await waitFor(() => expect(image.getAttribute('src')).toContain('/covers/javascript.jpg'));
       const title = screen.getByText(defaultProps.title)
       const author = screen.getByText(defaultProps.author)
       
@@ -376,24 +356,16 @@ describe('Readlist Component', () => {
       expect(screen.queryByText('user1')).not.toBeInTheDocument()
     })
 
-    it('updates image when prop changes', () => {
-      const { rerender } = render(<Readlist {...defaultProps} image="/img1.jpg" />)
-      let image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
-      expect(image.getAttribute('src')).toContain('img1.jpg')
+    it('updates image when prop changes', async () => {
+      const { rerender } = render(<Readlist {...defaultProps} image="/img1.jpg" />);
       
-      rerender(<Readlist {...defaultProps} image="/img2.jpg" />)
-      image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
-      expect(image.getAttribute('src')).toContain('img2.jpg')
-    })
+      let image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`);
+      await waitFor(() => expect(image.getAttribute('src')).toContain('img1.jpg'));
 
-    it('updates link href when id changes', () => {
-      const { rerender } = render(<Readlist {...defaultProps} id="id1" />)
-      let link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/id1')
+      rerender(<Readlist {...defaultProps} image="/img2.jpg" />);
       
-      rerender(<Readlist {...defaultProps} id="id2" />)
-      link = screen.getByRole('link')
-      expect(link).toHaveAttribute('href', '/readlist/id2')
-    })
+      image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`);
+      await waitFor(() => expect(image.getAttribute('src')).toContain('img2.jpg'));
+    });
   })
 })
