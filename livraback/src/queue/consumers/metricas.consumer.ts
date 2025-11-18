@@ -115,26 +115,14 @@ export class MetricasConsumer {
 
 
   private async atualizarMetricasLeitura(dados: any): Promise<void> {
-    this.logger.log(`📖 Usuário ${dados.userId} lendo livro ${dados.livroId}`);
-    this.logger.log(`   Progresso: ${dados.paginaAtual}/${dados.totalPaginas}`);
-    
-    
-    this.logger.log(`   💡 Atualizações:`);
-    this.logger.log(`      - usuario.tempoLeituraTotal += ${dados.tempoSessao}min`);
-    this.logger.log(`      - livro.progresso = ${Math.round((dados.paginaAtual / dados.totalPaginas) * 100)}%`);
-    this.logger.log(`      - usuario.pontosGamificacao += 10`);
+    // TODO: Implementar
+    // - usuario.tempoLeituraTotal, progresso, pontosGamificacao
   }
 
 
   private async atualizarMetricasComunidade(dados: any): Promise<void> {
-    this.logger.log(`🏘️ Atividade na comunidade ${dados.comunidadeId}`);
-    this.logger.log(`   Tipo: ${dados.tipoAtividade}`);
-    
-
-    this.logger.log(`   💡 Métricas:`);
-    this.logger.log(`      - comunidade.atividadesDia++`);
-    this.logger.log(`      - comunidade.membrosAtivos.add(${dados.userId})`);
-    this.logger.log(`      - comunidade.taxaEngajamento = recalcular()`);
+    // TODO: Implementar
+    // - comunidade.atividadesDia++, membrosAtivos, taxaEngajamento
   }
 
 

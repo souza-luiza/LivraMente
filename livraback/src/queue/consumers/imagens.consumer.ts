@@ -105,28 +105,16 @@ export class ImagensConsumer {
   }
 
   private async processarImagensPost(dados: any): Promise<void> {
-    this.logger.log(`📸 Processando ${dados.imagens.length} imagens do post`);
-    
-    for (const imagemUrl of dados.imagens) {
-
-      
-      this.logger.log(`   ✅ Imagem validada: ${imagemUrl}`);
-      this.logger.log(`   💡 Próximos passos: redimensionar, otimizar, upload CDN`);
-    }
+    // TODO: Validar, redimensionar, otimizar, upload CDN
   }
 
   private async processarImagemPerfil(dados: any): Promise<void> {
-    this.logger.log(`👤 Processando imagem de perfil do usuário ${dados.userId}`);
-    this.logger.log(`   URL: ${dados.imagemUrl}`);
-    this.logger.log(`   💡 Próximos passos: criar avatar circular, thumbnail, upload CDN`);
+    // TODO: Avatar circular, thumbnail, upload CDN
   }
 
 
   private async processarImagemComunidade(dados: any): Promise<void> {
-    this.logger.log(`🏘️ Processando imagem da comunidade ${dados.comunidadeId}`);
-    this.logger.log(`   Tipo: ${dados.tipoImagem || 'capa'}`);
-    this.logger.log(`   URL: ${dados.imagemUrl}`);
-    this.logger.log(`   💡 Próximos passos: redimensionar para diferentes resoluções`);
+    // TODO: Redimensionar para diferentes resoluções
   }
 
 

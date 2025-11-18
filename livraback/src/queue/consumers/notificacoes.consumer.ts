@@ -151,7 +151,6 @@ export class NotificacoesConsumer {
         }
       }
 
-      this.logger.log(`${notificacoesEnviadas} notificações criadas para membros da comunidade ${comunidadeNome}`);
     } catch (error) {
       this.logger.error(`Erro ao notificar membros sobre post ${postId}:`, error);
       throw error;
@@ -169,8 +168,6 @@ export class NotificacoesConsumer {
       remetente: usuarioCurtiuId,
       postId,
     });
-
-    this.logger.log(`Notificação de curtida criada para post ${postId}`);
   }
 
  
@@ -185,8 +182,6 @@ export class NotificacoesConsumer {
         : `Seu post foi rejeitado pela moderação.`,
       postId,
     });
-
-    this.logger.log(`Notificação de moderação criada para post ${postId}`);
   }
 
   private async notificarMembroEntrou(dados: any): Promise<void> {
@@ -202,8 +197,6 @@ export class NotificacoesConsumer {
         comunidadeNome,
       });
     }
-
-    this.logger.log(`Notificações criadas para ${moderadores.length} moderadores`);
   }
 
   /**
