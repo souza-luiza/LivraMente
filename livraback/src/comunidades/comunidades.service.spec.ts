@@ -465,4 +465,47 @@ describe('ComunidadesService', () => {
       });
     });
   });
+
+  describe('Publicação de Eventos', () => {
+    it('deve publicar evento NOTIFICAR_MEMBRO_ENTROU quando membro for adicionado', async () => {
+      const mockUpdatedComunidade = {
+        _id: 'com123',
+        nome: 'Fantasia',
+        moderadores: ['mod1', 'mod2'],
+      };
+
+      const mockExec = jest.fn().mockResolvedValue(mockUpdatedComunidade);
+      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
+
+      await service.addMembro('newUser', 'Fantasia');
+
+      expect(queueProducer.publish).toHaveBeenCalledWith(
+        'notificar.membro.entrou',
+        expect.objectContaining({
+          userId: 'newUser',
+          comunidadeId: 'com123',
+          comunidadeNome: 'Fantasia',
+          moderadores: expect.arrayContaining(['mod1', 'mod2']),
+        })
+      );
+    });
+
+    it('não deve falhar se publicação de evento falhar (fire and forget)', async () => {
+      const mockUpdatedComunidade = {
+        _id: 'com123',
+        nome: 'Fantasia',
+        moderadores: ['mod1'],
+      };
+
+      const mockExec = jest.fn().mockResolvedValue(mockUpdatedComunidade);
+      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
+
+      queueProducer.publish.mockRejectedValue(new Error('RabbitMQ Error'));
+
+      // Não deve lançar erro mesmo que queue falhe
+      await expect(service.addMembro('newUser', 'Fantasia')).resolves.toEqual({
+        message: 'Usuário adicionado à comunidade com sucesso',
+      });
+    });
+  });
 });

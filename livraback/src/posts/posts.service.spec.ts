@@ -5,9 +5,11 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PostCategoria, PostStatus } from '../schemas/post.schema';
+import { QueueProducerService } from '../queue/queue.producer.service';
 
 describe('PostsService', () => {
   let service: PostsService;
+  let queueProducer: jest.Mocked<QueueProducerService>;
 
   // Use valid MongoDB ObjectIds
   const validUserId = '507f1f77bcf86cd799439011';
@@ -66,6 +68,11 @@ describe('PostsService', () => {
     findByIdAndUpdate: jest.fn().mockResolvedValue(mockComunidade),
   };
 
+  const mockQueueProducer = {
+    publish: jest.fn().mockResolvedValue(undefined),
+    publicarNaFila: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -78,10 +85,15 @@ describe('PostsService', () => {
           provide: getModelToken('Comunidade'),
           useValue: mockComunidadeModel,
         },
+        {
+          provide: QueueProducerService,
+          useValue: mockQueueProducer,
+        },
       ],
     }).compile();
 
     service = module.get<PostsService>(PostsService);
+    queueProducer = module.get(QueueProducerService) as jest.Mocked<QueueProducerService>;
   });
 
   afterEach(() => {
@@ -117,7 +129,8 @@ describe('PostsService', () => {
 
       const customService = new PostsService(
         mockConstructor as any,
-        mockComunidadeModel as any
+        mockComunidadeModel as any,
+        queueProducer,
       );
 
       const result = await customService.create(validUserId, createDto);
@@ -167,7 +180,8 @@ describe('PostsService', () => {
 
       const customService = new PostsService(
         mockConstructor as any,
-        customComunidadeModel as any
+        customComunidadeModel as any,
+        queueProducer,
       );
 
       const result = await customService.create(validUserId, createDto);
@@ -243,7 +257,8 @@ describe('PostsService', () => {
 
       const customService = new PostsService(
         mockConstructor as any,
-        mockComunidadeModel as any
+        mockComunidadeModel as any,
+        queueProducer,
       );
 
       const result = await customService.create(validUserId, createDto);
@@ -492,6 +507,241 @@ describe('PostsService', () => {
       expect(mockSave).toHaveBeenCalled();
       expect(result.jaCurtiu).toBe(false);
       expect(result.curtidas).toBe(0);
+    });
+  });
+
+  describe('Publicação de Eventos', () => {
+    beforeEach(() => {
+      // Limpar chamadas anteriores do mock
+      queueProducer.publish.mockClear();
+      queueProducer.publicarNaFila.mockClear();
+    });
+
+    it('deve publicar evento NOTIFICAR_POST_CRIADO quando post for criado com status PUBLICADO', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+      
+      const createDto: CreatePostDto = {
+        conteudo: 'Novo post publicado',
+        comunidade: validComunidadeId,
+        solicitacao_revisao: false,
+      };
+
+      const savedPostWithPopulate = {
+        _id: validPostId,
+        autor: validUserId,
+        conteudo: createDto.conteudo,
+        comunidade: validComunidadeId,
+        status: PostStatus.PUBLICADO,
+        categoria: PostCategoria.GERAL,
+        imagens: [],
+        populate: jest.fn().mockResolvedValue({
+          _id: validPostId,
+          autor: validUserId,
+          conteudo: createDto.conteudo,
+        }),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        mockComunidadeModel as any,
+        queueProducer
+      );
+
+      await customService.create(validUserId, createDto);
+      
+      expect(queueProducer.publish).toHaveBeenCalledWith(
+        'notificar.post.criado',
+        expect.objectContaining({
+          postId: validPostId,
+          autorId: validUserId,
+          comunidadeId: validComunidadeId,
+        })
+      );
+    });
+
+    it('deve publicar evento METRICAS_POST_CRIADO quando post for criado', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+      
+      const createDto: CreatePostDto = {
+        conteudo: 'Post para métricas',
+        comunidade: validComunidadeId,
+        solicitacao_revisao: false,
+      };
+
+      const savedPostWithPopulate = {
+        _id: validPostId,
+        autor: validUserId,
+        conteudo: createDto.conteudo,
+        comunidade: validComunidadeId,
+        status: PostStatus.PUBLICADO,
+        categoria: PostCategoria.GERAL,
+        imagens: [],
+        populate: jest.fn().mockResolvedValue({
+          _id: validPostId,
+        }),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        mockComunidadeModel as any,
+        queueProducer
+      );
+
+      await customService.create(validUserId, createDto);
+      
+      expect(queueProducer.publish).toHaveBeenCalledWith(
+        'metricas.post.criado',
+        expect.any(Object)
+      );
+    });
+
+    it('deve publicar na fila de imagens quando post tiver imagens', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+      
+      const createDto: CreatePostDto = {
+        conteudo: 'Post com imagens',
+        comunidade: validComunidadeId,
+        imagens: ['img1.jpg', 'img2.jpg'],
+        solicitacao_revisao: false,
+      };
+
+      const savedPostWithPopulate = {
+        _id: validPostId,
+        autor: validUserId,
+        conteudo: createDto.conteudo,
+        comunidade: validComunidadeId,
+        status: PostStatus.PUBLICADO,
+        categoria: PostCategoria.GERAL,
+        imagens: createDto.imagens,
+        populate: jest.fn().mockResolvedValue({
+          _id: validPostId,
+        }),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        mockComunidadeModel as any,
+        queueProducer
+      );
+
+      await customService.create(validUserId, createDto);
+      
+      expect(queueProducer.publicarNaFila).toHaveBeenCalledWith(
+        'imagens.processar',
+        expect.objectContaining({
+          tipo: 'post',
+          postId: validPostId,
+          imagens: createDto.imagens,
+        })
+      );
+    });
+
+    it('não deve publicar evento NOTIFICAR se post estiver em rascunho', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+
+      const createDto: CreatePostDto = {
+        conteudo: 'Post pendente moderação',
+        comunidade: validComunidadeId,
+        solicitacao_revisao: true, // Força status PENDENTE_MODERACAO (não PUBLICADO)
+      };
+
+      // Mock para retornar PENDENTE_MODERACAO
+      const savedPostWithPopulate = {
+        _id: validPostId,
+        autor: validUserId,
+        conteudo: createDto.conteudo,
+        comunidade: validComunidadeId,
+        status: PostStatus.PENDENTE_MODERACAO,
+        categoria: PostCategoria.GERAL,
+        imagens: [],
+        populate: jest.fn().mockResolvedValue({
+          _id: validPostId,
+          status: PostStatus.PENDENTE_MODERACAO,
+        }),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      // Cria um novo mock isolado para este teste
+      const isolatedQueueProducer = {
+        publish: jest.fn().mockResolvedValue(undefined),
+        publicarNaFila: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        mockComunidadeModel as any,
+        isolatedQueueProducer as any,
+      );
+
+      await customService.create(validUserId, createDto);
+      
+      // Verifica que publish NÃO foi chamado (porque status === PENDENTE_MODERACAO, não PUBLICADO)
+      expect(isolatedQueueProducer.publish).not.toHaveBeenCalled();
+      // publicarNaFila não foi chamado porque não há imagens
+      expect(isolatedQueueProducer.publicarNaFila).not.toHaveBeenCalled();
+    });
+
+    it('não deve falhar se publicação de evento falhar (fire and forget)', async () => {
+      mockComunidadeModel.findById.mockResolvedValueOnce(mockComunidade);
+      mockComunidadeModel.findOne.mockResolvedValueOnce(null);
+      
+      queueProducer.publish.mockRejectedValue(new Error('RabbitMQ Error'));
+
+      const createDto: CreatePostDto = {
+        conteudo: 'Post com erro no queue',
+        comunidade: validComunidadeId,
+        solicitacao_revisao: false,
+      };
+
+      const savedPostWithPopulate = {
+        _id: validPostId,
+        autor: validUserId,
+        conteudo: createDto.conteudo,
+        comunidade: validComunidadeId,
+        status: PostStatus.PUBLICADO,
+        categoria: PostCategoria.GERAL,
+        imagens: [],
+        populate: jest.fn().mockResolvedValue({
+          _id: validPostId,
+        }),
+      };
+      
+      const mockSave = jest.fn().mockResolvedValue(savedPostWithPopulate);
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      const customService = new PostsService(
+        mockConstructor as any,
+        mockComunidadeModel as any,
+        queueProducer
+      );
+
+      // Não deve lançar erro mesmo que queue falhe
+      await expect(customService.create(validUserId, createDto)).resolves.toBeDefined();
     });
   });
 });
