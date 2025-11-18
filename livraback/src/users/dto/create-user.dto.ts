@@ -5,6 +5,7 @@ export class CreateUserDto { // objeto com informações que queremos salvar
     @ApiProperty({ description: 'Nome de usuário único' })
     @IsNotEmpty()
     @IsString()
+    @MinLength(2)
     username: string;
 
     @ApiProperty({ description: 'E-mail válido e único' })

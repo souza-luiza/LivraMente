@@ -4,9 +4,18 @@ import { getModelToken } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Readlist } from '../readlists/entities/readlist.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ReadlistsService } from '../readlists/readlists.service';
 
 describe('UsersService', () => {
   let service: UsersService;
+  let cloudinaryService: CloudinaryService;
+  let readlistsService: ReadlistsService;
+
+  const mockCloudinaryService = {
+    uploadImage: jest.fn().mockResolvedValue('mocked.com/fake.png'),
+    deleteImage: jest.fn()
+  };
 
   const mockUser = {
     _id: 'user-id',
@@ -48,10 +57,22 @@ describe('UsersService', () => {
           provide: getModelToken(Readlist.name),
           useValue: mockReadlistModel,
         },
+        {
+          provide: CloudinaryService,
+          useValue: mockCloudinaryService
+        },
+        {
+          provide: ReadlistsService,
+          useValue: {
+            findOnePublic: jest.fn()
+          }
+        }
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+    cloudinaryService = module.get<CloudinaryService>(CloudinaryService);
+    readlistsService = module.get<ReadlistsService>(ReadlistsService);
   });
 
   afterEach(() => {
@@ -135,7 +156,6 @@ describe('UsersService', () => {
     it('should update a user and return the updated user', async () => {
       const updateUserDto = { username: 'Updated Name' };
 
-      // Simula que não há usuário com esse username (evita conflito)
       mockUserModel.findOne.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
       });
@@ -145,8 +165,9 @@ describe('UsersService', () => {
           exec: jest.fn().mockResolvedValue({ ...mockUser, ...updateUserDto }),
         }),
       });
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      const result = await service.update('user-id', updateUserDto);
+      const result = await service.update('user-id', updateUserDto, mockSession as any);
 
       expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
@@ -166,25 +187,11 @@ describe('UsersService', () => {
           toString: () => 'different-id',
         },
       } as any;
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
       jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(otherUser);
 
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
-    });
-
-    it('should throw BadRequestException if email is in use by the same user', async () => {
-      const updateUserDto = { email: 'test@test.com' };
-
-      const sameUser = {
-        ...mockUser,
-        _id: {
-          toString: () => 'user-id',
-        },
-      } as any;
-
-      jest.spyOn(service, 'getByEmail').mockResolvedValueOnce(sameUser);
-
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('user-id', updateUserDto, mockSession as any)).rejects.toThrow(ConflictException);
     });
 
     it('should throw ConflictException if username is in use by another user', async () => {
@@ -196,25 +203,11 @@ describe('UsersService', () => {
           toString: () => 'different-id',
         },
       } as any;
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
       jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(otherUser);
 
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(ConflictException);
-    });
-
-    it('should throw BadRequestException if username is in use by the same user', async () => {
-      const updateUserDto = { username: 'Test User' };
-
-      const sameUser = {
-        ...mockUser,
-        _id: {
-          toString: () => 'user-id',
-        },
-      } as any;
-
-      jest.spyOn(service, 'getByUsername').mockResolvedValueOnce(sameUser);
-
-      await expect(service.update('user-id', updateUserDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('user-id', updateUserDto, mockSession as any)).rejects.toThrow(ConflictException);
     });
 
     it('should throw NotFoundException if user is not found during update', async () => {
@@ -231,8 +224,9 @@ describe('UsersService', () => {
           exec: jest.fn().mockResolvedValue(null),
         }),
       });
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-      await expect(service.update('no-existing-id', updateUserDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('no-existing-id', updateUserDto, mockSession as any)).rejects.toThrow(NotFoundException);
 
       expect(mockUserModel.findOne).toHaveBeenCalledWith({ username: updateUserDto.username });
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
@@ -483,102 +477,115 @@ describe('UsersService', () => {
 
   describe('favoritarReadlist', () => {
     it('deve favoritar uma readlist pública de outro usuário', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: [] };
       const readlist = {
         _id: 'readlist-id',
-        criador: 'outro-user-id',
+        slug: 'slug-da-readlist',
+        criador: 'dono-id',
         publica: true,
       };
 
-      const user = {
-        _id: 'user-id',
-        readlists_favoritas: [],
-      };
-
       jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
       mockUserModel.updateOne.mockResolvedValue({});
 
-      const result = await service.favoritarReadlist('user-id', 'readlist-id');
+      const result = await service.favoritarReadlist(
+        'user-id',
+        'slug-da-readlist',
+        'username',
+      );
 
       expect(result).toEqual({ message: 'Readlist favoritada com sucesso' });
       expect(mockUserModel.updateOne).toHaveBeenCalledWith(
         { _id: 'user-id' },
-        { $addToSet: { readlists_favoritas: 'readlist-id' } }
+        { $addToSet: { readlists_favoritas: 'readlist-id' } },
       );
     });
 
     it('deve lançar erro se readlist não existir', async () => {
       jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(null);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(null);
 
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(NotFoundException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-inexistente', 'username'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('deve lançar erro se readlist for do próprio usuário', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: [] };
       const readlist = {
         _id: 'readlist-id',
+        slug: 'slug-da-readlist',
         criador: 'user-id',
         publica: true,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
 
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(BadRequestException);
-    });
-
-    it('deve lançar erro se readlist não for pública', async () => {
-      const readlist = {
-        _id: 'readlist-id',
-        criador: 'outro-user-id',
-        publica: false,
-      };
-
-      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id', readlists_favoritas: [] } as any);
-      mockReadlistModel.findById.mockResolvedValue(readlist);
-
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('deve lançar erro se readlist já estiver favoritada', async () => {
+      const user = { _id: 'user-id', readlists_favoritas: ['readlist-id'] };
       const readlist = {
         _id: 'readlist-id',
-        criador: 'outro-user-id',
+        slug: 'slug-da-readlist',
+        criador: 'dono-id',
         publica: true,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue({
-        _id: 'user-id',
-        readlists_favoritas: ['readlist-id'],
-      } as any);
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
 
-      mockReadlistModel.findById.mockResolvedValue(readlist);
-
-      await expect(service.favoritarReadlist('user-id', 'readlist-id'))
-        .rejects
-        .toThrow(ConflictException);
+      await expect(
+        service.favoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
   describe('desfavoritarReadlist', () => {
     it('deve remover readlist dos favoritos', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue({} as any);
+      const user = { _id: 'user-id', readlists_favoritas: ['readlist-id'] };
+      const readlist = { _id: 'readlist-id', slug: 'slug-da-readlist', criador: 'dono-id', publica: true };
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(user as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(readlist as any);
       mockUserModel.updateOne.mockResolvedValue({});
 
-      const result = await service.desfavoritarReadlist('user-id', 'readlist-id');
+      const result = await service.desfavoritarReadlist(
+        'user-id',
+        'slug-da-readlist',
+        'username',
+      );
 
       expect(mockUserModel.updateOne).toHaveBeenCalledWith(
         { _id: 'user-id' },
-        { $pull: { readlists_favoritas: 'readlist-id' } }
+        { $pull: { readlists_favoritas: 'readlist-id' } },
       );
 
-      expect(result).toEqual({ message: 'Readlist removida dos favoritos com sucesso' });
+      expect(result).toEqual({
+        message: 'Readlist removida dos favoritos com sucesso',
+      });
+    });
+
+    it('deve lançar erro se readlist não existir', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue({ _id: 'user-id' } as any);
+      jest.spyOn(service['readlistsService'], 'findOnePublic').mockResolvedValue(null);
+
+      await expect(
+        service.desfavoritarReadlist('user-id', 'slug-inexistente', 'username'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar erro se usuário não existir', async () => {
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException('Usuário não encontrado'));
+
+      await expect(
+        service.desfavoritarReadlist('user-id', 'slug-da-readlist', 'username'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -608,6 +615,65 @@ describe('UsersService', () => {
       });
 
       await expect(service.findReadlistsFavoritas('user-id')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateAvatar', () => {
+    const file: Express.Multer.File = {fieldname: 'avatar',
+      originalname: 'teste.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fakeimage'),
+      size: 1234,
+      stream: null as any,
+      destination: '',
+      filename: '',
+      path: ''
+    };
+    const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
+
+    it('deve lançar erro se o usuário não for encontrado', async () => {
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.updateAvatar('user-id', file, mockSession as any)).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar erro se o arquivo for inválido', async () => {
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockUser),
+      });
+
+      await expect(service.updateAvatar('1', {} as any, mockSession as any)).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve fazer upload e atualizar avatar corretamente', async () => {
+      const mockUser = {
+        avatarPublicId: 'old_public_id',
+        save: jest.fn(),
+        toObject: jest.fn().mockReturnValue({ username: 'john', senha: '123' }),
+      };
+
+      mockUserModel.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockUser),
+      });
+
+      const result = await service.updateAvatar('1', file, mockSession as any);
+
+      expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
+        file.buffer,
+        'livra/avatars',
+      );
+      expect(cloudinaryService.deleteImage).toHaveBeenCalledWith('old_public_id');
+      expect(mockUser.save).toHaveBeenCalled();
+      expect(result).toEqual({ username: 'john' });
     });
   });
 });

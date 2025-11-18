@@ -8,7 +8,7 @@ describe('ReadlistsController', () => {
   let controller: ReadlistsController;
   let service: ReadlistsService;
 
-  const mockUser = { userId: 'user123', email: 'user@example.com' };
+  const mockUser = { userId: 'user123', email: 'user@example.com', username: 'user', avatarUrl: 'avatar-test.png', pronouns: 'he/him' };
 
   const mockReadlistsService = {
     create: jest.fn(),
@@ -19,6 +19,7 @@ describe('ReadlistsController', () => {
     addLivro: jest.fn(),
     removeLivro: jest.fn(),
     findAllPublic: jest.fn(),
+    updatePhoto: jest.fn()
   };
 
   beforeEach(async () => {
@@ -128,6 +129,44 @@ describe('ReadlistsController', () => {
       const response = await controller.findAllPublic(username);
       expect(service.findAllPublic).toHaveBeenCalledWith(username);
       expect(response).toEqual(result);
+    });
+  });
+
+  describe('updatePhoto', () => {
+    const fakeUser = { userId: 'user-id' };
+
+    const fakeFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: 'avatar.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from('fake-image'),
+      size: 1234,
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    };
+
+    it('deve lançar BadRequestException se nenhum arquivo for enviado', async () => {
+      await expect(controller.updatePhoto(fakeUser as any, undefined as any, 'slug')).rejects.toThrow(
+        'Nenhum arquivo foi enviado'
+      );
+    });
+
+    it('deve chamar o service e retornar o resultado', async () => {
+      const mockResponse = { capa_url: 'mocked.com/teste.png' };
+      mockReadlistsService.updatePhoto = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.updatePhoto(fakeUser as any, fakeFile, 'slug');
+
+      expect(service.updatePhoto).toHaveBeenCalledWith(fakeUser.userId, fakeFile, 'slug');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar erro do service', async () => {
+      mockReadlistsService.updatePhoto = jest.fn().mockRejectedValue(new Error('Erro interno'));
+      await expect(controller.updatePhoto(fakeUser as any, fakeFile, 'slug')).rejects.toThrow('Erro interno');
     });
   });
 });

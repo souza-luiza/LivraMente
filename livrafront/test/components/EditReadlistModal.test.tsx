@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import EditReadlistModal from '@/components/EditReadlistModal';
+import { useParams } from 'next/navigation';
 
 const originalError = console.error;
 beforeAll(() => {
@@ -45,6 +46,11 @@ jest.mock('next/image', () => ({
   },
 }));
 
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(),
+  useRouter: jest.fn(),
+}))
+
 describe('EditReadlistModal', () => {
   const mockReadlist = {
     title: 'Livros 2025',
@@ -58,6 +64,9 @@ describe('EditReadlistModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useParams as jest.Mock).mockReturnValue({
+      readlistSlug: 'livros-2025',
+    });
   });
 
   describe('Renderização', () => {

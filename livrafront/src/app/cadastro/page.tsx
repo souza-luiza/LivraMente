@@ -17,6 +17,7 @@ import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon'
 import Edit3Icon from '@/components/icons/Edit3Icon'
+import { registerUser } from '@/services/auth'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -214,30 +215,17 @@ export default function RegisterPage() {
     if (!validateStep2()) return
 
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        // redirecionamento para página de sucesso
-        router.push('/register/success')
-      } else if (response.status === 400) {
-        const data = await response.json()
-        const msg = data.message || 'Dados inválidos'
-
-        setErrors(prev => ({
-          ...prev,
-          email: msg.includes('Email') ? msg : prev.email,
-          name: msg.includes('usuário') ? msg : prev.name,
-        }));
-        toast.error(msg);
-      } else {
-        toast.error('Erro inesperado. Tente novamente mais tarde.')
-      }
+      const response = await registerUser(
+        formData.name,
+        formData.email,
+        formData.password
+      );
+      router.push(`/${response.username}`);
     } catch (error) {
-      toast.error('Falha ao conectar com o servidor.')
+      if(error instanceof Error && error.message === "Failed to fetch") 
+        toast.error("Não foi possível conectar ao servidor.");
+      else
+        toast.error(error instanceof Error ? error.message : "Erro ao fazer cadastro.");
     }
   }
 

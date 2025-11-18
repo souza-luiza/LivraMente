@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Readlist } from "../types/readlist";
 import { ZodError } from 'zod';
 import { createReadlistSchema } from '@/lib/validations/create-readlist';
-import { createReadlist as createReadlistService } from '@/services/readlists';
+import { createReadlist as createReadlistService, updatePhoto } from '@/services/readlists';
 
 export function useCreateReadlist() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +11,7 @@ export function useCreateReadlist() {
   const handleCreateReadlist = useCallback(
     async (
       data: { nome: string; descricao?: string; publica: boolean },
+      croppedImageBlob: Blob | null, // Parametro para a imagem
       setError?: (msg: string) => void,
       addToList?: (rl: Readlist) => void
     ) => {
@@ -37,14 +38,15 @@ export function useCreateReadlist() {
 
         setIsLoading(true);
         setApiError('');
+        
+        const result = await createReadlistService(data.nome, data.descricao, data.publica);
 
-        const payload = {
-          nome: data.nome,
-          descricao: data.descricao,
-          publica: data.publica,
-        };
-
-        const result = await createReadlistService(payload);
+        if (croppedImageBlob) {
+          const formDataUpload = new FormData();
+          formDataUpload.append('file', croppedImageBlob, 'readlist.jpg');
+  
+          await updatePhoto(formDataUpload, result.slug);
+        }
 
         if (setError) setError('');
         if (addToList) addToList(result);
