@@ -17,12 +17,8 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'covers.openlibrary.org',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'm.media-amazon.com',
+        hostname: 'books.google.com',
+        port: '',
         pathname: '/**',
       },
     ],
