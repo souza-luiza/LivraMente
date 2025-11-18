@@ -37,7 +37,7 @@ export class QueueProducerService implements OnModuleDestroy {
       });
 
       await this.channelWrapper.waitForConnect();
-      this.logger.log('Canal RabbitMQ configurado');
+      this.logger.log('Conectado ao RabbitMQ com sucesso!');
       
     } catch (error) {
       this.logger.error('Erro ao conectar no RabbitMQ:', error);
@@ -65,6 +65,41 @@ export class QueueProducerService implements OnModuleDestroy {
       });
     }
 
+    await this.criarBindings(channel);
+
+  }
+
+  /**
+   * Cria bindings automáticos entre exchange e filas
+   */
+  private async criarBindings(channel: ConfirmChannel): Promise<void> {
+    const bindings = [
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*' },
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.criado' },
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.curtido' },
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.moderado' },
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.entrou' },
+      
+      { queue: FILAS.ATUALIZAR_METRICAS, routingKey: 'metricas.*' },
+      { queue: FILAS.ATUALIZAR_METRICAS, routingKey: 'metricas.#' },
+      
+      { queue: FILAS.RASTREAR_ANALYTICS, routingKey: 'analytics.*' },
+      { queue: FILAS.RASTREAR_ANALYTICS, routingKey: 'analytics.#' },
+      
+      { queue: FILAS.GERAR_LLM, routingKey: 'llm.*' },
+      { queue: FILAS.GERAR_LLM, routingKey: 'llm.#' },
+      
+      { queue: FILAS.ENVIAR_EMAILS, routingKey: 'email.*' },
+      { queue: FILAS.ENVIAR_EMAILS, routingKey: 'email.#' },
+    ];
+
+    for (const binding of bindings) {
+      await channel.bindQueue(
+        binding.queue,
+        EXCHANGES.EVENTOS_LIVRAMENTE,
+        binding.routingKey
+      );
+    }
 
   }
 
