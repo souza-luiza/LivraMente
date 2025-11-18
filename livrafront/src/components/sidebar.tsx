@@ -65,7 +65,7 @@ export default function Sidebar() {
                             path={userInfo?.username? `/${userInfo.username}` : "/perfil"}
                             tooltip="Perfil"
                         />
-                    <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" path="/" tooltip="Notificações" />
+                    <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" path="/notificacoes" tooltip="Notificações" />
                     <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/configuracoes" tooltip="Configurações" />
                 </div>
                 <div>
