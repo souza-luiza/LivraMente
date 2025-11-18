@@ -4,10 +4,12 @@ import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Comunidade } from './entities/comunidade.entity';
+import { QueueProducerService } from '../queue/queue.producer.service';
 
 describe('ComunidadesService', () => {
   let service: ComunidadesService;
   let comunidadeModel: jest.Mocked<Model<Comunidade>>;
+  let queueProducer: jest.Mocked<QueueProducerService>;
 
   beforeEach(async () => {
     const mockModel = {
@@ -19,6 +21,11 @@ describe('ComunidadesService', () => {
       exec: jest.fn(),
     };
 
+    const mockQueueProducer = {
+      publish: jest.fn(),
+      publicarNaFila: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ComunidadesService,
@@ -26,11 +33,16 @@ describe('ComunidadesService', () => {
           provide: getModelToken(Comunidade.name),
           useValue: mockModel,
         },
+        {
+          provide: QueueProducerService,
+          useValue: mockQueueProducer,
+        },
       ],
     }).compile();
 
     service = module.get<ComunidadesService>(ComunidadesService);
     comunidadeModel = module.get(getModelToken(Comunidade.name));
+    queueProducer = module.get(QueueProducerService);
   });
 
   it('should be defined', () => {

@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ReadlistsModule } from './readlists/readlists.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
+import { QueueProducerService } from './queue/queue.producer.service';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
@@ -20,6 +21,7 @@ describe('App Integration with Mocks', () => {
       const testEnv = {
         DB_URL: 'mongodb://localhost:27017/testdb',
         JWT_SECRET: 'my-super-secret',
+        RABBITMQ_URL: 'amqp://localhost:5672',
       };
       if (testEnv[key]) return testEnv[key];
       throw new Error(`Config key ${key} not mocked`);
@@ -28,6 +30,7 @@ describe('App Integration with Mocks', () => {
       const testEnv = {
         DB_URL: 'mongodb://localhost:27017/testdb',
         JWT_SECRET: 'my-super-secret',
+        RABBITMQ_URL: 'amqp://localhost:5672',
       };
       return testEnv[key] || null;
     },
@@ -72,6 +75,14 @@ describe('App Integration with Mocks', () => {
     }),
   };
 
+  // Mock do QueueProducerService
+  const mockQueueProducer = {
+    publish: jest.fn().mockResolvedValue(undefined),
+    publicarNaFila: jest.fn().mockResolvedValue(undefined),
+    connect: jest.fn().mockResolvedValue(undefined),
+    setupExchangesAndQueues: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
@@ -81,10 +92,17 @@ describe('App Integration with Mocks', () => {
         UsersModule,
         AuthModule,
         ReadlistsModule,
-        ComunidadesModule,
+        // Não importamos ComunidadesModule para evitar dependências do QueueModule
       ],
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        AppService,
+        // Provemos o QueueProducerService mockado globalmente
+        {
+          provide: QueueProducerService,
+          useValue: mockQueueProducer,
+        },
+      ],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)

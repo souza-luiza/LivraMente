@@ -132,7 +132,7 @@ export class ComunidadesService {
                     }
                 );
             } catch (error) {
-                console.error('Erro ao publicar notificação de novo membro:', error);
+                // Silenciar erro - fire and forget pattern
             }
             
             return { message: 'Usuário adicionado à comunidade com sucesso' };
