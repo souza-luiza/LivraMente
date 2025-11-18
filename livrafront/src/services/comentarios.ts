@@ -2,17 +2,12 @@ import { CreateCommentData, UpdateCommentData } from "@/types/comentario";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-function getAuthHeaders(): { [key: string]: string } | undefined {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : undefined;
-}
-
 export const commentsService = {
     async createComment(postId: string, data: CreateCommentData) {
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
             method: 'POST',
+            credentials: "include",
             headers: {
-                ...(getAuthHeaders() || {}),
                 'Content-Type': 'application/json', 
             },
             body: JSON.stringify(data),
@@ -25,9 +20,7 @@ export const commentsService = {
     async likeComment(postId: string, commentId: string) {
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios/${commentId}/curtir`, {
             method: 'POST',
-            headers: {
-                ...(getAuthHeaders() || {})
-            }
+            credentials: "include",
         });
 
         if (!response.ok) throw new Error(`Erro ao curtir/descurtir o comentário`);
@@ -37,9 +30,7 @@ export const commentsService = {
     async deleteComment(postId: string, commentId: string) {
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios/${commentId}`, {
             method: 'DELETE',
-            headers: {
-                ...(getAuthHeaders() || {})
-            }
+            credentials: "include",
         });
 
         if (!response.ok) throw new Error(`Erro ao excluir o comentário`);
@@ -52,8 +43,8 @@ export const commentsService = {
 
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios/${commentId}`, {
             method: 'PATCH',
+            credentials: "include",
             headers: {
-                ...(getAuthHeaders() || {}),
                 'Content-Type': 'application/json', 
             },
             body: JSON.stringify(data),

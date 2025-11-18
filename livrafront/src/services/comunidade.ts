@@ -2,17 +2,10 @@ import { Comunidade } from '@/types/comunidade';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-function getAuthHeaders(): { [key: string]: string } | undefined {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : undefined;
-}
-
 export const communityService = {
   async getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error(`Erro ao buscar comunidade`);
     return res.json();
@@ -20,9 +13,7 @@ export const communityService = {
 
   async getComunidades() : Promise<Comunidade[]> {
     const res = await fetch(`${API_BASE_URL}/comunidades`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
 
     if(!res.ok) return Promise.reject(new Error('Erro ao buscar comunidades'));
@@ -31,9 +22,7 @@ export const communityService = {
 
   async getPosts(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao buscar posts");
     return res.json();
@@ -41,9 +30,7 @@ export const communityService = {
 
   async getMembers(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao buscar membros");
     return res.json();
@@ -51,9 +38,7 @@ export const communityService = {
 
   async getModerators(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/moderadores`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao buscar moderadores");
     return res.json();
@@ -61,9 +46,7 @@ export const communityService = {
 
   async checkMemberOrMod(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${encodeURIComponent(comunidadeNome)}`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao verificar membro/moderador");
     return res.json();
@@ -72,9 +55,7 @@ export const communityService = {
   async enterCommunity(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
       method: "PATCH",
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao entrar na comunidade");
     return res.json();
@@ -83,9 +64,7 @@ export const communityService = {
   async leaveCommunity(comunidadeNome: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
       method: "DELETE",
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao sair da comunidade");
     return res.json();
@@ -94,9 +73,7 @@ export const communityService = {
   async removeMember(comunidadeNome: string, targetUserId: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}`, {
       method: "DELETE",
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao remover membro como moderador");
     return res.json();
@@ -105,9 +82,7 @@ export const communityService = {
   async makeMemberModerator(comunidadeNome: string, targetUserId: string) {
     const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}/tornar-moderador`, {
       method: "PATCH",
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao promover membro a moderador");
     return res.json();
@@ -116,9 +91,9 @@ export const communityService = {
   async createCommunity(payload: Record<string, unknown>) {
     const response = await fetch(`${API_BASE_URL}/comunidades`, {
       method: 'POST',
+      credentials: "include",
       headers: {
         'Content-Type': 'application/json',
-        ...(getAuthHeaders() || {}),
       },
       body: JSON.stringify(payload),
     })
@@ -133,9 +108,7 @@ export const communityService = {
 
   async getCommunity(comunidadeNome: string) {
     const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     })
     if (!response.ok) {
       const text = await response.text().catch(() => 'Erro ao buscar comunidade')
@@ -147,9 +120,9 @@ export const communityService = {
   async updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
     const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
       method: 'PATCH',
+      credentials: "include",
       headers: {
         'Content-Type': 'application/json',
-        ...(getAuthHeaders() || {}),
       },
       body: JSON.stringify(payload),
     })
@@ -168,9 +141,7 @@ export const communityService = {
 
     const response = await fetch(`${API_BASE_URL}/upload`, {
       method: 'POST',
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
       body: formData,
     })
     if (!response.ok) {
@@ -184,9 +155,7 @@ export const communityService = {
   async deleteCommunity(comunidadeNome: string) {
     const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
       method: 'DELETE',
-      headers: {
-        ...(getAuthHeaders() || {}),
-      },
+      credentials: "include",
     })
     if (!response.ok) throw new Error('Erro ao apagar comunidade')
     return response.json();
