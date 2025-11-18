@@ -208,53 +208,49 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                         
                         <Link 
                             href="#" 
-                            className="flex flex-col sm:flex-row p-4 bg-[var(--primary-700)] dark-green rounded-xl hover:brightness-90 transition-all
-                                       min-h-[240px] sm:h-[240px] gap-4 relative group"
+                            className="flex flex-col sm:flex-row p-4 bg-[var(--primary-700)] dark-green rounded-xl hover:brightness-90 transition-all gap-4 relative group"
                         >
-                            <div className="flex-shrink-0 w-full sm:w-auto h-[200px] sm:h-full">
+                            <div className="flex-shrink-0 w-full sm:w-auto h-[200px]">
                                 <Image 
                                     className="rounded-lg h-full w-full sm:w-auto object-cover" 
                                     src="/JogosVorazes.jpg" 
                                     alt="Jogos Vorazes" 
                                     width={180} 
-                                    height={250}
+                                    height={200}
                                 />
                             </div>
                             
-                            <div className="flex flex-col justify-around overflow-hidden">
-                                <h4 className="text-h4 line-clamp-2 mb-2 hover:underline">
+                            <div className="flex flex-col justify-between overflow-hidden">
+                                <h4 className="text-h4 line-clamp-3 mt-2 hover:underline">
                                     Jogos Vorazes ahindhusa hansfuas iuansdia isdnaion ndadia ndian unadywbm asas
                                 </h4>
                                 
-                                <div className="flex flex-wrap gap-2 items-center">
+                                <div className="flex flex-wrap gap-2 mb-2 items-center">
                                     <span className="text-h6 brightness-90">Livro</span>
                                     <span className="text-h6 brightness-90">•</span>
-                                    <AuthorLink 
-                                        href="#" 
-                                        className="text-h6 hover:underline relative z-10 brightness-90 hover:brightness-100"
-                                    >
+                                    <span className="text-h6 brightness-90 hover:brightness-100 hover:underline cursor-pointer">
                                         Suzanne Collins
-                                    </AuthorLink>
+                                    </span>
                                 </div>
                             </div>
                         </Link>
                     </div>
                     <div className="flex flex-col w-full lg:w-1/2">
                         <h4 className="text-h4 pb-4">Livros Relacionados</h4>
-                        <div className="flex flex-col gap-4 bg-white p-6 rounded-xl">
+                        <div className="flex flex-col gap-4 bg-white p-4 rounded-xl">
                             {relatedBooks.map((book) => (
                                 <Link 
                                     key={book.title}
                                     href={book.href} 
-                                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-all"
+                                    className="flex items-center gap-4 p-1 rounded-lg hover:bg-gray-50 transition-all"
                                 >
                                     <div className="w-16 h-20 flex-shrink-0">
                                         <Image 
                                             className="rounded-lg object-cover w-full h-full"
                                             src={book.imageSrc} 
                                             alt={book.title} 
-                                            width={64}
-                                            height={80}
+                                            width={40}
+                                            height={60}
                                         />
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
