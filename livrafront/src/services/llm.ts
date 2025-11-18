@@ -29,9 +29,11 @@ export async function postAnalyzeAgent(
 ): Promise<{ response: string }> {
   const res = await fetch(`${API_BASE_URL}/llm/analisar`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(payload),
-    credentials: 'include',   // IMPORTANT: sends session cookie
+    credentials: 'include',
     signal,
   });
   if (!res.ok) {
