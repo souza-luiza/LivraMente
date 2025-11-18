@@ -2,8 +2,6 @@ import type { GenerateTextDTO, LlmResponseDTO, AgentInputDTO } from '@/types/cha
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-//const BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
-//if (!BASE) console.warn('NEXT_PUBLIC_API_BASE_URL não definido.');
 
 export async function postGenerateText(
   payload: GenerateTextDTO,
