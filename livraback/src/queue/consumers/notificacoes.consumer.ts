@@ -5,6 +5,9 @@ import { ConfirmChannel, ConsumeMessage } from 'amqplib';
 import { ConfigService } from '@nestjs/config';
 import { getRabbitMQConfig } from '../queue.config';
 import { FILAS, ROUTING_KEYS, CONFIG_FILA } from '../queue.constants';
+import { NotificacoesService } from '../../notificacoes/notificacoes.service';
+import { TipoNotificacao } from '../../schemas/notificacao.schema';
+import { ComunidadesService } from '../../comunidades/comunidades.service';
 
 @Injectable()
 export class NotificacoesConsumer {
@@ -14,6 +17,8 @@ export class NotificacoesConsumer {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly notificacoesService: NotificacoesService,
+    private readonly comunidadesService: ComunidadesService,
   ) {}
 
  
@@ -119,25 +124,86 @@ export class NotificacoesConsumer {
     }
   }
 
-  /**
-   * Cria notificação de post criado
-   */
+
   private async notificarPostCriado(dados: any): Promise<void> {
-    this.logger.log(`NOTIFICAÇÃO: Novo post criado`);
+    const { postId, autorId, comunidadeId, conteudoPreview } = dados;
+
+    try {
+      // Buscar comunidade com membros
+      const comunidade = await this.comunidadesService.findById(comunidadeId);
+      const comunidadeNome = comunidade.nome;
+      const preview = conteudoPreview?.substring(0, 50) || 'Novo post';
+
+      let notificacoesEnviadas = 0;
+      for (const membroId of comunidade.membros) {
+        const membroIdStr = membroId.toString();
+        
+        if (membroIdStr !== autorId) {
+          await this.notificacoesService.criar({
+            usuario: membroIdStr,
+            tipo: TipoNotificacao.NOVO_POST_COMUNIDADE,
+            mensagem: `Novo post em ${comunidadeNome}: ${preview}...`,
+            remetente: autorId,
+            postId,
+            comunidadeNome,
+          });
+          notificacoesEnviadas++;
+        }
+      }
+
+      this.logger.log(`${notificacoesEnviadas} notificações criadas para membros da comunidade ${comunidadeNome}`);
+    } catch (error) {
+      this.logger.error(`Erro ao notificar membros sobre post ${postId}:`, error);
+      throw error;
+    }
   }
 
 
   private async notificarPostCurtido(dados: any): Promise<void> {
-    this.logger.log(`NOTIFICAÇÃO: Post curtido!`);
+    const { postId, usuarioCurtiuId, autorPostId } = dados;
+
+    await this.notificacoesService.criar({
+      usuario: autorPostId,
+      tipo: TipoNotificacao.CURTIDA_POST,
+      mensagem: `Seu post recebeu uma curtida!`,
+      remetente: usuarioCurtiuId,
+      postId,
+    });
+
+    this.logger.log(`Notificação de curtida criada para post ${postId}`);
   }
 
  
   private async notificarPostModerado(dados: any): Promise<void> {
-    this.logger.log(`NOTIFICAÇÃO: Post moderado`);
+    const { postId, aprovado, categoria, autorId } = dados;
+
+    await this.notificacoesService.criar({
+      usuario: autorId,
+      tipo: TipoNotificacao.MODERACAO_POST,
+      mensagem: aprovado
+        ? `Seu post foi aprovado na categoria ${categoria}!`
+        : `Seu post foi rejeitado pela moderação.`,
+      postId,
+    });
+
+    this.logger.log(`Notificação de moderação criada para post ${postId}`);
   }
 
   private async notificarMembroEntrou(dados: any): Promise<void> {
-    this.logger.log(`NOTIFICAÇÃO: Novo membro na comunidade!`);
+    const { userId, comunidadeId, comunidadeNome, moderadores } = dados;
+
+    // Notificar cada moderador
+    for (const moderadorId of moderadores) {
+      await this.notificacoesService.criar({
+        usuario: moderadorId,
+        tipo: TipoNotificacao.ENTRAR_COMUNIDADE,
+        mensagem: `Novo membro entrou na comunidade ${comunidadeNome}!`,
+        remetente: userId,
+        comunidadeNome,
+      });
+    }
+
+    this.logger.log(`Notificações criadas para ${moderadores.length} moderadores`);
   }
 
   /**

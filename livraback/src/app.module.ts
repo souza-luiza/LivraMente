@@ -18,6 +18,7 @@ import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
 import { LlmModule } from './llm/llm.module';
 import { QueueModule } from './queue/queue.module';
+import { NotificacoesModule } from './notificacoes/notificacoes.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { QueueModule } from './queue/queue.module';
     ComunidadesModule,
     LlmModule,
     QueueModule,
+    NotificacoesModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

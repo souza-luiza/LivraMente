@@ -28,6 +28,14 @@ export class ComunidadesService {
         return comunidade;
     }
 
+    async findById(comunidadeId: string) {
+        const comunidade = await this.comunidadeModel.findById(comunidadeId).exec();
+        if (!comunidade) {
+            throw new NotFoundException(`Comunidade não encontrada`);
+        }
+        return comunidade;
+    }
+
     async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
         const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
         if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');

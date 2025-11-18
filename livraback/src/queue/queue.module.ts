@@ -1,13 +1,15 @@
-import { Module, Global, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleInit, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { QueueProducerService } from './queue.producer.service';
 import { NotificacoesConsumer } from './consumers/notificacoes.consumer';
 import { ImagensConsumer } from './consumers/imagens.consumer';
 import { MetricasConsumer } from './consumers/metricas.consumer';
+import { NotificacoesModule } from '../notificacoes/notificacoes.module';
+import { ComunidadesModule } from '../comunidades/comunidades.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, NotificacoesModule, ComunidadesModule],
   providers: [
     QueueProducerService,
     NotificacoesConsumer,
