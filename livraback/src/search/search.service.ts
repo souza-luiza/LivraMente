@@ -28,16 +28,19 @@ export class SearchService {
     async search(query: string) {
         if(!query) return null;
 
-        const regexInsensitive = RegExp(query, 'i'); //ignora maisculas e minusculas
+        const regexInsensitive = RegExp(query, 'i'); // ignora maisculas e minusculas
 
         let [users, comunidades, readlists, livros] = await Promise.all([
-            this.userModel.find({ username: regexInsensitive }).select('username avatarUrl -_id').limit(5), // 5 eh o numero maximo de resultados para retornar
+            this.userModel.find({ username: regexInsensitive }).select('username avatarUrl readlists -_id').limit(5), // 5 eh o numero maximo de resultados para retornar
             this.comunidadeModel.find({ nome: regexInsensitive }).select('nome imagem_url -_id').limit(5),
             this.readlistModel.find({ nome: regexInsensitive, publica: true }).select('nome capa_url slug -_id criador').populate('criador', 'username -_id').limit(5),
             this.livroModel.find({ titulo: regexInsensitive }).select('titulo autores capa_url -_id').populate('autores', 'nome -_id').limit(5),
         ]);
 
-        
+        // Adicionando readlists que pertençam aos users encontrados
+        const idsReadlistsDosUsers = users.flatMap(u => u.readlists || []);
+        const readlistsDosUsers = await this.readlistModel.find({ _id: { $in: idsReadlistsDosUsers }, publica: true }).select('nome capa_url slug -_id criador').populate('criador', 'username -_id').limit(5);
+        readlists = readlists.concat(readlistsDosUsers);
 
         // Buscar livros por autor
         const autores = await this.autorModel.find({ nome: regexInsensitive }).select('_id').limit(5);
@@ -83,7 +86,7 @@ export class SearchService {
         data.readlists.forEach(r => candidatos.push({ tipo: 'readlist', item: r, score: score(r.nome) }));
         data.livros.forEach(l => candidatos.push({ tipo: 'livro', item: l, score: score(l.titulo) }));
 
-        // ordena por melhor score:
+        // ordena por melhor score
         candidatos.sort((a, b) => b.score - a.score);
 
         return candidatos[0] ?? null;
