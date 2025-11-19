@@ -4,19 +4,19 @@ import { useRef, useState, useEffect } from "react";
 import Readlist from "@/components/readlist";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import ChevronLeftIcon from "@/components/icons/ChevronLeftIcon";
+import Comunidade from "./comunidade-card";
 
-interface ReadlistItem {
-    title: string;
-    author: string;
-    image: string;
-    link: string;
+interface CommunityItem {
+    id: string;
+    name: string;
+    coverImageUrl: string;
 }
 
-interface ReadlistCarouselProps {
-    readlists: ReadlistItem[];
+interface CommunitiesCarouselProps {
+    communities: CommunityItem[];
 }
 
-export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
+export default function CommunitiesCarousel({ communities }: CommunitiesCarouselProps) {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
@@ -71,7 +71,7 @@ export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
             {canScrollLeft && (
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
                     aria-label="Anterior"
                 >
                     <ChevronLeftIcon size={24} />
@@ -87,14 +87,9 @@ export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
                     msOverflowStyle: 'none'
                 }}
             >
-                {readlists.map((readlist) => (
-                    <div key={readlist.link} className="flex-shrink-0 w-[220px]">
-                        <Readlist 
-                            title={readlist.title}
-                            author={readlist.author}
-                            image={readlist.image}
-                            link={readlist.link}
-                        />
+                {communities.map((community) => (
+                    <div key={community.id} className="flex-shrink-0 w-[220px]">
+                        <Comunidade id={community.id} nome={community.name} image={community.coverImageUrl} />
                     </div>
                 ))}
             </div>
@@ -103,7 +98,7 @@ export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
             {canScrollRight && (
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
                     aria-label="Próximo"
                 >
                     <ChevronRightIcon size={24} />

@@ -15,6 +15,8 @@ import DystopiaIcon from "@/components/icons/DystopiaIcon";
 import DramaIcon from "@/components/icons/DramaIcon";
 import MysteryIcon from "@/components/icons/MysteryIcon";
 import ReadlistCarousel from "@/components/readlist-carousel";
+import CommunitiesCarousel from "@/components/communities-carousel";
+import UsersCarousel from "@/components/users-carousel";
 
 interface SearchPageProps {
     searchParams: Promise<{q?: string}>;
@@ -90,7 +92,7 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
         return(
             <div className="min-h-screen flex bg-[#E5EEDF]">
                 <Sidebar />
-                <main className="flex-1 p-4 h-100vh">
+                <main className="w-full flex flex-col flex-1 p-2 overflow-x-hidden">
                     <SearchBar defaultValue={q} />
                     <div className="flex w-full">
                         <div className="m-8 w-full">
@@ -135,60 +137,79 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
     ];
 
     const relatedReadlists = [
-        { 
-            id: "1", 
+        {  
             title: "Readlist Exemplo 1", 
             author: "@AutorReadlist1", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist1/ReadlistExemplo1",
         },
         { 
-            id: "2", 
             title: "Readlist Exemplo 2", 
             author: "@AutorReadlist2", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist2/ReadlistExemplo2",
         },
         { 
-            id: "3", 
             title: "Readlist Exemplo 3", 
             author: "@AutorReadlist3", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg", 
+            link: "/AutorReadlist3/ReadlistExemplo3",
         },
         { 
-            id: "4", 
             title: "Readlist Exemplo 4", 
             author: "@AutorReadlist4", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist4/ReadlistExemplo4",
         },
         { 
-            id: "5", 
             title: "Readlist Exemplo 5", 
             author: "@AutorReadlist6", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist5/ReadlistExemplo5",
         },
         { 
-            id: "6", 
             title: "Readlist Exemplo 6", 
             author: "@AutorReadlist5", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist6/ReadlistExemplo6",
         },
         {
-            id: "7",
             title: "Readlist Exemplo 7", 
             author: "@AutorReadlist7", 
-            image: "/Readlist.svg" 
+            image: "/Readlist.svg",
+            link: "/AutorReadlist7/ReadlistExemplo7"
         },
         {
-            id: "8",
             title: "Readlist Exemplo 8",
             author: "@AutorReadlist8",
-            image: "/Readlist.svg"
+            image: "/Readlist.svg",
+            link: "/AutorReadlist8/ReadlistExemplo8"
         }
     ]
+
+    const relatedUsers = [
+        { id: "1", username: "@UserExemplo1", avatarUrl: "/AbstractUser.png" },
+        { id: "2", username: "@UserExemplo2", avatarUrl: "/AbstractUser.png" },
+        { id: "3", username: "@UserExemplo3", avatarUrl: "/AbstractUser.png" },
+        { id: "4", username: "@UserExemplo4", avatarUrl: "/AbstractUser.png" },
+        { id: "5", username: "@UserExemplo5", avatarUrl: "/AbstractUser.png" },
+        { id: "6", username: "@UserExemplo6", avatarUrl: "/AbstractUser.png" },
+        { id: "7", username: "@UserExemplo7", avatarUrl: "/AbstractUser.png" },
+        { id: "8", username: "@UserExemplo8", avatarUrl: "/AbstractUser.png" },
+    ];
+
+    const relatedCommunities = [
+        { id: "1", name: "Comunidade Exemplo 1", coverImageUrl: "/Readlist.svg" },
+        { id: "2", name: "Comunidade Exemplo 2", coverImageUrl: "/Readlist.svg" },
+        { id: "3", name: "Comunidade Exemplo 3", coverImageUrl: "/Readlist.svg" },
+        { id: "4", name: "Comunidade Exemplo 4", coverImageUrl: "/Readlist.svg" },
+        { id: "5", name: "Comunidade Exemplo 5", coverImageUrl: "/Readlist.svg" },
+    ];
 
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">
             <Sidebar />
-            <main className="w-full flex flex-col flex-1 p-4 overflow-x-hidden">
+            <main className="w-full flex flex-col flex-1 p-2 overflow-x-hidden">
                 <SearchBar defaultValue={q} />
                 <div className="flex flex-col lg:flex-row gap-4 m-8">
                     <div className="flex flex-col w-full lg:w-1/2">
@@ -263,9 +284,15 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                 </div>
                 <div className="w-full mt-8 mx-4 md:mx-8 pr-4 md:pr-8">
                     <Link className="flex items-center text-h3 body-underline pb-4" href="#">
+                        Pessoas <ChevronRightIcon size={40}/>
+                    </Link>
+                    <UsersCarousel users={relatedUsers} />
+                </div>                
+                <div className="w-full mt-8 mx-4 md:mx-8 pr-4 md:pr-8">
+                    <Link className="flex items-center text-h3 body-underline pb-4" href="#">
                         Comunidades Relacionadas <ChevronRightIcon size={40}/>
                     </Link>
-                    <ReadlistCarousel readlists={relatedReadlists} />
+                    <CommunitiesCarousel communities={relatedCommunities} />
                 </div>
             </main>
         </div>

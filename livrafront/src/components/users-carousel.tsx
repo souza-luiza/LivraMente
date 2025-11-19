@@ -4,19 +4,19 @@ import { useRef, useState, useEffect } from "react";
 import Readlist from "@/components/readlist";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import ChevronLeftIcon from "@/components/icons/ChevronLeftIcon";
+import ProfileIcon from "./profile-icon";
 
-interface ReadlistItem {
-    title: string;
-    author: string;
-    image: string;
-    link: string;
+interface UserItem {
+    id: string;
+    username: string;
+    avatarUrl: string;
 }
 
-interface ReadlistCarouselProps {
-    readlists: ReadlistItem[];
+interface UsersCarouselProps {
+    users: UserItem[];
 }
 
-export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
+export default function UsersCarousel({ users }: UsersCarouselProps) {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
@@ -87,14 +87,10 @@ export default function ReadlistCarousel({ readlists }: ReadlistCarouselProps) {
                     msOverflowStyle: 'none'
                 }}
             >
-                {readlists.map((readlist) => (
-                    <div key={readlist.link} className="flex-shrink-0 w-[220px]">
-                        <Readlist 
-                            title={readlist.title}
-                            author={readlist.author}
-                            image={readlist.image}
-                            link={readlist.link}
-                        />
+                {users.map((user) => (
+                    <div key={user.id} className="flex-shrink-0 w-[220px] rounded-full items-center justify-center flex flex-col">
+                        <ProfileIcon username={user.username} avatarUrl={user.avatarUrl} size={144} showProgress={false}/>
+                        <p className="mt-2 text-h6">{user.username}</p>
                     </div>
                 ))}
             </div>
