@@ -9,10 +9,11 @@ import CheckIcon from '@/components/icons/CheckIcon';
 import { getSessionInfos } from '@/services/auth';
 import { useRouter } from 'next/navigation';
 import LoadingPage from '@/components/loading';
+import { getNotificacoes } from '@/services/mensageria';
 
 export default function NotificacoesPage() {
     const router = useRouter();
-    const { notificacoes, marcarComoLida, marcarTodasComoLidas, removerNotificacao, contarNaoLidas } = useNotificationsStore();
+    const { notificacoes, marcarComoLida, marcarTodasComoLidas, removerNotificacao, contarNaoLidas, definirNotificacoes } = useNotificationsStore();
     const [naoLidas, setNaoLidas] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -24,6 +25,9 @@ export default function NotificacoesPage() {
                     router.replace('/entrar');
                     return;
                 }
+                // Buscar notificações do backend
+                const notificacoesDoBackend = await getNotificacoes();
+                definirNotificacoes(notificacoesDoBackend);
             } catch (error) {
                 router.replace('/entrar');
                 return;
@@ -32,7 +36,7 @@ export default function NotificacoesPage() {
             }
         };
         checkAuth();
-    }, [router]);
+    }, [router, definirNotificacoes]);
 
     useEffect(() => {
         setNaoLidas(contarNaoLidas());
