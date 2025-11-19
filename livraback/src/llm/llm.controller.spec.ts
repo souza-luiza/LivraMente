@@ -20,7 +20,6 @@ describe('LlmController', () => {
   };
 
   const mockAgentService = {
-    analyzeAgent: jest.fn(),
     runAnalysisAgent: jest.fn(),
   };
 
@@ -59,15 +58,15 @@ describe('LlmController', () => {
   });
 
   describe('PromptAnalise', () => {
-    it('deve chamar agentService.analyzeAgent com os parâmetros corretos', async () => {
-      const dto: AgentInputDto = { userPrompt: 'Quais minhas histórias?' };
-      const expectedResponse = 'Você tem 3 histórias.';
+    it('deve retornar a resposta do agentService.runAnalysisAgent', async () => {
+      const dto: AgentInputDto = { userPrompt: 'Analise minhas histórias.' };
+      const expectedResponse = 'Análise completa das suas histórias.';
 
-      mockAgentService.analyzeAgent.mockResolvedValue(expectedResponse);
-
+      mockAgentService.runAnalysisAgent.mockResolvedValue(expectedResponse);
       const result = await controller.PromptAnalise(dto, mockUser as any);
 
-      expect((agentService as any).analyzeAgent).toHaveBeenCalledWith( dto.userPrompt, mockUser.userId );
+      expect(agentService.runAnalysisAgent).toHaveBeenCalledWith(dto.userPrompt, mockUser.userId);
+      expect(result).toBe(expectedResponse);
     });
   });
 });

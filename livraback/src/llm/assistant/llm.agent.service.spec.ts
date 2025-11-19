@@ -36,7 +36,7 @@ jest.mock('@langchain/google-genai', () => ({
 
 // Isso impede que o teste tente acessar a internet de verdade
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
-  DuckDuckGoSearchRun: jest.fn().mockImplementation(() => ({
+  DuckDuckGoSearch: jest.fn().mockImplementation(() => ({
     name: 'duckduckgo_search',
     description: 'Search the web',
   })),
