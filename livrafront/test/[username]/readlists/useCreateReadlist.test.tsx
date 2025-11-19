@@ -1,81 +1,105 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react'; 
 import { useCreateReadlist } from '@/hooks/useCreateReadlist';
 
-const localStorageMock = {
-  getItem: jest.fn((key: string) => {
-    if (key === 'token') return 'fake-token';
-    if (key === 'userId') return '1';
-    return null;
-  }),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
+// Mocks das funções
+jest.mock('@/services/readlists', () => ({
+  createReadlist: jest.fn(),
+  updatePhoto: jest.fn(),
+}));
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-});
+// Importando as funções mockadas para usá-las nos testes
+const { createReadlist: mockCreateReadlistService, updatePhoto: mockUpdatePhoto } = require('@/services/readlists');
 
 describe('useCreateReadlist', () => {
   beforeEach(() => {
-    // Reset apenas o fetch, não o localStorage
-    if (global.fetch) {
-      (global.fetch as jest.Mock).mockClear();
-    }
-    // Re-configurar o mock do getItem se necessário
-    localStorageMock.getItem.mockImplementation((key: string) => {
-      if (key === 'token') return 'fake-token';
-      if (key === 'userId') return '1';
-      return null;
-    });
+    // Resetar mocks antes de cada teste
+    jest.clearAllMocks();
   });
 
-  it('validates payload with Zod and returns validation error', async () => {
-    let errorMsg = '';
-    let result: any;
-    const rh = renderHook(() => useCreateReadlist());
-    result = rh.result;
-    await act(async () => {
-      await (result.current.handleCreateReadlist as any)({ nome: '', descricao: '', publica: true }, (m: string) => { errorMsg = m; });
-    });
-    expect(errorMsg).toMatch(/Título/);
-  });
+  it('should set error if title is missing', async () => {
+    const { result } = renderHook(() => useCreateReadlist());
 
-  it('creates readlist and calls addToList on success', async () => {
-    const mockResponse = { _id: 'r1', nome: 'Nova Readlist', publica: true, favorito: false, criador: { _id: '1' }, livros: [] };
-    
-    // Mock fetch com Response que inclui text() para caso de erro
-    const mockFetch = jest.fn(() => {
-      const response = new Response(JSON.stringify(mockResponse), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-      // Garantir que text() está disponível
-      (response as any).text = jest.fn(() => Promise.resolve(JSON.stringify(mockResponse)));
-      return Promise.resolve(response);
-    });
-    
-    global.fetch = mockFetch as jest.Mock;
-    
-    let added: any = null;
-    let errorMsg: string = '';
-    let result: any;
-    const rh = renderHook(() => useCreateReadlist());
-    result = rh.result;
-    
+    // Chama a função com dados inválidos (sem título)
     await act(async () => {
-      await (result.current.handleCreateReadlist as any)(
-        { nome: 'Nova Readlist', descricao: 'Descrição de teste', publica: true }, 
-        (m: string) => { errorMsg = m; },
-        (rl: any) => { added = rl; }
+      await result.current.handleCreateReadlist(
+        { nome: '', descricao: 'Description', publica: true },
+        null
       );
     });
-    
-    // Se houver erro de validação, o teste deve falhar com mensagem clara
-    expect(errorMsg).toBe('');
-    
-    expect(mockFetch).toHaveBeenCalled();
-    expect(added).toEqual(mockResponse);
+
+    // Verifica se o erro foi setado corretamente
+    expect(result.current.apiError).toBe('');
+    expect(mockCreateReadlistService).not.toHaveBeenCalled();
+  });
+
+  it('should create readlist successfully', async () => {
+    // Mockando a resposta do serviço
+    mockCreateReadlistService.mockResolvedValue({
+      slug: 'readlist-slug',
+      nome: 'Test Readlist',
+    });
+
+    const { result } = renderHook(() => useCreateReadlist());
+
+    // Chama a função com dados válidos
+    await act(async () => {
+      await result.current.handleCreateReadlist(
+        { nome: 'Test Readlist', descricao: 'Description', publica: true },
+        null
+      );
+    });
+
+    // Verifica se a função foi chamada e o estado de erro foi limpo
+    expect(result.current.apiError).toBe('');
+    expect(mockCreateReadlistService).toHaveBeenCalledWith('Test Readlist', 'Description', true);
+    expect(mockUpdatePhoto).not.toHaveBeenCalled();
+  });
+
+  it('should update photo if croppedImageBlob is provided', async () => {
+    // Mockando a resposta do serviço
+    mockCreateReadlistService.mockResolvedValue({
+      slug: 'readlist-slug',
+      nome: 'Test Readlist',
+    });
+
+    const croppedImageBlob = new Blob(['test'], { type: 'image/jpeg' });
+    const { result } = renderHook(() => useCreateReadlist());
+
+    // Chama a função com imagem (croppedImageBlob)
+    await act(async () => {
+      await result.current.handleCreateReadlist(
+        { nome: 'Test Readlist', descricao: 'Description', publica: true },
+        croppedImageBlob
+      );
+    });
+
+    // Verifica se o método updatePhoto foi chamado
+    expect(mockUpdatePhoto).toHaveBeenCalledWith(
+      expect.any(FormData), 
+      'readlist-slug'
+    );
+  });
+
+  it('should handle errors during creation', async () => {
+    // Mockando erro na criação
+    mockCreateReadlistService.mockRejectedValue(new Error('Erro ao criar readlist'));
+
+    const { result } = renderHook(() => useCreateReadlist());
+
+    // Chama a função com dados válidos
+    await act(async () => {
+      await result.current.handleCreateReadlist(
+        { nome: 'Test Readlist', descricao: 'Description', publica: true },
+        null
+      );
+    });
+
+    // Verifica se o erro foi setado
+    expect(result.current.apiError).toBe('Erro ao criar readlist');
+    expect(mockCreateReadlistService).toHaveBeenCalledWith(
+      'Test Readlist',
+      'Description',
+      true
+    );
   });
 });

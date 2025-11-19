@@ -1,57 +1,155 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { LoginDto } from './dto/login.dto';
+
+// Mock do AuthService
+const mockAuthService = {
+  signUp: jest.fn(),
+  signIn: jest.fn(),
+  getSessionInfo: jest.fn(),
+};
 
 describe('AuthController', () => {
-  let controller: AuthController;
-
-  // Mock do AuthService
-  const mockAuthService = {
-    signUp: jest.fn(),
-    signIn: jest.fn()
-  }
+  let authController: AuthController;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: mockAuthService }]
+      providers: [
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+      ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    authController = module.get<AuthController>(AuthController);
+    authService = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  describe('signUp', () => {
+    it('deve cadastrar um novo usuário e criar sessão', async () => {
+      const createUserDto: CreateUserDto = { username: 'testuser', email: 'test@test.com', senha: 'test123' };
+      const mockSession = {};
+
+      mockAuthService.signUp.mockResolvedValue({ user: createUserDto });
+
+      const result = await authController.signUp(createUserDto, mockSession as any);
+
+      expect(result).toEqual({ user: createUserDto });
+      expect(mockAuthService.signUp).toHaveBeenCalledWith(createUserDto, mockSession);
+    });
+
+    it('deve lançar erro se o email ou nome de usuário já existir', async () => {
+      const createUserDto: CreateUserDto = { username: 'testuser', email: 'test@test.com', senha: 'test123' };
+      const mockSession = {};
+
+      mockAuthService.signUp.mockRejectedValue(new Error('E-mail ou nome de usuário já em uso'));
+
+      try {
+        await authController.signUp(createUserDto, mockSession as any);
+      } catch (e) {
+        expect(e.message).toBe('E-mail ou nome de usuário já em uso');
+      }
+    });
   });
 
-  it('should call authService.signUp and return accessToken', async () => {
-    const dto: CreateUserDto = {
-      username: 'Teste',
-      email: 'teste@teste.com',
-      senha: '123456',
-    };
+  describe('signIn', () => {
+    it('deve fazer login de um usuário com credenciais válidas', async () => {
+      const loginDto: LoginDto = { email: 'test@test.com', senha: 'test123' };
+      const mockSession = {};
 
-    const mockToken = { accessToken: 'mock-token' };
-    mockAuthService.signUp.mockResolvedValue(mockToken);
-    const result = await controller.signUp(dto);
+      mockAuthService.signIn.mockResolvedValue({ user: loginDto });
 
-    expect(mockAuthService.signUp).toHaveBeenCalledWith(dto);
-    expect(result).toEqual(mockToken);
+      const result = await authController.signIn(loginDto, mockSession as any);
+
+      expect(result).toEqual({ user: loginDto });
+      expect(mockAuthService.signIn).toHaveBeenCalledWith(loginDto, mockSession);
+    });
+
+    it('deve lançar erro de credenciais inválidas', async () => {
+      const loginDto: LoginDto = { email: 'test@test.com', senha: 'wrongpassword' };
+      const mockSession = {};
+
+      mockAuthService.signIn.mockRejectedValue(new UnauthorizedException('Credenciais inválidas'));
+
+      try {
+        await authController.signIn(loginDto, mockSession as any);
+      } catch (e) {
+        expect(e.message).toBe('Credenciais inválidas');
+      }
+    });
   });
 
-  it('should call authService.signIn and return accessToken', async () => {
-    const loginDto = {
-      email: 'teste@teste.com',
-      senha: '123456',
-    };
+  describe('getSessionInfo', () => {
+    it('deve retornar as informações do usuário autenticado', async () => {
+      const mockSession = { user: { username: 'testuser', email: 'test@test.com', id: 1 } };
 
-    const mockToken = { accessToken: 'mock-token' };
-    mockAuthService.signIn = jest.fn().mockResolvedValue(mockToken);
+      const result = await authController.getSessionInfo(mockSession as any);
 
-    const result = await controller.signIn(loginDto);
+      expect(result).toEqual(mockSession.user);
+    });
 
-    expect(mockAuthService.signIn).toHaveBeenCalledWith(loginDto);
-    expect(result).toEqual(mockToken);
+    it('deve lançar erro se a sessão for inválida', async () => {
+      const mockSession = {};
+
+      try {
+        await authController.getSessionInfo(mockSession as any);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.message).toBe('Sessão inválida');
+      }
+    });
   });
+
+  describe('logout', () => {
+    it('deve fazer logout e destruir a sessão com sucesso', async () => {
+      // Mock da requisição
+      const mockReq = { 
+        session: { 
+          destroy: jest.fn((callback) => callback(null))
+        } 
+      };
+
+      // Mock da resposta
+      const mockRes = { 
+        clearCookie: jest.fn(),  
+        json: jest.fn()  
+      };
+
+      await authController.logout(mockReq as any, mockRes as any);
+
+      expect(mockReq.session.destroy).toHaveBeenCalled();
+
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('sessionId');
+
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Logout realizado com sucesso' });
+    });
+
+    it('deve retornar erro se falhar ao destruir a sessão', async () => {
+      // Mock da requisição com erro no destroy
+      const mockReq = { 
+        session: { 
+          destroy: jest.fn((callback) => callback(new Error('Erro ao deslogar'))) 
+        } 
+      };
+
+      // Mock da resposta
+      const mockRes = { 
+        clearCookie: jest.fn(),
+        status: jest.fn(() => mockRes),
+        json: jest.fn()
+      };
+
+      await authController.logout(mockReq as any, mockRes as any);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Erro ao deslogar' });
+    });
+  });
+
 });

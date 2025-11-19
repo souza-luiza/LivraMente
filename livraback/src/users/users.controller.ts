@@ -1,23 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Session } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegistroLeituraDto } from './dto/registro-leitura.dto';
+import { memoryStorage } from 'multer';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
-@ApiBearerAuth()
+@ApiCookieAuth()
+@UseGuards(SessionAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get(':username')
   @ApiOperation({
-    summary: 'Retorna os dados do usuário',
-    description: 'Retorna os dados do usuário autenticado'
+    summary: 'Retorna os dados de um usuário',
+    description: 'Retorna os dados de um usuário por username'
   })
   @ApiResponse({
     status: 200,
@@ -29,14 +30,13 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async getProfile(@CurrentUser() user: CurrentUserDto) {
-    return this.usersService.findOne(user.userId);
+  async getProfile(@Param('username') username: string) {
+    return this.usersService.findOneUser(username);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch('me')
+  @Patch('profile')
   @ApiOperation({
     summary: 'Atualiza os dados do usuário',
     description: 'Atualiza os dados do usuário autenticado'
@@ -54,18 +54,53 @@ export class UsersController {
     description: 'Email ou nome de usuário em uso'
   })
   @ApiResponse({
+    status: 401,
+    description: 'Sessão inválida'
+  })
+  async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto, @Session() session: Record<string, any>) {
+    return this.usersService.update(user.userId, updateUserDto, session);
+  }
+
+  @Put('avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        const ok = allowedTypes.includes(file.mimetype);
+        if (!ok) return cb(new BadRequestException('Formato de imagem inválido'), false);
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  @ApiOperation({ 
+    summary: 'Upload de imagem de perfil do usuário',
+    description: 'Atualiza a foto de perfil do usuário autenticado'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Imagem de perfil atualizada com sucesso' 
+  })
+  @ApiResponse({
     status: 400,
-    description: 'Email ou nome de usuário em uso pelo próprio usuário'
+    description: 'Arquivo inválido' 
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado' 
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async updateProfile(@CurrentUser() user: CurrentUserDto, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(user.userId, updateUserDto);
+  async updateAvatar(@CurrentUser() user: CurrentUserDto, @UploadedFile() file: Express.Multer.File, @Session() session: Record<string, any>) {
+    if (!file) throw new BadRequestException('Nenhum arquivo foi enviado');
+    return this.usersService.updateAvatar(user.userId, file, session);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch('me/registro-leitura')
   @ApiOperation({
     summary: 'Registra leitura diária',
@@ -91,10 +126,9 @@ export class UsersController {
     return this.usersService.registroLeitura(user.userId, registroLeituraDto.opcao, registroLeituraDto.qtd);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch('me/favoritar/:readlistId')
+  @Patch('me/favoritar/:username/:readlistSlug')
   @ApiOperation({
-    summary: 'Favorita uma readlist pública',
+    summary: 'Favorita uma readlist pública de acordo com username dono da readlist e readlist slug',
     description: 'Adiciona uma readlist pública na lista de favoritos do usuário autenticado'
   })
   @ApiResponse({
@@ -103,7 +137,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Readlist não encontrada'
+    description: 'Readlist ou usuário não encontrado'
   })
   @ApiResponse({
     status: 400,
@@ -115,16 +149,15 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async favoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
-    return this.usersService.favoritarReadlist(user.userId, readlistId);
+  async favoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistSlug') readlistSlug: string, @Param('username') username: string) {
+    return this.usersService.favoritarReadlist(user.userId, readlistSlug, username);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Delete('me/favoritar/:readlistId')
+  @Delete('me/favoritar/:username/:readlistSlug')
   @ApiOperation({
-    summary: 'Remove readlist dos favoritos',
+    summary: 'Remove readlist dos favoritos de acordo com username dono da readlist e readlist slug',
     description: 'Remove readlist dos favoritos do usuário autenticado'
   })
   @ApiResponse({
@@ -133,21 +166,16 @@ export class UsersController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Usuário não encontrado'
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'ID inválido'
+    description: 'Usuário ou readlist não encontrado'
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
-  async desfavoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
-    return this.usersService.desfavoritarReadlist(user.userId, readlistId);
+  async desfavoritarReadlist(@CurrentUser() user: CurrentUserDto, @Param('readlistSlug') readlistSlug: string, @Param('username') username: string) {
+    return this.usersService.desfavoritarReadlist(user.userId, readlistSlug, username);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('me/favoritar')
   @ApiOperation({
     summary: 'Retorna readlists favoritas',
@@ -163,34 +191,9 @@ export class UsersController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido'
+    description: 'Sessão inválida'
   })
   async findReadlistsFavoritas(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findReadlistsFavoritas(user.userId);
   }
-
-  /*@Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Get()
-  async findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
-  }*/
 }
