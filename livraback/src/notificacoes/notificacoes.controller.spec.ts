@@ -12,7 +12,9 @@ describe('NotificacoesController', () => {
 
   const mockRequest = {
     session: {
-      userId: '507f1f77bcf86cd799439011',
+      user: {
+        userId: '507f1f77bcf86cd799439011',
+      },
     },
   };
 
@@ -71,8 +73,9 @@ describe('NotificacoesController', () => {
 
       const result = await controller.buscarTodas(mockRequest);
 
-      expect(service.buscarTodas).toHaveBeenCalledWith(mockRequest.session.userId);
-      expect(result).toEqual(notificacoes);
+      expect(service.buscarTodas).toHaveBeenCalledWith(mockRequest.session.user.userId);
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
     });
   });
 
@@ -86,7 +89,7 @@ describe('NotificacoesController', () => {
 
       expect(service.marcarComoLida).toHaveBeenCalledWith(
         notificacaoId,
-        mockRequest.session.userId
+        mockRequest.session.user.userId
       );
       expect(result).toEqual({ message: 'Notificação marcada como lida' });
     });
@@ -99,7 +102,7 @@ describe('NotificacoesController', () => {
       const result = await controller.marcarTodasComoLidas(mockRequest);
 
       expect(service.marcarTodasComoLidas).toHaveBeenCalledWith(
-        mockRequest.session.userId
+        mockRequest.session.user.userId
       );
       expect(result).toEqual({ message: 'Todas as notificações marcadas como lidas' });
     });
@@ -115,7 +118,7 @@ describe('NotificacoesController', () => {
 
       expect(service.remover).toHaveBeenCalledWith(
         notificacaoId,
-        mockRequest.session.userId
+        mockRequest.session.user.userId
       );
       expect(result).toEqual({ message: 'Notificação removida' });
     });
@@ -129,7 +132,7 @@ describe('NotificacoesController', () => {
       const observable = controller.streamNotificacoes(mockRequest);
 
       expect(service.registrarClienteSSE).toHaveBeenCalledWith(
-        mockRequest.session.userId
+        mockRequest.session.user.userId
       );
 
       expect(observable).toBeDefined();

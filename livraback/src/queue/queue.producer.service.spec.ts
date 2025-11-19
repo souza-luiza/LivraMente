@@ -127,7 +127,7 @@ describe('QueueProducerService', () => {
       expect(mockChannel.bindQueue).toHaveBeenCalledWith(
         'notificacoes.enviar',
         'livramente.eventos',
-        'notificar.*'
+        'notificar.#'
       );
 
       expect(mockChannel.bindQueue).toHaveBeenCalledWith(
