@@ -12,22 +12,24 @@ import OpenBookIcon from '@/components/icons/OpenBookIcon';
 import CommunityIcon from '@/components/icons/CommunityIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import MedalIcon from '@/components/icons/MedalIcon';
+import { getProfile } from '@/services/userService';
+import { toast } from 'react-toastify/unstyled';
+import { UserProfile } from '@/types/users';
+import Sidebar from '@/components/sidebar';
+import SearchBar from '@/components/searchbar';
+import Link from 'next/dist/client/link';
 
-interface HomePageProps {
-    authInfo: {
-        userId: Promise<string | null>;
-    };
-}
-
-export default async function HomePage({authInfo}: {authInfo: {userId: string | null}}) {
+export default function HomePage() {
 
     // Animação dos LivraBenefícios
     const controls = useAnimation()
     const [index, setIndex] = useState(0)
     const [itemWidth, setItemWidth] = useState(0)
+    const [error, setError] = useState<string | null>(null);
+    const [userData, setUserData] = useState<UserProfile | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const itemRef = useRef<HTMLDivElement | null>(null)
-    const sessionInfo = authInfo.userId
-    const isLoggedIn = sessionInfo !== null;
 
     const items = [
         { mainText: 'Acompanhe sua leitura e ganhe XP', description: 'Registre seu progresso e metas' },
@@ -74,9 +76,47 @@ export default async function HomePage({authInfo}: {authInfo: {userId: string | 
         })
     }, [index, itemWidth, controls])
 
-if (isLoggedIn) {
-}
-    else {
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const info = await getSessionInfos();
+                if(!info) {
+                    setIsLoggedIn(false);
+                    return;
+                }
+                else{
+                    setIsLoggedIn(true);
+                }
+
+                // Carrega perfil + readlists:
+                const data = await getProfile(info.username);
+                setUserData(data);
+            } catch (error) {
+                toast.error("Erro ao carregar dados do usuário.");
+                setError(error instanceof Error ? error.message : 'Erro ao carregar perfil do usuário');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        fetchData();
+    }, []);
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex bg-[#E5EEDF]">
+                <main className="flex-1 flex items-center justify-center">
+                    <div className="relative flex items-center justify-center">
+                        <div className="absolute w-48 h-48 border-16 border-[#B0CC9E] border-t-[#5C8046] rounded-full animate-[spin_1.5s_ease-in-out_infinite]" />
+                        <div className="w-24 h-24 text-[#1F2A17]">
+                            <LogoIcon />
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
+    if (!isLoggedIn) {
     return(
         <div className="w-screen h-screen flex flex-row bg-[#B0CC9E]">
 
@@ -165,4 +205,29 @@ if (isLoggedIn) {
 
         </div>
     )}
+    if(isLoggedIn){
+        return(
+            <div className="min-h-screen flex bg-[#E5EEDF]">
+                <Sidebar />
+                <div className='w-full flex flex-col'>
+                    <nav className=''>
+                        <SearchBar/>
+                    </nav>
+                    <main className="flex-1 flex items-center justify-center">
+                        <div className="relative flex items-center justify-center">
+                            <div className='flex flex-col'>
+                                <Link href="/comunidades" className="text-[#5C8046] hover:underline">
+                                    Comunidades
+                                </Link>
+                                <Link href="/criar-historia" className="text-[#5C8046] hover:underline">
+                                    Criar História
+                                </Link>
+
+                            </div>  
+                        </div>
+                    </main>
+                </div>
+            </div>
+        )
+    }
 }

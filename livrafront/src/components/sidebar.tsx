@@ -46,8 +46,8 @@ export default function Sidebar() {
         <nav data-testid="sidebar" className="light-green h-[calc(100vh-1rem)] sticky top-2 flex flex-col w-fit pt-4 pb-4 m-2 large-border-radius z-50">
             <div className="flex flex-col justify-between h-full">
                 <div className="flex flex-col gap-[8px]">   
-                    <Button icon={<LogoIcon />} colorScheme="light-green" size="large" tooltip="Início" />
-                    <Button icon={<HomeIcon />} colorScheme="light-green" size="large" tooltip="Início" />
+                    <Button icon={<LogoIcon />} colorScheme="light-green" size="large" path="/" tooltip="Início" />
+                    <Button icon={<HomeIcon />} colorScheme="light-green" size="large" path="/" tooltip="Início" />
                     <Button icon={<SearchIcon />} colorScheme="light-green" size="large" path="/busca" tooltip="Buscar" />
                     <Button icon={
                                 userInfo?.avatarUrl? (
