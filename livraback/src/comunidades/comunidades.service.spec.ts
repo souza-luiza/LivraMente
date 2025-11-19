@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ComunidadesService } from './comunidades.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Comunidade } from './entities/comunidade.entity';
 import { QueueProducerService } from '../queue/queue.producer.service';
+import { ROUTING_KEYS } from '../queue/queue.constants';
 
 describe('ComunidadesService', () => {
   let service: ComunidadesService;
-  let comunidadeModel: jest.Mocked<Model<Comunidade>>;
+  let comunidadeModel: any;
   let queueProducer: jest.Mocked<QueueProducerService>;
 
   beforeEach(async () => {
@@ -19,11 +19,18 @@ describe('ComunidadesService', () => {
       populate: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       exec: jest.fn(),
+      deleteOne: jest.fn(),
+    };
+    const mockPostModel = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      findById: jest.fn(),
+      deleteMany: jest.fn(),
     };
 
     const mockQueueProducer = {
-      publish: jest.fn(),
-      publicarNaFila: jest.fn(),
+      publish: jest.fn().mockResolvedValue(undefined),
+      publicarNaFila: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -34,6 +41,10 @@ describe('ComunidadesService', () => {
           useValue: mockModel,
         },
         {
+          provide: getModelToken('Post'),
+          useValue: mockPostModel,
+        },
+        {
           provide: QueueProducerService,
           useValue: mockQueueProducer,
         },
@@ -42,7 +53,9 @@ describe('ComunidadesService', () => {
 
     service = module.get<ComunidadesService>(ComunidadesService);
     comunidadeModel = module.get(getModelToken(Comunidade.name));
-    queueProducer = module.get(QueueProducerService);
+    queueProducer = module.get(QueueProducerService) as jest.Mocked<QueueProducerService>;
+
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -62,8 +75,83 @@ describe('ComunidadesService', () => {
       expect(result).toEqual(comunidadesMock);
       expect(comunidadeModel.find).toHaveBeenCalled();
     });
+
+    it('deve retornar array vazio quando não houver comunidades', async () => {
+      comunidadeModel.find.mockReturnValueOnce({ 
+        exec: jest.fn().mockResolvedValue([]) 
+      } as any);
+
+      const result = await service.findAll();
+      
+      expect(result).toEqual([]);
+    });
+
+    it('deve lidar com erro durante find', async () => {
+      comunidadeModel.find.mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue(new Error('Database error')),
+      } as any);
+
+      await expect(service.findAll()).rejects.toThrow('Database error');
+    });
   });
 
+  describe('findOne', () => {
+    it('deve retornar uma comunidade específica pelo nome com sucesso', async () => {
+      const comunidadeMock = {
+        _id: '1',
+        nome: 'fantasia',
+        descricao: 'Comunidade sobre livros de fantasia',
+        moderadores: ['user1'],
+        membros: ['user1', 'user2']
+      };
+      
+      comunidadeModel.findOne.mockResolvedValueOnce(comunidadeMock as any);
+
+      const result = await service.findOne('fantasia');
+
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { slug: 'fantasia' },
+          { nome: 'fantasia' }
+        ]
+      });
+      expect(result).toEqual(comunidadeMock);
+    });
+
+    it('deve lançar NotFoundException quando comunidade não for encontrada', async () => {
+      comunidadeModel.findOne.mockResolvedValueOnce(null as any);
+
+      await expect(service.findOne('comunidade-inexistente'))
+        .rejects.toThrow(NotFoundException);
+      
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { slug: 'comunidade-inexistente' },
+          { nome: 'comunidade-inexistente' }
+        ]
+      });
+    });
+
+    it('deve encontrar comunidade por slug quando nome não existe', async () => {
+      const comunidadeMock = {
+        _id: '1',
+        nome: 'fantasia',
+        slug: 'fantasia-slug',
+      };
+
+      comunidadeModel.findOne.mockResolvedValueOnce(comunidadeMock);
+
+      const result = await service.findOne('fantasia-slug');
+
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { slug: 'fantasia-slug' },
+          { nome: 'fantasia-slug' }
+        ]
+      });
+      expect(result).toEqual(comunidadeMock);
+    });
+  });
 
   describe('create', () => {
     it('deve criar uma comunidade com sucesso', async () => {
@@ -106,6 +194,24 @@ describe('ComunidadesService', () => {
 
       await expect(service.create('u1', { nome: 'livros' })).rejects.toThrow(ConflictException);
     });
+
+    it('deve lidar com erro durante o save da comunidade', async () => {
+      const criadorId = 'user123';
+      const dto = { nome: 'livros' };
+
+      comunidadeModel.findOne.mockReturnValueOnce({ 
+        exec: jest.fn().mockResolvedValue(null) 
+      } as any);
+
+      const mockSave = jest.fn().mockRejectedValue(new Error('Database error'));
+      const mockConstructor = jest.fn().mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      (service as any).comunidadeModel = Object.assign(mockConstructor, comunidadeModel);
+
+      await expect(service.create(criadorId, dto)).rejects.toThrow('Database error');
+    });
   });
 
   describe('update', () => {
@@ -120,8 +226,8 @@ describe('ComunidadesService', () => {
       };
 
       comunidadeModel.findOne
-        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidade) } as any) // busca comunidade existente
-        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) } as any); // verifica se novo nome já existe
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(comunidade) } as any)
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) } as any);
 
       const updatedDoc = { nome: 'nova-fantasia', moderadores: [userId] };
       comunidadeModel.findOneAndUpdate.mockReturnValueOnce({
@@ -159,6 +265,28 @@ describe('ComunidadesService', () => {
 
       await expect(service.update(userId, comunidadeNome, updateDto)).rejects.toThrow(ConflictException);
     });
+
+    it('deve atualizar sem alterar o nome quando updateDto.nome não for fornecido', async () => {
+      const comunidade = {
+        nome: comunidadeNome,
+        moderadores: [userId],
+      };
+      const updateDtoSemNome = { descricao: 'Nova descrição' };
+
+      comunidadeModel.findOne.mockReturnValueOnce({ 
+        exec: jest.fn().mockResolvedValue(comunidade) 
+      } as any);
+
+      const updatedDoc = { ...comunidade, ...updateDtoSemNome };
+      comunidadeModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(updatedDoc),
+      } as any);
+
+      const result = await service.update(userId, comunidadeNome, updateDtoSemNome);
+
+      expect(result).toEqual(updatedDoc);
+      expect(comunidadeModel.findOne).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('findAllPosts', () => {
@@ -179,6 +307,16 @@ describe('ComunidadesService', () => {
   
       await expect(service.findAllPosts('inexistente')).rejects.toThrow(NotFoundException);
     });
+
+    it('deve retornar array vazio quando não houver posts', async () => {
+      const mockExec = jest.fn().mockResolvedValue({ posts: [] });
+      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
+      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+
+      const result = await service.findAllPosts('livros');
+      
+      expect(result).toEqual([]);
+    });
   });
 
   describe('findAllComunidadeMembros', () => {
@@ -198,19 +336,83 @@ describe('ComunidadesService', () => {
   
       await expect(service.findAllComunidadeMembros('nada')).rejects.toThrow(NotFoundException);
     });
+
+    it('deve retornar array vazio quando não houver membros', async () => {
+      const mockExec = jest.fn().mockResolvedValue({ membros: [] });
+      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
+      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+
+      const result = await service.findAllComunidadeMembros('fantasia');
+      
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('findAllComunidadeModeradores', () => {
+    it('deve retornar moderadores da comunidade com sucesso', async () => {
+      const mockModeradores = [
+        { _id: '1', username: 'mod1', email: 'mod1@email.com' },
+        { _id: '2', username: 'mod2', email: 'mod2@email.com' }
+      ];
+
+      const mockExec = jest.fn().mockResolvedValue({ moderadores: mockModeradores });
+      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
+      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+
+      const result = await service.findAllComunidadeModeradores('fantasia');
+
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
+      expect(mockPopulate).toHaveBeenCalledWith('moderadores');
+      expect(result).toEqual(mockModeradores);
+    });
+
+    it('deve lançar NotFoundException quando comunidade não for encontrada', async () => {
+      const mockExec = jest.fn().mockResolvedValue(null);
+      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
+      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+
+      await expect(service.findAllComunidadeModeradores('comunidade-inexistente'))
+        .rejects.toThrow(NotFoundException);
+    });
+
+    it('deve retornar array vazio quando não houver moderadores', async () => {
+      const mockExec = jest.fn().mockResolvedValue({ moderadores: [] });
+      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
+      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+
+      const result = await service.findAllComunidadeModeradores('comunidade-nova');
+
+      expect(result).toEqual([]);
+    });
   });
 
   describe('addMembro', () => {
-    it('deve adicionar membro e retornar mensagem de sucesso', async () => {
-      const mockExec = jest.fn().mockResolvedValue({ _id: '123', membros: ['u1', 'u2'] });
+    it('deve adicionar membro, publicar evento de mensageria e retornar mensagem de sucesso', async () => {
+      const mockUpdated = { 
+        _id: '123', 
+        nome: 'fantasia',
+        membros: ['u1', 'u2', 'u3'] 
+      };
+      const mockExec = jest.fn().mockResolvedValue(mockUpdated);
       comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
   
       const result = await service.addMembro('u3', 'fantasia');
+      
       expect(result).toEqual({ message: 'Usuário adicionado à comunidade com sucesso' });
       expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
         { nome: 'fantasia' },
         { $addToSet: { membros: 'u3' } },
         { new: true, runValidators: true },
+      );
+
+      // Verificar evento de mensageria
+      expect(queueProducer.publish).toHaveBeenCalledWith(
+        ROUTING_KEYS.NOTIFICAR_MEMBRO_ENTROU,
+        expect.objectContaining({
+          userId: 'u3',
+          comunidadeId: '123',
+          comunidadeNome: 'fantasia',
+        })
       );
     });
   
@@ -219,6 +421,9 @@ describe('ComunidadesService', () => {
       comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
   
       await expect(service.addMembro('u1', 'naoexiste')).rejects.toThrow(NotFoundException);
+      
+      // Não deve publicar evento se falhar
+      expect(queueProducer.publish).not.toHaveBeenCalled();
     });
   
     it('deve lançar BadRequestException se o ID for inválido ao adicionar membro', async () => {
@@ -228,6 +433,23 @@ describe('ComunidadesService', () => {
       } as any);
   
       await expect(service.addMembro('invalid', 'fantasia')).rejects.toThrow(BadRequestException);
+    });
+
+    it('não deve falhar se publicação de evento falhar (fire and forget)', async () => {
+      const mockUpdated = { 
+        _id: '123', 
+        nome: 'fantasia',
+        membros: ['u1', 'u2', 'u3'] 
+      };
+      const mockExec = jest.fn().mockResolvedValue(mockUpdated);
+      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
+
+      queueProducer.publish.mockRejectedValueOnce(new Error('RabbitMQ Error'));
+
+      // Não deve lançar erro mesmo que queue falhe
+      await expect(service.addMembro('u3', 'fantasia')).resolves.toEqual({ 
+        message: 'Usuário adicionado à comunidade com sucesso' 
+      });
     });
   });
   
@@ -295,72 +517,65 @@ describe('ComunidadesService', () => {
       await expect(service.removeMembro('u1', 'fantasia')).rejects.toThrow(BadRequestException);
       expect(comunidadeModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
-  });
 
-  describe('findOne', () => {
-    it('deve retornar uma comunidade específica pelo nome com sucesso', async () => {
+    it('deve remover moderador que não é o único moderador', async () => {
       const comunidadeMock = {
-        _id: '1',
-        nome: 'fantasia',
-        descricao: 'Comunidade sobre livros de fantasia',
-        moderadores: ['user1'],
-        membros: ['user1', 'user2']
+        _id: '123',
+        moderadores: ['u1', 'u2', 'u3'],
+        membros: ['u1', 'u2', 'u3', 'u4'],
       };
-      
-      comunidadeModel.findOne.mockResolvedValueOnce(comunidadeMock as any);
 
-      const result = await service.findOne('fantasia');
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
 
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
-      expect(result).toEqual(comunidadeMock);
+      comunidadeModel.findOneAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      } as any);
+
+      const result = await service.removeMembro('u1', 'fantasia');
+
+      expect(result).toEqual({ message: 'Usuário removido da comunidade com sucesso' });
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: 'fantasia' },
+        { $pull: { moderadores: 'u1' } },
+        { new: true }
+      );
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: 'fantasia' },
+        { $pull: { membros: 'u1' } },
+        { new: true }
+      );
     });
 
-    it('deve lançar NotFoundException quando comunidade não for encontrada', async () => {
-      // service.findOne awaits the result directly; simulate a null result
-      comunidadeModel.findOne.mockResolvedValueOnce(null as any);
+    it('deve remover membro normal sem afetar moderadores', async () => {
+      const comunidadeMock = {
+        _id: '123',
+        moderadores: ['u1'],
+        membros: ['u1', 'u2', 'u3'],
+      };
 
-      await expect(service.findOne('comunidade-inexistente'))
-        .rejects.toThrow(NotFoundException);
-      
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'comunidade-inexistente' });
-    });
-  });
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
 
-  describe('findAllComunidadeModeradores', () => {
-    it('deve retornar moderadores da comunidade com sucesso', async () => {
-      const mockModeradores = [
-        { _id: '1', username: 'mod1', email: 'mod1@email.com' },
-        { _id: '2', username: 'mod2', email: 'mod2@email.com' }
-      ];
+      comunidadeModel.findOneAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      } as any);
 
-      const mockExec = jest.fn().mockResolvedValue({ moderadores: mockModeradores });
-      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
-      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
+      const result = await service.removeMembro('u2', 'fantasia');
 
-      const result = await service.findAllComunidadeModeradores('fantasia');
-
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
-      expect(mockPopulate).toHaveBeenCalledWith('moderadores');
-      expect(result).toEqual(mockModeradores);
-    });
-
-    it('deve lançar NotFoundException quando comunidade não for encontrada', async () => {
-      const mockExec = jest.fn().mockResolvedValue(null);
-      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
-      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
-
-      await expect(service.findAllComunidadeModeradores('comunidade-inexistente'))
-        .rejects.toThrow(NotFoundException);
-    });
-
-    it('deve retornar array vazio quando não houver moderadores', async () => {
-      const mockExec = jest.fn().mockResolvedValue({ moderadores: [] });
-      const mockPopulate = jest.fn().mockReturnValue({ exec: mockExec });
-      comunidadeModel.findOne.mockReturnValue({ populate: mockPopulate } as any);
-
-      const result = await service.findAllComunidadeModeradores('comunidade-nova');
-
-      expect(result).toEqual([]);
+      expect(result).toEqual({ message: 'Usuário removido da comunidade com sucesso' });
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: 'fantasia' },
+        { $pull: { membros: 'u2' } },
+        { new: true }
+      );
+      expect(comunidadeModel.findOneAndUpdate).not.toHaveBeenCalledWith(
+        { nome: 'fantasia' },
+        { $pull: { moderadores: 'u2' } },
+        { new: true }
+      );
     });
   });
 
@@ -382,7 +597,7 @@ describe('ComunidadesService', () => {
       expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'fantasia' });
       expect(result).toEqual({
         isMember: true,
-        isModerador: false
+        isModerator: false
       });
     });
 
@@ -402,7 +617,7 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: true,
-        isModerador: true
+        isModerator: true
       });
     });
 
@@ -422,7 +637,7 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: false,
-        isModerador: false
+        isModerator: false
       });
     });
 
@@ -438,9 +653,6 @@ describe('ComunidadesService', () => {
     });
 
     it('deve lançar UnauthorizedException quando userId não for fornecido', async () => {
-      await expect(service.verifyMemberOrMod('', 'fantasia'))
-        .rejects.toThrow(UnauthorizedException);
-
       await expect(service.verifyMemberOrMod('', 'fantasia'))
         .rejects.toThrow(UnauthorizedException);
     });
@@ -461,51 +673,243 @@ describe('ComunidadesService', () => {
 
       expect(result).toEqual({
         isMember: true,
-        isModerador: false
+        isModerator: false
       });
     });
   });
+  
+  describe('removerMembroComoModerador', () => {
+    const requesterId = 'moderator1';
+    const comunidadeNome = 'fantasia';
+    const targetUserId = 'userToRemove';
 
-  describe('Publicação de Eventos', () => {
-    it('deve publicar evento NOTIFICAR_MEMBRO_ENTROU quando membro for adicionado', async () => {
-      const mockUpdatedComunidade = {
-        _id: 'com123',
-        nome: 'Fantasia',
-        moderadores: ['mod1', 'mod2'],
+    it('deve remover membro como moderador com sucesso', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId, 'otherMod'],
+        membros: [requesterId, 'otherMod', targetUserId],
       };
 
-      const mockExec = jest.fn().mockResolvedValue(mockUpdatedComunidade);
-      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
 
-      await service.addMembro('newUser', 'Fantasia');
+      comunidadeModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({}),
+      } as any);
 
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        'notificar.membro.entrou',
-        expect.objectContaining({
-          userId: 'newUser',
-          comunidadeId: 'com123',
-          comunidadeNome: 'Fantasia',
-          moderadores: expect.arrayContaining(['mod1', 'mod2']),
-        })
+      const result = await service.removerMembroComoModerador(requesterId, comunidadeNome, targetUserId);
+
+      expect(result).toEqual({ message: 'Membro removido da comunidade com sucesso' });
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: comunidadeNome });
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: comunidadeNome },
+        { $pull: { membros: targetUserId } },
+        { new: true }
       );
     });
 
-    it('não deve falhar se publicação de evento falhar (fire and forget)', async () => {
-      const mockUpdatedComunidade = {
-        _id: 'com123',
-        nome: 'Fantasia',
-        moderadores: ['mod1'],
+    it('deve lançar NotFoundException se comunidade não for encontrada', async () => {
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      await expect(
+        service.removerMembroComoModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar ForbiddenException se requester não for moderador', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: ['otherMod'],
+        membros: ['otherMod', targetUserId, requesterId],
       };
 
-      const mockExec = jest.fn().mockResolvedValue(mockUpdatedComunidade);
-      comunidadeModel.findOneAndUpdate.mockReturnValue({ exec: mockExec } as any);
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
 
-      queueProducer.publish.mockRejectedValue(new Error('RabbitMQ Error'));
+      await expect(
+        service.removerMembroComoModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
 
-      // Não deve lançar erro mesmo que queue falhe
-      await expect(service.addMembro('newUser', 'Fantasia')).resolves.toEqual({
-        message: 'Usuário adicionado à comunidade com sucesso',
-      });
+    it('deve lançar BadRequestException se target user não for membro', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId],
+        membros: [requesterId, 'otherUser'],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.removerMembroComoModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve lançar ForbiddenException se tentar remover outro moderador', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId, targetUserId],
+        membros: [requesterId, targetUserId],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.removerMembroComoModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('tornarMembroModerador', () => {
+    const requesterId = 'moderator1';
+    const comunidadeNome = 'fantasia';
+    const targetUserId = 'userToPromote';
+
+    it('deve promover membro a moderador com sucesso', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId],
+        membros: [requesterId, targetUserId],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      comunidadeModel.findOneAndUpdate.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue({}),
+      } as any);
+
+      const result = await service.tornarMembroModerador(requesterId, comunidadeNome, targetUserId);
+
+      expect(result).toEqual({ message: 'Membro promovido a moderador com sucesso' });
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: comunidadeNome });
+      expect(comunidadeModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { nome: comunidadeNome },
+        { $addToSet: { moderadores: targetUserId } },
+        { new: true }
+      );
+    });
+
+    it('deve lançar NotFoundException se comunidade não for encontrada', async () => {
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      await expect(
+        service.tornarMembroModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar ForbiddenException se requester não for moderador', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: ['otherMod'],
+        membros: [requesterId, targetUserId],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.tornarMembroModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('deve lançar BadRequestException se target user não for membro', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId],
+        membros: [requesterId],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.tornarMembroModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve lançar ConflictException se target user já for moderador', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: [requesterId, targetUserId],
+        membros: [requesterId, targetUserId],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.tornarMembroModerador(requesterId, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('deleteCommunity', () => {
+    const userId = 'moderator1';
+    const comunidadeNome = 'fantasia';
+
+    it('deve deletar comunidade com sucesso', async () => {
+      const comunidadeMock = {
+        _id: 'comunidade123',
+        nome: comunidadeNome,
+        moderadores: [userId],
+        deleteOne: jest.fn().mockResolvedValue({}),
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      const mockPostModel = {
+        deleteMany: jest.fn().mockResolvedValue({}),
+      };
+      (service as any).postModel = mockPostModel;
+
+      const result = await service.deleteCommunity(userId, comunidadeNome);
+
+      expect(result).toEqual({ message: 'Comunidade apagada com sucesso' });
+      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: comunidadeNome });
+      expect(mockPostModel.deleteMany).toHaveBeenCalledWith({ comunidade: 'comunidade123' });
+      expect(comunidadeMock.deleteOne).toHaveBeenCalled();
+    });
+
+    it('deve lançar NotFoundException se comunidade não for encontrada', async () => {
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      await expect(
+        service.deleteCommunity(userId, comunidadeNome)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve lançar ForbiddenException se usuário não for moderador', async () => {
+      const comunidadeMock = {
+        nome: comunidadeNome,
+        moderadores: ['otherMod'],
+      };
+
+      comunidadeModel.findOne.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(comunidadeMock),
+      } as any);
+
+      await expect(
+        service.deleteCommunity(userId, comunidadeNome)
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });

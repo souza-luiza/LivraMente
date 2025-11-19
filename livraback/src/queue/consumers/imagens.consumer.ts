@@ -73,11 +73,6 @@ export class ImagensConsumer {
     try {
       const conteudo = JSON.parse(msg.content.toString());
 
-      this.logger.log(`🖼️ Processando imagens`);
-      this.logger.log(`   Tipo: ${conteudo.tipo}`);
-      this.logger.log(`   Referência: ${conteudo.postId || conteudo.userId || conteudo.comunidadeId}`);
-      this.logger.log(`   Quantidade: ${conteudo.imagens?.length || 1}`);
-
       switch (conteudo.tipo) {
         case 'post':
           await this.processarImagensPost(conteudo);

@@ -3,6 +3,7 @@ import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { ModerarPostDto } from './dto/moderar-post.dto';
 import { PostCategoria, PostStatus } from '../schemas/post.schema';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 
@@ -29,15 +30,13 @@ describe('PostsController', () => {
   };
 
   const mockPostsService = {
-    create: jest.fn(),
-    findAllByComunidade: jest.fn(),
-    findAllByCategoria: jest.fn(),
-    findPendentes: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-    moderarPost: jest.fn(),
-    curtirPost: jest.fn(),
+    createPost: jest.fn(),
+    likePost: jest.fn(),
+    removePost: jest.fn(),
+    updatePost: jest.fn(),
+    moderatePost: jest.fn(),
+    getPostById: jest.fn(),
+    getComments: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -71,58 +70,52 @@ describe('PostsController', () => {
         imagens: ['image1.jpg'],
       };
 
-      mockPostsService.create.mockResolvedValue(mockPost);
+      mockPostsService.createPost.mockResolvedValue(mockPost);
 
       const result = await controller.create(mockUser, createDto);
 
-      expect(service.create).toHaveBeenCalledWith('user123', createDto);
+      expect(service.createPost).toHaveBeenCalledWith('user123', createDto);
       expect(result).toEqual(mockPost);
     });
   });
 
-  describe('findAllByComunidade', () => {
-    it('should return all posts from a community', async () => {
-      mockPostsService.findAllByComunidade.mockResolvedValue([mockPost]);
+  describe('curtirPost', () => {
+    it('should toggle like on a post', async () => {
+      const likeResponse = {
+        message: 'Post curtido com sucesso',
+        post: mockPost,
+      };
+      mockPostsService.likePost.mockResolvedValue(likeResponse);
 
-      const result = await controller.findAllByComunidade('comunidade123', mockUser);
+      const result = await controller.curtirPost(mockUser, 'post123');
 
-      expect(service.findAllByComunidade).toHaveBeenCalledWith('comunidade123', 'user123');
-      expect(result).toEqual([mockPost]);
+      expect(service.likePost).toHaveBeenCalledWith('user123', 'post123');
+      expect(result).toEqual(likeResponse);
+    });
+
+    it('should remove like from a post', async () => {
+      const unlikeResponse = {
+        message: 'Curtida removida com sucesso',
+        post: mockPost,
+      };
+      mockPostsService.likePost.mockResolvedValue(unlikeResponse);
+
+      const result = await controller.curtirPost(mockUser, 'post123');
+
+      expect(service.likePost).toHaveBeenCalledWith('user123', 'post123');
+      expect(result).toEqual(unlikeResponse);
     });
   });
 
-  describe('findByCategoria', () => {
-    it('should return posts filtered by category', async () => {
-      const fanartPost = { ...mockPost, categoria: PostCategoria.FANART };
-      mockPostsService.findAllByCategoria.mockResolvedValue([fanartPost]);
+  describe('remove', () => {
+    it('should remove a post', async () => {
+      const deleteResponse = { message: 'Post removido com sucesso' };
+      mockPostsService.removePost.mockResolvedValue(deleteResponse);
 
-      const result = await controller.findByCategoria('comunidade123', PostCategoria.FANART);
+      const result = await controller.remove(mockUser, 'post123');
 
-      expect(service.findAllByCategoria).toHaveBeenCalledWith('comunidade123', PostCategoria.FANART);
-      expect(result).toEqual([fanartPost]);
-    });
-  });
-
-  describe('findPendentes', () => {
-    it('should return pending posts for moderators', async () => {
-      const pendingPost = { ...mockPost, status: PostStatus.PENDENTE_MODERACAO };
-      mockPostsService.findPendentes.mockResolvedValue([pendingPost]);
-
-      const result = await controller.findPendentes('comunidade123', mockUser);
-
-      expect(service.findPendentes).toHaveBeenCalledWith('comunidade123', 'user123');
-      expect(result).toEqual([pendingPost]);
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a post by id', async () => {
-      mockPostsService.findOne.mockResolvedValue(mockPost);
-
-      const result = await controller.findOne('post123');
-
-      expect(service.findOne).toHaveBeenCalledWith('post123');
-      expect(result).toEqual(mockPost);
+      expect(service.removePost).toHaveBeenCalledWith('user123', 'post123');
+      expect(result).toEqual(deleteResponse);
     });
   });
 
@@ -133,30 +126,18 @@ describe('PostsController', () => {
       };
 
       const updatedPost = { ...mockPost, conteudo: 'Updated content' };
-      mockPostsService.update.mockResolvedValue(updatedPost);
+      mockPostsService.updatePost.mockResolvedValue(updatedPost);
 
       const result = await controller.update(mockUser, 'post123', updateDto);
 
-      expect(service.update).toHaveBeenCalledWith('user123', 'post123', updateDto);
+      expect(service.updatePost).toHaveBeenCalledWith('user123', 'post123', updateDto);
       expect(result).toEqual(updatedPost);
     });
   });
 
-  describe('remove', () => {
-    it('should remove a post', async () => {
-      const deleteResponse = { message: 'Post removido com sucesso' };
-      mockPostsService.remove.mockResolvedValue(deleteResponse);
-
-      const result = await controller.remove(mockUser, 'post123');
-
-      expect(service.remove).toHaveBeenCalledWith('user123', 'post123');
-      expect(result).toEqual(deleteResponse);
-    });
-  });
-
-  describe('moderarPost', () => {
+  describe('moderatePost', () => {
     it('should approve a post with category', async () => {
-      const moderarDto = {
+      const moderarDto: ModerarPostDto = {
         aprovar: true,
         categoria: PostCategoria.FANART,
       };
@@ -166,78 +147,59 @@ describe('PostsController', () => {
         status: PostStatus.PUBLICADO,
         categoria: PostCategoria.FANART,
       };
-      mockPostsService.moderarPost.mockResolvedValue(approvedPost);
+      mockPostsService.moderatePost.mockResolvedValue(approvedPost);
 
-      const result = await controller.moderarPost(
-        mockUser,
-        'post123',
-        moderarDto
-      );
+      const result = await controller.moderatePost(mockUser, 'post123', moderarDto);
 
-      expect(service.moderarPost).toHaveBeenCalledWith(
-        'user123',
-        'post123',
-        PostCategoria.FANART,
-        true
-      );
+      expect(service.moderatePost).toHaveBeenCalledWith('user123', 'post123', moderarDto);
       expect(result).toEqual(approvedPost);
     });
 
     it('should reject a post', async () => {
-      const moderarDto = {
+      const moderarDto: ModerarPostDto = {
         aprovar: false,
-        categoria: PostCategoria.GERAL,
       };
 
       const rejectedPost = { 
         ...mockPost, 
         status: PostStatus.REJEITADO,
       };
-      mockPostsService.moderarPost.mockResolvedValue(rejectedPost);
+      mockPostsService.moderatePost.mockResolvedValue(rejectedPost);
 
-      const result = await controller.moderarPost(
-        mockUser,
-        'post123',
-        moderarDto
-      );
+      const result = await controller.moderatePost(mockUser, 'post123', moderarDto);
 
-      expect(service.moderarPost).toHaveBeenCalledWith(
-        'user123',
-        'post123',
-        PostCategoria.GERAL,
-        false
-      );
+      expect(service.moderatePost).toHaveBeenCalledWith('user123', 'post123', moderarDto);
       expect(result).toEqual(rejectedPost);
     });
   });
 
-  describe('curtirPost', () => {
-    it('should toggle like on a post', async () => {
-      const likeResponse = {
-        message: 'Like adicionado',
-        totalCurtidas: 1,
-        jaCurtiu: true,
-      };
-      mockPostsService.curtirPost.mockResolvedValue(likeResponse);
+  describe('getPostById', () => {
+    it('should return a post by id and community name', async () => {
+      mockPostsService.getPostById.mockResolvedValue(mockPost);
 
-      const result = await controller.curtirPost(mockUser, 'post123');
+      const result = await controller.getPostById('post123', 'Test Community');
 
-      expect(service.curtirPost).toHaveBeenCalledWith('user123', 'post123');
-      expect(result).toEqual(likeResponse);
+      expect(service.getPostById).toHaveBeenCalledWith('post123', 'Test Community');
+      expect(result).toEqual(mockPost);
     });
+  });
 
-    it('should remove like from a post', async () => {
-      const unlikeResponse = {
-        message: 'Like removido',
-        totalCurtidas: 0,
-        jaCurtiu: false,
-      };
-      mockPostsService.curtirPost.mockResolvedValue(unlikeResponse);
+  describe('getComments', () => {
+    it('should return comments of a post', async () => {
+      const mockComments = [
+        {
+          _id: 'comment1',
+          autor: 'user456',
+          conteudo: 'Great post!',
+          data_criacao: new Date(),
+        },
+      ];
+      mockPostsService.getComments.mockResolvedValue(mockComments);
 
-      const result = await controller.curtirPost(mockUser, 'post123');
+      const result = await controller.getComments('post123');
 
-      expect(service.curtirPost).toHaveBeenCalledWith('user123', 'post123');
-      expect(result).toEqual(unlikeResponse);
+      expect(service.getComments).toHaveBeenCalledWith('post123');
+      expect(result).toEqual(mockComments);
     });
   });
 });

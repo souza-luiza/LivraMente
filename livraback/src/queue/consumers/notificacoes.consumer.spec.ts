@@ -213,6 +213,13 @@ describe('NotificacoesConsumer', () => {
     });
 
     it('deve processar mensagem de membro entrou e notificar moderadores', async () => {
+      // Mock do findById retornando comunidade com moderadores como array
+      comunidadesService.findById.mockResolvedValue({
+        _id: 'com123',
+        nome: 'Comunidade Teste',
+        moderadores: ['mod1', 'mod2'],
+      } as any);
+
       const mensagem: Partial<ConsumeMessage> = {
         content: Buffer.from(JSON.stringify({
           userId: 'newUser',
