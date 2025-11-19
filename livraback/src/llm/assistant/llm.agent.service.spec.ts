@@ -95,20 +95,24 @@ const mockLlmToolsService = {
   createGetUserStoriesTool: jest.fn(() => mockTools.get_user_stories),
   createGetRecentStoriesTool: jest.fn(() => mockTools.get_recent_stories),
   createGetPopularPostsInCommunityTool: jest.fn(() => mockTools.get_popular_posts_in_community),
+  
   createGetCommunitiesTool: jest.fn(() => mockTools.get_community),
   createGetPopularCommunitiesTool: jest.fn(() => mockTools.get_popular_communities),
   createJoinCommunityTool: jest.fn(() => mockTools.join_community),
   createLeaveCommunityTool: jest.fn(() => mockTools.leave_community),
+ 
   createFindReadlistByNameTool: jest.fn(() => mockTools.find_readlist_by_name),
-  createFindLivroByNameTool: jest.fn(() => mockTools.find_livro_by_name),
+  
   createAddBookToReadlistTool: jest.fn(() => mockTools.add_book_to_readlist),
   createRemoveBookFromReadlistTool: jest.fn(() => mockTools.remove_book_from_readlist),
   createCreateReadlistTool: jest.fn(() => mockTools.create_readlist),
   createDeleteReadlistTool: jest.fn(() => mockTools.delete_readlist),
   createUsersGetMyReadlistsTool: jest.fn(() => mockTools.users_get_my_readlists),
+  
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
-  createUsersGetMyFavoritesTool: jest.fn(() => mockTools.users_get_my_favorites),
+  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites),
+
   createDuckDuckGoSearchTool: jest.fn(() => mockTools.duckduckgo_search),
 };
 
@@ -175,20 +179,24 @@ describe('LlmAgentService', () => {
       expect(mockLlmToolsService.createGetUserStoriesTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createGetRecentStoriesTool).toHaveBeenCalled();
       expect(mockLlmToolsService.createGetPopularPostsInCommunityTool).toHaveBeenCalled();
+     
       expect(mockLlmToolsService.createGetCommunitiesTool).toHaveBeenCalled();
       expect(mockLlmToolsService.createGetPopularCommunitiesTool).toHaveBeenCalled();
       expect(mockLlmToolsService.createJoinCommunityTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createLeaveCommunityTool).toHaveBeenCalledWith(userId);
+      
       expect(mockLlmToolsService.createFindReadlistByNameTool).toHaveBeenCalledWith(userId);
-      expect(mockLlmToolsService.createFindLivroByNameTool).toHaveBeenCalled();
+      
       expect(mockLlmToolsService.createAddBookToReadlistTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createRemoveBookFromReadlistTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createCreateReadlistTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createDeleteReadlistTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyReadlistsTool).toHaveBeenCalledWith(userId);
+
       expect(mockLlmToolsService.createGravarLeituraTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyProfileTool).toHaveBeenCalledWith(userId);
-      expect(mockLlmToolsService.createUsersGetMyFavoritesTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createUsersGetMyFavoritesReadlistsTool).toHaveBeenCalledWith(userId);
+
       expect(mockLlmToolsService.createDuckDuckGoSearchTool).toHaveBeenCalled();
     });
 

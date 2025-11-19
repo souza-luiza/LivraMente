@@ -161,15 +161,14 @@ describe('LlmToolsService', () => {
       expect(result).toBe(JSON.stringify(successMsg));
     });
 
-    it('createGetPopularPostsCommunityTool: should delegate to findPopularPosts', async () => {
+    it('createGetPopularPostsInCommunityTool: should delegate to findPopularPosts', async () => {
       const communityName = 'Ficção';
-      const count = 5;
       mockComunidadesService.findPopularPosts.mockResolvedValue([mockStory]);
 
       const tool = service.createGetPopularPostsInCommunityTool();
-      const result = await tool.func({ communityName, count }); // count é opcional no schema, mas testamos com ele
+      const result = await tool.func({ communityName });
 
-      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName, count);
+      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
   });
