@@ -161,75 +161,78 @@ describe('LlmToolsService', () => {
       expect(result).toBe(JSON.stringify(successMsg));
     });
 
-    it('createGetPopularPostsInCommunityTool: should delegate to findAllPosts', async () => {
+    it('createGetPopularPostsInCommunityTool: should delegate to findPopularPosts', async () => {
       const communityName = 'Ficção';
+      const count = 5;
+
       mockComunidadesService.findAllPosts.mockResolvedValue([mockStory]);
 
       const tool = service.createGetPopularPostsInCommunityTool();
-      const result = await tool.func({ communityName });
+
+      const result = await tool.func({ communityName, count });
 
       expect(mockComunidadesService.findAllPosts).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
-  });
 
-  // --- Testes de Ferramentas de Readlist ---
-  describe('Readlist Tools', () => {
-    const userId = 'user-123';
-    const readlistId = 'readlist-abc';
-    const readlistName = 'Favoritos';
-    const livroId = 'livro-xyz';
+    // --- Testes de Ferramentas de Readlist ---
+    describe('Readlist Tools', () => {
+      const userId = 'user-123';
+      const readlistId = 'readlist-abc';
+      const readlistName = 'Favoritos';
+      const livroId = 'livro-xyz';
 
-    it('createFindReadlistByNameTool: should find readlist by name', async () => {
-      const mockReadlists = [{ nome: 'Favoritos', _id: readlistId }];
-      mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
+      it('createFindReadlistByNameTool: should find readlist by name', async () => {
+        const mockReadlists = [{ nome: 'Favoritos', _id: readlistId }];
+        mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
 
-      const tool = service.createFindReadlistByNameTool(userId);
-      const result = await tool.func({ readlistName });
+        const tool = service.createFindReadlistByNameTool(userId);
+        const result = await tool.func({ readlistName });
 
-      expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
-      expect(result).toBe(JSON.stringify({ id: readlistId, nome: readlistName }));
+        expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
+        expect(result).toBe(JSON.stringify({ id: readlistId, nome: readlistName }));
+      });
+
+      it('createAddBookToReadlistTool: should delegate to addLivro', async () => {
+        mockReadlistsService.addLivro.mockResolvedValue(mockReadlist);
+        const tool = service.createAddBookToReadlistTool(userId);
+        const result = await tool.func({ readlistId, livroId });
+        expect(mockReadlistsService.addLivro).toHaveBeenCalledWith(userId, readlistId, livroId);
+      });
+
+      it('createCreateReadlistTool: should delegate to create', async () => {
+        const dto = { nome: 'Nova', descricao: 'Desc', publica: false };
+        mockReadlistsService.create.mockResolvedValue({ _id: 'new', ...dto });
+        const tool = service.createCreateReadlistTool(userId);
+        const result = await tool.func(dto);
+        expect(mockReadlistsService.create).toHaveBeenCalledWith(userId, dto);
+      });
     });
 
-    it('createAddBookToReadlistTool: should delegate to addLivro', async () => {
-      mockReadlistsService.addLivro.mockResolvedValue(mockReadlist);
-      const tool = service.createAddBookToReadlistTool(userId);
-      const result = await tool.func({ readlistId, livroId });
-      expect(mockReadlistsService.addLivro).toHaveBeenCalledWith(userId, readlistId, livroId);
-    });
+    // --- Testes de Ferramentas de Usuário ---
+    describe('User Tools', () => {
+      const userId = 'user-123';
 
-    it('createCreateReadlistTool: should delegate to create', async () => {
-      const dto = { nome: 'Nova', descricao: 'Desc', publica: false };
-      mockReadlistsService.create.mockResolvedValue({ _id: 'new', ...dto });
-      const tool = service.createCreateReadlistTool(userId);
-      const result = await tool.func(dto);
-      expect(mockReadlistsService.create).toHaveBeenCalledWith(userId, dto);
-    });
-  });
+      it('createUsersGetMyProfileTool: should delegate to findOne', async () => {
+        const mockProfile = { username: 'test' };
+        mockUsersService.findOne.mockResolvedValue(mockProfile);
 
-  // --- Testes de Ferramentas de Usuário ---
-  describe('User Tools', () => {
-    const userId = 'user-123';
+        const tool = service.createUsersGetMyProfileTool(userId);
+        const result = await tool.func({});
 
-    it('createUsersGetMyProfileTool: should delegate to findOne', async () => {
-      const mockProfile = { username: 'test' };
-      mockUsersService.findOne.mockResolvedValue(mockProfile);
+        expect(mockUsersService.findOne).toHaveBeenCalledWith(userId);
+        expect(result).toBe(JSON.stringify(mockProfile));
+      });
 
-      const tool = service.createUsersGetMyProfileTool(userId);
-      const result = await tool.func({});
+      it('createGravarLeituraTool: should delegate to registroLeitura', async () => {
+        const params = { livroId: 'livro-1', qtd: 10, opcao: 1 };
+        mockUsersService.registroLeitura.mockResolvedValue(true);
 
-      expect(mockUsersService.findOne).toHaveBeenCalledWith(userId);
-      expect(result).toBe(JSON.stringify(mockProfile));
-    });
+        const tool = service.createGravarLeituraTool(userId);
+        await tool.func(params);
 
-    it('createGravarLeituraTool: should delegate to registroLeitura', async () => {
-      const params = { livroId: 'livro-1', qtd: 10, opcao: 1 };
-      mockUsersService.registroLeitura.mockResolvedValue(true);
-
-      const tool = service.createGravarLeituraTool(userId);
-      await tool.func(params);
-
-      expect(mockUsersService.registroLeitura).toHaveBeenCalledWith(params.livroId, params.opcao, params.qtd);
+        expect(mockUsersService.registroLeitura).toHaveBeenCalledWith(params.livroId, params.opcao, params.qtd);
+      });
     });
   });
 });
