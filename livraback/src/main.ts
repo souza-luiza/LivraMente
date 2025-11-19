@@ -14,24 +14,6 @@ async function bootstrap() {
 
   await mongoose.connect(process.env.DB_URL);
 
-  app.use(
-    session({
-      store: MongoStore.create({
-        mongoUrl: process.env.DB_URL,
-        collectionName: 'sessions', // colecao onde sessoes vao ficar
-      }),
-      name: 'sessionId',
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24, // 1 dia
-      },
-    }),
-  );
-
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
   app.enableCors({
     origin: allowedOrigins,  
@@ -58,6 +40,24 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
   // ####################################################################
+
+  app.use(
+    session({
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_URL,
+        collectionName: 'sessions', // colecao onde sessoes vao ficar
+      }),
+      name: 'sessionId',
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24, // 1 dia
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3001);
 }
