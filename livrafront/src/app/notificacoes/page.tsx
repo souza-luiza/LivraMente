@@ -13,7 +13,7 @@ import { getNotificacoes } from '@/services/mensageria';
 
 export default function NotificacoesPage() {
     const router = useRouter();
-    const { notificacoes, marcarComoLida, marcarTodasComoLidas, removerNotificacao, contarNaoLidas, definirNotificacoes } = useNotificationsStore();
+    const { notificacoes, marcarComoLida: marcarComoLidaLocal, marcarTodasComoLidas: marcarTodasComoLidasLocal, removerNotificacao: removerNotificacaoLocal, contarNaoLidas, definirNotificacoes } = useNotificationsStore();
     const [naoLidas, setNaoLidas] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -42,6 +42,36 @@ export default function NotificacoesPage() {
         setNaoLidas(contarNaoLidas());
     }, [notificacoes, contarNaoLidas]);
 
+    const handleMarcarComoLida = async (id: string) => {
+        try {
+            const { marcarNotificacaoComoLida } = await import('@/services/mensageria');
+            await marcarNotificacaoComoLida(id);
+            marcarComoLidaLocal(id);
+        } catch (error) {
+            console.error('Erro ao marcar notificação como lida:', error);
+        }
+    };
+
+    const handleMarcarTodasComoLidas = async () => {
+        try {
+            const { marcarTodasComoLidas } = await import('@/services/mensageria');
+            await marcarTodasComoLidas();
+            marcarTodasComoLidasLocal();
+        } catch (error) {
+            console.error('Erro ao marcar todas como lidas:', error);
+        }
+    };
+
+    const handleRemover = async (id: string) => {
+        try {
+            const { removerNotificacao } = await import('@/services/mensageria');
+            await removerNotificacao(id);
+            removerNotificacaoLocal(id);
+        } catch (error) {
+            console.error('Erro ao remover notificação:', error);
+        }
+    };
+
     return (
         <div className="flex min-h-screen h-screen m-0 bg-white">
             <Sidebar />
@@ -65,15 +95,15 @@ export default function NotificacoesPage() {
                                 icon= < CheckIcon />
                                 size="small"
                                 colorScheme="light-green"
-                                onClick={() => marcarTodasComoLidas()}
+                                onClick={handleMarcarTodasComoLidas}
                             />
                         </div>
                     </div>
                     {/* Lista de notificações */}
                     <NotificacaoList 
                         notificacoes={notificacoes}
-                        onMarcarComoLida={marcarComoLida}
-                        onRemover={removerNotificacao}
+                        onMarcarComoLida={handleMarcarComoLida}
+                        onRemover={handleRemover}
                     />
                 </div>
             </div>
