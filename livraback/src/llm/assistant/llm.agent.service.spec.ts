@@ -10,7 +10,7 @@ import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search';
 // --- Mocks ---
 const mockAgentInvoke = jest.fn();
 
-jest.mock('langchain/agents', () => ({
+jest.mock('langchain', () => ({
   createAgent: jest.fn(),
   AgentExecutor: jest.fn(() => ({
     invoke: mockAgentInvoke,
