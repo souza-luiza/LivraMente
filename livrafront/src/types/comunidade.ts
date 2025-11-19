@@ -12,6 +12,16 @@ export interface Comunidade {
     updatedAt: string;
 }
 
+export interface CreateCommunityData {
+    nome: string;
+    descricao?: string;
+    imagem_url?: string;
+    tags?: string[];
+    slug?: string;
+}
+
+export type UpdateCommunityData = Partial<CreateCommunityData>;
+
 export const CommunityTags = [
     'Romance',
     'Aventura',

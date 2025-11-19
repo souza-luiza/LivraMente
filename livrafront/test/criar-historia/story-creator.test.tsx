@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CreateStory from '@/app/criar-historia/story-creator';
 
@@ -65,7 +66,9 @@ describe('CreateStory', () => {
     });
 
     // clica na primeira sugestão
-    await userEvent.click(suggestionButtons[0]);
+    await act(async () => {
+      await userEvent.click(suggestionButtons[0]);
+    });
 
     // verifica que o textarea recebeu algum valor
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i) as HTMLTextAreaElement;
@@ -105,7 +108,9 @@ describe('CreateStory', () => {
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
-      await userEvent.click(sendButton);
+      await act(async () => {
+        await userEvent.click(sendButton);
+      });
     }
 
     await waitFor(() => {
@@ -140,7 +145,9 @@ describe('CreateStory', () => {
     
     const textarea = screen.getByPlaceholderText(/Descreva sua ideia de história/i);
     await userEvent.type(textarea, 'Teste');
-    await userEvent.keyboard('{Enter}');
+    await act(async () => {
+      await userEvent.keyboard('{Enter}');
+    });
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalled();
@@ -183,7 +190,9 @@ describe('CreateStory', () => {
 
     
     if (sendButton) {
-      await userEvent.click(sendButton);
+      await act(async () => {
+        await userEvent.click(sendButton);
+      });
     }
 
     await waitFor(() => {
@@ -207,7 +216,9 @@ describe('CreateStory', () => {
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
-      await userEvent.click(sendButton);
+      await act(async () => {
+        await userEvent.click(sendButton);
+      });
     }
 
     await waitFor(() => {
@@ -284,7 +295,9 @@ describe('CreateStory', () => {
     render(<CreateStory />);
 
     const newStoryButton = screen.getByText('Nova História');
-    await userEvent.click(newStoryButton);
+    await act(async () => {
+      await userEvent.click(newStoryButton);
+    });
 
     await waitFor(() => {
       expect(localStorage.getItem('storyDraft')).toBeNull();
@@ -308,7 +321,9 @@ describe('CreateStory', () => {
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
-      await userEvent.click(sendButton);
+      await act(async () => {
+        await userEvent.click(sendButton);
+      });
     }
 
     await waitFor(() => {
@@ -358,7 +373,9 @@ describe('CreateStory', () => {
     const sendButton = screen.getByRole('button', { name: /enviar mensagem/i });
     
     if (sendButton) {
-      await userEvent.click(sendButton);
+      await act(async () => {
+        await userEvent.click(sendButton);
+      });
     }
 
     await waitFor(() => {
@@ -366,7 +383,9 @@ describe('CreateStory', () => {
     });
 
     const optionButton = await screen.findByText('Opção escolhida');
-    await userEvent.click(optionButton);
+    await act(async () => {
+      await userEvent.click(optionButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Segunda resposta')).toBeInTheDocument();

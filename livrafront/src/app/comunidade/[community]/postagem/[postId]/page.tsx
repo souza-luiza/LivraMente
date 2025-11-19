@@ -11,11 +11,13 @@ import { slugToTitle } from "@/lib/slugify";
 import { communityService } from "@/services/comunidade";
 import { postsService } from "@/services/posts";
 import { commentsService } from "@/services/comentarios";
+import { getSessionInfos } from "@/services/auth";
 
 // Types
 import { Post } from "@/types/post";
 import { Comunidade } from "@/types/comunidade";
 import { Comentario, CreateCommentData } from "@/types/comentario";
+import { User } from "@/types/auth";
 
 // Componentes
 import Sidebar from "@/components/sidebar";
@@ -31,6 +33,9 @@ import DropdownFilter from "@/components/filter";
 import ImageIcon from "@/components/icons/ImageIcon";
 import CommentIcon from "@/components/icons/CommentIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
+import ClockIcon from "@/components/icons/ClockIcon";
+import PillarIcon from "@/components/icons/PillarIcon";
+import StarIcon from "@/components/icons/StarIcon";
 
 export default function PostPage() {
     const router = useRouter();
@@ -42,6 +47,7 @@ export default function PostPage() {
     const [isModerator, setIsModerator] = useState(false);
     const [communityInfo, setCommunityInfo] = useState<Comunidade>()
     const [postInfo, setPostInfo] = useState<Post>()
+    const [userInfo, setUserInfo] = useState<User>();
     const [comments, setComments] = useState<Comentario[]>([])
 
     // Dados dos comentários
@@ -67,6 +73,10 @@ export default function PostPage() {
 
         const fetchData = async () => {
             try {
+                // Busca informações do usuário
+                const user = await getSessionInfos();
+                setUserInfo(user);
+
                 // Busca Comunidade
                 const communityName = slugToTitle(community);
                 const communityInfo = await communityService.getComunidadeByName(communityName);
@@ -264,7 +274,7 @@ export default function PostPage() {
     };
 
     if (loading) return <LoadingPage />;
-    if (!communityInfo || !postInfo) return null;
+    if (!communityInfo || !postInfo || !userInfo) return null;
 
     return (
         <div className="min-h-screen flex bg-[#FFFFFF]">
@@ -283,6 +293,7 @@ export default function PostPage() {
                             {/*Post*/}
                             <PostComponent
                                 post={postInfo}
+                                currentUserId={userInfo.userId}
                                 handleComment={handleComment}
                                 isModerator={isModerator}
                                 disableActions={loading || isSendingComment}
@@ -296,6 +307,11 @@ export default function PostPage() {
                                 {/*Filtro*/}
                                 <DropdownFilter
                                     filters={filters}
+                                    filterIcons={[
+                                        <ClockIcon key="filter-clock" />,
+                                        <PillarIcon key="filter-pillar" />,
+                                        <StarIcon key="filter-star" />,
+                                    ]}
                                     currentFilter={currentFilter}
                                     onChange={setCurrentFilter}
                                     size="medium"
@@ -317,6 +333,7 @@ export default function PostPage() {
                                         <CommentComponent
                                             key={comment._id}
                                             post={postInfo}
+                                            currentUserId={userInfo.userId}
                                             comment={comment}
                                             isModerator={isModerator}
                                             onDelete={handleRefreshComments}
@@ -328,7 +345,7 @@ export default function PostPage() {
                         </div>
                         {/*Input - Comentar*/}
                         <div
-                            className="sticky bottom-0 py-2 z-50"
+                            className="sticky bottom-0 py-2 z-40"
                             style={{ borderTopWidth: '1px', borderTopColor: '#E0E0E0', backgroundColor: '#FFFFFF' }}
                         >
                             <div className="flex flex-row items-end justify-between medium-box small-border-width border-gray-200 hover:border-gray-300 gap-2">

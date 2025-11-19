@@ -15,16 +15,27 @@ import { AnimatePresence, motion } from "framer-motion";
 import RemoveIcon from "./icons/RemoveIcon";
 import PopUp from "./pop-up";
 import EditCommentModal from "./EditCommentModal";
+import { useRouter } from "next/navigation";
 
 interface CommentComponentProps {
     post: Post;
     comment: Comentario;
-    isModerator: boolean;
+    currentUserId: string;
+    isModerator?: boolean;
     onDelete: () => void;
     onUpdate?: () => void;
 }
 
-export default function CommentComponent({ post, comment, isModerator, onDelete, onUpdate } : CommentComponentProps) {
+export default function CommentComponent({
+    post,
+    comment,
+    currentUserId,
+    isModerator = false,
+    onDelete,
+    onUpdate
+} : CommentComponentProps) {
+
+    const router = useRouter();
 
     // Gerenciamento do overflow do conteúdo do comentário
     const [isOverflowed, setIsOverflowed] = useState(false);
@@ -37,7 +48,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
     const [showImageModal, setShowImageModal] = useState(false);
 
     // Curtidas
-    const [liked, setLiked] = useState(false); // TODO: verificar se já foi curtido pelo usuário
+    const [liked, setLiked] = useState(comment.curtidas.some((id) => id === currentUserId));
     const [likeAmount, setLikeAmount] = useState(comment.curtidas.length);
 
     // Mais Opções
@@ -47,7 +58,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
     const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
     const [showEditCommentModal, setShowEditCommentModal] = useState(false);
 
-    const isOwner = true; // TODO: verificar se usuário é autor do comentário
+    const isOwner = (comment.autor._id === currentUserId);
 
     useEffect(() => {
         if (contentRef.current) {
@@ -132,15 +143,30 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
         onUpdate && onUpdate();
     }
 
+    const handleRedirectToProfile = () => {
+        router.push(`/${comment.autor.username}`);
+    }
+
     return (
         <motion.div onHoverEnd={() => setShowOptions(false)}>
             <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm hover:shadow-md">
                 {/*Cabeçalho do Comentário*/}
                 <div className="flex flex-row justify-between">
-                    {/*Imagem de Perfil*/}
-                    <h6 className="text-h6">
-                        @{comment.autor.username}
-                    </h6>
+                    <div 
+                        className="flex flex-row gap-1 hover:cursor-pointer"
+                        onClick={handleRedirectToProfile}
+                    >
+                        <Image
+                            src={comment.autor.avatarUrl ? comment.autor.avatarUrl : '/AbstractUser.png'}
+                            alt="Foto do usuário"
+                            width={24}
+                            height={24}
+                            className="rounded-full object-cover"
+                        />
+                        <h6 className="text-h6">
+                            @{comment.autor.username}
+                        </h6>
+                    </div>
                     {(isOwner || isModerator) && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
@@ -241,7 +267,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleConfirmDeleteComment}
                         fullwidth={true}
                     />
@@ -249,7 +275,7 @@ export default function CommentComponent({ post, comment, isModerator, onDelete,
                         text="Editar"
                         icon={<EditIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleShowEditCommentModal}
                         fullwidth={true}
                     />}

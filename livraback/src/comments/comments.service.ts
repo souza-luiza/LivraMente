@@ -138,14 +138,19 @@ export class CommentsService {
         if (!updateCommentDto.conteudo && !updateCommentDto.imagens) {
             throw new BadRequestException('Nada para atualizar');
         }
-        if (!updateCommentDto.conteudo || (updateCommentDto.imagens && updateCommentDto.imagens.length > 4)) {
+        if ((updateCommentDto.conteudo !== undefined && updateCommentDto.conteudo === '') || (updateCommentDto.imagens && updateCommentDto.imagens.length > 4)) {
             throw new BadRequestException('Comentário deve conter texto e no máximo 4 imagens');
         }
+
+        // Filtra apenas os campos permitidos para atualizar
+        const allowedUpdate: Partial<UpdateCommentDto> = {};
+        if (updateCommentDto.conteudo !== undefined) allowedUpdate.conteudo = updateCommentDto.conteudo;
+        if (updateCommentDto.imagens !== undefined) allowedUpdate.imagens = updateCommentDto.imagens;
 
         // Update atômico do comentário
         const updatedComment = await this.comentarioModel.findOneAndUpdate(
             { _id: COMMENT_ID, post: POST_ID, autor: USER_ID },
-            { $set: updateCommentDto },
+            { $set: allowedUpdate },
             { new: true }
         ).populate('autor', 'username');
 

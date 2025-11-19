@@ -246,7 +246,7 @@ export class PostsService {
     const post = await this.postModel.findOne({
       _id: postId,
       comunidade: community._id,
-    }).populate('autor', 'username').populate("comunidade", "nome");;
+    }).populate('autor', 'username avatarUrl').populate("comunidade", "nome");;
 
     if (!post) throw new NotFoundException('Post não encontrado na comunidade');
 
@@ -261,7 +261,7 @@ export class PostsService {
       post: new Types.ObjectId(postId),
     })
     .sort({ createdAt: -1 })
-    .populate('autor', 'username')
+    .populate('autor', 'username avatarUrl')
     .lean();
 
     return comments;

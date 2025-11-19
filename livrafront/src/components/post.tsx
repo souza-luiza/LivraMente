@@ -13,7 +13,6 @@ import PopUp from "./pop-up";
 
 // Types
 import { Post } from "@/types/post";
-import { User } from "@/types/auth";
 
 // Ícones
 import CodeIcon from "./icons/CodeIcon";
@@ -28,15 +27,16 @@ import RemoveIcon from "./icons/RemoveIcon";
 // Chamadas à API
 import { postsService } from "@/services/posts";
 
-// Data
-import { getTimeAgo } from "@/lib/time"; 
+// Funções Auxiliares
+import { getTimeAgo } from "@/lib/time";
+import { titleToSlug } from "@/lib/slugify";
 
 interface PostProps {
     post: Post;
-    currentUserId?: string;
+    currentUserId: string;
     isModerator?: boolean;
     disableActions?: boolean;
-    handleComment: () => void;
+    handleComment?: () => void;
     onDelete?: () => void;
     onUpdate?: () => void;
 }
@@ -64,10 +64,10 @@ export default function PostComponent({
     const [showImageModal, setShowImageModal] = useState(false);
 
     // Curtidas
-    const [liked, setLiked] = useState(false); // TODO: Verificar se o usuário já curtiu o post
+    const [liked, setLiked] = useState(post.curtidas.some((id) => id === currentUserId));
     const [likeAmount, setLikeAmount] = useState(post.curtidas.length);
 
-    const isOwner = true; // TODO: Verificar se o usuário é o dono do post
+    const isOwner = (post.autor._id === currentUserId);
 
     // Botão Mais
     const [showOptions, setShowOptions] = useState(false);
@@ -114,6 +114,10 @@ export default function PostComponent({
             });
         }
     }, [showOptions]);
+
+    const handleRedirectToCommunity = () => {
+        router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}`);
+    }
 
     const handleRedirectToProfile = () => {
         router.push(`/${post.autor.username}`);
@@ -190,18 +194,28 @@ export default function PostComponent({
             <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
                 <div className="flex flex-row items-center justify-between">
                     <div className="flex flex-row gap-2">
-                        <div className="flex flex-row gap-1">
+                        <div 
+                            className="flex flex-row gap-1 hover:cursor-pointer"
+                            onClick={handleRedirectToCommunity}
+                        >
                             <CommunityIcon size={24} />
                             <h6 className="text-h6">
                                 {post.comunidade.nome}
                             </h6>
                         </div>
                         <CodeIcon size={24} />
-                        <div className="flex flex-row gap-1">
-                            <h6 
-                                className="text-h6 hover:cursor-pointer"
-                                onClick={handleRedirectToProfile}
-                            >
+                        <div 
+                            className="flex flex-row gap-1 hover:cursor-pointer"
+                            onClick={handleRedirectToProfile}
+                        >
+                            <Image
+                                src={post.autor.avatarUrl ? post.autor.avatarUrl : '/AbstractUser.png'}
+                                alt="Foto do usuário"
+                                width={24}
+                                height={24}
+                                className="rounded-full object-cover"
+                            />
+                            <h6 className="text-h6">
                                 @{post.autor.username}
                             </h6>
                         </div>
@@ -315,7 +329,7 @@ export default function PostComponent({
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleConfirmDeletePost}
                         loading={loading}
                         fullwidth={true}
@@ -324,7 +338,7 @@ export default function PostComponent({
                         text="Editar"
                         icon={<EditIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleEditPost}
                         disabled={loading}
                         fullwidth={true}

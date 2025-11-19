@@ -5,7 +5,7 @@ export interface Comentario {
     autor: {                                             
         _id: string;
         username: string;
-        foto_perfil?: string;
+        avatarUrl: string;
     };
     post: string | Post;
     conteudo: string;

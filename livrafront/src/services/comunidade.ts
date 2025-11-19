@@ -1,6 +1,12 @@
-import { Comunidade } from '@/types/comunidade';
+import { Comunidade, CreateCommunityData, UpdateCommunityData } from '@/types/comunidade';
+import { BackendUser } from '@/types/users';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+
+const mapUserFromBackend = (user: BackendUser) => ({
+  ...user,
+  userId: user._id
+});
 
 export const communityService = {
   async getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
@@ -33,7 +39,8 @@ export const communityService = {
       credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao buscar membros");
-    return res.json();
+    const data = await res.json();
+    return data.map(mapUserFromBackend);
   },
 
   async getModerators(comunidadeNome: string) {
@@ -41,7 +48,8 @@ export const communityService = {
       credentials: "include",
     });
     if (!res.ok) throw new Error("Erro ao buscar moderadores");
-    return res.json();
+    const data = await res.json();
+    return data.map(mapUserFromBackend);
   },
 
   async checkMemberOrMod(comunidadeNome: string) {
@@ -88,7 +96,7 @@ export const communityService = {
     return res.json();
   },
 
-  async createCommunity(payload: Record<string, unknown>) {
+  async createCommunity(payload: CreateCommunityData) {
     const response = await fetch(`${API_BASE_URL}/comunidades`, {
       method: 'POST',
       credentials: "include",
@@ -97,7 +105,7 @@ export const communityService = {
       },
       body: JSON.stringify(payload),
     })
-
+    
     if (!response.ok) {
       const text = await response.text().catch(() => 'Erro ao criar comunidade')
       return Promise.reject(new Error(text || 'Erro ao criar comunidade'))
@@ -117,7 +125,7 @@ export const communityService = {
     return response.json()
   },
 
-  async updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
+  async updateCommunity(comunidadeNome: string, payload: UpdateCommunityData) {
     const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
       method: 'PATCH',
       credentials: "include",
@@ -133,23 +141,6 @@ export const communityService = {
     }
 
     return response.json()
-  },
-
-  async uploadImage(file: File): Promise<string> {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const response = await fetch(`${API_BASE_URL}/upload`, {
-      method: 'POST',
-      credentials: "include",
-      body: formData,
-    })
-    if (!response.ok) {
-      const text = await response.text().catch(() => 'Erro ao enviar imagem')
-      return Promise.reject(new Error(text || 'Erro ao enviar imagem'))
-    }
-    const json = await response.json()
-    return json.url || json.imagem_url || json.data || ''
   },
 
   async deleteCommunity(comunidadeNome: string) {

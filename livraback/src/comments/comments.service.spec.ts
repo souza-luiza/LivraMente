@@ -37,6 +37,7 @@ describe('CommentsService', () => {
 
   const mockPostModel: any = {
     findById: jest.fn(),
+    findOne: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     updateOne: jest.fn(),
   };
@@ -45,9 +46,9 @@ describe('CommentsService', () => {
     findById: jest.fn(),
   };
 
-  // Make the comentario model a callable mock (constructor) so `new this.comentarioModel()` works
   const mockComentarioModel: any = jest.fn();
   mockComentarioModel.findById = jest.fn();
+  mockComentarioModel.findOne = jest.fn();
   mockComentarioModel.findOneAndUpdate = jest.fn();
   mockComentarioModel.find = jest.fn();
   mockComentarioModel.findByIdAndDelete = jest.fn();
@@ -339,9 +340,12 @@ describe('CommentsService', () => {
   });
 
   describe('updateComment', () => {
-    const updateCommentDto: UpdateCommentDto = {
-      conteudo: 'Updated comment content',
-      imagens: ['updated-image.jpg'],
+    const mockComment = {
+      _id: new Types.ObjectId(mockCommentId),
+      autor: new Types.ObjectId(mockUserId),
+      post: new Types.ObjectId(mockPostId),
+      conteudo: 'Old content',
+      imagens: ['old-image.jpg'],
     };
 
     const mockPost = {
@@ -349,213 +353,355 @@ describe('CommentsService', () => {
       comunidade: new Types.ObjectId(mockComunidadeId),
     };
 
-    const mockComment = {
-      _id: new Types.ObjectId(mockCommentId),
-      autor: new Types.ObjectId(mockUserId),
-      post: new Types.ObjectId(mockPostId),
-    };
-
     const mockComunidade = {
       _id: new Types.ObjectId(mockComunidadeId),
       membros: [new Types.ObjectId(mockUserId)],
+      moderadores: [],
     };
 
-    beforeEach(() => {
-      mockPostModel.findById.mockResolvedValue(mockPost);
-      mockComentarioModel.findById.mockResolvedValue(mockComment);
-      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-    });
+    const mockUpdatedComment = {
+      _id: new Types.ObjectId(mockCommentId),
+      autor: { username: 'testuser' },
+      conteudo: 'Updated content',
+      imagens: ['new-image.jpg'],
+    };
 
-    it('should update a comment successfully', async () => {
-      const updatedComment = {
-        ...mockComment,
-        ...updateCommentDto,
+    it('should successfully update a comment', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
+        imagens: ['new-image.jpg'],
       };
-      // findOneAndUpdate is chained with .populate() in the service; return an object with populate
-      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedComment) });
 
-      const result = await service.updateComment(
-        mockUserId,
-        mockPostId,
-        mockCommentId,
-        updateCommentDto
-      );
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockUpdatedComment) });
 
-      expect(comentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: mockCommentId, autor: mockUserId },
+      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
+
+      expect(mockComentarioModel.findOne).toHaveBeenCalledWith({
+        _id: new Types.ObjectId(mockCommentId),
+        post: new Types.ObjectId(mockPostId),
+        autor: new Types.ObjectId(mockUserId),
+      });
+
+      expect(mockPostModel.findOne).toHaveBeenCalledWith({
+        _id: new Types.ObjectId(mockPostId),
+      });
+
+      const calledArg = mockComunidadeModel.findById.mock.calls[0][0];
+      expect(String(calledArg)).toBe(mockComunidadeId);
+
+      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: new Types.ObjectId(mockCommentId),
+          post: new Types.ObjectId(mockPostId),
+          autor: new Types.ObjectId(mockUserId),
+        },
         { $set: updateCommentDto },
         { new: true }
       );
-      expect(result.message).toBe('Comentário atualizado com sucesso');
-    });
 
-    it('should throw NotFoundException when post is not found', async () => {
-      mockPostModel.findById.mockResolvedValue(null);
-
-      await expect(
-        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
-      ).rejects.toThrow(NotFoundException);
+      expect(result).toEqual({
+        message: 'Comentário atualizado com sucesso',
+        comment: mockUpdatedComment,
+      });
     });
 
     it('should throw NotFoundException when comment is not found', async () => {
-      mockComentarioModel.findById.mockResolvedValue(null);
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
+      };
+
+      mockComentarioModel.findOne.mockResolvedValue(null);
 
       await expect(
         service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
       ).rejects.toThrow(NotFoundException);
+
+      expect(mockComentarioModel.findOne).toHaveBeenCalled();
+      expect(mockPostModel.findOne).not.toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException when comment does not belong to post', async () => {
-      const commentFromDifferentPost = {
-        ...mockComment,
-        post: new Types.ObjectId('507f1f77bcf86cd799439099'), // Different post
+    it('should throw NotFoundException when post is not found', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
       };
-      mockComentarioModel.findById.mockResolvedValue(commentFromDifferentPost);
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(null);
 
       await expect(
         service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
       ).rejects.toThrow(NotFoundException);
+
+      expect(mockComentarioModel.findOne).toHaveBeenCalled();
+      expect(mockPostModel.findOne).toHaveBeenCalled();
+      expect(mockComunidadeModel.findById).not.toHaveBeenCalled();
     });
 
-    it('should throw ForbiddenException when user is not the comment owner', async () => {
-      const commentWithDifferentOwner = {
-        ...mockComment,
-        autor: new Types.ObjectId('507f1f77bcf86cd799439099'), // Different user
+    it('should throw NotFoundException when comunidade is not found', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
       };
-      mockComentarioModel.findById.mockResolvedValue(commentWithDifferentOwner);
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(null);
 
       await expect(
         service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockComentarioModel.findOne).toHaveBeenCalled();
+      expect(mockPostModel.findOne).toHaveBeenCalled();
+      expect(mockComunidadeModel.findById).toHaveBeenCalled();
     });
 
-    it('should throw ForbiddenException when user is not a community member', async () => {
+    it('should throw ForbiddenException when user is not a member of the community', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
+      };
+
       const comunidadeWithoutUser = {
         ...mockComunidade,
-        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')], // Different user
+        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')],
       };
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
 
       await expect(
         service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
       ).rejects.toThrow(ForbiddenException);
+
+      expect(mockComentarioModel.findOne).toHaveBeenCalled();
+      expect(mockPostModel.findOne).toHaveBeenCalled();
+      expect(mockComunidadeModel.findById).toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when more than 4 images are provided', async () => {
-      const invalidDto = {
-        ...updateCommentDto,
-        imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
+    it('should throw BadRequestException when there is nothing to update', async () => {
+      const updateCommentDto: UpdateCommentDto = {};
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+
+      await expect(
+        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when content is empty', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: '',
+        imagens: ['image.jpg'],
       };
 
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+
       await expect(
-        service.updateComment(mockUserId, mockPostId, mockCommentId, invalidDto)
+        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
       ).rejects.toThrow(BadRequestException);
+
+      expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when no valid fields are provided', async () => {
-      const emptyDto = {};
+    it('should throw BadRequestException when there are more than 4 images', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Valid content',
+        imagens: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'],
+      };
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
 
       await expect(
-        service.updateComment(mockUserId, mockPostId, mockCommentId, emptyDto)
+        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
       ).rejects.toThrow(BadRequestException);
+
+      expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should handle updating only content without images', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content only',
+      };
+
+      const updatedCommentContentOnly = {
+        ...mockUpdatedComment,
+        conteudo: 'Updated content only',
+        imagens: mockComment.imagens,
+      };
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedCommentContentOnly) });
+
+      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
+
+      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: new Types.ObjectId(mockCommentId),
+          post: new Types.ObjectId(mockPostId),
+          autor: new Types.ObjectId(mockUserId),
+        },
+        { $set: updateCommentDto },
+        { new: true }
+      );
+
+      expect(result.comment).toBeDefined();
+      expect(result.comment!.conteudo).toBe('Updated content only');
+    });
+
+    it('should handle updating only images without content', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        imagens: ['new-image1.jpg', 'new-image2.jpg'],
+      };
+
+      const updatedCommentImagesOnly = {
+        ...mockUpdatedComment,
+        conteudo: mockComment.conteudo,
+        imagens: ['new-image1.jpg', 'new-image2.jpg'],
+      };
+
+      mockComentarioModel.findOne.mockResolvedValue(mockComment);
+      mockPostModel.findOne.mockResolvedValue(mockPost);
+      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedCommentImagesOnly) });
+
+      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
+
+      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: new Types.ObjectId(mockCommentId),
+          post: new Types.ObjectId(mockPostId),
+          autor: new Types.ObjectId(mockUserId),
+        },
+        { $set: updateCommentDto },
+        { new: true }
+      );
+
+      expect(result.comment).toBeDefined();
+      expect(result.comment!.imagens).toEqual(['new-image1.jpg', 'new-image2.jpg']);
+    });
+
+    it('should handle ObjectId conversion errors gracefully', async () => {
+      const updateCommentDto: UpdateCommentDto = {
+        conteudo: 'Updated content',
+      };
+
+      const invalidId = 'invalid-object-id';
+
+      await expect(
+        service.updateComment(invalidId, mockPostId, mockCommentId, updateCommentDto)
+      ).rejects.toThrow();
+      expect(mockComentarioModel.findOne).not.toHaveBeenCalled();
     });
   });
 
-    describe('createComment - Mentions', () => {
-        it('should extract and save mentions when content contains usernames', async () => {
-            const createCommentDto: CreateCommentDto = {
-            conteudo: 'Hello @user1 and @user2!',
-            imagens: [],
-            };
+  describe('createComment - Mentions', () => {
+      it('should extract and save mentions when content contains usernames', async () => {
+          const createCommentDto: CreateCommentDto = {
+          conteudo: 'Hello @user1 and @user2!',
+          imagens: [],
+          };
 
-            const mockPost = {
-            _id: new Types.ObjectId(mockPostId),
-            comunidade: new Types.ObjectId(mockComunidadeId),
-            };
+          const mockPost = {
+          _id: new Types.ObjectId(mockPostId),
+          comunidade: new Types.ObjectId(mockComunidadeId),
+          };
 
-            const mockComunidade = {
-            _id: new Types.ObjectId(mockComunidadeId),
-            membros: [new Types.ObjectId(mockUserId)],
-            };
+          const mockComunidade = {
+          _id: new Types.ObjectId(mockComunidadeId),
+          membros: [new Types.ObjectId(mockUserId)],
+          };
 
-            const mentionedUsers = [
-            { _id: new Types.ObjectId('507f1f77bcf86cd799439021') },
-            { _id: new Types.ObjectId('507f1f77bcf86cd799439022') },
-            ];
+          const mentionedUsers = [
+          { _id: new Types.ObjectId('507f1f77bcf86cd799439021') },
+          { _id: new Types.ObjectId('507f1f77bcf86cd799439022') },
+          ];
 
-            mockPostModel.findById.mockResolvedValue(mockPost);
-            mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-            (extractMentions as jest.Mock).mockReturnValue(['user1', 'user2']);
-            mockUserModel.find.mockReturnValue({
-            select: jest.fn().mockResolvedValue(mentionedUsers),
-            });
+          mockPostModel.findById.mockResolvedValue(mockPost);
+          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+          (extractMentions as jest.Mock).mockReturnValue(['user1', 'user2']);
+          mockUserModel.find.mockReturnValue({
+          select: jest.fn().mockResolvedValue(mentionedUsers),
+          });
 
-            const mockComment = {
-            _id: new Types.ObjectId(mockCommentId),
-            ...createCommentDto,
-            autor: new Types.ObjectId(mockUserId),
-            post: new Types.ObjectId(mockPostId),
-            mencoes: mentionedUsers.map(u => u._id),
-            save: jest.fn().mockResolvedValue(true),
-            };
+          const mockComment = {
+          _id: new Types.ObjectId(mockCommentId),
+          ...createCommentDto,
+          autor: new Types.ObjectId(mockUserId),
+          post: new Types.ObjectId(mockPostId),
+          mencoes: mentionedUsers.map(u => u._id),
+          save: jest.fn().mockResolvedValue(true),
+          };
 
-            mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-            mockComentarioModel.mockImplementation(() => ({
-            ...mockComment,
-            save: jest.fn().mockResolvedValue(mockComment),
-            }));
+          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
+          mockComentarioModel.mockImplementation(() => ({
+          ...mockComment,
+          save: jest.fn().mockResolvedValue(mockComment),
+          }));
 
-            const result = await service.createComment(mockUserId, mockPostId, createCommentDto);
+          const result = await service.createComment(mockUserId, mockPostId, createCommentDto);
 
-            expect(extractMentions).toHaveBeenCalledWith(createCommentDto.conteudo);
-            expect(userModel.find).toHaveBeenCalledWith({
-            username: { $in: ['user1', 'user2'] }
-            });
-            expect(result.comment.mencoes).toHaveLength(2);
-        });
+          expect(extractMentions).toHaveBeenCalledWith(createCommentDto.conteudo);
+          expect(userModel.find).toHaveBeenCalledWith({
+          username: { $in: ['user1', 'user2'] }
+          });
+          expect(result.comment!.mencoes).toHaveLength(2);
+      });
 
-        it('should handle empty mentions array when no usernames found', async () => {
-            const createCommentDto: CreateCommentDto = {
-            conteudo: 'Hello world!',
-            imagens: [],
-            };
+      it('should handle empty mentions array when no usernames found', async () => {
+          const createCommentDto: CreateCommentDto = {
+          conteudo: 'Hello world!',
+          imagens: [],
+          };
 
-            const mockPost = {
-            _id: new Types.ObjectId(mockPostId),
-            comunidade: new Types.ObjectId(mockComunidadeId),
-            };
+          const mockPost = {
+          _id: new Types.ObjectId(mockPostId),
+          comunidade: new Types.ObjectId(mockComunidadeId),
+          };
 
-            const mockComunidade = {
-            _id: new Types.ObjectId(mockComunidadeId),
-            membros: [new Types.ObjectId(mockUserId)],
-            };
+          const mockComunidade = {
+          _id: new Types.ObjectId(mockComunidadeId),
+          membros: [new Types.ObjectId(mockUserId)],
+          };
 
-            mockPostModel.findById.mockResolvedValue(mockPost);
-            mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-            (extractMentions as jest.Mock).mockReturnValue([]);
-            mockUserModel.find.mockReturnValue({
-            select: jest.fn().mockResolvedValue([]),
-            });
+          mockPostModel.findById.mockResolvedValue(mockPost);
+          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+          (extractMentions as jest.Mock).mockReturnValue([]);
+          mockUserModel.find.mockReturnValue({
+          select: jest.fn().mockResolvedValue([]),
+          });
 
-            const mockComment = {
-            _id: new Types.ObjectId(mockCommentId),
-            ...createCommentDto,
-            autor: new Types.ObjectId(mockUserId),
-            post: new Types.ObjectId(mockPostId),
-            mencoes: [],
-            save: jest.fn().mockResolvedValue(true),
-            };
+          const mockComment = {
+          _id: new Types.ObjectId(mockCommentId),
+          ...createCommentDto,
+          autor: new Types.ObjectId(mockUserId),
+          post: new Types.ObjectId(mockPostId),
+          mencoes: [],
+          save: jest.fn().mockResolvedValue(true),
+          };
 
-            mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-            mockComentarioModel.mockImplementation(() => ({
-            ...mockComment,
-            save: jest.fn().mockResolvedValue(mockComment),
-            }));
+          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
+          mockComentarioModel.mockImplementation(() => ({
+          ...mockComment,
+          save: jest.fn().mockResolvedValue(mockComment),
+          }));
 
-            await service.createComment(mockUserId, mockPostId, createCommentDto);
+          await service.createComment(mockUserId, mockPostId, createCommentDto);
 
-            expect(userModel.find).toHaveBeenCalledWith({ username: { $in: [] } });
-        });
+          expect(userModel.find).toHaveBeenCalledWith({ username: { $in: [] } });
+      });
     });
 
     describe('deleteComment - Edge cases', () => {
@@ -711,11 +857,12 @@ describe('CommentsService', () => {
 
             await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
 
-            expect(comentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
-            { _id: mockCommentId, autor: mockUserId },
-            { $set: expectedFilteredUpdate },
-            { new: true }
-            );
+            expect(comentarioModel.findOneAndUpdate).toHaveBeenCalled();
+            const callArgs = (comentarioModel.findOneAndUpdate as jest.Mock).mock.calls[0];
+            expect(String(callArgs[0]._id)).toBe(mockCommentId);
+            expect(String(callArgs[0].post)).toBe(mockPostId);
+            expect(String(callArgs[0].autor)).toBe(mockUserId);
+            expect(callArgs[1]).toEqual({ $set: expectedFilteredUpdate });
         });
 
         it('should update only content when images are not provided', async () => {
@@ -754,11 +901,12 @@ describe('CommentsService', () => {
 
             await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
 
-            expect(comentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
-            { _id: mockCommentId, autor: mockUserId },
-            { $set: updateCommentDto },
-            { new: true }
-            );
+            expect(comentarioModel.findOneAndUpdate).toHaveBeenCalled();
+            const callArgs2 = (comentarioModel.findOneAndUpdate as jest.Mock).mock.calls[0];
+            expect(String(callArgs2[0]._id)).toBe(mockCommentId);
+            expect(String(callArgs2[0].post)).toBe(mockPostId);
+            expect(String(callArgs2[0].autor)).toBe(mockUserId);
+            expect(callArgs2[1]).toEqual({ $set: updateCommentDto });
         });
     });
 

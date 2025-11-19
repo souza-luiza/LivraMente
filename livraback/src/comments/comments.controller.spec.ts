@@ -1,18 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
 
+class SessionAuthGuard {
+  canActivate = jest.fn();
+}
+
 describe('CommentsController', () => {
   let controller: CommentsController;
   let service: CommentsService;
-
   const mockUser: CurrentUserDto = {
     userId: 'user-123',
-    email: 'user@example.com'
+    username: 'user123',
+    email: 'user@example.com',
+    avatarUrl: '',
+    pronouns: 'they/them',
   };
 
   const mockCommentsService = {
@@ -32,7 +37,7 @@ describe('CommentsController', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionAuthGuard)
       .useValue({ canActivate: jest.fn(() => true) })
       .compile();
 

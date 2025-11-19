@@ -70,7 +70,7 @@ export class ComunidadesService {
     async findAllPosts(comunidadeNome: string) {
         const comunidade = await this.comunidadeModel
             .findOne({ nome: comunidadeNome })
-            .populate({ path: 'posts', options: {sort: { createdAt: -1 }}, populate: [{ path: 'comunidade', select: 'nome'}, { path: 'autor', select: 'username' }]})
+            .populate({ path: 'posts', options: {sort: { createdAt: -1 }}, populate: [{ path: 'comunidade', select: 'nome'}, { path: 'autor', select: 'username avatarUrl' }]})
             .exec();
         if (!comunidade) throw new NotFoundException('Comunidade não encontrada');
         return comunidade.posts;

@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import FilterIcon from "./icons/FilterIcon";
 import Button from "./button";
 import { AnimatePresence, motion } from "framer-motion";
+import LoaderIcon from "./icons/LoaderIcon";
 
 interface DropdownFilterProps {
   filters: string[];
+  filterIcons?: React.ReactNode[];
   currentFilter: string;
   onChange: (filter: string) => void;
   size?: "small" | "medium" | "large";
@@ -15,6 +17,7 @@ interface DropdownFilterProps {
 
 export default function DropdownFilter({
     filters,
+    filterIcons,
     currentFilter,
     onChange,
     size = "medium",
@@ -59,14 +62,16 @@ export default function DropdownFilter({
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.2 }}
                 >
-                {filters.map((filter) => (
-                    <button
-                        key={filter}
+                {filters.map((filter, index) => (
+                    <Button
+                        key={index}
+                        text={filter}
+                        icon={filterIcons ? filterIcons[index] : <LoaderIcon />}
+                        colorScheme={currentFilter === filter ? colorScheme : "light-neutral"}
+                        size="small"
+                        fullwidth={true}
                         onClick={() => {onChange(filter); setOpen(false);}}
-                        className={`w-full text-b2 medium-box hover:bg-gray-100 transition ${filter === currentFilter ? "body-semibold light-brown" : ""}`}
-                    >
-                        {filter}
-                    </button>
+                    />
                 ))}
                 </motion.div>
             )}

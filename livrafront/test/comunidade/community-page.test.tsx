@@ -1,4 +1,5 @@
 import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useParams, useRouter } from 'next/navigation';
 import CommunityPage from '@/app/comunidade/[community]/page';
@@ -15,14 +16,46 @@ jest.mock('next/image', () => ({
   ),
 }));
 
-jest.mock('@/services/comunidade', () => ({
-  getComunidadeByName: jest.fn(),
-  checkMemberOrMod: jest.fn(),
-  getMembers: jest.fn(),
-  getPosts: jest.fn(),
-  getModerators: jest.fn(),
-  enterCommunity: jest.fn(),
-  leaveCommunity: jest.fn(),
+jest.mock('@/services/comunidade', () => {
+  const getComunidadeByName = jest.fn();
+  const checkMemberOrMod = jest.fn();
+  const getMembers = jest.fn();
+  const getPosts = jest.fn();
+  const getModerators = jest.fn();
+  const enterCommunity = jest.fn();
+  const leaveCommunity = jest.fn();
+  const removeMember = jest.fn();
+  const makeMemberModerator = jest.fn();
+
+  return {
+    getComunidadeByName,
+    checkMemberOrMod,
+    getMembers,
+    getPosts,
+    getModerators,
+    enterCommunity,
+    leaveCommunity,
+    removeMember,
+    makeMemberModerator,
+    communityService: {
+      getComunidadeByName,
+      checkMemberOrMod,
+      getMembers,
+      getPosts,
+      getModerators,
+      enterCommunity,
+      leaveCommunity,
+      removeMember,
+      makeMemberModerator,
+    },
+    postsService: {
+      moderatePost: jest.fn(),
+    },
+  };
+});
+
+jest.mock('@/services/auth', () => ({
+  getSessionInfos: jest.fn().mockResolvedValue({ userId: 'user1', username: 'user1', email: 'user1@example.com' }),
 }));
 
 jest.mock('@/components/searchbar', () => ({
@@ -78,9 +111,10 @@ jest.mock('@/components/post', () => ({
 
 jest.mock('@/components/community-member', () => ({
   __esModule: true,
-  default: ({ username }: { username: string }) => (
-    <div data-testid={`member-${username}`}>@{username}</div>
-  ),
+  default: (props: any) => {
+    const username = props?.user?.username ?? props?.username ?? props?.user?.userId ?? '';
+    return <div data-testid={`member-${username}`}>@{username}</div>;
+  },
 }));
 
 jest.mock('@/components/tabs', () => ({
@@ -130,7 +164,11 @@ jest.mock('@/components/icons/CheckIcon', () => () => <span data-testid="check-i
 jest.mock('@/components/icons/PenToolIcon', () => () => <span data-testid="pen-tool-icon" />);
 jest.mock('@/components/icons/ClosedBookIcon', () => () => <span data-testid="closed-book-icon" />);
 
-import * as comunidadeService from '@/services/comunidade';
+import * as comunidadeModule from '@/services/comunidade';
+const communityService: any = (comunidadeModule as any).communityService ?? (comunidadeModule as any);
+const postsService: any = (comunidadeModule as any).postsService ?? (comunidadeModule as any);
+// keep backwards-compatible alias for older tests that referenced `comunidadeService`
+const comunidadeService: any = communityService;
 
 describe('CommunityPage', () => {
   const mockPush = jest.fn();
@@ -143,12 +181,12 @@ describe('CommunityPage', () => {
   };
 
   const mockMembers = [
-    { _id: '1', username: 'user1' },
-    { _id: '2', username: 'user2' },
+    { _id: '1', userId: '1', username: 'user1' },
+    { _id: '2', userId: '2', username: 'user2' },
   ];
 
   const mockModerators = [
-    { _id: '3', username: 'mod1' },
+    { _id: '3', userId: '3', username: 'mod1' },
   ];
 
   const mockPosts = [
@@ -337,7 +375,7 @@ describe('CommunityPage', () => {
       (comunidadeService.getPosts as jest.Mock).mockResolvedValue(mockPosts);
       (comunidadeService.getModerators as jest.Mock).mockResolvedValue(mockModerators);
       (comunidadeService.enterCommunity as jest.Mock).mockResolvedValue({});
-      (comunidadeService.getMembers as jest.Mock).mockResolvedValue([...mockMembers, { _id: '3', username: 'newuser' }]);
+      (comunidadeService.getMembers as jest.Mock).mockResolvedValue([...mockMembers, { _id: '3', userId: '3', username: 'newuser' }]);
 
       render(<CommunityPage />);
       
@@ -346,7 +384,9 @@ describe('CommunityPage', () => {
       });
 
       const enterButton = screen.getByTestId('button-entrar');
-      await user.click(enterButton);
+      await act(async () => {
+        await user.click(enterButton);
+      });
 
       await waitFor(() => {
         expect(comunidadeService.enterCommunity).toHaveBeenCalledWith('Harry Potter');
@@ -374,7 +414,16 @@ describe('CommunityPage', () => {
       });
 
       const leaveButton = screen.getByTestId('button-sair');
-      await user.click(leaveButton);
+      await act(async () => {
+        await user.click(leaveButton);
+      });
+
+      // modal confirmation appears; click the modal's confirm button
+      const modalSairButtons = await screen.findAllByTestId('button-sair');
+      // click the last one (confirm in modal)
+      await act(async () => {
+        await user.click(modalSairButtons[modalSairButtons.length - 1]);
+      });
 
       await waitFor(() => {
         expect(comunidadeService.leaveCommunity).toHaveBeenCalledWith('Harry Potter');
@@ -402,7 +451,9 @@ describe('CommunityPage', () => {
       });
 
       const enterButton = screen.getByTestId('button-entrar');
-      await user.click(enterButton);
+      await act(async () => {
+        await user.click(enterButton);
+      });
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(
@@ -440,12 +491,13 @@ describe('CommunityPage', () => {
 
     it('should show empty state when no posts in category', async () => {
       (comunidadeService.getPosts as jest.Mock).mockResolvedValue([]);
-      
-      render(<CommunityPage />);
-      
-      await waitFor(() => {
-        expect(screen.getByText('Nenhum post ainda nesta categoria.')).toBeInTheDocument();
-      });
+        // cleanup previous render from beforeEach, then re-render with empty posts
+        cleanup();
+        render(<CommunityPage />);
+
+        await waitFor(() => {
+          expect(screen.getByText('Nenhum post ainda nesta comunidade.')).toBeInTheDocument();
+        });
     });
   });
 

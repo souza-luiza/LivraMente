@@ -7,7 +7,7 @@ import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
 import { communityService } from '@/services/comunidade';
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
-import { Comunidade } from '@/types/comunidade';
+import { Comunidade, UpdateCommunityData } from '@/types/comunidade';
 import Button from "@/components/button";
 import LoadingPage from "@/components/loading";
 import SaveIcon from "@/components/icons/SaveIcon";
@@ -111,7 +111,7 @@ function EditCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const payload: Record<string, unknown> = {};
+      const payload: UpdateCommunityData = {};
       if (originalData) {
         if (nome !== originalData.nome) {
           payload.nome = nome;
@@ -126,10 +126,10 @@ function EditCommunityPage() {
         payload.tags = tags.map(tag => tag.toLowerCase());
       }
 
-      if (foto) {
-        const imagem_url = await communityService.uploadImage(foto);
-        if (imagem_url) payload.imagem_url = imagem_url;
-      }
+      //if (foto) {
+      //  const imagem_url = await communityService.uploadImage(foto);
+      //  if (imagem_url) payload.imagem_url = imagem_url;
+      //}
 
       if (Object.keys(payload).length === 0) {
         setMessage({ text: 'Nenhuma alteração foi feita.', type: 'error' });

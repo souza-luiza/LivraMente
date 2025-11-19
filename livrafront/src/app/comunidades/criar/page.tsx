@@ -15,7 +15,7 @@ import TrashIcon from '@/components/icons/TrashIcon';
 import ImageIcon from '@/components/icons/ImageIcon';
 import AddIcon from '@/components/icons/AddIcon';
 import Image from 'next/image';
-import { CommunityTags } from '@/types/comunidade';
+import { CommunityTags, CreateCommunityData } from '@/types/comunidade';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -68,19 +68,18 @@ export default function CreateCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      let imagem_url: string | undefined = undefined;
-      if (foto) {
-        imagem_url = await communityService.uploadImage(foto);
-      }
+      //let imagem_url: string | undefined = undefined;
+      //if (foto) {
+      //  imagem_url = await communityService.uploadImage(foto);
+      //}
       const slug = titleToSlug(nome);
-      const payload = {
-        nome: nome,
+      const payload: CreateCommunityData = {
+        nome,
         descricao,
-        imagem_url: imagem_url || fotoPreview || undefined,
         tags: tags.map(tag => tag.toLowerCase()),
-        slug: slug,
-      }
-      const result = await communityService.createCommunity(payload)
+        slug,
+      };
+      await communityService.createCommunity(payload)
       setCommunitySlug(slug);
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);

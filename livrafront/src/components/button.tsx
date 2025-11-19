@@ -109,7 +109,12 @@ export default function Button({
                     </svg>
                 )}
                 {text && (
-                    <span className={`${textStyles[size]} line-clamp-2`}> {text} </span>
+                    <span 
+                        className={`${textStyles[size]} line-clamp-1`}
+                        style={{ overflow: 'hidden', wordBreak: 'break-all', overflowWrap: 'break-word' }}
+                    >
+                        {text}
+                    </span>
                 )}
                 <span className={`${iconSizes[size]}`}> {icon} </span>
             </button>

@@ -638,8 +638,10 @@ describe('PostsService', () => {
       // getComments only checks existence with findOne (no populate), so return the post directly
       mockPostModel.findOne.mockResolvedValue(mockPost);
       mockComentarioModel.find.mockReturnValue({
-        populate: jest.fn().mockReturnValue({
-          lean: jest.fn().mockResolvedValue(mockComments),
+        sort: jest.fn().mockReturnValue({
+          populate: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue(mockComments),
+          }),
         }),
       });
     });
