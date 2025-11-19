@@ -278,7 +278,7 @@ export default function ReadlistPage() {
               }}
             >
               <Image 
-                src={readlistData.capa_url || '/kemi-teste.jpg'}
+                src={readlistData.capa_url ? readlistData.capa_url : '/Readlist.svg'}
                 alt={readlistData.nome}
                 fill
                 className="object-cover"
@@ -299,7 +299,7 @@ export default function ReadlistPage() {
                   style={{ width: '45px', height: '45px' }}
                 >
                   <Image 
-                    src="/kemi-teste.jpg"
+                    src="/AbstractUser.png"
                     alt={username}
                     fill
                     className="object-cover"
@@ -450,7 +450,7 @@ export default function ReadlistPage() {
                       }}
                     >
                       <Image 
-                        src={book.capa_url || '/kemi-teste.jpg'}
+                        src={book.capa_url ? book.capa_url : '/Readlist.svg'}
                         alt={book.titulo}
                         fill
                         className="object-cover"
