@@ -46,7 +46,7 @@ const mockStoryModel = {
 const mockComunidadesService = {
   findOne: jest.fn(),
   findAll: jest.fn(),
-  findPopularPosts: jest.fn(),
+  findAllPosts: jest.fn(),
   addMembro: jest.fn(),
   removeMembro: jest.fn(),
 };
@@ -161,14 +161,14 @@ describe('LlmToolsService', () => {
       expect(result).toBe(JSON.stringify(successMsg));
     });
 
-    it('createGetPopularPostsInCommunityTool: should delegate to findPopularPosts', async () => {
+    it('createGetPopularPostsInCommunityTool: should delegate to findAllPosts', async () => {
       const communityName = 'Ficção';
-      mockComunidadesService.findAll.mockResolvedValue([mockStory]);
+      mockComunidadesService.findAllPosts.mockResolvedValue([mockStory]);
 
       const tool = service.createGetPopularPostsInCommunityTool();
       const result = await tool.func({ communityName });
 
-      expect(mockComunidadesService.findAll).toHaveBeenCalledWith(communityName);
+      expect(mockComunidadesService.findAllPosts).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
   });

@@ -34,12 +34,13 @@ jest.mock('@langchain/google-genai', () => ({
   })),
 }));
 
-// Isso impede que o teste tente acessar a internet de verdade
+// MOCK DO DUCKDUCKGO
+const mockDuckDuckGoTool = {
+  name: 'duckduckgo_search',
+  description: 'Search the web'
+};
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
-  DuckDuckGoSearch: jest.fn().mockImplementation(() => ({
-    name: 'duckduckgo_search',
-    description: 'Search the web',
-  })),
+  DuckDuckGoSearch: jest.fn().mockImplementation(() => mockDuckDuckGoTool),
 }));
 
 // --- Mocks dos Serviços Internos ---
@@ -61,7 +62,6 @@ const mockTools = {
   gravar_leitura: { name: 'gravar_leitura', description: 'd15' },
   users_get_my_profile: { name: 'users_get_my_profile', description: 'd16' },
   users_get_my_favorites_readlists: { name: 'users_get_my_favorites_readlists', description: 'd17' },
-  duckduckgo_search: { name: 'duckduckgo_search', description: 'Search the web' },
 };
 
 const mockToolsArray = [
@@ -82,10 +82,10 @@ const mockToolsArray = [
   mockTools.gravar_leitura,
   mockTools.users_get_my_profile,
   mockTools.users_get_my_favorites_readlists,
-  ...Object.values(mockTools).filter(t => t.name !== 'duckduckgo_search'),
-  expect.any(DuckDuckGoSearch),
+  mockDuckDuckGoTool,
 ];
 
+const mockToolNamesString = mockToolsArray.map((t) => t.name).join(', ');
 
 const mockLlmToolsService = {
   createGetUserStoriesTool: jest.fn(() => mockTools.get_user_stories),
@@ -108,8 +108,6 @@ const mockLlmToolsService = {
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
   createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites_readlists),
-
-  createDuckDuckGoSearchTool: jest.fn(() => mockTools.duckduckgo_search),
 };
 
 const mockConfigService = {
@@ -150,10 +148,27 @@ describe('LlmAgentService', () => {
 
       // Verifica ferramentas principais
       expect(mockLlmToolsService.createGetUserStoriesTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createGetRecentStoriesTool).toHaveBeenCalled();
       expect(mockLlmToolsService.createGetPopularPostsInCommunityTool).toHaveBeenCalled();
+
+      // Verifica ferramentas de comunidade
+      expect(mockLlmToolsService.createGetCommunitiesTool).toHaveBeenCalled();
+      expect(mockLlmToolsService.createGetPopularCommunitiesTool).toHaveBeenCalled();
+      expect(mockLlmToolsService.createJoinCommunityTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createLeaveCommunityTool).toHaveBeenCalledWith(userId);
+
+      // Verifica ferramentas de readlist
+      expect(mockLlmToolsService.createFindReadlistByNameTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createAddBookToReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createRemoveBookFromReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createCreateReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createDeleteReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createUsersGetMyReadlistsTool).toHaveBeenCalledWith(userId);
+      
+      // Verifica ferramentas auxiliares
+      expect(mockLlmToolsService.createGravarLeituraTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createUsersGetMyProfileTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyFavoritesReadlistsTool).toHaveBeenCalledWith(userId);
-      // Verifica DuckDuckGo
-      expect(mockLlmToolsService.createDuckDuckGoSearchTool).toHaveBeenCalled();
     });
 
     it('deve chamar createAgent com as ferramentas corretas (incluindo DuckDuckGo)', async () => {
