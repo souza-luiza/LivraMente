@@ -43,6 +43,21 @@ exports[`Sidebar Component Snapshot Tests matches sidebar snapshot 1`] = `
       </button>
       <button
         class="mock-button"
+        data-testid="button-buscar"
+      >
+        <svg
+          data-testid="search-icon"
+        >
+          Search
+        </svg>
+        <span
+          data-testid="tooltip-Buscar"
+        >
+          Buscar
+        </span>
+      </button>
+      <button
+        class="mock-button"
         data-testid="button-perfil"
       >
         <svg
@@ -155,6 +170,21 @@ exports[`Sidebar Component Snapshot Tests matches snapshot with all buttons rend
             data-testid="tooltip-Início"
           >
             Início
+          </span>
+        </button>
+        <button
+          class="mock-button"
+          data-testid="button-buscar"
+        >
+          <svg
+            data-testid="search-icon"
+          >
+            Search
+          </svg>
+          <span
+            data-testid="tooltip-Buscar"
+          >
+            Buscar
           </span>
         </button>
         <button

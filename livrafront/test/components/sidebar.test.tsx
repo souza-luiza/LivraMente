@@ -16,6 +16,13 @@ jest.mock('../../src/components/icons/HomeIcon', () => ({
   },
 }))
 
+jest.mock('../../src/components/icons/SearchIcon', () => ({
+  __esModule: true,
+  default: function MockSearchIcon() {
+    return <svg data-testid="search-icon">Search</svg>
+  },
+}))
+
 jest.mock('../../src/components/icons/ProfileIcon', () => ({
   __esModule: true,
   default: function MockProfileIcon() {
@@ -85,6 +92,7 @@ describe('Sidebar Component', () => {
       
       expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
       expect(screen.getAllByTestId('button-início')[1]).toBeInTheDocument()
+      expect(screen.getByTestId('button-buscar')).toBeInTheDocument()
       expect(screen.getByTestId('button-perfil')).toBeInTheDocument()
       expect(screen.getByTestId('button-notificações')).toBeInTheDocument()
       expect(screen.getByTestId('button-configurações')).toBeInTheDocument()
@@ -96,6 +104,7 @@ describe('Sidebar Component', () => {
       
       expect(screen.getByTestId('logo-icon')).toBeInTheDocument()
       expect(screen.getByTestId('home-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('search-icon')).toBeInTheDocument()
       expect(screen.getByTestId('profile-icon')).toBeInTheDocument()
       expect(screen.getByTestId('notifications-icon')).toBeInTheDocument()
       expect(screen.getByTestId('settings-icon')).toBeInTheDocument()
@@ -117,6 +126,7 @@ describe('Sidebar Component', () => {
       
       expect(screen.getAllByTestId('button-início')[0]).toBeInTheDocument()
       expect(screen.getAllByTestId('button-início')[1]).toBeInTheDocument()
+      expect(screen.getByTestId('button-buscar')).toBeInTheDocument()
       expect(screen.getByTestId('button-perfil')).toBeInTheDocument()
       expect(screen.getByTestId('button-notificações')).toBeInTheDocument()
       expect(screen.getByTestId('button-configurações')).toBeInTheDocument()
@@ -161,7 +171,7 @@ describe('Sidebar Component', () => {
       render(<Sidebar />)
       
       const buttons = screen.getAllByRole('button')
-      expect(buttons).toHaveLength(6)
+      expect(buttons).toHaveLength(7)
     })
 
     it('has sticky positioning', () => {
@@ -257,7 +267,7 @@ describe('Sidebar Component', () => {
       render(<Sidebar />)
       
       const buttons = screen.getAllByRole('button')
-      expect(buttons).toHaveLength(6)
+      expect(buttons).toHaveLength(7)
     })
 
     it('has logout button separated at bottom', () => {

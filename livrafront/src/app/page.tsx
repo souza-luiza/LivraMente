@@ -7,19 +7,27 @@ import LoginIcon from '@/components/icons/LoginIcon';
 import LogoIcon from '@/components/icons/LogoIcon';
 import Edit3Icon from '@/components/icons/Edit3Icon';
 import { motion, useAnimation } from 'framer-motion';
-
+import { getSessionInfos } from '@/services/auth';
 import OpenBookIcon from '@/components/icons/OpenBookIcon';
 import CommunityIcon from '@/components/icons/CommunityIcon';
 import StarIcon from '@/components/icons/StarIcon';
 import MedalIcon from '@/components/icons/MedalIcon';
 
-export default function HomePage() {
+interface HomePageProps {
+    authInfo: {
+        userId: Promise<string | null>;
+    };
+}
+
+export default async function HomePage({authInfo}: {authInfo: {userId: string | null}}) {
 
     // Animação dos LivraBenefícios
     const controls = useAnimation()
     const [index, setIndex] = useState(0)
     const [itemWidth, setItemWidth] = useState(0)
     const itemRef = useRef<HTMLDivElement | null>(null)
+    const sessionInfo = authInfo.userId
+    const isLoggedIn = sessionInfo !== null;
 
     const items = [
         { mainText: 'Acompanhe sua leitura e ganhe XP', description: 'Registre seu progresso e metas' },
@@ -66,6 +74,9 @@ export default function HomePage() {
         })
     }, [index, itemWidth, controls])
 
+if (isLoggedIn) {
+}
+    else {
     return(
         <div className="w-screen h-screen flex flex-row bg-[#B0CC9E]">
 
@@ -153,5 +164,5 @@ export default function HomePage() {
             </div>
 
         </div>
-    )
+    )}
 }

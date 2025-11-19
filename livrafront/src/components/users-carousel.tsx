@@ -83,13 +83,13 @@ export default function UsersCarousel({ users }: UsersCarouselProps) {
                 ref={scrollContainerRef}
                 className="flex overflow-x-auto gap-4 py-4 scroll-smooth"
                 style={{ 
-                    scrollbarWidth: 'none', 
+                    scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }}
             >
                 {users.map((user) => (
-                    <div key={user.id} className="flex-shrink-0 w-[220px] rounded-full items-center justify-center flex flex-col">
-                        <ProfileIcon username={user.username} avatarUrl={user.avatarUrl} size={144} showProgress={false}/>
+                    <div key={user.id} className="flex flex-col flex-shrink-0 w-[220px] rounded-full items-center p-4 gap-2 hover:shadow-md transition-shadow medium-border-radius cursor-pointer">
+                        <ProfileIcon username={user.username} avatarUrl={user.avatarUrl} size={144} showProgress={false} style={{alignItems: "center"}}/>
                         <p className="mt-2 text-h6">{user.username}</p>
                     </div>
                 ))}

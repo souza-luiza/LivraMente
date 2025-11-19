@@ -1,10 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import Readlist from "@/components/readlist";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import ChevronLeftIcon from "@/components/icons/ChevronLeftIcon";
-import Comunidade from "./comunidade-card";
+import Comunidade from "./community-carousel-card";
 
 interface CommunityItem {
     id: string;

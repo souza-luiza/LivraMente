@@ -204,6 +204,9 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
         { id: "3", name: "Comunidade Exemplo 3", coverImageUrl: "/Readlist.svg" },
         { id: "4", name: "Comunidade Exemplo 4", coverImageUrl: "/Readlist.svg" },
         { id: "5", name: "Comunidade Exemplo 5", coverImageUrl: "/Readlist.svg" },
+        { id: "6", name: "Comunidade Exemplo 6", coverImageUrl: "/Readlist.svg" },
+        { id: "7", name: "Comunidade Exemplo 7", coverImageUrl: "/Readlist.svg" },
+        { id: "8", name: "Comunidade Exemplo 8", coverImageUrl: "/Readlist.svg" },
     ];
 
     return (
