@@ -12,7 +12,8 @@ import { ROUTING_KEYS } from '../queue/queue.constants';
 export class ComunidadesService {
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
-        @InjectModel(Post.name) private postModel: Model<Post>
+        @InjectModel(Post.name) private postModel: Model<Post>,
+        private readonly queueProducer: QueueProducerService
 ) {}
 
     async findAll() {

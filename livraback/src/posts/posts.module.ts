@@ -5,7 +5,8 @@ import { PostsController } from './posts.controller';
 import { Post, PostSchema } from '../schemas/post.schema';
 import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade.entity';
 import { User, UserSchema } from '../users/entities/user.entity';
-import { Comentario, ComentarioSchema } from '../schemas/comentario.schema' 
+import { Comentario, ComentarioSchema } from '../schemas/comentario.schema';
+import { QueueModule } from '../queue/queue.module'; 
 
 @Module({
   imports: [
