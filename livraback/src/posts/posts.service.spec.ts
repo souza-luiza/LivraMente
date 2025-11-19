@@ -14,16 +14,14 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { QueueProducerService } from '../queue/queue.producer.service';
-import { ROUTING_KEYS, FILAS } from '../queue/queue.constants';
 
 describe('PostsService', () => {
   let service: PostsService;
+  // use `any` for injected models in tests to avoid strict typing against plain mocks
   let postModel: any;
   let comunidadeModel: any;
   let userModel: any;
   let comentarioModel: any;
-  let queueProducer: jest.Mocked<QueueProducerService>;
 
   const mockUserId = '507f1f77bcf86cd799439011';
   const mockPostId = '507f1f77bcf86cd799439012';
@@ -35,6 +33,7 @@ describe('PostsService', () => {
   const mockPostObjectId = new Types.ObjectId(mockPostId);
   const mockComunidadeObjectId = new Types.ObjectId(mockComunidadeId);
 
+  // make post model a callable mock so tests can `mockImplementation` a constructor
   const mockPostModel: any = jest.fn();
   mockPostModel.findById = jest.fn();
   mockPostModel.findOne = jest.fn();
@@ -60,11 +59,6 @@ describe('PostsService', () => {
     lean: jest.fn(),
   };
 
-  const mockQueueProducer = {
-    publish: jest.fn().mockResolvedValue(undefined),
-    publicarNaFila: jest.fn().mockResolvedValue(undefined),
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -85,10 +79,6 @@ describe('PostsService', () => {
           provide: getModelToken(Comentario.name),
           useValue: mockComentarioModel,
         },
-        {
-          provide: QueueProducerService,
-          useValue: mockQueueProducer,
-        },
       ],
     }).compile();
 
@@ -97,7 +87,6 @@ describe('PostsService', () => {
     comunidadeModel = module.get<Model<Comunidade>>(getModelToken(Comunidade.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
-    queueProducer = module.get(QueueProducerService) as jest.Mocked<QueueProducerService>;
 
     jest.clearAllMocks();
   });
@@ -121,7 +110,6 @@ describe('PostsService', () => {
       ...createPostDto,
       autor: mockObjectId,
       comunidade: mockComunidadeObjectId,
-      status: PostStatus.PUBLICADO,
       populate: jest.fn().mockReturnThis(),
     };
 
@@ -145,29 +133,6 @@ describe('PostsService', () => {
       expect(comunidadeModel.findById).toHaveBeenCalledWith(mockComunidadeId);
       expect(comunidadeModel.findOne).not.toHaveBeenCalled();
       expect(postInstance.save).toHaveBeenCalled();
-      
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
-        expect.objectContaining({
-          postId: mockPostId,
-          autorId: mockUserId,
-          comunidadeId: mockComunidadeId,
-        })
-      );
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.METRICAS_POST_CRIADO,
-        expect.objectContaining({
-          postId: mockPostId,
-          comunidadeId: mockComunidadeId,
-        })
-      );
-      expect(queueProducer.publicarNaFila).toHaveBeenCalledWith(
-        FILAS.PROCESSAR_IMAGENS,
-        expect.objectContaining({
-          postId: mockPostId,
-          tipo: 'post',
-        })
-      );
     });
 
     it('should create a post successfully with comunidade name when ID not found', async () => {
@@ -247,10 +212,6 @@ describe('PostsService', () => {
       await service.createPost(mockUserId, dtoWithReview);
 
       expect(postInstance.save).toHaveBeenCalled();
-      expect(queueProducer.publish).not.toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
-        expect.anything()
-      );
     });
 
     it('should use default values when optional fields are not provided', async () => {
@@ -282,13 +243,6 @@ describe('PostsService', () => {
   describe('likePost', () => {
     const mockPost = {
       _id: mockPostObjectId,
-      autor: mockObjectId,
-      curtidas: [],
-    };
-
-    const mockPostWithDifferentAuthor = {
-      _id: mockPostObjectId,
-      autor: new Types.ObjectId('507f1f77bcf86cd799439099'),
       curtidas: [],
     };
 
@@ -299,13 +253,11 @@ describe('PostsService', () => {
 
     it('should like a post when user has not liked it', async () => {
       const updatedPost = {
-        ...mockPostWithDifferentAuthor,
+        ...mockPost,
         curtidas: [mockObjectId],
+        length: 1,
       };
-      mockPostModel.findById
-        .mockResolvedValueOnce(mockPost)
-        .mockResolvedValueOnce(mockPostWithDifferentAuthor)
-        .mockResolvedValueOnce(updatedPost);
+      mockPostModel.findById.mockResolvedValueOnce(mockPost).mockResolvedValueOnce(updatedPost);
 
       const result = await service.likePost(mockUserId, mockPostId);
 
@@ -315,14 +267,6 @@ describe('PostsService', () => {
       );
       expect(result.liked).toBe(true);
       expect(result.likeAmount).toBe(1);
-      
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_CURTIDO,
-        expect.objectContaining({
-          postId: mockPostId,
-          usuarioCurtiuId: mockUserId,
-        })
-      );
     });
 
     it('should unlike a post when user has already liked it', async () => {
@@ -333,10 +277,9 @@ describe('PostsService', () => {
       const updatedPost = {
         ...mockPost,
         curtidas: [],
+        length: 0,
       };
-      mockPostModel.findById
-        .mockResolvedValueOnce(postWithLike)
-        .mockResolvedValueOnce(updatedPost);
+      mockPostModel.findById.mockResolvedValueOnce(postWithLike).mockResolvedValueOnce(updatedPost);
 
       const result = await service.likePost(mockUserId, mockPostId);
 
@@ -346,8 +289,6 @@ describe('PostsService', () => {
       );
       expect(result.liked).toBe(false);
       expect(result.likeAmount).toBe(0);
-      
-      expect(queueProducer.publish).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when post is not found', async () => {
@@ -359,10 +300,7 @@ describe('PostsService', () => {
     });
 
     it('should throw NotFoundException when updated post is not found', async () => {
-      mockPostModel.findById
-        .mockResolvedValueOnce(mockPost)
-        .mockResolvedValueOnce(mockPost)
-        .mockResolvedValueOnce(null);
+      mockPostModel.findById.mockResolvedValueOnce(mockPost).mockResolvedValueOnce(null);
 
       await expect(
         service.likePost(mockUserId, mockPostId)
@@ -383,6 +321,8 @@ describe('PostsService', () => {
     };
 
     beforeEach(() => {
+      // findById is used in service with .populate() chain, return an object whose
+      // populate resolves to the mockPost
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockPostModel.findByIdAndDelete.mockResolvedValue({});
@@ -455,6 +395,7 @@ describe('PostsService', () => {
     };
 
     beforeEach(() => {
+      // updatePost calls findById(...).populate(...)
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockPostModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockUpdatedPost) });
@@ -541,7 +482,7 @@ describe('PostsService', () => {
 
       expect(postModel.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: mockPostId, autor: mockObjectId },
-        { $set: updatePostDto },
+        { $set: updatePostDto }, // Should not include invalidField
         { new: true }
       );
     });
@@ -567,6 +508,7 @@ describe('PostsService', () => {
     };
 
     beforeEach(() => {
+      // moderatePost uses findById(...).populate(...)
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockPostModel.findByIdAndDelete.mockResolvedValue({});
@@ -580,16 +522,6 @@ describe('PostsService', () => {
       expect(mockPost.save).toHaveBeenCalled();
       expect(result.message).toBe('Post moderado com sucesso');
       expect(result.status).toBe('Aprovado');
-      
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_MODERADO,
-        expect.objectContaining({
-          postId: mockPostId,
-          autorId: mockUserId,
-          aprovado: true,
-          categoria: PostCategoria.GERAL,
-        })
-      );
     });
 
     it('should reject post successfully', async () => {
@@ -600,13 +532,6 @@ describe('PostsService', () => {
       expect(postModel.findByIdAndDelete).toHaveBeenCalledWith(mockPostId);
       expect(result.message).toBe('Post moderado com sucesso');
       expect(result.status).toBe('Rejeitado');
-      
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_MODERADO,
-        expect.objectContaining({
-          aprovado: false,
-        })
-      );
     });
 
     it('should throw NotFoundException when post is not found', async () => {
@@ -638,7 +563,7 @@ describe('PostsService', () => {
     });
 
     it('should throw BadRequestException when approving without category', async () => {
-      const invalidDto = { aprovar: true } as any;
+      const invalidDto = { aprovar: true } as any; // No category
 
       await expect(
         service.moderatePost(mockModeratorId, mockPostId, invalidDto)
@@ -686,6 +611,7 @@ describe('PostsService', () => {
     });
 
     it('should throw NotFoundException when post is not found in community', async () => {
+      // Service calls findOne(...).populate(...).populate(...), so return a chainable
       mockPostModel.findOne.mockReturnValue({
         populate: jest.fn().mockReturnValue({
           populate: jest.fn().mockResolvedValue(null),
@@ -709,6 +635,7 @@ describe('PostsService', () => {
     ];
 
     beforeEach(() => {
+      // getComments only checks existence with findOne (no populate), so return the post directly
       mockPostModel.findOne.mockResolvedValue(mockPost);
       mockComentarioModel.find.mockReturnValue({
         sort: jest.fn().mockReturnValue({

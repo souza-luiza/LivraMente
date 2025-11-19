@@ -14,30 +14,23 @@ async function bootstrap() {
 
   await mongoose.connect(process.env.DB_URL);
 
-  app.use(
-    session({
-      store: MongoStore.create({
-        mongoUrl: process.env.DB_URL,
-        collectionName: 'sessions', // colecao onde sessoes vao ficar
-      }),
-      name: 'sessionId',
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24, // 1 dia
-      },
-    }),
-  );
-
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
   app.enableCors({
     origin: allowedOrigins,  
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
+  });
+
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Origin', allowedOrigins);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+      return res.status(200).end();
+    }
+    next();
   });
 
   app.useGlobalPipes(
@@ -58,6 +51,24 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
   // ####################################################################
+
+  app.use(
+    session({
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_URL,
+        collectionName: 'sessions', // colecao onde sessoes vao ficar
+      }),
+      name: 'sessionId',
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24, // 1 dia
+      },
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3001);
 }

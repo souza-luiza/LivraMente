@@ -18,7 +18,6 @@ export class PostsService {
     @InjectModel(Comunidade.name) private comunidadeModel: Model<Comunidade>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
-    private readonly queueProducer: QueueProducerService,
   ) {}
 
   async createPost(userId: string, createPostDto: CreatePostDto) {
@@ -87,43 +86,6 @@ export class PostsService {
       ),
     ]);
 
-    // Publicar eventos assíncronos 
-    try {
-      // Notificar membros sobre novo post 
-      if (status === PostStatus.PUBLICADO) {
-        await this.queueProducer.publish(
-          ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
-          {
-            postId: (savedPost._id as Types.ObjectId).toString(),
-            autorId: userId,
-            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
-            conteudoPreview: createPostDto.conteudo.substring(0, 100),
-          }
-        );
-
-        // Atualizar métricas da comunidade
-        await this.queueProducer.publish(
-          ROUTING_KEYS.METRICAS_POST_CRIADO,
-          {
-            postId: (savedPost._id as Types.ObjectId).toString(),
-            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
-            categoria,
-          }
-        );
-      }
-
-      // Processar imagens se houver
-      if (createPostDto.imagens && createPostDto.imagens.length > 0) {
-        await this.queueProducer.publicarNaFila(FILAS.PROCESSAR_IMAGENS, {
-          postId: (savedPost._id as Types.ObjectId).toString(),
-          imagens: createPostDto.imagens,
-          tipo: 'post',
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao publicar eventos do post:', error);
-    }
-
     return savedPost.populate('autor', 'username nome_exibicao imagem_perfil');
   }
 
@@ -143,22 +105,6 @@ export class PostsService {
       // Curtir
       await this.postModel.updateOne({ _id: postId }, { $addToSet: { curtidas: id } });
 
-      // Notificar autor do post 
-      const fullPost = await this.postModel.findById(postId, 'autor');
-      if (fullPost && !fullPost.autor.equals(id)) {
-        try {
-          await this.queueProducer.publish(
-            ROUTING_KEYS.NOTIFICAR_POST_CURTIDO,
-            {
-              postId: postId,
-              autorPostId: fullPost.autor.toString(),
-              usuarioCurtiuId: userId,
-            }
-          );
-        } catch (error) {
-          console.error('Erro ao publicar notificação de curtida:', error);
-        }
-      }
     }
 
     const updatedPost = await this.postModel.findById(postId, 'curtidas');
@@ -287,21 +233,6 @@ export class PostsService {
           { $pull: { posts: post._id } }
         ),
       ]);
-    }
-
-    // Notificar autor sobre resultado da moderação
-    try {
-      await this.queueProducer.publish(
-        ROUTING_KEYS.NOTIFICAR_POST_MODERADO,
-        {
-          postId: postId,
-          autorId: post.autor._id.toString(),
-          aprovado: moderarPostDto.aprovar,
-          categoria: moderarPostDto.aprovar ? moderarPostDto.categoria : null,
-        }
-      );
-    } catch (error) {
-      console.error('Erro ao publicar notificação de moderação:', error);
     }
 
     return { 

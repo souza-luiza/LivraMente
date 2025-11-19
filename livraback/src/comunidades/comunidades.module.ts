@@ -4,16 +4,12 @@ import { ComunidadesService } from './comunidades.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Comunidade, ComunidadeSchema } from './entities/comunidade.entity';
 import { Post, PostSchema } from '../schemas/post.schema';
-import { QueueModule } from '../queue/queue.module';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: Comunidade.name, schema: ComunidadeSchema },
-            { name: Post.name, schema: PostSchema },
-        ]),
-        forwardRef(() => QueueModule),
-    ],
+    imports: [MongooseModule.forFeature([
+        { name: Comunidade.name, schema: ComunidadeSchema },
+        { name: Post.name, schema: PostSchema },
+    ])],
     controllers: [ComunidadesController],
     providers: [ComunidadesService],
     exports: [ComunidadesService]

@@ -9,7 +9,6 @@ import Sidebar from "@/components/sidebar";
 import ProfileIcon from "@/components/profile-icon";
 import EditIcon from "@/components/icons/EditIcon";
 import ProfileReadlists from "@/components/profile-readlists";
-import ProfilePosts from "@/components/profile-posts";
 import ProfileBadge from "@/components/profile-badge";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import LogoIcon from "@/components/icons/LogoIcon";
@@ -157,7 +156,6 @@ export default function UserProfilePage(){
                             Postagens<ChevronRightIcon width={24} height={24}/>
                         </Link>
                         <div className="flex-1 overflow-y-auto">
-                            <ProfilePosts username={username} />
                         </div>
                     </div>
                 </div>
