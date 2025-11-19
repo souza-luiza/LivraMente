@@ -33,12 +33,9 @@ jest.mock('@langchain/google-genai', () => ({
   ChatGoogleGenerativeAI: jest.fn(() => ({})),
 }));
 
-const mockDuckDuckGoTool = { 
-  name: 'duckduckgo_search', 
-  description: 'Search the web' 
-};
+const mockDuckInstance = { name: 'duckduckgo_search', description: 'search' };
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
-  DuckDuckGoSearch: jest.fn().mockImplementation(() => mockDuckDuckGoTool),
+  DuckDuckGoSearch: jest.fn().mockImplementation(() => mockDuckInstance),
 }));
 
 // --- Mocks dos Serviços Internos ---
@@ -59,13 +56,13 @@ const mockTools = {
   users_get_my_readlists: { name: 'users_get_my_readlists', description: 'd14' },
   gravar_leitura: { name: 'gravar_leitura', description: 'd15' },
   users_get_my_profile: { name: 'users_get_my_profile', description: 'd16' },
-  users_get_my_favorites: { name: 'users_get_my_favorites', description: 'd17' },
+  users_get_my_favorites_readlists: { name: 'users_get_my_favorites_readlists', description: 'd17' },
 };
 
 // Lista esperada de ferramentas
 const mockToolsArray = [
   ...Object.values(mockTools),
-  mockDuckDuckGoTool, // Adiciona o mock do DuckDuckGo
+  mockDuckInstance, // Adiciona o mock do DuckDuckGo
 ];
 
 const mockLlmToolsService = {
@@ -85,7 +82,7 @@ const mockLlmToolsService = {
   createUsersGetMyReadlistsTool: jest.fn(() => mockTools.users_get_my_readlists),
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
-  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites),
+  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites_readlists),
 };
 
 const mockConfigService = {
@@ -122,20 +119,51 @@ describe('LlmAgentService', () => {
 
     it('deve chamar todas as fábricas de ferramentas', async () => {
       await service.runAnalysisAgent(userPrompt, userId);
-      
+
+      // Verifica ferramentas principais
       expect(mockLlmToolsService.createGetUserStoriesTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createGetRecentStoriesTool).toHaveBeenCalled();
       expect(mockLlmToolsService.createGetPopularPostsInCommunityTool).toHaveBeenCalled();
+
+      // Verifica ferramentas de comunidade
+      expect(mockLlmToolsService.createGetCommunitiesTool).toHaveBeenCalled();
+      expect(mockLlmToolsService.createGetPopularCommunitiesTool).toHaveBeenCalled();
+      expect(mockLlmToolsService.createJoinCommunityTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createLeaveCommunityTool).toHaveBeenCalledWith(userId);
+
+      // Verifica ferramentas de readlist
+      expect(mockLlmToolsService.createFindReadlistByNameTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createAddBookToReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createRemoveBookFromReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createCreateReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createDeleteReadlistTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createUsersGetMyReadlistsTool).toHaveBeenCalledWith(userId);
+      
+      // Verifica ferramentas auxiliares
+      expect(mockLlmToolsService.createGravarLeituraTool).toHaveBeenCalledWith(userId);
+      expect(mockLlmToolsService.createUsersGetMyProfileTool).toHaveBeenCalledWith(userId);
       expect(mockLlmToolsService.createUsersGetMyFavoritesReadlistsTool).toHaveBeenCalledWith(userId);
+
+      expect(DuckDuckGoSearch).toHaveBeenCalledTimes(1);
     });
 
     it('deve chamar createAgent com as ferramentas corretas (incluindo DuckDuckGo)', async () => {
       await service.runAnalysisAgent(userPrompt, userId);
-      
+
       expect(createAgent).toHaveBeenCalledWith({
         llm: expect.any(Object),
-        tools: expect.arrayContaining(mockToolsArray),
+        tools: expect.arrayContaining([
+          ...Object.values(mockTools),
+          mockDuckInstance // O objeto retornado pelo mock do DuckDuckGo
+        ]),
         prompt: expect.any(Object),
+      });
+    });
+
+    it('deve invocar o AgentExecutor com o input correto', async () => {
+      await service.runAnalysisAgent(userPrompt, userId);
+      expect(mockAgentInvoke).toHaveBeenCalledWith({
+        input: userPrompt
       });
     });
   });
