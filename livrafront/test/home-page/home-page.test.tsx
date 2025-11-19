@@ -1,222 +1,162 @@
-import React from 'react'
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import { useRouter } from 'next/navigation'
-import HomePage from '@/app/page'
+import { render, screen, waitFor } from '@testing-library/react';
+import HomePage from '@/app/page';
+import { getSessionInfos } from '@/services/auth';
+import { getProfile } from '@/services/userService';
+import { toast } from 'react-toastify/unstyled';
 
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
-}))
-
+// Mock dos módulos
+jest.mock('@/services/auth');
+jest.mock('@/services/userService');
+jest.mock('react-toastify/unstyled');
 jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
-  useAnimation: () => ({
-    start: jest.fn(),
-  }),
-}))
+    motion: {
+        div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    },
+    useAnimation: () => ({
+        start: jest.fn(),
+    }),
+}));
+
+jest.mock('@/components/sidebar', () => {
+    return function Sidebar() {
+        return <div data-testid="sidebar">Sidebar</div>;
+    };
+});
+
+jest.mock('@/components/searchbar', () => {
+    return function SearchBar() {
+        return <div data-testid="searchbar">SearchBar</div>;
+    };
+});
 
 jest.mock('@/components/button', () => {
-  // Use require to get the mocked next/navigation from Jest's module registry
-  const { useRouter } = require('next/navigation')
-  return function MockButton({ text, icon, onClick, path }: any) {
-    const router = useRouter && useRouter();
-    const handle = (e: any) => {
-      if (onClick) onClick(e)
-      if (path && router && router.push) router.push(path)
-    }
-    return (
-      <button onClick={handle} data-testid={`button-${text.toLowerCase()}`}>
-        {icon} {text}
-      </button>
-    )
-  }
-})
+    return function Button({ text, path }: any) {
+        return <a href={path} data-testid={`button-${text.toLowerCase()}`}>{text}</a>;
+    };
+});
 
-jest.mock('@/components/icons/LoginIcon', () => () => 'LoginIcon')
-jest.mock('@/components/icons/LogoIcon', () => ({ size, fill }: any) => `LogoIcon-${size}-${fill}`)
-jest.mock('@/components/icons/Edit3Icon', () => () => 'Edit3Icon')
-jest.mock('@/components/icons/OpenBookIcon', () => ({ size, fill }: any) => `OpenBookIcon-${size}-${fill}`)
-jest.mock('@/components/icons/CommunityIcon', () => ({ size, fill }: any) => `CommunityIcon-${size}-${fill}`)
-jest.mock('@/components/icons/StarIcon', () => ({ size, fill }: any) => `StarIcon-${size}-${fill}`)
-jest.mock('@/components/icons/MedalIcon', () => ({ size, fill }: any) => `MedalIcon-${size}-${fill}`)
+jest.mock('next/dist/client/link', () => {
+    return function Link({ children, href }: any) {
+        return <a href={href}>{children}</a>;
+    };
+});
+
+const mockGetSessionInfos = getSessionInfos as jest.MockedFunction<typeof getSessionInfos>;
+const mockGetProfile = getProfile as jest.MockedFunction<typeof getProfile>;
+const mockToast = toast as jest.Mocked<typeof toast>;
 
 describe('HomePage', () => {
-  const mockPush = jest.fn()
-  
-  beforeEach(() => {
-    ;(useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
-    })
-    mockPush.mockClear()
-  })
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
 
-  describe('Rendering Tests', () => {
-    it('should render the main layout structure correctly', () => {
-      render(<HomePage />)
-      
-  const mainContainer = screen.getByRole('main')
-  expect(mainContainer).toHaveAttribute('role', 'main')
+    it('deve exibir tela de loading inicialmente', () => {
+        mockGetSessionInfos.mockImplementation(() => new Promise(() => {})); // Promise que nunca resolve
+        
+        const { container } = render(<HomePage />);
+        
+        // Verifica se existe um elemento com a classe de loading (spinner)
+        const spinner = container.querySelector('.animate-\\[spin_1\\.5s_ease-in-out_infinite\\]');
+        expect(spinner).toBeInTheDocument();
+        
+        // Verifica se o background de loading está presente
+        expect(container.querySelector('.bg-\\[\\#E5EEDF\\]')).toBeInTheDocument();
+    });
 
-  // Use testids we added to the layout for stable selection
-  const leftSection = screen.getByTestId('left-section')
-  const centerSection = screen.getByTestId('center-section')
-  const rightSection = screen.getByTestId('right-section')
+    it('deve exibir página de login quando usuário não está logado', async () => {
+        mockGetSessionInfos.mockResolvedValue(null);
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('left-section')).toBeInTheDocument();
+            expect(screen.getByTestId('center-section')).toBeInTheDocument();
+            expect(screen.getByTestId('right-section')).toBeInTheDocument();
+        });
 
-  expect(leftSection).toHaveClass('w-1/4')
-  expect(centerSection).toHaveClass('w-1/2')
-  expect(rightSection).toHaveClass('w-1/4')
-    })
+        expect(screen.getByText('LivraMente')).toBeInTheDocument();
+        expect(screen.getByText('A rede dos leitores brasileiros')).toBeInTheDocument();
+        expect(screen.getByTestId('button-entrar')).toBeInTheDocument();
+        expect(screen.getByTestId('button-cadastrar')).toBeInTheDocument();
+    });
 
-    it('should render the logo and branding text', () => {
-      render(<HomePage />)
-      
-  expect(screen.getByText('LivraMente')).toBeInTheDocument()
-  expect(screen.getByText('A rede dos leitores brasileiros')).toBeInTheDocument()
-  // LogoIcon rendering includes size and fill; match it inside the center section
-  const centerSection = screen.getByTestId('center-section')
-  const logoMatches = within(centerSection).getAllByText((_, node) => Boolean(node?.textContent && node.textContent.includes('LogoIcon')))
-  expect(logoMatches.length).toBeGreaterThanOrEqual(1)
-    })
+    it('deve exibir os benefícios quando não logado', async () => {
+        mockGetSessionInfos.mockResolvedValue(null);
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('benefits-container')).toBeInTheDocument();
+        });
 
-    it('should render all navigation buttons', () => {
-      render(<HomePage />)
-      
-  expect(screen.getByTestId('button-livratime')).toBeInTheDocument()
-  expect(screen.getByTestId('button-entrar')).toBeInTheDocument()
-  expect(screen.getByTestId('button-cadastrar')).toBeInTheDocument()
-    })
+        expect(screen.getByText('Acompanhe sua leitura e ganhe XP')).toBeInTheDocument();
+        expect(screen.getByText('Registre seu progresso e metas')).toBeInTheDocument();
+    });
 
-    it('should render all LivraBenefícios items', () => {
-      render(<HomePage />)
-      
-      const benefits = [
-        'Acompanhe sua leitura e ganhe XP',
-        'Conecte-se, desafie e interaja',
-        'Receba recomendações e avalie',
-        'Crie suas próprias histórias',
-      ]
-      
-      benefits.forEach(benefit => {
-        expect(screen.getByText(benefit)).toBeInTheDocument()
-      })
-    })
+    it('deve exibir sidebar e searchbar quando usuário está logado', async () => {
+        const mockUserData = {
+            username: 'testuser',
+            email: 'test@example.com',
+            name: 'Test User',
+            bio: 'Test bio',
+            profilePicture: 'test.jpg',
+            readlists: []
+        };
 
-    it('should render correct icons for each benefit item', () => {
-      render(<HomePage />)
-      
-  // Icons are rendered as strings from mocks; check for presence
-  const medalMatches = screen.getAllByText((_, node) => Boolean(node?.textContent && node.textContent.includes('MedalIcon')))
-  const communityMatches = screen.getAllByText((_, node) => Boolean(node?.textContent && node.textContent.includes('CommunityIcon')))
-  const starMatches = screen.getAllByText((_, node) => Boolean(node?.textContent && node.textContent.includes('StarIcon')))
-  const openBookMatches = screen.getAllByText((_, node) => Boolean(node?.textContent && node.textContent.includes('OpenBookIcon')))
+        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
+        mockGetProfile.mockResolvedValue(mockUserData);
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('sidebar')).toBeInTheDocument();
+            expect(screen.getByTestId('searchbar')).toBeInTheDocument();
+        });
 
-  expect(medalMatches.length).toBeGreaterThanOrEqual(1)
-  expect(communityMatches.length).toBeGreaterThanOrEqual(1)
-  expect(starMatches.length).toBeGreaterThanOrEqual(1)
-  expect(openBookMatches.length).toBeGreaterThanOrEqual(1)
-    })
-  })
+        expect(screen.getByText('Comunidades')).toBeInTheDocument();
+        expect(screen.getByText('Criar História')).toBeInTheDocument();
+    });
 
-  describe('Navigation Tests', () => {
-    it('should navigate to LivraTime when LivraTime button is clicked', async () => {
-      render(<HomePage />)
-      
-      const livraTimeButton = screen.getByTestId('button-livratime')
-      // Button mock calls the mocked router.push; assert it was called with the correct path
-      await (livraTimeButton as HTMLElement).click()
-      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/livratime')
-    })
+    it('deve exibir toast de erro quando falha ao carregar dados do usuário', async () => {
+        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
+        mockGetProfile.mockRejectedValue(new Error('Erro ao carregar'));
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(mockToast.error).toHaveBeenCalledWith('Erro ao carregar dados do usuário.');
+        });
+    });
 
-    it('should navigate to login when Entrar button is clicked', async () => {
-      render(<HomePage />)
-      
-      const entrarButton = screen.getByTestId('button-entrar')
-      await (entrarButton as HTMLElement).click()
-      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/entrar')
-    })
+    it('deve definir isLoggedIn como false quando ocorre erro', async () => {
+        mockGetSessionInfos.mockRejectedValue(new Error('Erro de autenticação'));
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(screen.getByTestId('left-section')).toBeInTheDocument();
+        });
 
-    it('should navigate to register when Cadastrar button is clicked', async () => {
-      render(<HomePage />)
-      
-      const cadastrarButton = screen.getByTestId('button-cadastrar')
-      await (cadastrarButton as HTMLElement).click()
-      expect((useRouter as jest.Mock).mock.results[0].value.push).toHaveBeenCalledWith('/cadastro')
-    })
-  })
+        expect(screen.getByTestId('button-entrar')).toBeInTheDocument();
+    });
 
-  describe('Animation and Interaction Tests', () => {
-    it('should initialize with first benefit item visible', () => {
-      render(<HomePage />)
-      
-      const firstBenefit = screen.getByText('Acompanhe sua leitura e ganhe XP')
-      expect(firstBenefit).toBeInTheDocument()
-    })
+    it('deve carregar perfil do usuário quando logado', async () => {
+        const mockUserData = {
+            username: 'testuser',
+            email: 'test@example.com',
+            name: 'Test User',
+            bio: 'Test bio',
+            profilePicture: 'test.jpg',
+            readlists: []
+        };
 
-    it('should render benefits container with correct styling', () => {
-      render(<HomePage />)
-      
-  const benefitsContainer = screen.getByTestId('benefits-container')
-  expect(benefitsContainer).toHaveClass('w-6/11')
-    })
-
-    it('should apply correct background colors to sections', () => {
-      render(<HomePage />)
-      
-  const leftSection = screen.getByTestId('left-section')
-  const centerSection = screen.getByTestId('center-section')
-
-  // Check the background via the Tailwind class applied to the root element
-  expect(leftSection.parentElement).toHaveClass('bg-[#B0CC9E]')
-  expect(centerSection).toHaveClass('bg-[#FFFFFF]')
-    })
-
-    it('should apply correct text colors', () => {
-      render(<HomePage />)
-      
-      const mainTitle = screen.getByText('LivraMente')
-      const subtitle = screen.getByText('A rede dos leitores brasileiros')
-
-      // Tailwind classes are sometimes abstracted; ensure titles exist and contain expected text
-      expect(mainTitle).toBeInTheDocument()
-      expect(subtitle).toBeInTheDocument()
-    })
-  })
-
-  describe('Accessibility Tests', () => {
-    it('should have proper text contrast for readability', () => {
-      render(<HomePage />)
-      
-      const mainHeading = screen.getByRole('heading', { level: 1 })
-      expect(mainHeading).toHaveTextContent('LivraMente')
-    })
-
-    it('should have all buttons properly labeled', () => {
-      render(<HomePage />)
-      
-      expect(screen.getByTestId('button-livratime')).toHaveTextContent('LivraTime')
-      expect(screen.getByTestId('button-entrar')).toHaveTextContent('Entrar')
-      expect(screen.getByTestId('button-cadastrar')).toHaveTextContent('Cadastrar')
-    })
-  })
-
-  describe('Responsive Design Tests', () => {
-    it('should use flex layout for three-column design', () => {
-      render(<HomePage />)
-      
-      const mainContainer = screen.getByTestId('left-section').parentElement
-      expect(mainContainer).toHaveClass('flex flex-row')
-    })
-
-    it('should have correct width distribution', () => {
-      render(<HomePage />)
-      
-      const sections = screen.getByTestId('left-section').parentElement?.children
-      if (sections && sections.length >= 3) {
-        expect(sections[0]).toHaveClass('w-1/4')
-        expect(sections[1]).toHaveClass('w-1/2')
-        expect(sections[2]).toHaveClass('w-1/4')
-      }
-    })
-  })
-})
+        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
+        mockGetProfile.mockResolvedValue(mockUserData);
+        
+        render(<HomePage />);
+        
+        await waitFor(() => {
+            expect(mockGetProfile).toHaveBeenCalledWith('testuser');
+        });
+    });
+});

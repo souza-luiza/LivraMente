@@ -215,14 +215,10 @@ export default function HomePage() {
                     </nav>
                     <main className="flex-1 flex items-center justify-center">
                         <div className="relative flex items-center justify-center">
-                            <div className='flex flex-col'>
-                                <Link href="/comunidades" className="text-[#5C8046] hover:underline">
-                                    Comunidades
-                                </Link>
-                                <Link href="/criar-historia" className="text-[#5C8046] hover:underline">
-                                    Criar História
-                                </Link>
-
+                            <div className='flex flex-col gap-4 align-middle items-center'>
+                                <Button icon={<CommunityIcon />} colorScheme="dark-green" size="large" path="/comunidades" text="Comunidades" />
+                                <Button icon={<OpenBookIcon />} colorScheme="dark-green" size="large" path="/criar-historia" text="Criar História" />
+                                <Button icon={<LogoIcon/>} colorScheme='dark-green' size='large' path='/livratime' text='Créditos'/>
                             </div>  
                         </div>
                     </main>
