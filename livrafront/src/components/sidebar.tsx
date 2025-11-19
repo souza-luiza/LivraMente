@@ -6,6 +6,7 @@ import ProfileIcon from "./icons/ProfileIcon";
 import NotificationsIcon from "./icons/NotificationsIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
+import SearchIcon from "./icons/SearchIcon";
 
 export default function Sidebar() {
     return (
@@ -14,6 +15,7 @@ export default function Sidebar() {
                 <div className="flex flex-col gap-[8px]">   
                     <Button icon={<LogoIcon />} colorScheme="light-green" size="large" tooltip="Início" />
                     <Button icon={<HomeIcon />} colorScheme="light-green" size="large" tooltip="Início" />
+                    <Button icon={<SearchIcon />} colorScheme="light-green" size="large" path="/busca" tooltip="Buscar" />
                     <Button icon={<ProfileIcon />} colorScheme="light-green" size="large" tooltip="Perfil" />
                     <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" tooltip="Notificações" />
                     <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/configuracoes" tooltip="Configurações" />

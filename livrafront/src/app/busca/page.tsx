@@ -1,13 +1,6 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Button from "@/components/button";
 import Sidebar from "@/components/sidebar";
-import ProfileIcon from "@/components/profile-icon";
-import EditIcon from "@/components/icons/EditIcon";
-import ProfileReadlists from "@/components/profile-readlists";
-import ProfilePosts from "@/components/profile-posts";
-import ProfileBadge from "@/components/profile-badge";
 import ChevronRightIcon from "@/components/icons/ChevronRightIcon";
 import SearchBar from "@/components/searchbar";
 import HeartIcon from "@/components/icons/HeartIcon";
@@ -21,9 +14,6 @@ import ComedyIcon from "@/components/icons/ComedyIcon";
 import DystopiaIcon from "@/components/icons/DystopiaIcon";
 import DramaIcon from "@/components/icons/DramaIcon";
 import MysteryIcon from "@/components/icons/MysteryIcon";
-import AuthorLink from "@/components/author-link";
-import { image } from "framer-motion/client";
-import Readlist from "@/components/readlist";
 import ReadlistCarousel from "@/components/readlist-carousel";
 
 interface SearchPageProps {
@@ -210,13 +200,13 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                             href="#" 
                             className="flex flex-col sm:flex-row p-4 bg-[var(--primary-700)] dark-green rounded-xl hover:brightness-90 transition-all gap-4 relative group"
                         >
-                            <div className="flex-shrink-0 w-full sm:w-auto h-[200px]">
+                            <div className="flex-shrink-0 w-full sm:w-auto h-[248px]"> {/*Mesmo tamanho do Livros Relacionados*/}
                                 <Image 
                                     className="rounded-lg h-full w-full sm:w-auto object-cover" 
                                     src="/JogosVorazes.jpg" 
                                     alt="Jogos Vorazes" 
-                                    width={180} 
-                                    height={200}
+                                    width={140} 
+                                    height={160}
                                 />
                             </div>
                             
@@ -226,7 +216,7 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                                 </h4>
                                 
                                 <div className="flex flex-wrap gap-2 mb-2 items-center">
-                                    <span className="text-h6 brightness-90">Livro</span>
+                                    <span className="text-h6 brightness-90" style={{fontWeight: "lighter"}}>Livro</span>
                                     <span className="text-h6 brightness-90">•</span>
                                     <span className="text-h6 brightness-90 hover:brightness-100 hover:underline cursor-pointer">
                                         Suzanne Collins
@@ -236,7 +226,7 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                         </Link>
                     </div>
                     <div className="flex flex-col w-full lg:w-1/2">
-                        <h4 className="text-h4 pb-4">Livros Relacionados</h4>
+                        <h4 className="flex text-h4 items-center pb-6">Livros Relacionados</h4>
                         <div className="flex flex-col gap-4 bg-white p-4 rounded-xl">
                             {relatedBooks.map((book) => (
                                 <Link 
@@ -244,13 +234,13 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                                     href={book.href} 
                                     className="flex items-center gap-4 p-1 rounded-lg hover:bg-gray-50 transition-all"
                                 >
-                                    <div className="w-16 h-20 flex-shrink-0">
+                                    <div className="w-12 h-16 flex-shrink-0">
                                         <Image 
                                             className="rounded-lg object-cover w-full h-full"
                                             src={book.imageSrc} 
                                             alt={book.title} 
-                                            width={40}
-                                            height={60}
+                                            width={48}
+                                            height={64}
                                         />
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
@@ -268,6 +258,12 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                 <div className="w-full mt-8 mx-4 md:mx-8 pr-4 md:pr-8">
                     <Link className="flex items-center text-h3 body-underline pb-4" href="#">
                         Readlists Relacionadas <ChevronRightIcon size={40}/>
+                    </Link>
+                    <ReadlistCarousel readlists={relatedReadlists} />
+                </div>
+                <div className="w-full mt-8 mx-4 md:mx-8 pr-4 md:pr-8">
+                    <Link className="flex items-center text-h3 body-underline pb-4" href="#">
+                        Comunidades Relacionadas <ChevronRightIcon size={40}/>
                     </Link>
                     <ReadlistCarousel readlists={relatedReadlists} />
                 </div>
