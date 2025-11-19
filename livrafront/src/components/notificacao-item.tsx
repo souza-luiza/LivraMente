@@ -51,6 +51,19 @@ export default function NotificacaoItem({
                     router.push(`/comunidade/${notificacao.comunidadeNome}`);
                 }
                 break;
+
+            case 'curtida_post':
+            case 'comentario_post':
+                if (notificacao.postId && notificacao.comunidadeNome) {
+                    router.push(`/comunidade/${notificacao.comunidadeNome}/post/${notificacao.postId}`);
+                }
+                break;
+        
+            case 'moderacao_post':
+                if (notificacao.postId && notificacao.comunidadeNome) {
+                    router.push(`/comunidade/${notificacao.comunidadeNome}/post/${notificacao.postId}`);
+                }
+                break;
             default:
                 break;
         }
