@@ -49,7 +49,7 @@ describe('NotificacoesStore - Persistência', () => {
 
     describe('Persistência no localStorage', () => {
         it('deve salvar notificações no localStorage ao adicionar', () => {
-            const { adicionarNotificacao, notificacoes } = useNotificationsStore.getState();
+            const { adicionarNotificacao } = useNotificationsStore.getState();
             
             adicionarNotificacao(mockNotificacao1);
             
