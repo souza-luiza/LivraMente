@@ -1,21 +1,29 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useUserStore } from "@/stores/user-store";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
 import { toast } from "react-toastify";
-import  TrashIcon from "@/components/icons/TrashIcon";
+import ToastNotification from '@/components/toast-notification';
+import TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
 import EditIcon from "@/components/icons/EditIcon";
+import ImageCropModal from "@/components/ImageCropModal";
+import { updateAvatar, updateProfile } from "@/services/userService";
+import { User } from "@/types/auth";
+import { getSessionInfos } from "@/services/auth";
 
-// Renomeado para refletir a função da página
-export default function SettingsProfilePage() {
+export default function EditProfilePage() {
   const router = useRouter();
-  const { username, pronouns, profileImageUrl, setUsername, setPronouns, setProfileImageUrl } = useUserStore();
+  const params = useParams();
+  const { username } = params as { username: string };
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<User>();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,20 +32,45 @@ export default function SettingsProfilePage() {
   });
 
   const [errors, setErrors] = useState({ name: "", pronouns: "", profileImageUrl: "" });
-
-  useEffect(() => {
-    setFormData({
-      name: username,
-      pronouns: pronouns,
-      profileImageUrl: profileImageUrl,
-    });
-  }, [username, pronouns, profileImageUrl]);
+  const [tempImageUrl, setTempImageUrl] = useState<string>("");
+  const [croppedImageBlob, setCroppedImageBlob] = useState<Blob | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   useEffect(() => {
     if(!username) {
-      router.push("/login");
+      router.replace('/not-found');
+      return;
     }
-  }, [username, profileImageUrl, router]);
+
+    const fetchData = async () => {
+      try {
+        const info = await getSessionInfos();
+        if(!info) {
+          router.replace('/not-found');
+          return;
+        }
+        if(info.username !== username) { // se tenta acessar editar perfil de outra pessoa
+          router.replace('/not-found');
+          return;
+        }
+        setUserInfo(info);
+        setFormData({
+          name: info.username || '',
+          pronouns: info.pronouns || '',
+          profileImageUrl: info.avatarUrl || '',
+        });
+
+      } catch (error) {
+          toast.error("Erro ao carregar dados do usuário.");
+          router.replace('/entrar');
+          return;
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [username, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,34 +89,102 @@ export default function SettingsProfilePage() {
     return isValid;
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImageUrl(reader.result as string);
+      setShowCropModal(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropSave = (croppedBlob: Blob) => {
+    setCroppedImageBlob(croppedBlob);
+    const previewUrl = URL.createObjectURL(croppedBlob);
+    setFormData(prev => ({ ...prev, profileImageUrl: previewUrl }));
+    setShowCropModal(false);
+    toast.info('Imagem pronta. Clique em "Salvar Alterações" para confirmar.');
+  };
+
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setTempImageUrl("");
+    // Resetar o input de arquivo para permitir selecionar a mesma imagem novamente
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCancel = () => {
+    // Limpar preview e blob se houver
+    if (croppedImageBlob) {
+      URL.revokeObjectURL(formData.profileImageUrl);
+      setCroppedImageBlob(null);
+    }
+    
+    // Resetar formulário para valores originais
+    setFormData({
+      name: username,
+      pronouns: userInfo?.pronouns || '',
+      profileImageUrl: userInfo?.avatarUrl || '',
+    });
+    
+    router.back();
+  };
+
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    try {
-      // Simulando uma chamada de API que sempre funciona
-      //console.log("Salvando dados:", formData);
+    setIsLoading(true);
 
-      setUsername(formData.name);
-      setPronouns(formData.pronouns); 
-      setProfileImageUrl(formData.profileImageUrl);
+    try {
+      // Atualizar avatar se houver imagem cortada
+      if (croppedImageBlob) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', croppedImageBlob, 'avatar.jpg');
+
+        await updateAvatar(formDataUpload);
+      }
+
+      // Atualizar dados do perfil
+      await updateProfile({ username: formData.name, pronouns: formData.pronouns })
+
       toast.success("Perfil atualizado com sucesso!");
-      // router.push("/profile");
+      router.push(`/${formData.name}`);
     } catch (error) {
-      toast.error("Erro de conexão.");
+      if(error instanceof Error && error.message === "Failed to fetch") 
+        toast.error("Não foi possível conectar ao servidor.");
+      else
+        toast.error(error instanceof Error ? error.message : "Erro ao atualizar dados do usuário.");
+    } finally {
+      setIsLoading(false);
+      setCroppedImageBlob(null);
     }
   };
-
-  if (!username) {
-    return null; // Ou um indicador de carregamento
-  }
 
   return (
     <div className="flex items-center h-screen bg-gray-50">
       <Sidebar />
 
       <main className="flex-grow flex flex-col overflow-hidden">
-
         <div className="flex-grow overflow-y-auto p-8">
           <div className="max-w-2xl mx-auto bg-white large-border-radius p-8 shadow-sm">
             <h1 className="text-h4 font-bold text-[#23160A] mb-6">
@@ -92,16 +193,32 @@ export default function SettingsProfilePage() {
 
             <form onSubmit={handleSaveChanges} className="space-y-6">
               <div className="flex items-center gap-4">
-                <Image
-                  className="w-24 h-24 rounded-full object-cover"
-                  src={profileImageUrl || "/default-profile.png"}
-                  width={100}
-                  height={100}
-                  alt="Foto do Perfil"
-                  // Adiciona um fallback para caso a imagem quebre - obs.: é um teste
-                  onError={(e) => { e.currentTarget.src = profileImageUrl; }}
+                <div className="relative">
+                  <Image
+                    className="w-24 h-24 rounded-full object-cover"
+                    src={formData.profileImageUrl || "/AbstractUser.png"}
+                    width={100}
+                    height={100}
+                    alt="Foto do Perfil"
+                    onError={(e) => { e.currentTarget.src = "/AbstractUser.png"; }}
+                  />
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
                 />
-                <Button icon={<EditIcon />} colorScheme="dark-green" size="medium" text='Alterar Foto' onClick={() => toast.info("Função ainda não implementada!")}
+                
+                <Button 
+                  icon={<EditIcon />} 
+                  colorScheme="dark-green" 
+                  size="medium" 
+                  text='Alterar Foto' 
+                  onClick={handleImageClick}
+                  type="button"
                 />
               </div>
 
@@ -121,7 +238,7 @@ export default function SettingsProfilePage() {
               <Input
                 name="pronouns"
                 label="Pronomes"
-                helperText={`Pronomes atuais: ${pronouns}`}
+                helperText={`Pronomes atuais: ${userInfo?.pronouns}`}
                 value={formData.pronouns}
                 onChange={handleInputChange}
                 error={errors.pronouns}
@@ -130,16 +247,35 @@ export default function SettingsProfilePage() {
               />
 
               <div className="flex justify-end gap-4 pt-4 border-t border-neutral-200">
-                 <Button icon={<TrashIcon />} colorScheme="light-brown" size="medium" text='Cancelar' onClick={() => router.back()}
+                <Button 
+                  icon={<TrashIcon />} 
+                  colorScheme="light-brown" 
+                  size="medium" 
+                  text='Cancelar' 
+                  onClick={handleCancel}
+                  type="button"
                 />
-                <Button icon={<SaveIcon />} colorScheme="dark-green" size="medium" text='Salvar Alterações' onClick={handleSaveChanges}
+                <Button 
+                  icon={<SaveIcon />} 
+                  colorScheme="dark-green" 
+                  size="medium" 
+                  text='Salvar Alterações' 
+                  onClick={handleSaveChanges} 
+                  loading={isLoading}
                 />
               </div>
             </form>
           </div>
         </div>
       </main>
+
+      <ImageCropModal
+        isOpen={showCropModal}
+        imageUrl={tempImageUrl}
+        onClose={handleCropCancel}
+        onSave={handleCropSave}
+      />
+      <ToastNotification />
     </div>
   );
 }
-

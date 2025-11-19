@@ -8,13 +8,9 @@ export interface LoginFormData {
 
 /* Dados do usuário autenticado */
 export interface User {
-  _id: string
+  userId: string
   email: string
   username: string
-}
-
- /* Resposta da API de login */
-export interface LoginResponse {
-  token: string
-  user: User
+  avatarUrl: string
+  pronouns: string
 }

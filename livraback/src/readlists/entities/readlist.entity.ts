@@ -14,11 +14,17 @@ export class Readlist {
   @Prop({ default: false })
   publica: boolean;
 
-  @Prop()
+  @Prop({ required: false, default: '' })
   descricao?: string;
 
-  @Prop()
+  @Prop({ required: false, default: '/Readlist.svg' })
   capa_url?: string;
+
+  @Prop({ required: false, default: '' })
+  capa_public_id?: string;
+
+  @Prop({ required: false })
+  slug: string;
 
   // Referência ao usuário que criou a readlist
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

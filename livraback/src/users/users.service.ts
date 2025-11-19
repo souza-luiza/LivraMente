@@ -1,18 +1,19 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
 import { Model } from 'mongoose';
-import { Readlist, ReadlistDocument } from '../readlists/entities/readlist.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ReadlistsService } from '../readlists/readlists.service';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>
-  ) {} // dentro dessa variavel tem todos os metodos do mongo
+    private readonly cloudinary: CloudinaryService,
+    private readonly readlistsService: ReadlistsService
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = new this.userModel(createUserDto); // insere variaveis no modelo
@@ -29,6 +30,12 @@ export class UsersService {
     return user;
   }
 
+  async findOneUser(username: string) {
+    const user = await this.userModel.findOne({ username }).select('-senha -_id -avatarPublicId -readlists_favoritas -readlists').exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    return user;
+  }
+
   async getByEmail(email: string) {
     return await this.userModel.findOne({ email }).exec();
   }
@@ -37,8 +44,8 @@ export class UsersService {
     return await this.userModel.findOne({ username }).exec();
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const {email, username } = updateUserDto;
+  async update(id: string, updateUserDto: UpdateUserDto, session: Record<string, any>) {
+    const { email, username } = updateUserDto;
 
     // Verifica se já existe user com msm email:
     if(email) { // se quer atualizar email
@@ -46,9 +53,6 @@ export class UsersService {
       if(userComEmail) {
         if(userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
           throw new ConflictException('Email em uso');
-        }
-        else { // se a propria pessoa da requisicao esta usando o email
-          throw new BadRequestException('Email em uso por esta conta');
         }
       }
     }
@@ -60,26 +64,26 @@ export class UsersService {
         if(userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
           throw new ConflictException('Nome de usuário em uso');
         }
-        else { // se a propria pessoa da requisicao esta usando o username
-          throw new BadRequestException('Nome de usuário em uso por esta conta');
-        }
       }
     }
 
     const updated = await this.userModel.findByIdAndUpdate(
       {
-        _id: id, // procurar objeto por id (mongo por padrao cria id com _)
+        _id: id,
       }, 
       {
-        $set: updateUserDto, // o que quero alterar (set altera os campos que eu quero alterar)
+        $set: updateUserDto,
       },
       {
-        new: true, // alterar no banco de dados
-        runValidators: true, // validação do schema no update
+        new: true,
+        runValidators: true,
       },
     ).select('-senha').exec();
 
     if (!updated) throw new NotFoundException('Usuário não encontrado');
+
+    session.user = { userId: updated._id, username: updated.username, email: updated.email, avatarUrl: updated.avatarUrl, pronouns: updated.pronouns };
+    
     return updated;
   }
 
@@ -131,13 +135,13 @@ export class UsersService {
     return { ganhoXP };
   }
 
-  async favoritarReadlist(userId: string, readlistId: string) {
+  async favoritarReadlist(userId: string, readlistSlug: string, username: string) {
     const user = await this.findOne(userId);
 
-    const readlist = await this.readlistModel.findById(readlistId);
-    if (!readlist) throw new NotFoundException('Readlist não encontrada');
+    const readlist = await this.readlistsService.findOnePublic(username, readlistSlug);
+    
+    if (!readlist) throw new NotFoundException('Readlist não encontrada ou não é pública');
     if (readlist.criador.toString() === userId) throw new BadRequestException('Readlist é do próprio usuário');
-    if (!readlist.publica) throw new BadRequestException('Readlist não é pública');
 
     if (user.readlists_favoritas.includes(readlist._id)) throw new ConflictException('Readlist já favoritada');
 
@@ -149,20 +153,46 @@ export class UsersService {
     return { message: 'Readlist favoritada com sucesso' }; 
   }
 
-  async desfavoritarReadlist(userId: string, readlistId: string) {
+  async desfavoritarReadlist(userId: string, readlistSlug: string, username: string) {
     await this.findOne(userId); // lanca excecao se nao existir
+
+    const readlist = await this.readlistsService.findOnePublic(username, readlistSlug);
+
+    if (!readlist) throw new NotFoundException('Readlist não encontrada ou não é pública');
 
     await this.userModel.updateOne(
       { _id: userId },
-      { $pull: { readlists_favoritas: readlistId }}
+      { $pull: { readlists_favoritas: readlist._id }}
     );
 
     return { message: 'Readlist removida dos favoritos com sucesso' };
   }
 
   async findReadlistsFavoritas(userId: string) {
-    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito' }).select('readlists_favoritas').exec();
+    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
     if(!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File, session: Record<string, any>) {
+    const user = await this.findOne(id);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    if (!file?.buffer) throw new BadRequestException('Arquivo inválido');
+
+    const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/avatars');
+
+    // Remove avatar anterior se existir
+    if (user.avatarPublicId) {
+      await this.cloudinary.deleteImage(user.avatarPublicId);
+    }
+
+    user.avatarUrl = uploaded.secure_url;
+    user.avatarPublicId = uploaded.public_id;
+    await user.save();
+
+    session.user = { userId: user._id, username: user.username, email: user.email, avatarUrl: user.avatarUrl, pronouns: user.pronouns };
+    const obj = user.toObject();
+    delete (obj as any).senha;
+    return obj;
   }
 }

@@ -1,7 +1,8 @@
+"use client";
 import Sidebar from "@/components/sidebar";
 import SettingsTabs from "./settings-tabs";
 
-export default async function SettingsProfilePage(){
+export default function SettingsProfilePage(){
     return (
         <div className="min-h-screen flex bg-[#eef3eb]">
             <Sidebar />

@@ -4,6 +4,15 @@ export class CurrentUserDto {
     @ApiProperty({ description: 'ID do usuário' })
     userId: string;
 
+    @ApiProperty({ description: 'username do usuário' })
+    username: string;
+
     @ApiProperty({ description: 'Email do usuário' })
     email: string;
+
+    @ApiProperty({ description: 'URL do avatar do usuário' })
+    avatarUrl: string;
+
+    @ApiProperty({ description: 'Pronomes do usuário' })
+    pronouns: string;
 }

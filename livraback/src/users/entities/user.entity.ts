@@ -45,6 +45,17 @@ export class User {
   @Prop({ required: true })
   senha: string;
 
+  @Prop({ required: false, default: '' })
+  pronouns?: string;
+
+  // Novo: avatar
+  @Prop({ required: false, default: '/AbstractUser.png' })
+  avatarUrl?: string;
+
+  // PublicId para apagar/atualizar no Cloudinary
+  @Prop({ required: false, default: '' })
+  avatarPublicId?: string;
+
   @Prop({ type: Perfil, required: false })
   perfil?: Perfil;
 
