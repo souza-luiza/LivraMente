@@ -13,3 +13,10 @@ export interface UserProfile {
   avatarUrl: string;
   pronouns: string;
 }
+
+export interface BackendUser {
+  _id: string;
+  name: string;
+  email: string;
+  // etc...
+}

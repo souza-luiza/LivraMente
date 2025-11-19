@@ -34,6 +34,7 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => ({
     get: jest.fn(),
   }),
+  useParams: () => ({}),
   usePathname: () => '',
 }))
 
@@ -41,13 +42,15 @@ jest.mock('next/navigation', () => ({
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props) => {
+    // remove `fill` boolean to avoid React non-boolean attribute warnings
+    const { fill, ...rest } = props || {};
     // eslint-disable-next-line jsx-a11y/alt-text
     return (
       <img
         data-nimg="fill"
         decoding="async"
         loading="lazy"
-        {...props}
+        {...rest}
       />
     );
   },

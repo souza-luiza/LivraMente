@@ -217,7 +217,7 @@ export default function ReadlistPage() {
         style={{ }}
       >
         {/* SEÇÃO 1: Barra de Pesquisa */}
-        <SearchBar placeholder="Pesquisar no livra..." className="mb-2" />
+        <SearchBar />
 
         {/* SEÇÃO 2: Header da Readlist */}
         <div

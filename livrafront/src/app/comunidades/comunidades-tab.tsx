@@ -12,7 +12,7 @@ import DystopiaIcon from "@/components/icons/DystopiaIcon";
 import HeartIcon from "@/components/icons/HeartIcon";
 import AdventureIcon from "@/components/icons/AdventureIcon";
 import { Comunidade } from "@/types/comunidade";
-import { getComunidades } from "@/services/comunidades";
+import { communityService } from "@/services/comunidade";
 
 export default function ComunidadesTabs() {
     const [value, setValue] = useState('romance');
@@ -27,7 +27,7 @@ export default function ComunidadesTabs() {
         async function fetchComunidades() {
             try {
                 setLoading(true);
-                const data = await getComunidades();
+                const data = await communityService.getComunidades();
                 setComunidades(data);
             } catch(err: unknown) {
                 setComunidades([]);

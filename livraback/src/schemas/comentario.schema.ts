@@ -12,14 +12,15 @@ export class Comentario extends Document {
 
   @Prop({ required: true })
   conteudo: string;
+  
+  @Prop({ type: [String], default: [] })
+  imagens: string[];
 
-  // Curtidas no comentário
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   curtidas: Types.ObjectId[];
 
-  // Para respostas a comentários (thread)
-  @Prop({ type: Types.ObjectId, ref: 'Comentario' })
-  comentario_pai?: Types.ObjectId;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  mencoes: Types.ObjectId[];
 }
 
 export const ComentarioSchema = SchemaFactory.createForClass(Comentario);
