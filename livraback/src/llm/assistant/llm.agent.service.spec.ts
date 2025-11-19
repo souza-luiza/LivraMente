@@ -61,7 +61,7 @@ const mockLlmToolsService = {
   createUsersGetMyReadlistsTool: jest.fn(() => mockTool),
   createGravarLeituraTool: jest.fn(() => mockTool),
   createUsersGetMyProfileTool: jest.fn(() => mockTool),
-  createUsersGetMyFavoritesTool: jest.fn(() => mockTool),
+  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTool),
   createGetPopularPostsInCommunityTool: jest.fn(() => mockTool),
 };
 
