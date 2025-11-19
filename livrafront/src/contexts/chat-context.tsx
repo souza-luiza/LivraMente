@@ -31,8 +31,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       { id: crypto.randomUUID(), role: 'user', content: userPrompt, ts: Date.now() }, 
     ]);
 
-    const payload: AgentInputDTO = { userPrompt };
-
     try {
       const response = await postAnalyzeAgent({ userPrompt });
       setMessages((prev) => [
