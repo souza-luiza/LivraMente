@@ -138,10 +138,6 @@ describe('ChatContext (sem JWT/token explícito)', () => {
     expect(messages[1].content).toBe('Ops: Ocorreu um erro.');
   });
 
-jest.mock('@/services/llm', () => ({
-  postAnalyzeAgent: jest.fn(),
-}));
-
 // ... beforeAll com crypto.randomUUID etc.
 
 it('isLoading fica true durante o envio e volta para false no final', async () => {
