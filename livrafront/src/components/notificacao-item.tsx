@@ -55,13 +55,13 @@ export default function NotificacaoItem({
             case 'curtida_post':
             case 'comentario_post':
                 if (notificacao.postId && notificacao.comunidadeNome) {
-                    router.push(`/comunidade/${notificacao.comunidadeNome}/post/${notificacao.postId}`);
+                    router.push(`/comunidade/${notificacao.comunidadeNome}/postagem/${notificacao.postId}`);
                 }
                 break;
         
             case 'moderacao_post':
                 if (notificacao.postId && notificacao.comunidadeNome) {
-                    router.push(`/comunidade/${notificacao.comunidadeNome}/post/${notificacao.postId}`);
+                    router.push(`/comunidade/${notificacao.comunidadeNome}/postagem/${notificacao.postId}`);
                 }
                 break;
             default:
