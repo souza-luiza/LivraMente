@@ -110,7 +110,7 @@ export default function NotificacaoItem({
                 </p>
                 
                 {/* Timestamp */}
-                <p className="text-b3 text-neutral-400 mt-1">
+                <p className="text-b3 mt-1">
                     {formatarData(notificacao.criadaEm)}
                 </p>
             </div>
