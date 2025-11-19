@@ -17,7 +17,24 @@ export class NotificacoesController {
   async buscarTodas(@Req() req: any) {
     const userId = req.session.user.userId;
     const notificacoes = await this.notificacoesService.buscarTodas(userId);
-    return notificacoes;
+    
+    return notificacoes.map((n: any) => ({
+      id: n._id.toString(),
+      tipo: n.tipo,
+      mensagem: n.mensagem,
+      lida: n.lida,
+      criadaEm: n.createdAt,
+      remetente: n.remetente ? {
+        id: n.remetente._id.toString(),
+        username: n.remetente.username,
+        foto_perfil: n.remetente.foto_perfil
+      } : undefined,
+      postId: n.postId?.toString(),
+      comentarioId: n.comentarioId?.toString(),
+      resenhaId: n.resenhaId?.toString(),
+      readlistId: n.readlistId?.toString(),
+      comunidadeNome: n.comunidadeNome
+    }));
   }
 
   @Patch(':id/lida')
@@ -44,25 +61,25 @@ export class NotificacoesController {
     const subject = this.notificacoesService.registrarClienteSSE(userId);
 
     return subject.pipe(
-      map((notificacao: NotificacaoDocument) => {
+      map((notificacao: any) => {
         const data: MessageEvent = {
           data: JSON.stringify({
-            id: notificacao._id,
+            id: notificacao._id.toString(),
             tipo: notificacao.tipo,
             mensagem: notificacao.mensagem,
             lida: notificacao.lida,
-            criadaEm: (notificacao as any).createdAt,
+            criadaEm: notificacao.createdAt,
             remetente: notificacao.remetente
               ? {
-                  id: (notificacao.remetente as any)._id,
-                  username: (notificacao.remetente as any).username,
-                  foto_perfil: (notificacao.remetente as any).foto_perfil,
+                  id: notificacao.remetente._id.toString(),
+                  username: notificacao.remetente.username,
+                  foto_perfil: notificacao.remetente.foto_perfil,
                 }
               : undefined,
-            postId: notificacao.postId,
-            comentarioId: notificacao.comentarioId,
-            resenhaId: notificacao.resenhaId,
-            readlistId: notificacao.readlistId,
+            postId: notificacao.postId?.toString(),
+            comentarioId: notificacao.comentarioId?.toString(),
+            resenhaId: notificacao.resenhaId?.toString(),
+            readlistId: notificacao.readlistId?.toString(),
             comunidadeNome: notificacao.comunidadeNome,
           }),
         };
