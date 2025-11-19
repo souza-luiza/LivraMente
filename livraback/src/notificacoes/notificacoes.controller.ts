@@ -15,30 +15,32 @@ export class NotificacoesController {
 
   @Get()
   async buscarTodas(@Req() req: any) {
-    return this.notificacoesService.buscarTodas(req.session.userId);
+    const userId = req.session.user.userId;
+    const notificacoes = await this.notificacoesService.buscarTodas(userId);
+    return notificacoes;
   }
 
   @Patch(':id/lida')
   async marcarComoLida(@Req() req: any, @Param('id') id: string) {
-    await this.notificacoesService.marcarComoLida(id, req.session.userId);
+    await this.notificacoesService.marcarComoLida(id, req.session.user.userId);
     return { message: 'Notificação marcada como lida' };
   }
 
   @Patch('marcar-todas-lidas')
   async marcarTodasComoLidas(@Req() req: any) {
-    await this.notificacoesService.marcarTodasComoLidas(req.session.userId);
+    await this.notificacoesService.marcarTodasComoLidas(req.session.user.userId);
     return { message: 'Todas as notificações marcadas como lidas' };
   }
 
   @Delete(':id')
   async remover(@Req() req: any, @Param('id') id: string) {
-    await this.notificacoesService.remover(id, req.session.userId);
+    await this.notificacoesService.remover(id, req.session.user.userId);
     return { message: 'Notificação removida' };
   }
 
   @Sse('stream')
   streamNotificacoes(@Req() req: any): Observable<MessageEvent> {
-    const userId = req.session.userId;
+    const userId = req.session.user.userId;
     const subject = this.notificacoesService.registrarClienteSSE(userId);
 
     return subject.pipe(

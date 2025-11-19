@@ -90,7 +90,7 @@ export class QueueProducerService implements OnModuleDestroy {
    */
   private async criarBindings(channel: ConfirmChannel): Promise<void> {
     const bindings = [
-      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*' },
+      { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.#' },
       { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.criado' },
       { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.curtido' },
       { queue: FILAS.ENVIAR_NOTIFICACOES, routingKey: 'notificar.*.moderado' },
