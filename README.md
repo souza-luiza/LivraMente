@@ -6,6 +6,7 @@
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
 
+
 ## 📚 Sobre o Projeto
 O Livramente consiste em ser uma rede social criada por leitores para amantes de leitura, onde os usuários podem:
 
