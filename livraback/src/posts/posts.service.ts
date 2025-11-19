@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
 import { Comunidade } from '../comunidades/entities/comunidade.entity';
+import { Comentario } from '../schemas/comentario.schema';
 import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
@@ -14,6 +15,7 @@ export class PostsService {
     @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(Comunidade.name) private comunidadeModel: Model<Comunidade>,
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
   ) {}
 
   async createPost(userId: string, createPostDto: CreatePostDto) {
@@ -235,5 +237,33 @@ export class PostsService {
       message: 'Post moderado com sucesso', 
       status: moderarPostDto.aprovar ? 'Aprovado' : 'Rejeitado'
     };
+  }
+
+  async getPostById(postId: string, communityName: string) {
+    const community = await this.comunidadeModel.findOne({ nome: communityName });
+    if (!community) throw new NotFoundException('Comunidade não encontrada');
+
+    const post = await this.postModel.findOne({
+      _id: postId,
+      comunidade: community._id,
+    }).populate('autor', 'username avatarUrl').populate("comunidade", "nome");;
+
+    if (!post) throw new NotFoundException('Post não encontrado na comunidade');
+
+    return post;
+  }
+
+  async getComments(postId: string) {
+    const post = await this.postModel.findOne({ _id: postId });
+    if (!post) throw new NotFoundException('Post não encontrado');
+
+    const comments = await this.comentarioModel.find({
+      post: new Types.ObjectId(postId),
+    })
+    .sort({ createdAt: -1 })
+    .populate('autor', 'username avatarUrl')
+    .lean();
+
+    return comments;
   }
 }

@@ -8,10 +8,11 @@ import SingleUserIcon from "./icons/SingleUserIcon";
 import RemoveIcon from "./icons/RemoveIcon";
 import ToolIcon from "./icons/ToolIcon";
 import StarIcon from "./icons/StarIcon";
+import { User } from "@/types/auth";
+import Image from "next/image";
 
 interface CommunityMemberProps {
-    userId: string;
-    username: string;
+    user: User;
     isCurrentUserModerator?: boolean;
     isTargetUserModerator?: boolean;
     handleRemoveMember?: (userId: string) => Promise<void>;
@@ -19,21 +20,20 @@ interface CommunityMemberProps {
 }
 
 export default function CommunityMember({ 
-    userId,
-    username, 
+    user,
     isCurrentUserModerator = false,
     isTargetUserModerator = false, 
     handleRemoveMember, 
     handleMakeModerator 
 }: CommunityMemberProps) {
-
+        
     const router = useRouter();
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
     const handleClick = (e: React.MouseEvent) => {
         if (!isCurrentUserModerator || isTargetUserModerator) {
-            router.push(`/${username}`);
+            router.push(`/${user.username}`);
             return;
         }
 
@@ -68,42 +68,55 @@ export default function CommunityMember({
                 onClick={handleClick}
             >
                 {isTargetUserModerator && <StarIcon size={20}/>}
-                @{username}
+                <div className="flex flex-row gap-1">
+                    <Image
+                        src={user.avatarUrl ? user.avatarUrl : '/AbstractUser.png'}
+                        alt="Foto do usuário"
+                        width={24}
+                        height={24}
+                        className="rounded-full object-cover"
+                    />
+                    @{user.username}
+                </div>
             </motion.div>
             
             <AnimatePresence mode="wait">
                 {isCurrentUserModerator && !isTargetUserModerator && showOptions &&
                 <motion.div 
-                    className="fixed max-w-64 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
+                    className="fixed z-50 flex flex-col flex-shrink-0 items-center medium-box small-border-width border-gray-300 shadow-md bg-white gap-1"
                     style={{
                         top: clickPosition.y,
                         left: clickPosition.x
                     }}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.25 }}
                     onMouseLeave={() => setShowOptions(false)}
                 >    
                     <Button
-                        text={username ? `Visitar perfil de @${username}` : 'Visitar Perfil'}
+                        text={user.username ? `Visitar perfil de @${user.username}` : 'Visitar Perfil'}
                         icon={<SingleUserIcon />}
                         size="small"
-                        colorScheme="light-brown"
-                        path={username ? `/${username}` : '/not-found'}
+                        colorScheme="dark-brown"
+                        path={user.username ? `/${user.username}` : '/not-found'}
+                        fullwidth={true}
                     />
                     <Button
-                        text={username ? `Remover @${username} da comunidade` : 'Remover da Comunidade'}
+                        text={user.username ? `Remover @${user.username} da comunidade` : 'Remover da Comunidade'}
                         icon={<RemoveIcon />}
                         size="small"
-                        colorScheme="light-brown"
-                        onClick={() => handleRemoveMember?.(userId!)}
+                        colorScheme="dark-brown"
+                        onClick={() => handleRemoveMember?.(user.userId!)}
+                        fullwidth={true}
                     />
                     <Button
-                        text={username ? `Tornar @${username} moderador` : 'Tornar Moderador'}
+                        text={user.username ? `Tornar @${user.username} moderador` : 'Tornar Moderador'}
                         icon={<ToolIcon />}
                         size="small"
-                        colorScheme="light-brown"
-                        onClick={() => handleMakeModerator?.(userId!)}
+                        colorScheme="dark-brown"
+                        onClick={() => handleMakeModerator?.(user.userId!)}
+                        fullwidth={true}
                     />
                 </motion.div>}
             </AnimatePresence>

@@ -1,27 +1,21 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
+import Button from './button';
+import RemoveIcon from './icons/RemoveIcon';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface TagsDropdownProps {
+  tags: string[];
   selectedTags: string[];
   setSelectedTags: (tags: string[]) => void;
   placeholder?: string;
   id?: string;
 }
 
-const OPTIONS = [
-  'Romance',
-  'Aventura',
-  'Fantasia',
-  'Drama',
-  'Terror',
-  'Suspense',
-  'Comédia',
-  'Distopia',
-];
-
-export default function TagsDropdown({ selectedTags, setSelectedTags, placeholder = 'Selecione as tags', id }: TagsDropdownProps) {
+export default function TagsDropdown({ tags, selectedTags, setSelectedTags, placeholder = 'Selecione as tags', id }: TagsDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [hoverInfo, setHoverInfo] = useState<{isHovered: boolean, tag: string}>({isHovered: false, tag: ""});
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -63,21 +57,42 @@ export default function TagsDropdown({ selectedTags, setSelectedTags, placeholde
           'border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 focus:border-green-900 hover:border-gray-400'
         )}
       >
-        <div className="flex items-center gap-2 flex-wrap py-2">
+        <div className="flex items-center gap-1 flex-wrap">
           {selectedTags.length === 0 ? (
             <span className="text-gray-400">{placeholder}</span>
           ) : (
             selectedTags.map(tag => (
-              <span key={tag} className="px-2 py-1 rounded bg-gray-100 text-b3">{tag}</span>
-            ))
+            <motion.div
+              key={tag}
+              className="group flex items-center small-box bg-gray-100 relative gap-1"
+              style={{ color: "var(--neutral-800)" }}
+              onHoverStart={() => setHoverInfo({ isHovered: true, tag: tag })}
+              onHoverEnd={() => setHoverInfo({ isHovered: false, tag: "" })}
+            >
+              <span className="text-b3">{tag}</span>
+              <AnimatePresence mode="wait">
+                {hoverInfo.isHovered && hoverInfo.tag === tag && <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTags(selectedTags.filter(t => t !== tag));
+                  }}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.15, ease: 'easeInOut' }}
+                >
+                  <RemoveIcon size={12} fill="var(--neutral-800)" />
+                </motion.button>}
+              </AnimatePresence>
+            </motion.div>
+          ))
           )}
         </div>
       </div>
 
       {open && (
-        <div className="absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded shadow-md max-h-56 overflow-auto">
+        <div className="absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded shadow-md max-h-32 overflow-auto">
           <div className="p-2">
-            {Array.from(new Set([...selectedTags, ...OPTIONS])).map(opt => (
+            {Array.from(new Set([...selectedTags, ...tags])).map(opt => (
               <label key={opt} className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50 cursor-pointer">
                 <input
                   type="checkbox"

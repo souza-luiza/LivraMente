@@ -2,21 +2,21 @@
 
 exports[`Button Component Snapshot Tests matches snapshot with default props 1`] = `
 <div
-  class="relative group"
+  class="relative group "
 >
   <button
     class="medium-box light-green
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
   >
     <span
-      class="text-h6"
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
     >
-       
       Click me
-       
     </span>
     <span
       class="icon-medium"
@@ -35,21 +35,21 @@ exports[`Button Component Snapshot Tests matches snapshot with default props 1`]
 
 exports[`Button Component Snapshot Tests matches snapshot with different color schemes 1`] = `
 <div
-  class="relative group"
+  class="relative group "
 >
   <button
     class="medium-box dark-brown
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
   >
     <span
-      class="text-h6"
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
     >
-       
       Click me
-       
     </span>
     <span
       class="icon-medium"
@@ -68,21 +68,21 @@ exports[`Button Component Snapshot Tests matches snapshot with different color s
 
 exports[`Button Component Snapshot Tests matches snapshot with different sizes 1`] = `
 <div
-  class="relative group"
+  class="relative group "
 >
   <button
     class="large-box light-green
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
   >
     <span
-      class="text-h4"
+      class="text-h4 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
     >
-       
       Click me
-       
     </span>
     <span
       class="icon-large"
@@ -101,22 +101,22 @@ exports[`Button Component Snapshot Tests matches snapshot with different sizes 1
 
 exports[`Button Component Snapshot Tests matches snapshot with disabled state 1`] = `
 <div
-  class="relative group"
+  class="relative group "
 >
   <button
     class="medium-box light-green
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
     disabled=""
   >
     <span
-      class="text-h6"
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
     >
-       
       Click me
-       
     </span>
     <span
       class="icon-medium"
@@ -135,14 +135,15 @@ exports[`Button Component Snapshot Tests matches snapshot with disabled state 1`
 
 exports[`Button Component Snapshot Tests matches snapshot with loading state 1`] = `
 <div
-  class="relative group"
+  class="relative group "
 >
   <button
     class="medium-box light-green
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
     disabled=""
   >
     <svg
@@ -166,11 +167,10 @@ exports[`Button Component Snapshot Tests matches snapshot with loading state 1`]
       />
     </svg>
     <span
-      class="text-h6"
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
     >
-       
       Click me
-       
     </span>
     <span
       class="icon-medium"

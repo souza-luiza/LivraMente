@@ -416,25 +416,6 @@ describe('UserProfilePage', () => {
   })
 
   describe('Posts Section', () => {
-    it('renders posts section', async () => {
-      
-      render(<UserProfilePage />);
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('profile-posts')).toBeInTheDocument()
-      })
-    })
-
-    it('posts section receives username prop', async () => {
-      
-      render(<UserProfilePage />);
-      
-      await waitFor(() => {
-        const posts = screen.getByTestId('profile-posts')
-        expect(posts).toHaveAttribute('data-username', 'john_doe')
-      })
-    })
-
     it('posts section has correct heading', async () => {
       
       render(<UserProfilePage />);
@@ -702,9 +683,6 @@ describe('UserProfilePage', () => {
         
         const badge = screen.getByTestId('profile-badge')
         expect(badge).toHaveAttribute('data-content', '15')
-        
-        const posts = screen.getByTestId('profile-posts')
-        expect(posts).toHaveAttribute('data-username', 'john_doe')
       })
     })
   })

@@ -5,9 +5,9 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/sidebar";
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
-import { updateCommunity, uploadImage, checkMemberOrMod, getComunidadeByName, deleteCommunity } from '@/services/comunidade';
+import { communityService } from '@/services/comunidade';
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
-import { Comunidade } from '@/types/comunidade';
+import { Comunidade, UpdateCommunityData } from '@/types/comunidade';
 import Button from "@/components/button";
 import LoadingPage from "@/components/loading";
 import SaveIcon from "@/components/icons/SaveIcon";
@@ -17,6 +17,7 @@ import ImageIcon from "@/components/icons/ImageIcon";
 import PopUp from "@/components/pop-up";
 import RemoveIcon from "@/components/icons/RemoveIcon";
 import Image from "next/image";
+import { CommunityTags } from "@/types/comunidade";
 
 function EditCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -75,14 +76,14 @@ function EditCommunityPage() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const data = await getComunidadeByName(comunidadeNome);
+        const data = await communityService.getComunidadeByName(comunidadeNome);
         setNome(data.nome || '');
         setDescricao(data.descricao || '');
         setTags(data.tags || []);
         setFotoPreview(data.imagem_url || null);
         setOriginalData(data || null);
         try {
-          const { isModerator } = await checkMemberOrMod(data.nome).catch(() => ({ isMember: false, isModerator: false }));
+          const { isModerator } = await communityService.checkMemberOrMod(data.nome).catch(() => ({ isMember: false, isModerator: false }));
           setIsModerator(isModerator);
         } catch {
           setIsModerator(false);
@@ -110,7 +111,7 @@ function EditCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const payload: Record<string, unknown> = {};
+      const payload: UpdateCommunityData = {};
       if (originalData) {
         if (nome !== originalData.nome) {
           payload.nome = nome;
@@ -125,10 +126,10 @@ function EditCommunityPage() {
         payload.tags = tags.map(tag => tag.toLowerCase());
       }
 
-      if (foto) {
-        const imagem_url = await uploadImage(foto);
-        if (imagem_url) payload.imagem_url = imagem_url;
-      }
+      //if (foto) {
+      //  const imagem_url = await communityService.uploadImage(foto);
+      //  if (imagem_url) payload.imagem_url = imagem_url;
+      //}
 
       if (Object.keys(payload).length === 0) {
         setMessage({ text: 'Nenhuma alteração foi feita.', type: 'error' });
@@ -137,7 +138,7 @@ function EditCommunityPage() {
       }
       // Usar nome original para identificar comunidade na API
       const identifier = originalData?.nome || comunidadeNome;
-      await updateCommunity(identifier, payload);
+      await communityService.updateCommunity(identifier, payload);
       setMessage({ text: 'A comunidade foi editada com sucesso!', type: 'success' });
       setIsLoading(false);
     } catch (err) {
@@ -151,7 +152,7 @@ function EditCommunityPage() {
 
     try {
       const identifier = originalData?.nome || comunidadeNome;
-      await deleteCommunity(identifier);
+      await communityService.deleteCommunity(identifier);
       setShowConfirmDeletePopUp(false);
       router.push('/comunidades');
 
@@ -230,7 +231,7 @@ function EditCommunityPage() {
               </div>
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-h6" id="tags-comunidade-label">Tags</label>
-                <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
+                <TagsDropdown id="tags-comunidade" tags={CommunityTags} selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
                 {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
               </div>
             </div>

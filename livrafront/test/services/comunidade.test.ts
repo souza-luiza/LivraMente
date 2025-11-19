@@ -1,4 +1,4 @@
-import { createCommunity, updateCommunity } from '@/services/comunidade';
+import { communityService } from '@/services/comunidade';
 
 describe('comunidade service', () => {
   afterEach(() => {
@@ -10,7 +10,7 @@ describe('comunidade service', () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
     const payload = { nome: 'Teste' } as Record<string, unknown>;
-    const result = await createCommunity(payload);
+    const result = await communityService.createCommunity(payload as any);
 
     expect(fetchMock).toHaveBeenCalled();
     expect(result).toEqual({ id: 'c1', nome: 'Teste' });
@@ -20,7 +20,7 @@ describe('comunidade service', () => {
     const mockResponse = { ok: false, text: async () => 'Bad request' } as unknown as Response;
     jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
-    await expect(createCommunity({ nome: 'X' } as any)).rejects.toThrow('Bad request');
+    await expect(communityService.createCommunity({ nome: 'X' } as any)).rejects.toThrow('Bad request');
   });
 
   it('updateCommunity resolves with json on success', async () => {
@@ -28,7 +28,7 @@ describe('comunidade service', () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
     const payload = { nome: 'Novo' } as Record<string, unknown>;
-    const result = await updateCommunity('Comunidade', payload);
+    const result = await communityService.updateCommunity('Comunidade', payload as any);
 
     expect(fetchMock).toHaveBeenCalled();
     expect(result).toEqual({ id: 'c1', nome: 'Novo' });
@@ -38,6 +38,6 @@ describe('comunidade service', () => {
     const mockResponse = { ok: false, text: async () => 'Update failed' } as unknown as Response;
     jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
-    await expect(updateCommunity('C', { nome: 'x' })).rejects.toThrow('Update failed');
+    await expect(communityService.updateCommunity('C', { nome: 'x' } as any)).rejects.toThrow('Update failed');
   });
 });

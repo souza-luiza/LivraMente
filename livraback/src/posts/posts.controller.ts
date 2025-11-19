@@ -6,10 +6,9 @@ import { ModerarPostDto } from './dto/moderar-post.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
-import { PostCategoria } from '../schemas/post.schema';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 
-@ApiTags('posts')
+@ApiTags('Posts')
 @ApiBearerAuth()
 @UseGuards(SessionAuthGuard)
 @Controller('posts')
@@ -163,4 +162,38 @@ export class PostsController {
     return this.postsService.moderatePost(user.userId, postId, moderarPostDto);
   }
 
+  // ENCONTRAR POSTAGEM
+  @Get(':id/comunidade/:comunidadeNome')
+  @ApiOperation({
+    summary: 'Encontra um post de uma comunidade pelo ID',
+    description: 'Encontra um post pertencente a uma comunidade pelo ID'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Post encontrado com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post/Comunidade não encontrado/a'
+  })
+  async getPostById(@Param('id') postId: string, @Param('comunidadeNome') comunidadeNome: string) {
+    return this.postsService.getPostById(postId, comunidadeNome);
+  }
+
+  // ENCONTRAR COMENTÁRIOS DA POSTAGEM
+  @Get(':id/comentarios')
+  @ApiOperation({
+    summary: 'Retorna todos os comentários de um post'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Comentários retornados com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post não encontrado'
+  })
+  async getComments(@Param('id') postId: string){
+    return this.postsService.getComments(postId);
+  }
 }

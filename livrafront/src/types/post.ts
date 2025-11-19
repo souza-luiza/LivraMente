@@ -19,7 +19,7 @@ export interface Post {
   autor: {                                             
     _id: string;
     username: string;
-    foto_perfil?: string;
+    avatarUrl: string;
   };
   conteudo: string;                                    
   comunidade: {                               

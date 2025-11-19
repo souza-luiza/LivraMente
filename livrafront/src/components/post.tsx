@@ -7,7 +7,7 @@ import Image from "next/image";
 
 // Componentes
 import Button from "./button";
-import PostImage from "./post-image";
+import ImageModal from "./image-modal";
 import EditPostModal from "./EditPostModal";
 import PopUp from "./pop-up";
 
@@ -21,37 +21,32 @@ import CommentIcon from "./icons/CommentIcon";
 import TrashIcon from "./icons/TrashIcon";
 import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
 import EditIcon from "./icons/EditIcon";
+import CommunityIcon from "./icons/CommunityIcon";
+import RemoveIcon from "./icons/RemoveIcon";
 
 // Chamadas à API
 import { postsService } from "@/services/posts";
 
-// Data
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import CommunityIcon from "./icons/CommunityIcon";
-import { text } from "stream/consumers";
-import RemoveIcon from "./icons/RemoveIcon";
+// Funções Auxiliares
+import { getTimeAgo } from "@/lib/time";
+import { titleToSlug } from "@/lib/slugify";
 
 interface PostProps {
     post: Post;
-    currentUser?: string; // TODO: substituir por User
+    currentUserId: string;
     isModerator?: boolean;
     disableActions?: boolean;
+    handleComment?: () => void;
     onDelete?: () => void;
     onUpdate?: () => void;
 }
 
-function getTimeAgo(createdAt: string): string {
-  return formatDistanceToNow(new Date(createdAt), {
-    addSuffix: true,
-    locale: ptBR,
-  });
-}
-
 export default function PostComponent({ 
-    post, 
+    post,
+    currentUserId, 
     isModerator = false,
     disableActions = false,
+    handleComment,
     onDelete,
     onUpdate
 }: PostProps) {
@@ -69,10 +64,10 @@ export default function PostComponent({
     const [showImageModal, setShowImageModal] = useState(false);
 
     // Curtidas
-    const [liked, setLiked] = useState(false); // TODO: Verificar se o usuário já curtiu o post
+    const [liked, setLiked] = useState(post.curtidas.some((id) => id === currentUserId));
     const [likeAmount, setLikeAmount] = useState(post.curtidas.length);
 
-    const isOwner = true; // TODO: Verificar se o usuário é o dono do post
+    const isOwner = (post.autor._id === currentUserId);
 
     // Botão Mais
     const [showOptions, setShowOptions] = useState(false);
@@ -120,16 +115,16 @@ export default function PostComponent({
         }
     }, [showOptions]);
 
-    const handleRedirectToPost = () => {
-        router.push(`/${post.comunidade.nome}/posts/${post._id}`);
+    const handleRedirectToCommunity = () => {
+        router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}`);
     }
 
     const handleRedirectToProfile = () => {
         router.push(`/${post.autor.username}`);
     }
 
-    const handleOpenImageModal = (imageUrl: string) => {
-        setSelectedImage(imageUrl);
+    const handleOpenImageModal = (imgUrl: string) => {
+        setSelectedImage(imgUrl);
         setShowImageModal(true);
     }
 
@@ -199,18 +194,28 @@ export default function PostComponent({
             <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
                 <div className="flex flex-row items-center justify-between">
                     <div className="flex flex-row gap-2">
-                        <div className="flex flex-row gap-1">
+                        <div 
+                            className="flex flex-row gap-1 hover:cursor-pointer"
+                            onClick={handleRedirectToCommunity}
+                        >
                             <CommunityIcon size={24} />
                             <h6 className="text-h6">
                                 {post.comunidade.nome}
                             </h6>
                         </div>
                         <CodeIcon size={24} />
-                        <div className="flex flex-row gap-1">
-                            <h6 
-                                className="text-h6 hover:cursor-pointer"
-                                onClick={handleRedirectToProfile}
-                            >
+                        <div 
+                            className="flex flex-row gap-1 hover:cursor-pointer"
+                            onClick={handleRedirectToProfile}
+                        >
+                            <Image
+                                src={post.autor.avatarUrl ? post.autor.avatarUrl : '/AbstractUser.png'}
+                                alt="Foto do usuário"
+                                width={24}
+                                height={24}
+                                className="rounded-full object-cover"
+                            />
+                            <h6 className="text-h6">
                                 @{post.autor.username}
                             </h6>
                         </div>
@@ -247,10 +252,10 @@ export default function PostComponent({
                         onClick={() => handleOpenImageModal(imgUrl)}
                     >
                         <Image
-                        src={imgUrl}
-                        alt={`Imagem do post ${index + 1}`}
-                        fill
-                        className="object-cover"
+                            src={imgUrl}
+                            alt={`Imagem do post ${index + 1}`}
+                            fill
+                            className="object-cover"
                         />
                     </div>
                     ))}
@@ -258,9 +263,11 @@ export default function PostComponent({
                 )}
 
                 {showImageModal && selectedImage && (
-                <PostImage 
-                    post={post} 
-                    image={selectedImage} 
+                <ImageModal
+                    comunidade={post.comunidade.nome}
+                    autor={post.autor.username}
+                    imagem={selectedImage} 
+                    imagens={post.imagens} 
                     onClose={() => setShowImageModal(false)} 
                 />
                 )}
@@ -281,7 +288,7 @@ export default function PostComponent({
                             size="small"
                             icon={<CommentIcon strokeWidth={3} />}
                             disabled={disableActions || loading}
-                            onClick={handleRedirectToPost}
+                            onClick={handleComment}
                         />
                     </div>
                     <p className="text-b3 body-semibold light-neutral">
@@ -307,7 +314,7 @@ export default function PostComponent({
                 {(isOwner || isModerator) && !disableActions && showOptions &&
                 <motion.div 
                     ref={menuRef}
-                    className="fixed z-50 flex flex-col flex-shrink-0 items-center small-padding medium-border-radius large-border-width border-[var(--secondary-700)] bg-gray-50 gap-1"
+                    className="fixed z-50 flex flex-col flex-shrink-0 items-center medium-box small-border-width border-gray-300 shadow-md bg-white gap-1"
                     style={{
                         top: clickPosition.y,
                         left: clickPosition.x
@@ -322,17 +329,19 @@ export default function PostComponent({
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleConfirmDeletePost}
                         loading={loading}
+                        fullwidth={true}
                     />
                     {isOwner && <Button
                         text="Editar"
                         icon={<EditIcon />}
                         size="small"
-                        colorScheme="light-brown"
+                        colorScheme="dark-brown"
                         onClick={handleEditPost}
                         disabled={loading}
+                        fullwidth={true}
                     />}
                 </motion.div>}
             </AnimatePresence>

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ComunidadesService } from './comunidades.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -310,5 +310,4 @@ export class ComunidadesController {
     async delete(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string) {
         return this.comunidadesService.deleteCommunity(user.userId, comunidadeNome);
     }
-
 }

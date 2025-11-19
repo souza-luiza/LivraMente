@@ -54,18 +54,15 @@ export function useLoginForm() {
       // Se passou na validação, fazer o login
       const response = await loginUser(formData)
 
-      // Salvar dados no localStorage
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
       try {
-        const user: User = response.user || {};
+        const user: User = response || {};
         if (user.username) localStorage.setItem('username', String(user.username));
-        const id = user._id ?? '';
+        const id = user.userId ?? '';
         if (id) localStorage.setItem('userId', String(id));
       } catch (e) {
       }
       
-      router.push(`${response.user.username}`)
+      router.push(`${response.username}`)
       
     } catch (error) {
       if (error instanceof ZodError) {

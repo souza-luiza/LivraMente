@@ -10,6 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "small" | "medium" | "large";
   colorScheme?: "light-green" | "dark-green" | "light-brown" | "dark-brown"  | "light-neutral";
   variant?: "normal" | "aprovar" | "rejeitar";
+  fullwidth?: boolean;
   path?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   loading?: boolean;
@@ -22,6 +23,7 @@ export default function Button({
     size='medium', 
     colorScheme='light-green',
     variant='normal',
+    fullwidth = false,
     path,
     onClick, 
     loading = false,
@@ -70,12 +72,13 @@ export default function Button({
     };
 
     return (
-        <div className="relative group">
+        <div className={`relative group ${fullwidth ? "w-full" : ""}`}>
             <button className={`${boxSize[size]} ${((variant == "aprovar") || (variant == "rejeitar")) ? variantColorScheme[variant] : colorScheme}
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed
-                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black`}
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    ${fullwidth ? 'w-full flex flex-col justify-center items-center gap-2' : 'flex flex-col justify-center items-center gap-2'}`}
                     onClick={handleClick}
                     disabled={disabled || loading}
                     {...props}
@@ -106,7 +109,12 @@ export default function Button({
                     </svg>
                 )}
                 {text && (
-                    <span className={`${textStyles[size]}`}> {text} </span>
+                    <span 
+                        className={`${textStyles[size]} line-clamp-1`}
+                        style={{ overflow: 'hidden', wordBreak: 'break-all', overflowWrap: 'break-word' }}
+                    >
+                        {text}
+                    </span>
                 )}
                 <span className={`${iconSizes[size]}`}> {icon} </span>
             </button>
@@ -115,7 +123,7 @@ export default function Button({
                     {isHovered && (
                         <motion.div 
                             data-testid="tooltip" 
-                            className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
+                            className={`absolute z-40 left-full ml-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
                             role="tooltip"
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}

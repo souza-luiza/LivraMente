@@ -1,192 +1,154 @@
-import { Comunidade } from '@/types/comunidade';
+import { Comunidade, CreateCommunityData, UpdateCommunityData } from '@/types/comunidade';
+import { BackendUser } from '@/types/users';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-function getAuthHeaders(): { [key: string]: string } | undefined {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : undefined;
-}
+const mapUserFromBackend = (user: BackendUser) => ({
+  ...user,
+  userId: user._id
+});
 
-export async function getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error(`Erro ao buscar comunidade`);
-  return res.json();
-}
+export const communityService = {
+  async getComunidadeByName(comunidadeNome: string): Promise<Comunidade> {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error(`Erro ao buscar comunidade`);
+    return res.json();
+  },
 
-export async function getComunidades() : Promise<Comunidade[]> {
-  const res = await fetch(`${API_BASE_URL}/comunidades`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
+  async getComunidades() : Promise<Comunidade[]> {
+    const res = await fetch(`${API_BASE_URL}/comunidades`, {
+      credentials: "include",
+    });
 
-  if(!res.ok) return Promise.reject(new Error('Erro ao buscar comunidades'));
-  return await res.json();
-}
+    if(!res.ok) return Promise.reject(new Error('Erro ao buscar comunidades'));
+    return await res.json();
+  },
 
-export async function getPosts(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao buscar posts");
-  return res.json();
-}
+  async getPosts(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/posts`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao buscar posts");
+    return res.json();
+  },
 
-export async function getMembers(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao buscar membros");
-  return res.json();
-}
+  async getMembers(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao buscar membros");
+    const data = await res.json();
+    return data.map(mapUserFromBackend);
+  },
 
-export async function getModerators(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/moderadores`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao buscar moderadores");
-  return res.json();
-}
+  async getModerators(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/moderadores`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao buscar moderadores");
+    const data = await res.json();
+    return data.map(mapUserFromBackend);
+  },
 
-export async function checkMemberOrMod(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${encodeURIComponent(comunidadeNome)}`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao verificar membro/moderador");
-  return res.json();
-} 
+  async checkMemberOrMod(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/verificar-membro/${encodeURIComponent(comunidadeNome)}`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao verificar membro/moderador");
+    return res.json();
+  },
 
-export async function enterCommunity(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
-    method: "PATCH",
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao entrar na comunidade");
-  return res.json();
-}
+  async enterCommunity(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
+      method: "PATCH",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao entrar na comunidade");
+    return res.json();
+  },
 
-export async function leaveCommunity(comunidadeNome: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
-    method: "DELETE",
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao sair da comunidade");
-  return res.json();
-}
+  async leaveCommunity(comunidadeNome: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao sair da comunidade");
+    return res.json();
+  },
 
-export async function removeMember(comunidadeNome: string, targetUserId: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}`, {
-    method: "DELETE",
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao remover membro como moderador");
-  return res.json();
-}
+  async removeMember(comunidadeNome: string, targetUserId: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao remover membro como moderador");
+    return res.json();
+  },
 
-export async function makeMemberModerator(comunidadeNome: string, targetUserId: string) {
-  const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}/tornar-moderador`, {
-    method: "PATCH",
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  });
-  if (!res.ok) throw new Error("Erro ao promover membro a moderador");
-  return res.json();
-}
+  async makeMemberModerator(comunidadeNome: string, targetUserId: string) {
+    const res = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}/membros/${encodeURIComponent(targetUserId)}/tornar-moderador`, {
+      method: "PATCH",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Erro ao promover membro a moderador");
+    return res.json();
+  },
 
-export async function createCommunity(payload: Record<string, unknown>) {
-  const response = await fetch(`${API_BASE_URL}/comunidades`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(getAuthHeaders() || {}),
-    },
-    body: JSON.stringify(payload),
-  })
+  async createCommunity(payload: CreateCommunityData) {
+    const response = await fetch(`${API_BASE_URL}/comunidades`, {
+      method: 'POST',
+      credentials: "include",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Erro ao criar comunidade')
+      return Promise.reject(new Error(text || 'Erro ao criar comunidade'))
+    }
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Erro ao criar comunidade')
-    return Promise.reject(new Error(text || 'Erro ao criar comunidade'))
+    return response.json()
+  },
+
+  async getCommunity(comunidadeNome: string) {
+    const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+      credentials: "include",
+    })
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Erro ao buscar comunidade')
+      return Promise.reject(new Error(text || 'Erro ao buscar comunidade'))
+    }
+    return response.json()
+  },
+
+  async updateCommunity(comunidadeNome: string, payload: UpdateCommunityData) {
+    const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+      method: 'PATCH',
+      credentials: "include",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Erro ao editar comunidade')
+      return Promise.reject(new Error(text || 'Erro ao editar comunidade'))
+    }
+
+    return response.json()
+  },
+
+  async deleteCommunity(comunidadeNome: string) {
+    const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
+      method: 'DELETE',
+      credentials: "include",
+    })
+    if (!response.ok) throw new Error('Erro ao apagar comunidade')
+    return response.json();
   }
-
-  return response.json()
-}
-
-export async function getCommunity(comunidadeNome: string) {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  })
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Erro ao buscar comunidade')
-    return Promise.reject(new Error(text || 'Erro ao buscar comunidade'))
-  }
-  return response.json()
-}
-
-export async function updateCommunity(comunidadeNome: string, payload: Record<string, unknown>) {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(getAuthHeaders() || {}),
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Erro ao editar comunidade')
-    return Promise.reject(new Error(text || 'Erro ao editar comunidade'))
-  }
-
-  return response.json()
-}
-
-export async function uploadImage(file: File): Promise<string> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(`${API_BASE_URL}/upload`, {
-    method: 'POST',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-    body: formData,
-  })
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Erro ao enviar imagem')
-    return Promise.reject(new Error(text || 'Erro ao enviar imagem'))
-  }
-  const json = await response.json()
-  return json.url || json.imagem_url || json.data || ''
-}
-
-export async function deleteCommunity(comunidadeNome: string) {
-  const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
-    method: 'DELETE',
-    headers: {
-      ...(getAuthHeaders() || {}),
-    },
-  })
-  if (!response.ok) throw new Error('Erro ao apagar comunidade')
-  return response.json();
 }

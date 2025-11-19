@@ -37,6 +37,15 @@ export default function EditPostModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
+    if (isOpen && post) {
+      setContent(post.conteudo);
+      setImages(post.imagens);
+      setContentError('');
+      setSubmitError('');
+    }
+  }, [isOpen, post]);
+
+  useEffect(() => {
     if (isOpen) {
       // Desabilita scrollagem da página ao abrir o modal
       const originalOverflow = document.body.style.overflow;

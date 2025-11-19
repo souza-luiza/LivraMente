@@ -30,17 +30,7 @@ import CompassIcon from "@/components/icons/CompassIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 
 // Chamadas da API
-import { 
-    getComunidadeByName, 
-    checkMemberOrMod, 
-    getMembers, 
-    getPosts, 
-    getModerators, 
-    enterCommunity, 
-    leaveCommunity, 
-    removeMember,
-    makeMemberModerator
-} from "@/services/comunidade";
+import { communityService } from "@/services/comunidade";
 import { postsService } from "@/services/posts";
 
 // Types
@@ -51,7 +41,8 @@ import { PostCategoria } from "@/types/post";
 import PopUp from "@/components/pop-up";
 
 // Funções
-import { slugToTitle } from '@/lib/slugify';
+import { slugToTitle, titleToSlug } from '@/lib/slugify';
+import { getSessionInfos } from "@/services/auth";
 
 export default function CommunityPage(){
     const router = useRouter();
@@ -70,7 +61,8 @@ export default function CommunityPage(){
     const [posts, setPosts] = useState<Post[]>([]);
     const [moderators, setModerators] = useState<User[]>([]);
 
-    // Status do Usuário
+    // Informações do Usuário
+    const [userInfo, setUserInfo] = useState<User>();
     const [isMember, setIsMember] = useState(false);
     const [isModerator, setIsModerator] = useState(false);
 
@@ -96,8 +88,12 @@ export default function CommunityPage(){
 
         const fetchData = async () => {
             try {
+                // Busca informações do usuário
+                const user = await getSessionInfos();
+                setUserInfo(user);
+
                 // Busca da comunidade
-                const info = await getComunidadeByName(slugToTitle(community));
+                const info = await communityService.getComunidadeByName(slugToTitle(community));
                 if (!info) {
                     router.replace("/not-found");
                     return;
@@ -105,15 +101,15 @@ export default function CommunityPage(){
                 setCommunityInfo(info);
 
                 // Verifica se usuário é membro ou moderador
-                const { isMember, isModerator } = await checkMemberOrMod(info.nome);
+                const { isMember, isModerator } = await communityService.checkMemberOrMod(info.nome);
                 setIsMember(isMember);
                 setIsModerator(isModerator);
 
                 // Busca membros, moderadores e posts
                 const [fetchedMembers, fetchedPosts, fetchedModerators] = await Promise.all([
-                    getMembers(info.nome),
-                    getPosts(info.nome),
-                    getModerators(info.nome),
+                    communityService.getMembers(info.nome),
+                    communityService.getPosts(info.nome),
+                    communityService.getModerators(info.nome),
                 ]);
                 setMembers(fetchedMembers);
                 setModerators(fetchedModerators);
@@ -151,26 +147,37 @@ export default function CommunityPage(){
         if (!communityInfo) return;
 
         try {
+            setLoadingMembers(true);
+            setLoadingModerators(true);
+            
             if (isMember) {
                 // Sair da comunidade
-                await leaveCommunity(communityInfo.nome);
+                await communityService.leaveCommunity(communityInfo.nome);
                 setIsMember(false);
                 setIsModerator(false);
                 setShowLeavingPopUp(false);
                 
             } else {
                 // Entrar na comunidade
-                await enterCommunity(communityInfo.nome);
+                await communityService.enterCommunity(communityInfo.nome);
                 setIsMember(true);
                 setShowWelcomePopUp(true);
             }
 
             // Atualiza lista de membros
-            const updatedMembers = await getMembers(communityInfo.nome);
+            const updatedMembers = await communityService.getMembers(communityInfo.nome);
+            const updatedModerators = await communityService.getModerators(communityInfo.nome);
+
             setMembers(updatedMembers);
+            setModerators(updatedModerators);
 
         } catch (err) {
+
             console.error("Erro ao atualizar participação na comunidade:", err);
+
+        } finally {
+            setLoadingMembers(false);
+            setLoadingModerators(false);
         }
     };
 
@@ -206,38 +213,46 @@ export default function CommunityPage(){
 
         try {
             // Remove membro da comunidade
-            await removeMember(communityInfo.nome, targetUserId);
+            await communityService.removeMember(communityInfo.nome, targetUserId);
 
             // Atualiza lista de membros e contagem
-            const updatedMembers = await getMembers(communityInfo.nome);
+            const updatedMembers = await communityService.getMembers(communityInfo.nome);
             setMembers(updatedMembers);
 
         } catch (err) {
+
             console.error("Erro ao remover membro da comunidade:", err);
 
         } finally {
+
             setLoadingMembers(false);
+
         }
     }
 
     const handleMakeModerator = async (targetUserId: string) => {
         if (!communityInfo || !isMember || !isModerator || !targetUserId) return;
 
+        setLoadingMembers(true);
         setLoadingModerators(true);
 
         try {
             // Promove membro a moderador
-            await makeMemberModerator(communityInfo.nome, targetUserId);
+            await communityService.makeMemberModerator(communityInfo.nome, targetUserId);
 
             // Atualiza lista de moderadores
-            const updatedModerators = await getModerators(communityInfo.nome);
+            const updatedModerators = await communityService.getModerators(communityInfo.nome);
             setModerators(updatedModerators);
 
         } catch (err) {
+
             console.error("Erro ao tornar membro moderador da comunidade:", err);
 
         } finally {
+
+            setLoadingMembers(false);
             setLoadingModerators(false);
+
         }
     }
 
@@ -264,7 +279,7 @@ export default function CommunityPage(){
 
         try{
             // Atualiza lista de posts
-            const updatedPosts = await getPosts(communityInfo.nome);
+            const updatedPosts = await communityService.getPosts(communityInfo.nome);
             setPosts(updatedPosts);
             
         } catch(err) {
@@ -274,8 +289,12 @@ export default function CommunityPage(){
         }
     }
 
+    const handleRedirectToPost = (post: Post) => {
+        router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}/postagem/${post._id}`);
+    }
+
     if (loading) return <LoadingPage />;
-    if (!communityInfo) return null;
+    if (!communityInfo || !userInfo) return null;
 
     const communityTitle = slugToTitle(community);
 
@@ -430,7 +449,9 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
+                                                        currentUserId={userInfo.userId}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -459,7 +480,9 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
+                                                        currentUserId={userInfo.userId}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -488,7 +511,9 @@ export default function CommunityPage(){
                                                     <PostComponent 
                                                         key={post._id}
                                                         post={post}
+                                                        currentUserId={userInfo.userId}
                                                         isModerator={isModerator}
+                                                        handleComment={() => handleRedirectToPost(post)}
                                                         onDelete={handleRefreshPosts}
                                                         onUpdate={handleRefreshPosts} 
                                                     />
@@ -517,6 +542,8 @@ export default function CommunityPage(){
                                                     <div key={post._id} className="flex flex-col gap-1">
                                                         <PostComponent 
                                                             post={post}
+                                                            currentUserId={userInfo.userId}
+                                                            handleComment={() => handleRedirectToPost(post)}
                                                             isModerator={isModerator}
                                                             disableActions={true}
                                                         />
@@ -566,7 +593,7 @@ export default function CommunityPage(){
                                     <TabPanel value="members">
                                         {(() => {
                                             if (loadingMembers) return (<LoadingComponent size="small" className="p-8" />);
-                                        
+                                            
                                             return members.length === 0 ? (
                                                 <p className="text-b1 body-quotation light-neutral text-center pt-4">
                                                     Nenhum membro ainda nesta comunidade.
@@ -575,14 +602,13 @@ export default function CommunityPage(){
                                                 <div className="flex flex-col gap-2">
                                                     {members.map((member) => (
                                                         <CommunityMember
-                                                            key={member._id}
-                                                            userId={member._id}
-                                                            username={member.username}
+                                                            key={member.userId}
+                                                            user={member}
                                                             isCurrentUserModerator={isModerator}
-                                                            isTargetUserModerator={moderators.some(mod => mod._id === member._id)}
+                                                            isTargetUserModerator={moderators.some(mod => mod.userId === member.userId)}
                                                             handleRemoveMember={handleRemoveMember}
                                                             handleMakeModerator={handleMakeModerator}
-                                                        />
+                                                        />  
                                                     ))}
                                                 </div>
                                             );
@@ -602,11 +628,10 @@ export default function CommunityPage(){
                                                 <div className="flex flex-col gap-2">
                                                     {moderators.map((moderador) => (
                                                         <CommunityMember
-                                                            key={moderador._id}
-                                                            userId={moderador._id}
-                                                            username={moderador.username}
-                                                            isTargetUserModerator={true}
+                                                            key={moderador.userId}
+                                                            user={moderador}
                                                             isCurrentUserModerator={isModerator}
+                                                            isTargetUserModerator={true}
                                                         />
                                                     ))}
                                                 </div>

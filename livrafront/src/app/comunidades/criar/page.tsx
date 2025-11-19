@@ -5,7 +5,7 @@ import Sidebar from '@/components/sidebar';
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
 import Input from '@/components/general-input';
 import TagsDropdown from '@/components/tags-dropdown';
-import { createCommunity, uploadImage } from '@/services/comunidade';
+import { communityService } from '@/services/comunidade';
 import Button from '@/components/button';
 import LoadingPage from '@/components/loading';
 import { titleToSlug } from '@/lib/slugify';
@@ -15,6 +15,7 @@ import TrashIcon from '@/components/icons/TrashIcon';
 import ImageIcon from '@/components/icons/ImageIcon';
 import AddIcon from '@/components/icons/AddIcon';
 import Image from 'next/image';
+import { CommunityTags, CreateCommunityData } from '@/types/comunidade';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -67,19 +68,18 @@ export default function CreateCommunityPage() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      let imagem_url: string | undefined = undefined;
-      if (foto) {
-        imagem_url = await uploadImage(foto);
-      }
+      //let imagem_url: string | undefined = undefined;
+      //if (foto) {
+      //  imagem_url = await communityService.uploadImage(foto);
+      //}
       const slug = titleToSlug(nome);
-      const payload = {
-        nome: nome,
+      const payload: CreateCommunityData = {
+        nome,
         descricao,
-        imagem_url: imagem_url || fotoPreview || undefined,
         tags: tags.map(tag => tag.toLowerCase()),
-        slug: slug,
-      }
-      const result = await createCommunity(payload)
+        slug,
+      };
+      await communityService.createCommunity(payload)
       setCommunitySlug(slug);
       setMessage({ text: 'Comunidade criada com sucesso!', type: 'success' });
       setIsLoading(false);
@@ -142,7 +142,7 @@ export default function CreateCommunityPage() {
                 </div>
                 <div className="flex flex-col gap-1 mb-4">
                   <label className="text-h6" id="tags-comunidade-label">Tags</label>
-                  <TagsDropdown id="tags-comunidade" selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
+                  <TagsDropdown id="tags-comunidade" tags={CommunityTags} selectedTags={tags} setSelectedTags={setTags} placeholder="Selecione gêneros da comunidade" />
                   {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
                 </div>
               </div>
