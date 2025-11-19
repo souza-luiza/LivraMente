@@ -98,6 +98,7 @@ export const useNotPrefStore = create<EstadoPreferenciasNotificacoes>()(
                     'resposta_comentario': 'comentarios',
                     'mencao': 'mencoes',
                     'novo_seguidor': 'novosSeguidores',
+                    'novo_post_comunidade': 'curtidas',
                 };
 
                 const preferencia = mapeamento[tipoNotificacao];

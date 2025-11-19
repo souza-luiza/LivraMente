@@ -46,6 +46,7 @@ export default function NotificacaoItem({
             
             case 'entrar_comunidade':
             case 'promovido_moderador':
+            case 'novo_post_comunidade':
                 if (notificacao.comunidadeNome) {
                     router.push(`/comunidade/${notificacao.comunidadeNome}`);
                 }

@@ -11,7 +11,8 @@ export type TipoNotificacao =
     | 'favoritar_readlist'   
     | 'entrar_comunidade'      
     | 'moderacao_post'        
-    | 'promovido_moderador';   
+    | 'promovido_moderador'
+    | 'novo_post_comunidade';   
 
 export type Notificacao = {
     id: string;
