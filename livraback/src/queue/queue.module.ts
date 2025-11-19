@@ -1,4 +1,4 @@
-import { Module, OnModuleInit, Global } from '@nestjs/common';
+import { Module, OnModuleInit, Global, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { QueueProducerService } from './queue.producer.service';
 import { NotificacoesConsumer } from './consumers/notificacoes.consumer';
@@ -9,7 +9,7 @@ import { ComunidadesModule } from '../comunidades/comunidades.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule, NotificacoesModule, ComunidadesModule],
+  imports: [ConfigModule, NotificacoesModule, forwardRef(() => ComunidadesModule)],
   providers: [
     QueueProducerService,
     NotificacoesConsumer,

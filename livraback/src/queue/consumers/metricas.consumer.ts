@@ -73,7 +73,6 @@ export class MetricasConsumer {
       const conteudo = JSON.parse(msg.content.toString());
       const routingKey = msg.fields.routingKey;
 
-      this.logger.log(`📊 Atualizando métrica: ${routingKey}`);
 
       switch (routingKey) {
         case ROUTING_KEYS.METRICAS_POST_CRIADO:
@@ -102,21 +101,14 @@ export class MetricasConsumer {
 
 
   private async atualizarMetricasPost(dados: any): Promise<void> {
-    this.logger.log(`📝 Post criado na comunidade ${dados.comunidadeId}`);
-    this.logger.log(`   Categoria: ${dados.categoria}`);
-    
-    
-    this.logger.log(`   💡 Métricas a atualizar:`);
-    this.logger.log(`      - comunidade.totalPosts++`);
-    this.logger.log(`      - comunidade.ultimaAtividade = now()`);
-    this.logger.log(`      - autor.totalPosts++`);
-    this.logger.log(`      - categoria.${dados.categoria}.count++`);
+    // TODO: Implementar
+    // - contagemCurtidas++, autor.pontosGamificacao++
   }
 
 
   private async atualizarMetricasLeitura(dados: any): Promise<void> {
     // TODO: Implementar
-    // - usuario.tempoLeituraTotal, progresso, pontosGamificacao
+    // - usuario.tempoLeituraTotal, progresso, pontosGamificacao, XP
   }
 
 

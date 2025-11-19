@@ -94,8 +94,8 @@ describe('NotificacoesService', () => {
     it('deve criar notificação sem remetente', async () => {
       const dto: CriarNotificacaoDto = {
         usuario: '507f1f77bcf86cd799439011',
-        tipo: TipoNotificacao.SISTEMA,
-        mensagem: 'Bem-vindo ao sistema!',
+        tipo: TipoNotificacao.MODERACAO_POST,
+        mensagem: 'Seu post foi aprovado pela moderação',
       };
 
       model.create.mockResolvedValue(mockNotificacao as any);

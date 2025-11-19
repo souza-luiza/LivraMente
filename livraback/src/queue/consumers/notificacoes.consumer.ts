@@ -26,9 +26,6 @@ export class NotificacoesConsumer {
     await this.conectar();
   }
 
-  /**
-   * Conecta ao RabbitMQ e inicia consumo da fila
-   */
   private async conectar(): Promise<void> {
     try {
       const config = getRabbitMQConfig(this.configService);
@@ -70,9 +67,6 @@ export class NotificacoesConsumer {
     }
   }
 
-  /**
-   * Processa mensagem da fila
-   */
   private async processarMensagem(
     msg: ConsumeMessage | null,
     channel: ConfirmChannel,
@@ -129,7 +123,6 @@ export class NotificacoesConsumer {
     const { postId, autorId, comunidadeId, conteudoPreview } = dados;
 
     try {
-      // Buscar comunidade com membros
       const comunidade = await this.comunidadesService.findById(comunidadeId);
       const comunidadeNome = comunidade.nome;
       const preview = conteudoPreview?.substring(0, 50) || 'Novo post';
@@ -185,23 +178,32 @@ export class NotificacoesConsumer {
   }
 
   private async notificarMembroEntrou(dados: any): Promise<void> {
-    const { userId, comunidadeId, comunidadeNome, moderadores } = dados;
+    const { userId, comunidadeId, comunidadeNome } = dados;
 
-    // Notificar cada moderador
-    for (const moderadorId of moderadores) {
-      await this.notificacoesService.criar({
-        usuario: moderadorId,
-        tipo: TipoNotificacao.ENTRAR_COMUNIDADE,
-        mensagem: `Novo membro entrou na comunidade ${comunidadeNome}!`,
-        remetente: userId,
-        comunidadeNome,
-      });
+    try {
+      const comunidade = await this.comunidadesService.findById(comunidadeId);
+
+      // Notificar cada moderador
+      for (const moderadorId of comunidade.moderadores) {
+        const moderadorIdStr = moderadorId.toString();
+        
+        if (moderadorIdStr !== userId) {
+          await this.notificacoesService.criar({
+            usuario: moderadorIdStr,
+            tipo: TipoNotificacao.ENTRAR_COMUNIDADE,
+            mensagem: `Novo membro entrou na comunidade ${comunidade.nome}!`,
+            remetente: userId,
+            comunidadeNome: comunidade.nome,
+          });
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Erro ao notificar moderadores sobre novo membro em ${comunidadeNome}:`, error);
+      throw error;
     }
   }
 
-  /**
-   * Fecha conexão ao desligar aplicação
-   */
+
   async onModuleDestroy() {
     try {
       await this.channelWrapper.close();
