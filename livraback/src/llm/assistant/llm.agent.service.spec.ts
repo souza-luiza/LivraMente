@@ -7,15 +7,13 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { createAgent } from 'langchain';
 import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search';
 
-// --- Mocks ---
+// --- Mocks das Dependências Externas ---
 const mockAgentInvoke = jest.fn();
 
+// Mock do createAgent
 jest.mock('langchain', () => {
   return {
-    createAgent: jest.fn().mockResolvedValue({}), // Retorna um objeto vazio (o agente)
-    AgentExecutor: jest.fn().mockImplementation(() => ({
-      invoke: mockAgentInvoke,
-    })),
+    createAgent: jest.fn().mockResolvedValue({}),
   };
 });
 
@@ -23,6 +21,7 @@ const mockFormat = jest.fn();
 const mockPartial = jest.fn(() => ({
   format: mockFormat,
 }));
+
 jest.mock('@langchain/core/prompts', () => ({
   PromptTemplate: {
     fromTemplate: jest.fn(() => ({
@@ -35,18 +34,36 @@ jest.mock('@langchain/google-genai', () => ({
   ChatGoogleGenerativeAI: jest.fn(() => ({})),
 }));
 
+// Mock da ferramenta DuckDuckGo
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
   DuckDuckGoSearch: jest.fn().mockImplementation(() => ({
     name: 'duckduckgo_search',
-    description: 'Search',
+    description: 'Search the web',
   })),
 }));
 
-// --- Mocks dos Serviços Internos ---
-const mockTool = { name: 'mock_tool', description: 'desc' };
-const mockLlmToolsService = new Proxy({}, {
-  get: () => jest.fn(() => mockTool)
-});
+// --- Mock Robusto do LlmToolsService (Sem Proxy pra ver se dar certo) ---
+const mockTool = { name: 'mock_tool', description: 'descrição teste' };
+
+const mockLlmToolsService = {
+  createGetUserStoriesTool: jest.fn(() => mockTool),
+  createGetRecentStoriesTool: jest.fn(() => mockTool),
+  createGetCommunitiesTool: jest.fn(() => mockTool),
+  createGetPopularCommunitiesTool: jest.fn(() => mockTool),
+  createJoinCommunityTool: jest.fn(() => mockTool),
+  createLeaveCommunityTool: jest.fn(() => mockTool),
+  createFindReadlistByNameTool: jest.fn(() => mockTool),
+  createFindLivroByNameTool: jest.fn(() => mockTool),
+  createAddBookToReadlistTool: jest.fn(() => mockTool),
+  createRemoveBookFromReadlistTool: jest.fn(() => mockTool),
+  createCreateReadlistTool: jest.fn(() => mockTool),
+  createDeleteReadlistTool: jest.fn(() => mockTool),
+  createUsersGetMyReadlistsTool: jest.fn(() => mockTool),
+  createGravarLeituraTool: jest.fn(() => mockTool),
+  createUsersGetMyProfileTool: jest.fn(() => mockTool),
+  createUsersGetMyFavoritesTool: jest.fn(() => mockTool),
+  createGetPopularPostsInCommunityTool: jest.fn(() => mockTool),
+};
 
 const mockConfigService = {
   get: jest.fn((key: string) => {
@@ -67,6 +84,7 @@ describe('LlmAgentService', () => {
         { provide: LlmToolsService, useValue: mockLlmToolsService },
       ],
     }).compile();
+
     service = module.get<LlmAgentService>(LlmAgentService);
   });
 
@@ -81,7 +99,8 @@ describe('LlmAgentService', () => {
 
     it('deve chamar createAgent e AgentExecutor corretamente', async () => {
       await service.runAnalysisAgent(userPrompt, userId);
-
+      
+      // Verifica se criou o agente ReAct
       expect(createAgent).toHaveBeenCalledWith(
         expect.objectContaining({
           llm: expect.any(Object),
