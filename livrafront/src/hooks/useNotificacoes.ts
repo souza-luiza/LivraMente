@@ -21,39 +21,43 @@ export function useNotificacoes() {
     const { deveNotificar } = useNotPrefStore();
     
     useEffect(() => {
-        const carregarNotificacoes = async () => {
+        let desconectar: (() => void) | undefined;
+        const inicializar = async () => {
             try {
                 const notificacoes = await getNotificacoes();
                 definirNotificacoes(notificacoes);
+                desconectar = conectarNotificacoes(
+                    (novaNotificacao) => {
+                        // Verificar as preferências
+                        if (!deveNotificar(novaNotificacao.tipo)) {
+                            return; 
+                        }
+                        adicionarNotificacao(novaNotificacao);
+                        
+                        // Mostrar notificação do navegador
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('Nova notificação', {
+                                body: novaNotificacao.mensagem,
+                                icon: '/favicon.ico'
+                            });
+                        }
+                    },
+                    (error) => {
+                        // Não mostrar erro de reconexão se não estiver autenticado
+                        console.warn('Erro na conexão SSE:', error);
+                    }
+                );
             } catch (error) {
-                toast.error('Erro ao carregar notificações. Tentando reconectar...');
+                // Silenciosamente falhar se não estiver autenticado
+                // Não mostrar toast de erro na tela de login
+                console.debug('Notificações não carregadas (usuário não autenticado)');
             }
         };
-        carregarNotificacoes();
 
-        const desconectar = conectarNotificacoes(
-            (novaNotificacao) => {
-                // Verificar as preferências
-                if (!deveNotificar(novaNotificacao.tipo)) {
-                    return; 
-                }
-                adicionarNotificacao(novaNotificacao);
-                
-                // Mostrar notificação do navegador
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('Nova notificação', {
-                        body: novaNotificacao.mensagem,
-                        icon: '/favicon.ico'
-                    });
-                }
-            },
-            (error) => {
-                toast.error('Conexão com notificações perdida. Reconectando...');
-            }
-        );
+        inicializar();
         
         return () => {
-            desconectar();
+            desconectar?.();
         };
-    }, [adicionarNotificacao, definirNotificacoes, deveNotificar]);
+    }, [adicionarNotificacao, definirNotificacoes]);
 }
