@@ -41,16 +41,16 @@ export function useNotificacoes() {
                                 icon: '/favicon.ico'
                             });
                         }
-                    },
+                    }, 
                     (error) => {
-                        // Não mostrar erro de reconexão se não estiver autenticado
-                        console.warn('Erro na conexão SSE:', error);
+                        toast.error('Conexão com notificações perdida. Tentando reconectar...');
                     }
                 );
-            } catch (error) {
-                // Silenciosamente falhar se não estiver autenticado
-                // Não mostrar toast de erro na tela de login
-                console.debug('Notificações não carregadas (usuário não autenticado)');
+            } catch (error: any) {
+                if (error?.response?.status === 401 || error?.response?.status === 403) {
+                } else {
+                    toast.error('Erro ao carregar notificações.');
+                }
             }
         };
 
