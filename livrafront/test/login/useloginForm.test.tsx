@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react'
 import { useRouter } from 'next/navigation'
 import { useLoginForm } from '@/hooks/useLoginForm'
 import { loginUser } from '@/services/auth'
+import { User } from '@/types/auth'
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
@@ -55,13 +56,12 @@ describe('useLoginForm', () => {
   })
 
   it('deve fazer login com sucesso', async () => {
-    const mockResponse = {
-      token: 'token-123',
-      user: {
-        _id: '1',
+    const mockResponse: User = {
+        userId: '1',
         username: 'testuser',
-        email: 'test@test.com'
-      }
+        email: 'test@test.com',
+        avatarUrl: '',
+        pronouns: 'they/them'
     }
 
 
@@ -124,12 +124,10 @@ describe('useLoginForm', () => {
   })
 
   it('deve salvar token e user no localStorage após login', async () => {
-    const mockResponse = {
-      token: 'real-token-123',
-      user: { _id: '1', username: 'test', email: 'test@test.com' }
-    }
+    // loginUser returns a User object
+    const mockResponse = { _id: '1', userId: '1', username: 'test', email: 'test@test.com' }
 
-    mockLoginUser.mockResolvedValueOnce(mockResponse)
+    mockLoginUser.mockResolvedValueOnce(mockResponse as any)
     const { result } = renderHook(() => useLoginForm())
 
     act(() => {
@@ -148,19 +146,16 @@ describe('useLoginForm', () => {
       } as unknown as React.FormEvent)
     })
 
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'real-token-123')
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('user', JSON.stringify(mockResponse.user))
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('username', mockResponse.user.username)
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse.user._id))
+      // Current hook stores username and userId (no token)
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('username', mockResponse.username)
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('userId', String(mockResponse._id))
   })
 
   it('deve redirecionar para página principal/feed após login', async () => {
-    const mockResponse = {
-      token: 'token-123',
-      user: { _id: '1', username: 'test', email: 'test@test.com' }
-    }
+    // loginUser returns a User object
+    const mockResponse = { _id: '1', userId: '1', username: 'test', email: 'test@test.com' }
 
-    mockLoginUser.mockResolvedValueOnce(mockResponse)
+    mockLoginUser.mockResolvedValueOnce(mockResponse as any)
     const { result } = renderHook(() => useLoginForm())
 
     act(() => {
@@ -179,7 +174,7 @@ describe('useLoginForm', () => {
       } as unknown as React.FormEvent)
     })
 
-    expect(mockPush).toHaveBeenCalledWith(`${mockResponse.user.username}`)
+      expect(mockPush).toHaveBeenCalledWith(`${mockResponse.username}`)
   })
 
   it('deve tratar erro de credenciais inválidas', async () => {
