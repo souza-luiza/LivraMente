@@ -43,7 +43,6 @@ import PopUp from "@/components/pop-up";
 // Funções
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
 import { getSessionInfos } from "@/services/auth";
-import { set } from "date-fns";
 
 export default function CommunityPage(){
     const router = useRouter();
