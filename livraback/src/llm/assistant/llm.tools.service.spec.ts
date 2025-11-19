@@ -169,7 +169,7 @@ describe('LlmToolsService', () => {
       const tool = service.createGetPopularPostsInCommunityTool();
       const result = await tool.func({ communityName, count }); // count é opcional no schema, mas testamos com ele
 
-      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName);
+      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName, count);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
   });

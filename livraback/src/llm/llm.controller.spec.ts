@@ -21,6 +21,7 @@ describe('LlmController', () => {
 
   const mockAgentService = {
     analyzeAgent: jest.fn(),
+    runAnalysisAgent: jest.fn(),
   };
 
   const mockUser = { userId: 'user-123', email: 'teste@test.com', username: 'teste' };
