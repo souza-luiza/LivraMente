@@ -163,12 +163,12 @@ describe('LlmToolsService', () => {
 
     it('createGetPopularPostsInCommunityTool: should delegate to findPopularPosts', async () => {
       const communityName = 'Ficção';
-      mockComunidadesService.findPopularPosts.mockResolvedValue([mockStory]);
+      mockComunidadesService.findAll.mockResolvedValue([mockStory]);
 
       const tool = service.createGetPopularPostsInCommunityTool();
       const result = await tool.func({ communityName });
 
-      expect(mockComunidadesService.findPopularPosts).toHaveBeenCalledWith(communityName);
+      expect(mockComunidadesService.findAll).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
   });
