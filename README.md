@@ -28,7 +28,7 @@ es-unifesp-2025-2-grupo-alpha/
 # Documentação do projeto
 |
 ├── livraback/                          
-# Backend da aplicação
+# Backend da aplicação (Nest.js)
 |
 ├── livrafront/                         
 # Frontend da aplicação (Next.js)
