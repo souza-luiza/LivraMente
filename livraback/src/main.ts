@@ -22,6 +22,17 @@ async function bootstrap() {
     credentials: true
   });
 
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Origin', allowedOrigins);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+      return res.status(200).end();
+    }
+    next();
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // remove propriedades não permitidas
