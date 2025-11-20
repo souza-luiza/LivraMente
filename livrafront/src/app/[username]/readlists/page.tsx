@@ -95,8 +95,7 @@ export default function ReadlistsPage() {
         </main>
       </div>
     )
-  } 
-  // fazer um return para o caso !readlist com o botão de criar readlist
+  }
 
   const nameTab = isOwnProfile ? "Minhas" : "Todas";
   const handleOpenCreateReadlist = () => {
@@ -140,7 +139,7 @@ export default function ReadlistsPage() {
             </TabList>
 
             <TabPanel value="todas">
-              <div className="p-3 px-6 w-full h-fit grid grid-cols-4 gap-2">
+              <div className="p-3 px-6 w-full h-fit grid grid-cols-6 gap-2">
                 {readlists.map((readlist) => (
                   <Readlist
                     key={readlist._id}
@@ -154,7 +153,7 @@ export default function ReadlistsPage() {
             </TabPanel>
             {isOwnProfile && (
               <TabPanel value="favoritas">
-                <div className="p-3 px-6 w-full h-fit grid grid-cols-4 gap-2">
+                <div className="p-3 px-6 w-full h-fit grid grid-cols-6 gap-2">
                   {favReadlists.map((readlist) => (
                     <Readlist
                       key={readlist._id}
