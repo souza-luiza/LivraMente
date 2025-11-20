@@ -17,6 +17,6 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
   ],
   controllers: [ReadlistsController],
   providers: [ReadlistsService],
-  exports: [ReadlistsService]
+  exports: [ReadlistsService, MongooseModule]
 })
 export class ReadlistsModule {}
