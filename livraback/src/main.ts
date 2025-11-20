@@ -15,22 +15,12 @@ async function bootstrap() {
   await mongoose.connect(process.env.DB_URL);
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
-  app.enableCors({
-    origin: allowedOrigins,  
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  });
 
-  app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-      res.header('Access-Control-Allow-Origin', allowedOrigins);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
-      return res.status(200).end();
-    }
-    next();
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.useGlobalPipes(
@@ -41,22 +31,10 @@ async function bootstrap() {
     })
   )
 
-  // ########################## SWAGGER #################################
-  const config = new DocumentBuilder()
-    .setTitle('API LivraMente')
-    .setDescription('Documentação - API LivraMente')
-    .setVersion('1.0')
-    .addCookieAuth('authCookie')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
-  // ####################################################################
-
   app.use(
     session({
       store: MongoStore.create({
-        mongoUrl: process.env.DB_URL,
-        collectionName: 'sessions', // colecao onde sessoes vao ficar
+        mongoUrl: process.env.DB_URL
       }),
       name: 'sessionId',
       secret: process.env.SESSION_SECRET,
@@ -64,11 +42,23 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: false,
+        secure: process.env.HTTPS ? true : false,
+        sameSite: process.env.HTTPS ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 dia
       },
     }),
   );
+
+  // ########################## SWAGGER #################################
+  const config = new DocumentBuilder()
+    .setTitle('API LivraMente')
+    .setDescription('Documentação - API LivraMente')
+    .setVersion('1.0')
+    .addCookieAuth('sessionId')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
+  // ####################################################################
 
   await app.listen(process.env.PORT ?? 3001);
 }
