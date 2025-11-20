@@ -38,9 +38,6 @@ export class Livro {
   // Referência à saga, se tiver
   @Prop({ type: Types.ObjectId, ref: 'Saga' })
   saga?: Types.ObjectId;
-
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
-  readlists?: Types.ObjectId[];
 }
 
 export const LivroSchema = SchemaFactory.createForClass(Livro);
