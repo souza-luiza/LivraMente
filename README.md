@@ -46,6 +46,7 @@ es-unifesp-2025-2-grupo-alpha/
 - **livraback/**: Backend em NestJS e MongoDB
 - **livrafront/**: Frontend em Next.js 15 com TypeScript e Tailwind CSS
 
+
 ## 💻 Pré-requisitos (até o momento)
 
 - Node.js (versão 18 ou superior)
