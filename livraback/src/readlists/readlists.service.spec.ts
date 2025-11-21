@@ -269,7 +269,7 @@ describe('ReadlistsService', () => {
       expect(mockPopulate).toHaveBeenCalledWith({
         path: 'readlists',
         match: { publica: true },
-        select: '-favorito -capa_public_id',
+        select: '-capa_public_id',
       });
       expect(result).toEqual([publicReadlist]);
     });

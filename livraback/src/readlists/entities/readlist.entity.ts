@@ -7,9 +7,6 @@ export type ReadlistDocument = HydratedDocument<Readlist>;
 export class Readlist {
   @Prop({ required: true })
   nome: string;
-
-  @Prop({ default: true })
-  favorito: boolean;
   
   @Prop({ default: false })
   publica: boolean;

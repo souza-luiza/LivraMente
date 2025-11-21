@@ -90,14 +90,14 @@ export class ReadlistsService {
     async findAllPublic(username: string) {
         const user = await this.usersService.getByUsername(username);
         if (!user) throw new NotFoundException('Usuário não encontrado');
-        const resultado = await this.userModel.findById(user._id).populate({ path:'readlists', match: { publica: true }, select: '-favorito -capa_public_id' }).exec();
+        const resultado = await this.userModel.findById(user._id).populate({ path:'readlists', match: { publica: true }, select: '-capa_public_id' }).exec();
         return resultado?.readlists;
     }
 
     async findOnePublic(username: string, slug: string) {
         const user = await this.usersService.getByUsername(username);
         if (!user) throw new NotFoundException('Usuário não encontrado');
-        const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-favorito -capa_public_id').exec();
+        const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-capa_public_id').exec();
         if(!readlist) throw new NotFoundException('Readlist não encontrada');
         return readlist;
     }
