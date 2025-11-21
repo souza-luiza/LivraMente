@@ -39,6 +39,7 @@ es-unifesp-2025-2-grupo-alpha/
 # Documentação principal do projeto
 ```
 
+
 ### 📝 Descrição dos Componentes
 
 - **.github/workflows/**: Seção dedicada aos testes automatizados
