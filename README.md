@@ -54,6 +54,7 @@ es-unifesp-2025-2-grupo-alpha/
 - Npm
 - Git
 
+
 ## 👥 Equipe
 
 - **Enzo de Almeida Belfort Rizzi Di Chiara** - [@EnzoBelfort](https://github.com/EnzoBelfort)
