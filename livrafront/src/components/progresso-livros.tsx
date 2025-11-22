@@ -26,7 +26,7 @@ export default function ProgressoLivros({
     return (
         <div className="flex flex-col bg-[#472B15] text-[#D2BCAA] p-2 medium-border-radius">
             <div className="flex flex-row items-center gap-3">
-                <OpenBookIcon size={30}/>
+                <OpenBookIcon/>
                 <div className="flex-1 flex-col">
                     <div className="flex justify-between">
                         <p className="text-b3">Lidos {lidos} de {total}</p>
