@@ -162,7 +162,29 @@ export class LlmAgentService {
         result?.messages?.[result?.messages?.length - 1]?.content ??
         result;
 
-      return typeof output === 'string' ? output : JSON.stringify(output);
+      const outputStr = typeof output === 'string' ? output : JSON.stringify(output);
+
+      // EXTRAI APENAS A RESPOSTA FINAL
+      const finalAnswerMatch = outputStr.match(/Resposta Final:\s*(.+?)(?:\n|$)/s);
+      if (finalAnswerMatch && finalAnswerMatch[1]) {
+        return finalAnswerMatch[1].trim();
+      }
+
+      // Se não encontrar "Resposta Final:", tenta pegar tudo após o último "Pensamento:"
+      const lines = outputStr.split('\n');
+      let isFinalAnswer = false;
+      let finalAnswer = '';
+
+      for (const line of lines) {
+        if (line.startsWith('Resposta Final:')) {
+          isFinalAnswer = true;
+          finalAnswer = line.replace('Resposta Final:', '').trim();
+        } else if (isFinalAnswer) {
+          finalAnswer += '\n' + line;
+        }
+      }
+
+      return finalAnswer.trim() || outputStr;
     } catch (e) {
       console.error('[LlmAgentService] Erro ao executar o Agente:', e);
       return 'Desculpe, ocorreu um erro ao tentar processar sua solicitação.';
