@@ -1,9 +1,204 @@
 import ProgressoLivros from "@/components/progresso-livros";
+import LivrosReadlist from "@/components/livros-readlist";
 import SearchBar from "@/components/searchbar";
 import Sidebar from "@/components/sidebar";
 import Image from "next/image";
+import Button from "@/components/button";
+import Edit2Icon from "@/components/icons/Edit2Icon";
+import HeartIcon from "@/components/icons/HeartIcon";
 
 export default function ReadlistPage() {
+
+    const livros = [
+    {
+        _id: "1",
+        titulo: "O Enigma das Sombras",
+        isbn: "978-3-86680-192-9",
+        autores: ["Marina Silva"],
+        ano_publicacao: 2018,
+        sinopse: "Um suspense psicológico onde uma detetive precisa enfrentar seus próprios medos para desvendar uma série de desaparecimentos.",
+        numero_paginas: 342,
+        generos: ["Suspense", "Mistério"],
+        editora: "Editora Horizonte"
+    },
+    {
+        _id: "2",
+        titulo: "Além das Estrelas",
+        isbn: "978-1-4028-9462-6",
+        autores: ["Carlos Mendonça", "Aline Torres"],
+        ano_publicacao: 2021,
+        sinopse: "Uma aventura de ficção científica sobre a primeira missão tripulada rumo a um exoplaneta habitável.",
+        numero_paginas: 418,
+        generos: ["Ficção Científica", "Aventura"],
+        editora: "Galáxia Press"
+    },
+    {
+        _id: "3",
+        titulo: "Caminhos de Outono",
+        isbn: "978-0-307-29136-2",
+        autores: ["Helena Duarte"],
+        ano_publicacao: 2015,
+        sinopse: "Um romance delicado sobre reencontros, amadurecimento e a beleza das pequenas coisas.",
+        numero_paginas: 276,
+        generos: ["Romance", "Drama"],
+        editora: "Raiz Editorial"
+    },
+    {
+        _id: "4",
+        titulo: "A Arte da Guerra Digital",
+        isbn: "978-1-59327-584-6",
+        autores: ["Ricardo Fonseca"],
+        ano_publicacao: 2022,
+        sinopse: "Um guia moderno sobre segurança cibernética e estratégias de defesa no mundo conectado.",
+        numero_paginas: 331,
+        generos: ["Tecnologia", "Educação"],
+        editora: "CyberMind"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    }
+    ];
+
     return (
         <div className="min-h-screen flex bg-[#FFFFFF]">
             <Sidebar />
@@ -11,29 +206,39 @@ export default function ReadlistPage() {
             <div className="flex-1 flex flex-col">
                 <SearchBar />
 
-                <main className="bg-[#E8DDD4] w-1/6 flex flex-col medium-border-radius p-5 text-[var(--secondary-700)]">
-                    <div className="relative w-full aspect-[1/1]">
-                        <Image 
-                            src={"/team/Kemi.jpg"}
-                            alt={"Foto da readlist"}
-                            fill
-                            className="object-cover rounded-lg" 
-                        />
+                <div className="w-full flex gap-4 pt-2">
+                    <div className="flex flex-col gap-2 items-center">
+                        <main className="bg-[#E8DDD4] w-[240px] h-fit flex flex-col medium-border-radius p-5 gap-2 text-[var(--secondary-700)]">
+                            <div className="relative w-full aspect-[1/1]">
+                                <Image 
+                                    src={"/team/Kemi.jpg"}
+                                    alt={"Foto da readlist"}
+                                    fill
+                                    className="object-cover rounded-lg" 
+                                />
+                            </div>
+                            <h3 className="text-h3 text-center break-words">Readlist</h3>
+                            <div className="flex flex-row justify-center items-center gap-1">
+                                <Image 
+                                    src="/AbstractUser.png"
+                                    alt="Foto do dono da readlist"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full object-cover"
+                                />
+                                <p className="text-b2">@username</p>
+                            </div>
+                            <div className="flex flex-row justify-center">
+                                <Button icon={<HeartIcon/>} size="medium" colorScheme="light-brown"/>
+                                <Button icon={<Edit2Icon/>} size="medium" colorScheme="light-brown"/>
+                            </div>
+                            <ProgressoLivros lidos={2} total={5}/>
+                        </main>
                     </div>
-                    <h4 className="text-h4 pt-2 text-center break-words">Readlist</h4>
-                    <div className="flex flex-row justify-center items-center gap-1 pt-2 pb-6">
-                        <Image 
-                            src="/AbstractUser.png"
-                            alt="Foto do dono da readlist"
-                            width={24}
-                            height={24}
-                            className="rounded-full object-cover"
-                        />
-                        <p className="text-b2">@username</p>
-                    </div>
-                    <ProgressoLivros lidos={2} total={5}/>
-                </main>
-
+            
+                    <LivrosReadlist livros={livros} />
+    
+                </div>
 
             </div>
         </div>
