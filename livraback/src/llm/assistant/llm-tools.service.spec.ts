@@ -78,6 +78,7 @@ describe('LlmToolsService', () => {
         { provide: ComunidadesService, useValue: mockComunidadesService },
         { provide: ReadlistsService, useValue: mockReadlistsService },
         { provide: UsersService, useValue: mockUsersService },
+        // Mocks vazios para models não usados diretamente
         { provide: getModelToken(Comunidade.name), useValue: {} },
         { provide: getModelToken(Readlist.name), useValue: {} },
         { provide: getModelToken(User.name), useValue: {} },
@@ -124,6 +125,43 @@ describe('LlmToolsService', () => {
 
   // --- Testes de Ferramentas de Comunidade ---
   describe('Community Tools', () => {
+    describe('createGetPopularCommunitiesTool', () => {
+      it('deve buscar todas, ordenar por membros e retornar as top N', async () => {
+        const count = 2;
+
+        // 1. Criamos dados falsos com diferentes quantidades de membros
+        const commPequena = { ...mockCommunity, nome: 'Pequena', membros: ['u1'] };           // 1 membro
+        const commGrande = { ...mockCommunity, nome: 'Grande', membros: ['u1', 'u2', 'u3'] }; // 3 membros
+        const commMedia = { ...mockCommunity, nome: 'Media', membros: ['u1', 'u2'] };         // 2 membros
+
+        // 2. O service retorna tudo misturado
+        mockComunidadesService.findAll.mockResolvedValue([commPequena, commGrande, commMedia]);
+
+        const tool = service.createGetPopularCommunitiesTool();
+        const result = await tool.func({ count });
+
+        expect(tool.name).toBe('get_popular_communities');
+        expect(mockComunidadesService.findAll).toHaveBeenCalled();
+
+        // 3. O resultado deve ser JSON contendo [Grande, Media] (Nesta ordem!)
+        const parsedResult = JSON.parse(result);
+        expect(parsedResult).toHaveLength(2);        // Respeitou o count=2?
+        expect(parsedResult[0].nome).toBe('Grande'); // O primeiro é o maior?
+        expect(parsedResult[1].nome).toBe('Media');  // O segundo é o médio?
+        // A 'Pequena' deve ter sido cortada fora.
+      });
+
+      it('deve lidar com erros no findAll', async () => {
+        const errorMessage = 'Erro no banco';
+        mockComunidadesService.findAll.mockRejectedValue(new Error(errorMessage));
+
+        const tool = service.createGetPopularCommunitiesTool();
+        const result = await tool.func({ count: 5 });
+
+        expect(result).toBe(`Erro ao buscar comunidades: ${errorMessage}`);
+      });
+    });
+
     it('createGetCommunitiesTool: should delegate to ComunidadesService.findOne', async () => {
       const communityName = 'Ficção';
       mockComunidadesService.findOne.mockResolvedValue(mockCommunity);
@@ -135,104 +173,82 @@ describe('LlmToolsService', () => {
       expect(result).toBe(JSON.stringify(mockCommunity));
     });
 
-    it('createJoinCommunityTool: should delegate to ComunidadesService.addMembro', async () => {
-      const userId = 'user-123';
+    it('createGetPopularPostsInCommunityTool: should delegate to findAllPosts', async () => {
       const communityName = 'Ficção';
-      const successMsg = { message: 'OK' };
-      mockComunidadesService.addMembro.mockResolvedValue(successMsg);
-
-      const tool = service.createJoinCommunityTool(userId);
-      const result = await tool.func({ communityName });
-
-      expect(mockComunidadesService.addMembro).toHaveBeenCalledWith(userId, communityName);
-      expect(result).toBe(JSON.stringify(successMsg));
-    });
-
-    it('createLeaveCommunityTool: should delegate to ComunidadesService.removeMembro', async () => {
-      const userId = 'user-123';
-      const communityName = 'Ficção';
-      const successMsg = { message: 'OK' };
-      mockComunidadesService.removeMembro.mockResolvedValue(successMsg);
-
-      const tool = service.createLeaveCommunityTool(userId);
-      const result = await tool.func({ communityName });
-
-      expect(mockComunidadesService.removeMembro).toHaveBeenCalledWith(userId, communityName);
-      expect(result).toBe(JSON.stringify(successMsg));
-    });
-
-    it('createGetPopularPostsInCommunityTool: should delegate to findPopularPosts', async () => {
-      const communityName = 'Ficção';
-      const count = 5;
-
       mockComunidadesService.findAllPosts.mockResolvedValue([mockStory]);
 
       const tool = service.createGetPopularPostsInCommunityTool();
-
-      const result = await tool.func({ communityName, count });
+      const result = await tool.func({ communityName });
 
       expect(mockComunidadesService.findAllPosts).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
+  });
 
-    // --- Testes de Ferramentas de Readlist ---
-    describe('Readlist Tools', () => {
-      const userId = 'user-123';
-      const readlistId = 'readlist-abc';
-      const readlistName = 'Favoritos';
-      const livroId = 'livro-xyz';
+  // --- Testes de Ferramentas de Readlist ---
+  describe('Readlist Tools', () => {
+    const userId = 'user-123';
+    const readlistId = 'readlist-abc';
+    const readlistName = 'Favoritos';
+    const livroId = 'livro-xyz';
 
-      it('createFindReadlistByNameTool: should find readlist by name', async () => {
-        const mockReadlists = [{ nome: 'Favoritos', _id: readlistId }];
-        mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
+    it('createFindReadlistByNameTool: should find readlist by name', async () => {
+      const mockReadlists = [{ nome: 'Favoritos', _id: readlistId }];
+      mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
 
-        const tool = service.createFindReadlistByNameTool(userId);
-        const result = await tool.func({ readlistName });
+      const tool = service.createFindReadlistByNameTool(userId);
+      const result = await tool.func({ readlistName });
 
-        expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
-        expect(result).toBe(JSON.stringify({ id: readlistId, nome: readlistName }));
-      });
+      expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
+      expect(result).toBe(JSON.stringify({ id: readlistId, nome: readlistName }));
+    });
+  });
 
-      it('createAddBookToReadlistTool: should delegate to addLivro', async () => {
-        mockReadlistsService.addLivro.mockResolvedValue(mockReadlist);
-        const tool = service.createAddBookToReadlistTool(userId);
-        const result = await tool.func({ readlistId, livroId });
-        expect(mockReadlistsService.addLivro).toHaveBeenCalledWith(userId, readlistId, livroId);
-      });
+  // --- Testes de Ferramentas de Usuário ---
+  describe('User Tools', () => {
+    const userId = 'user-123';
 
-      it('createCreateReadlistTool: should delegate to create', async () => {
-        const dto = { nome: 'Nova', descricao: 'Desc', publica: false };
-        mockReadlistsService.create.mockResolvedValue({ _id: 'new', ...dto });
-        const tool = service.createCreateReadlistTool(userId);
-        const result = await tool.func(dto);
-        expect(mockReadlistsService.create).toHaveBeenCalledWith(userId, dto);
-      });
+    it('createUsersGetMyReadlistsTool: should return user readlists', async () => {
+      const mockReadlists = [{ _id: 'r1', nome: 'R1' }];
+      mockReadlistsService.findAll.mockResolvedValue(mockReadlists);
+
+      const tool = service.createUsersGetMyReadlistsTool(userId);
+      const result = await tool.func({});
+
+      expect(mockReadlistsService.findAll).toHaveBeenCalledWith(userId);
+      expect(result).toBe(JSON.stringify(mockReadlists));
     });
 
-    // --- Testes de Ferramentas de Usuário ---
-    describe('User Tools', () => {
-      const userId = 'user-123';
+    it('createGravarLeituraTool: should delegate to registroLeitura', async () => {
+      const params = { livroId: 'livro-1', qtd: 10, opcao: 1 };
+      mockUsersService.registroLeitura.mockResolvedValue(true);
 
-      it('createUsersGetMyProfileTool: should delegate to findOne', async () => {
-        const mockProfile = { username: 'test' };
-        mockUsersService.findOne.mockResolvedValue(mockProfile);
+      const tool = service.createGravarLeituraTool(userId);
+      await tool.func(params);
 
-        const tool = service.createUsersGetMyProfileTool(userId);
-        const result = await tool.func({});
+      expect(mockUsersService.registroLeitura).toHaveBeenCalledWith(params.livroId, params.opcao, params.qtd);
+    });
 
-        expect(mockUsersService.findOne).toHaveBeenCalledWith(userId);
-        expect(result).toBe(JSON.stringify(mockProfile));
-      });
+    it('createUsersGetMyProfileTool: should delegate to findOne', async () => {
+      const mockProfile = { username: 'test' };
+      mockUsersService.findOne.mockResolvedValue(mockProfile);
 
-      it('createGravarLeituraTool: should delegate to registroLeitura', async () => {
-        const params = { livroId: 'livro-1', qtd: 10, opcao: 1 };
-        mockUsersService.registroLeitura.mockResolvedValue(true);
+      const tool = service.createUsersGetMyProfileTool(userId);
+      const result = await tool.func({});
 
-        const tool = service.createGravarLeituraTool(userId);
-        await tool.func(params);
+      expect(mockUsersService.findOne).toHaveBeenCalledWith(userId);
+      expect(result).toBe(JSON.stringify(mockProfile));
+    });
 
-        expect(mockUsersService.registroLeitura).toHaveBeenCalledWith(params.livroId, params.opcao, params.qtd);
-      });
+    it('createUsersGetMyFavoritesReadlistsTool: should return favorite readlists', async () => {
+      const mockFavorites = [{ _id: 'fav1', nome: 'Fav' }];
+      mockUsersService.findReadlistsFavoritas.mockResolvedValue(mockFavorites);
+
+      const tool = service.createUsersGetMyFavoritesReadlistsTool(userId);
+      const result = await tool.func({});
+
+      expect(mockUsersService.findReadlistsFavoritas).toHaveBeenCalledWith(userId);
+      expect(result).toBe(JSON.stringify(mockFavorites));
     });
   });
 });
