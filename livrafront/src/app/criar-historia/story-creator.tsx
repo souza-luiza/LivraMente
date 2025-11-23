@@ -127,6 +127,7 @@ export default function CreateStory() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(bodyPayload),
+            credentials:  'include',
         });
 
         if (!response.ok) {
@@ -229,7 +230,7 @@ export default function CreateStory() {
                     </div>
                 ))}
 
-                {!isLoading && opcoes.length > 0 && (
+                {!isLoading && opcoes?.length > 0 && (
                     <div className="flex justify-start">
                     <div className="max-w-3xl w-full flex flex-col items-start gap-2">
                         {opcoes.map((opcao) => (

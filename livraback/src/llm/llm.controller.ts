@@ -20,7 +20,10 @@ export class LlmController {
   @Post('gerar')
   @UseGuards(SessionAuthGuard)
   @UsePipes(new ValidationPipe())
-  async gerarTexto(@Body() generateTextDto: GenerateTextDTO): Promise<LlmResponseDTO> {
+  async gerarTexto(
+    @Body() generateTextDto: GenerateTextDTO,
+  ): Promise< LlmResponseDTO > {
+
     return this.storyService.generateAndSaveStory(generateTextDto);
   }
 
