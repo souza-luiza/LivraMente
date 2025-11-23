@@ -1,8 +1,8 @@
 import { Controller, Post, Body, ValidationPipe, UsePipes, UseGuards, Req } from '@nestjs/common';
 import { GenerateTextDTO } from './writer/dto/generate-text.dto';
 import { LlmResponseDTO } from './writer/dto/llm-response.dto';
-import { LlmStoryService } from './writer/llm.story.service';
-import { LlmAgentService } from './assistant/llm.agent.service';
+import { LlmStoryService } from './writer/llm-story.service';
+import { LlmAgentService } from './assistant/llm-agent.service';
 import { AgentInputDto } from './assistant/dto/agent-input.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';

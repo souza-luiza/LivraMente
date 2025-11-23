@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LlmToolsService } from './llm.tools.service';
+import { LlmToolsService } from './llm-tools.service';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createAgent } from 'langchain';
 import { PromptTemplate } from '@langchain/core/prompts';

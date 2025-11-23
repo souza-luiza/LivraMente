@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LlmAgentService } from './llm.agent.service';
+import { LlmAgentService } from './llm-agent.service';
 import { ConfigService } from '@nestjs/config';
-import { LlmToolsService } from './llm.tools.service';
+import { LlmToolsService } from './llm-tools.service';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { createAgent } from 'langchain';

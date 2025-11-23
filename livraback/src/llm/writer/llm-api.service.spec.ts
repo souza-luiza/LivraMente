@@ -1,7 +1,7 @@
 import { validate } from 'class-validator';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { ConfigService } from '@nestjs/config';
-import { LlmApiService } from './llm.api.service';
+import { LlmApiService } from './llm-api.service';
 import { plainToInstance } from 'class-transformer';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LlmApiResponseDTO } from './dto/llm-api.response.dto';

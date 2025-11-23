@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LlmToolsService } from './llm.tools.service';
+import { LlmToolsService } from './llm-tools.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Story } from '../../schemas/story.schema';
 import { Comunidade } from 'src/comunidades/entities/comunidade.entity';

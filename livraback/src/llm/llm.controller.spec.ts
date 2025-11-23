@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LlmController } from './llm.controller';
 import { GenerateTextDTO } from './writer/dto/generate-text.dto';
 import { LlmResponseDTO } from './writer/dto/llm-response.dto';
-import { LlmStoryService } from './writer/llm.story.service';
+import { LlmStoryService } from './writer/llm-story.service';
 import { AgentInputDto } from './assistant/dto/agent-input.dto';
-import { LlmAgentService } from './assistant/llm.agent.service';
+import { LlmAgentService } from './assistant/llm-agent.service';
 
 const mockStoryService = {
   generateAndSaveStory: jest.fn(),

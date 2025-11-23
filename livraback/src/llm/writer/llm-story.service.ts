@@ -2,11 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Story, StoryDocument } from '../../schemas/story.schema';
-import { LlmPromptService } from './llm.prompt.service';
-import { LlmApiService } from './llm.api.service';
-import { GenerateTextDTO } from '../writer/dto/generate-text.dto';
+import { LlmPromptService } from './llm-prompt.service';
+import { LlmApiService } from './llm-api.service';
+import { GenerateTextDTO } from './dto/generate-text.dto';
 import { LlmApiResponseDTO } from './dto/llm-api.response.dto';
-import { LlmResponseDTO, OpcaoDTO } from '../writer/dto/llm-response.dto';
+import { LlmResponseDTO, OpcaoDTO } from './dto/llm-response.dto';
 
 @Injectable()
 export class LlmStoryService {
