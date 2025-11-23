@@ -57,8 +57,8 @@ export class LlmApiService implements OnModuleInit {
 
 
     } catch (error) {
-      console.error(`Error calling Gemini's API (${modelName}):`, error);
-      throw new InternalServerErrorException('Falha em gerar o conteúdo na IA'); //ta dando erro aqui
+      console.error(`Erro ao chamar a API do Gemini (${modelName}):`, error);
+      throw new InternalServerErrorException('Falha em gerar o conteúdo na IA');
     }
 
     const response = result.response;
@@ -79,7 +79,7 @@ export class LlmApiService implements OnModuleInit {
     try {
       responseObject = JSON.parse(jsonString);
     } catch (e) { 
-      console.error("Parsing error: AI doesn't return a valid JSON.", jsonString);
+      console.error("Erro de análise: AI não retorna um JSON válido.", jsonString);
       throw new InternalServerErrorException('IA retornou um JSON inválido.');
     }
 
@@ -87,7 +87,7 @@ export class LlmApiService implements OnModuleInit {
     const errors = await validate(responseDto);
 
     if (errors.length > 0) {
-      console.error('Error validating AI response:', errors);
+      console.error('Erro ao validar a resposta da IA:', errors);
       throw new InternalServerErrorException('A resposta da IA falhou na validação de segurança.');
     }
 

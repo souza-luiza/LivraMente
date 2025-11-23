@@ -82,24 +82,6 @@ export class LlmToolsService {
     });
   }
 
-  public createJoinCommunityTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      communityName: z.string().describe('O nome ou slug da comunidade para entrar'),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'join_community',
-      description: 'Adiciona o usuário autenticado à comunidade indicada.',
-      schema: toolSchema,
-      func: async ({ communityName }) => {
-        try {
-          const result = await this.comunidadesService.addMembro(userId, communityName);
-          return JSON.stringify(result);
-        } catch (e) { return `Erro ao entrar na comunidade: ${e.message}`; }
-      },
-    });
-  }
-
   public createGetCommunitiesTool(): DynamicStructuredTool {
     const toolSchema = z.object({
       communityName: z.string().describe("O nome da comunidade para buscar"),
@@ -114,24 +96,6 @@ export class LlmToolsService {
           const community = await this.comunidadesService.findOne(communityName);
           return JSON.stringify(community);
         } catch (e) { return `Erro ao encontrar a comunidade: ${e.message}`; }
-      },
-    });
-  }
-
-  public createLeaveCommunityTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      communityName: z.string().describe('O nome ou slug da comunidade para sair'),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'leave_community',
-      description: 'Remove o usuário autenticado da comunidade indicada.',
-      schema: toolSchema,
-      func: async ({ communityName }) => {
-        try {
-          const result = await this.comunidadesService.removeMembro(userId, communityName);
-          return JSON.stringify(result);
-        } catch (e) { return `Erro ao sair da comunidade: ${e.message}`; }
       },
     });
   }
@@ -172,83 +136,6 @@ export class LlmToolsService {
           if (!found) return `Readlist com nome '${readlistName}' não encontrada.`;
           return JSON.stringify({ id: (found as any)._id, nome: found.nome });
         } catch (e) { return `Erro ao buscar readlist: ${e.message}`; }
-      },
-    });
-  }
-
-  public createAddBookToReadlistTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      readlistId: z.string().describe("O ID da readlist (obtido com 'find_readlist_by_name')"),
-      livroId: z.string().describe("O ID do livro (obtido com 'find_livro_by_name')"),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'add_book_to_readlist',
-      description: 'Adiciona um livro (por ID) a uma readlist (por ID).',
-      schema: toolSchema,
-      func: async ({ readlistId, livroId }) => {
-        try {
-          const result = await this.readlistsService.addLivro(userId, readlistId, livroId);
-          return `Livro (ID: ${livroId}) adicionado com sucesso à readlist '${result.nome}'.`;
-        } catch (e) { return `Erro ao adicionar livro: ${e.message}`; }
-      },
-    });
-  }
-
-  public createRemoveBookFromReadlistTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      readlistId: z.string().describe("O ID da readlist"),
-      livroId: z.string().describe("O ID do livro a ser removido"),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'remove_book_from_readlist',
-      description: 'Remove um livro (por ID) de uma readlist (por ID).',
-      schema: toolSchema,
-      func: async ({ readlistId, livroId }) => {
-        try {
-          const result = await this.readlistsService.removeLivro(userId, readlistId, livroId);
-          return `Livro (ID: ${livroId}) removido com sucesso da readlist '${result.nome}'.`;
-        } catch (e) { return `Erro ao remover livro: ${e.message}`; }
-      },
-    });
-  }
-
-  public createCreateReadlistTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      nome: z.string().describe("O nome da nova readlist"),
-      descricao: z.string().optional().describe("Descrição da readlist"),
-      publica: z.boolean().default(false).describe("Se é pública"),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'create_readlist',
-      description: 'Cria uma nova readlist para o usuário.',
-      schema: toolSchema,
-      func: async ({ nome, descricao, publica }) => {
-        try {
-          const createDto = { nome, descricao, publica };
-          const result = await this.readlistsService.create(userId, createDto);
-          return `Readlist '${result.nome}' criada com ID: ${result._id}.`;
-        } catch (e) { return `Erro ao criar readlist: ${e.message}`; }
-      },
-    });
-  }
-
-  public createDeleteReadlistTool(userId: string): DynamicStructuredTool {
-    const toolSchema = z.object({
-      readlistId: z.string().describe("O ID da readlist"),
-    });
-
-    return new DynamicStructuredTool({
-      name: 'delete_readlist',
-      description: 'Deleta uma readlist do usuário.',
-      schema: toolSchema,
-      func: async ({ readlistId }) => {
-        try {
-          await this.readlistsService.remove(userId, readlistId);
-          return `Readlist (ID: ${readlistId}) deletada com sucesso.`;
-        } catch (e) { return `Erro ao deletar readlist: ${e.message}`; }
       },
     });
   }
