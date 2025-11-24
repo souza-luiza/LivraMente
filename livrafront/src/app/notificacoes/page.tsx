@@ -10,6 +10,7 @@ import { getSessionInfos } from '@/services/auth';
 import { useRouter } from 'next/navigation';
 import LoadingPage from '@/components/loading';
 import { getNotificacoes } from '@/services/mensageria';
+import { toast } from 'react-toastify';
 
 export default function NotificacoesPage() {
     const router = useRouter();
@@ -26,9 +27,15 @@ export default function NotificacoesPage() {
                     return;
                 }
                 // Buscar notificações do backend
-                const notificacoesDoBackend = await getNotificacoes();
-                definirNotificacoes(notificacoesDoBackend);
+                try {
+                    const notificacoesDoBackend = await getNotificacoes();
+                    definirNotificacoes(notificacoesDoBackend);
+                } catch (error) {
+                    toast.error('Erro ao carregar notificações. Tente novamente.');
+                    definirNotificacoes([]);
+                }
             } catch (error) {
+                toast.error('Erro de autenticação.');
                 router.replace('/entrar');
                 return;
             } finally {
@@ -48,7 +55,7 @@ export default function NotificacoesPage() {
             await marcarNotificacaoComoLida(id);
             marcarComoLidaLocal(id);
         } catch (error) {
-            console.error('Erro ao marcar notificação como lida:', error);
+            toast.error('Erro ao marcar notificação como lida.');
         }
     };
 
@@ -58,7 +65,7 @@ export default function NotificacoesPage() {
             await marcarTodasComoLidas();
             marcarTodasComoLidasLocal();
         } catch (error) {
-            console.error('Erro ao marcar todas como lidas:', error);
+            toast.error('Erro ao marcar todas como lidas.');
         }
     };
 
@@ -69,6 +76,7 @@ export default function NotificacoesPage() {
             removerNotificacaoLocal(id);
         } catch (error) {
             console.error('Erro ao remover notificação:', error);
+            toast.error('Erro ao remover notificação.');
         }
     };
 

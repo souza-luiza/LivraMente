@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { toast } from 'react-toastify';
 import { useNotificationsStore } from "@/stores/notificacoesStore";
 import { useNotPrefStore } from "@/stores/notificacoesStore";
 import { conectarNotificacoes, getNotificacoes } from "@/services/mensageria";
@@ -42,15 +41,9 @@ export function useNotificacoes() {
                             });
                         }
                     }, 
-                    (error) => {
-                        toast.error('Conexão com notificações perdida. Tentando reconectar...');
-                    }
                 );
             } catch (error: any) {
-                if (error?.response?.status === 401 || error?.response?.status === 403) {
-                } else {
-                    toast.error('Erro ao carregar notificações.');
-                }
+                console.warn('Erro ao carregar notificações:', error);
             }
         };
 
@@ -59,5 +52,5 @@ export function useNotificacoes() {
         return () => {
             desconectar?.();
         };
-    }, [adicionarNotificacao, definirNotificacoes]);
+    }, [adicionarNotificacao, definirNotificacoes, deveNotificar]);
 }
