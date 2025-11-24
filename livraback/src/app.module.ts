@@ -11,6 +11,7 @@ import { Livro, LivroSchema } from './schemas/livro.schema';
 import { Autor, AutorSchema } from './schemas/autor.schema';
 import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
+import { CommentsModule } from './comments/comments.module';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { ReadlistsModule } from './readlists/readlists.module';
@@ -41,6 +42,7 @@ import { LlmModule } from './llm/llm.module';
     ReadlistsModule,
     PostsModule,
     ComunidadesModule,
+    CommentsModule,
     LlmModule,
   ],                                                                                
   controllers: [AppController],

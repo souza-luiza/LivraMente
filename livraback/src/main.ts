@@ -14,30 +14,13 @@ async function bootstrap() {
 
   await mongoose.connect(process.env.DB_URL);
 
-  app.use(
-    session({
-      store: MongoStore.create({
-        mongoUrl: process.env.DB_URL,
-        collectionName: 'sessions', // colecao onde sessoes vao ficar
-      }),
-      name: 'sessionId',
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24, // 1 dia
-      },
-    }),
-  );
-
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
+
   app.enableCors({
-    origin: allowedOrigins,  
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.useGlobalPipes(
@@ -48,12 +31,29 @@ async function bootstrap() {
     })
   )
 
+  app.use(
+    session({
+      store: MongoStore.create({
+        mongoUrl: process.env.DB_URL
+      }),
+      name: 'sessionId',
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: true,
+        maxAge: 1000 * 60 * 60 * 24, // 1 dia
+      },
+    }),
+  );
+
   // ########################## SWAGGER #################################
   const config = new DocumentBuilder()
     .setTitle('API LivraMente')
     .setDescription('Documentação - API LivraMente')
     .setVersion('1.0')
-    .addCookieAuth('authCookie')
+    .addCookieAuth('sessionId')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

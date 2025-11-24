@@ -6,6 +6,7 @@
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
 
+
 ## 📚 Sobre o Projeto
 O Livramente consiste em ser uma rede social criada por leitores para amantes de leitura, onde os usuários podem:
 
@@ -28,7 +29,7 @@ es-unifesp-2025-2-grupo-alpha/
 # Documentação do projeto
 |
 ├── livraback/                          
-# Backend da aplicação
+# Backend da aplicação (Nest.js)
 |
 ├── livrafront/                         
 # Frontend da aplicação (Next.js)
@@ -37,6 +38,7 @@ es-unifesp-2025-2-grupo-alpha/
 # Documentação principal do projeto
 ```
 
+
 ### 📝 Descrição dos Componentes
 
 - **.github/workflows/**: Seção dedicada aos testes automatizados
@@ -44,11 +46,13 @@ es-unifesp-2025-2-grupo-alpha/
 - **livraback/**: Backend em NestJS e MongoDB
 - **livrafront/**: Frontend em Next.js 15 com TypeScript e Tailwind CSS
 
+
 ## 💻 Pré-requisitos (até o momento)
 
 - Node.js (versão 18 ou superior)
 - Npm
 - Git
+
 
 ## 👥 Equipe
 
@@ -59,8 +63,6 @@ es-unifesp-2025-2-grupo-alpha/
 - **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
-
-## System Design
 <img width="1172" height="945" alt="image" src="https://github.com/user-attachments/assets/cd6431d2-7710-4f87-a9b1-3dfbbf1a3ad9" />
 
 
