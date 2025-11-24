@@ -6,6 +6,8 @@ import Image from "next/image";
 import Button from "@/components/button";
 import Edit2Icon from "@/components/icons/Edit2Icon";
 import HeartIcon from "@/components/icons/HeartIcon";
+import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
+import OpenBookIcon from "@/components/icons/OpenBookIcon";
 
 export default function ReadlistPage() {
 
@@ -234,9 +236,14 @@ export default function ReadlistPage() {
                             </div>
                             <ProgressoLivros lidos={2} total={5}/>
                         </main>
+                        <Button icon={<OpenBookIcon/>} text={"Adicionar livro"}/>
                     </div>
             
-                    <LivrosReadlist livros={livros} />
+                    <div className="flex flex-col gap-2">
+                        <p className="text-b2 pl-4 pr-2">Em um futuro distópico na nação de Panem, a Capital obriga cada um dos 12 distritos a enviar um menino e uma menina entre 12 e 18 anos para os Jogos Vorazes. Os jovens, chamados "tributos", devem lutar até a morte em uma arena televisionada, onde apenas um sobrevivente é permitido. A trama segue Katniss Everdeen, do Distrito 12, que se oferece no lugar de sua irmã e precisa usar suas habilidades de caça e sobrevivência para vencer a competição morta</p>
+                        <div className="w-full border-b" style={{ borderColor: '#E0E0E0' }}></div>
+                        <LivrosReadlist livros={livros} />
+                    </div>
     
                 </div>
 
