@@ -36,8 +36,7 @@ export default function WidgetChat() {
         aria-label={isOpen ? 'Fechar chat' : 'Abrir chat'}
         onClick={toggleOpen}
         className="group fixed bottom-4 right-4 z-50 rounded-full shadow-lg px-4 py-3 bg-[var(--primary-300)] text-[#1F2A17] flex items-center gap-3 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-300)]"
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
+        
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -52,12 +51,12 @@ export default function WidgetChat() {
           {isHovered && (
             <motion.div
               data-testid="tooltip"
-              className={`absolute z-40 right-full mr-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none opacity-0 transition-all duration-150 group-hover:opacity-100`}
+              className={`absolute z-40 right-full mr-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
               role="tooltip"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.18 }}
+              initial={{ opacity: 0, x: 0 }}
+              animate={{ opacity: 1, x: -10 }}
+              exit={{ opacity: 0, x: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
             >
               {isOpen ? 'Fechar chat' : 'Abrir chat'}
             </motion.div>
@@ -71,10 +70,10 @@ export default function WidgetChat() {
         {isOpen && (
           <motion.aside
             key="widget-chat"
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="fixed bottom-20 right-4 z-40 w-80 sm:w-96 h-[28rem] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col"
             role="dialog"
             aria-label="Widget de atendimento LivraMente"
