@@ -7,21 +7,22 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { createAgent } from 'langchain';
 import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search';
 
-// --- Mocks das Dependências Externas ---
-const mockAgentInvoke = jest.fn();
+// --- Mocks ---
 
-// Mock do createAgent
-jest.mock('langchain', () => {
-  return {
-    createAgent: jest.fn().mockResolvedValue({}),
-  };
-});
+// 1. Mock do Agente (Runnable)
+const mockAgentRunnable = {
+  invoke: jest.fn(),
+};
 
+jest.mock('langchain', () => ({
+  createAgent: jest.fn(() => mockAgentRunnable),
+}));
+
+// 2. Mocks do Prompt
 const mockFormat = jest.fn();
 const mockPartial = jest.fn(() => ({
   format: mockFormat,
 }));
-
 jest.mock('@langchain/core/prompts', () => ({
   PromptTemplate: {
     fromTemplate: jest.fn(() => ({
@@ -30,46 +31,74 @@ jest.mock('@langchain/core/prompts', () => ({
   },
 }));
 
+// 3. Mocks do Google e DuckDuckGo
 jest.mock('@langchain/google-genai', () => ({
   ChatGoogleGenerativeAI: jest.fn(() => ({})),
 }));
 
-// Mock da ferramenta DuckDuckGo
+// Instância simulada do DuckDuckGo
+const mockDuckInstance = { name: 'duckduckgo_search', description: 'search' };
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
-  DuckDuckGoSearch: jest.fn().mockImplementation(() => ({
-    name: 'duckduckgo_search',
-    description: 'Search the web',
-  })),
+  DuckDuckGoSearch: jest.fn().mockImplementation(() => mockDuckInstance),
 }));
 
-// --- Mock Robusto do LlmToolsService (Sem Proxy pra ver se dar certo) ---
-const mockTool = { name: 'mock_tool', description: 'descrição teste' };
+// --- Mocks das Ferramentas (Apenas as que MANTIVEMOS no Service) ---
+const mockTools = {
+  // Leitura / Busca
+  get_user_stories: { name: 'get_user_stories' },
+  get_recent_stories: { name: 'get_recent_stories' },
+  get_popular_posts_in_community: { name: 'get_popular_posts_in_community' },
+  get_community: { name: 'get_community' },
+  get_popular_communities: { name: 'get_popular_communities' },
+  find_readlist_by_name: { name: 'find_readlist_by_name' },
+  users_get_my_readlists: { name: 'users_get_my_readlists' },
+  users_get_my_profile: { name: 'users_get_my_profile' },
+  users_get_my_favorites_readlists: { name: 'users_get_my_favorites_readlists' },
+  
+  // A única de escrita permitida
+  gravar_leitura: { name: 'gravar_leitura' },
+};
+
+// Array esperado (Ferramentas Seguras + DuckDuckGo)
+const expectedToolsMatcher = expect.arrayContaining([
+  ...Object.values(mockTools),
+  mockDuckInstance // Verifica se a instância do DuckDuckGo está aqui
+]);
 
 const mockLlmToolsService = {
-  createGetUserStoriesTool: jest.fn(() => mockTool),
-  createGetRecentStoriesTool: jest.fn(() => mockTool),
-  createGetPopularCommunitiesTool: jest.fn(() => mockTool),
-  createGetPopularPostsInCommunityTool: jest.fn(() => mockTool),
-  createGetCommunitiesTool: jest.fn(() => mockTool),
-  createFindReadlistByNameTool: jest.fn(() => mockTool),
-  createUsersGetMyReadlistsTool: jest.fn(() => mockTool),
-  createGravarLeituraTool: jest.fn(() => mockTool),
-  createUsersGetMyProfileTool: jest.fn(() => mockTool),
-  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTool),
+  // Ferramentas mantidas
+  createGetUserStoriesTool: jest.fn(() => mockTools.get_user_stories),
+  createGetRecentStoriesTool: jest.fn(() => mockTools.get_recent_stories),
+  createGetPopularPostsInCommunityTool: jest.fn(() => mockTools.get_popular_posts_in_community),
+  createGetCommunitiesTool: jest.fn(() => mockTools.get_community),
+  createGetPopularCommunitiesTool: jest.fn(() => mockTools.get_popular_communities),
+  createFindReadlistByNameTool: jest.fn(() => mockTools.find_readlist_by_name),
+  createUsersGetMyReadlistsTool: jest.fn(() => mockTools.users_get_my_readlists),
+  createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
+  createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
+  createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites_readlists),
+  
+  // Mocks das ferramentas removidas (caso o service ainda tente chamar, retorna undefined)
+  createJoinCommunityTool: jest.fn(),
+  createLeaveCommunityTool: jest.fn(),
+  createAddBookToReadlistTool: jest.fn(),
+  createRemoveBookFromReadlistTool: jest.fn(),
+  createCreateReadlistTool: jest.fn(),
+  createDeleteReadlistTool: jest.fn(),
 };
 
 const mockConfigService = {
-  get: jest.fn((key: string) => {
-    if (key === 'GOOGLE_API_KEY') return 'mock-google-api-key';
-    return null;
-  }),
+  get: jest.fn((key) => (key === 'GOOGLE_API_KEY' ? 'key' : null)),
 };
 
 describe('LlmAgentService', () => {
   let service: LlmAgentService;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LlmAgentService,
@@ -81,39 +110,54 @@ describe('LlmAgentService', () => {
     service = module.get<LlmAgentService>(LlmAgentService);
   });
 
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   describe('runAnalysisAgent', () => {
     const userPrompt = 'Olá';
     const userId = '123';
+    const mockResponse = { output: 'Resposta da IA' };
+    const mockPromptString = 'Prompt Formatado';
 
     beforeEach(() => {
-      mockAgentInvoke.mockResolvedValue({ output: 'Resposta da IA' });
-      mockFormat.mockResolvedValue('Prompt Formatado');
+      mockAgentRunnable.invoke.mockResolvedValue(mockResponse);
+      mockFormat.mockResolvedValue(mockPromptString);
     });
 
-    it('deve chamar createAgent e AgentExecutor corretamente', async () => {
-      await service.runAnalysisAgent(userPrompt, userId);
-      
-      // Verifica se criou o agente ReAct
-      expect(createAgent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          llm: expect.any(Object),
-          tools: expect.any(Array),
-          prompt: expect.any(Object),
-        })
-      );
-    });
-
-    it('deve invocar o executor com o input correto', async () => {
+    it('deve criar o agente com as ferramentas seguras e DuckDuckGo', async () => {
       await service.runAnalysisAgent(userPrompt, userId);
 
-      expect(mockAgentInvoke).toHaveBeenCalledWith({
-        input: userPrompt,
+      expect(createAgent).toHaveBeenCalledWith({
+        model: expect.any(Object),
+        tools: expectedToolsMatcher, // Agora bate com a lista segura
+        systemPrompt: mockPromptString,
       });
     });
 
-    it('deve retornar a resposta final', async () => {
+    it('deve invocar o agente com messages', async () => {
+      await service.runAnalysisAgent(userPrompt, userId);
+      expect(mockAgentRunnable.invoke).toHaveBeenCalledWith({
+        messages: [{ role: 'user', content: userPrompt }],
+      });
+    });
+
+    it('deve retornar a resposta processada', async () => {
       const result = await service.runAnalysisAgent(userPrompt, userId);
       expect(result).toBe('Resposta da IA');
+    });
+
+    it('deve lidar com erros na execução', async () => {
+      const error = new Error('Erro no invoke');
+      mockAgentRunnable.invoke.mockRejectedValue(error);
+
+      const result = await service.runAnalysisAgent(userPrompt, userId);
+
+      expect(result).toBe('Desculpe, ocorreu um erro ao tentar processar sua solicitação.');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[LlmAgentService] Erro ao executar o Agente:',
+        error,
+      );
     });
   });
 });
