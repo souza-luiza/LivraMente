@@ -48,21 +48,14 @@ const mockTool = { name: 'mock_tool', description: 'descrição teste' };
 const mockLlmToolsService = {
   createGetUserStoriesTool: jest.fn(() => mockTool),
   createGetRecentStoriesTool: jest.fn(() => mockTool),
-  createGetCommunitiesTool: jest.fn(() => mockTool),
   createGetPopularCommunitiesTool: jest.fn(() => mockTool),
-  createJoinCommunityTool: jest.fn(() => mockTool),
-  createLeaveCommunityTool: jest.fn(() => mockTool),
+  createGetPopularPostsInCommunityTool: jest.fn(() => mockTool),
+  createGetCommunitiesTool: jest.fn(() => mockTool),
   createFindReadlistByNameTool: jest.fn(() => mockTool),
-  createFindLivroByNameTool: jest.fn(() => mockTool),
-  createAddBookToReadlistTool: jest.fn(() => mockTool),
-  createRemoveBookFromReadlistTool: jest.fn(() => mockTool),
-  createCreateReadlistTool: jest.fn(() => mockTool),
-  createDeleteReadlistTool: jest.fn(() => mockTool),
   createUsersGetMyReadlistsTool: jest.fn(() => mockTool),
   createGravarLeituraTool: jest.fn(() => mockTool),
   createUsersGetMyProfileTool: jest.fn(() => mockTool),
   createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTool),
-  createGetPopularPostsInCommunityTool: jest.fn(() => mockTool),
 };
 
 const mockConfigService = {
