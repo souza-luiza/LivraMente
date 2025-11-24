@@ -3,7 +3,7 @@ import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
+import { CurrentUserDto } from '../auth/dto/current-user.dto';
 
 class SessionAuthGuard {
   canActivate = jest.fn();
