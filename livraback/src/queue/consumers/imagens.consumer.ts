@@ -1,125 +1,77 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as amqp from 'amqp-connection-manager';
-import { ChannelWrapper } from 'amqp-connection-manager';
-import { ConfirmChannel, ConsumeMessage } from 'amqplib';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { getRabbitMQConfig } from '../queue.config';
-import { FILAS } from '../queue.constants';
+import { FILAS, ROUTING_KEYS } from '../queue.constants';
+import { BaseConsumer } from './base-consumer.abstract';
 
+/**
+ * Consumer responsável por processar imagens
+ * Realiza otimização, redimensionamento e upload para CDN
+ * 
+ * @todo Implementar processamento real de imagens
+ * @example
+ * - Posts: validar, redimensionar, otimizar
+ * - Perfil: avatar circular, thumbnail
+ * - Comunidade: diferentes resoluções
+ */
 @Injectable()
-export class ImagensConsumer {
-  private readonly logger = new Logger(ImagensConsumer.name);
-  private connection: amqp.AmqpConnectionManager;
-  private channelWrapper: ChannelWrapper;
-
-  constructor(
-    private readonly configService: ConfigService,
-  ) {}
-
-
-  async inicializar(): Promise<void> {
-    await this.conectar();
+export class ImagensConsumer extends BaseConsumer {
+  constructor(configService: ConfigService) {
+    super(configService, ImagensConsumer.name);
   }
 
-  private async conectar(): Promise<void> {
-    try {
-      const config = getRabbitMQConfig(this.configService);
-      
-      this.logger.log('Consumer de Imagens: Conectando ao RabbitMQ...');
-      
-      this.connection = amqp.connect([config.url], {
-        heartbeatIntervalInSeconds: config.options.heartbeat,
-        reconnectTimeInSeconds: 5,
-      });
+  protected getQueueName(): string {
+    return FILAS.PROCESSAR_IMAGENS;
+  }
 
-      this.connection.on('connect', () => {
-        this.logger.log('Consumer de Imagens conectado!');
-      });
+  protected getPrefetchCount(): number {
+    return 3; // Processa 3 imagens simultaneamente
+  }
 
-      this.connection.on('disconnect', ({ err }) => {
-        this.logger.error('Consumer de Imagens desconectado', err);
-      });
+  protected async processar(conteudo: any, routingKey: string): Promise<void> {
+    this.logger.debug(`Processando imagem: ${routingKey}`, conteudo);
 
-      this.channelWrapper = this.connection.createChannel({
-        setup: async (channel: ConfirmChannel) => {
-          // Processa 3 imagens simultaneamente
-          await channel.prefetch(3);
+    switch (routingKey) {
+      case ROUTING_KEYS.IMAGEM_POST_UPLOAD:
+        await this.processarImagensPost(conteudo);
+        break;
 
-          await channel.consume(
-            FILAS.PROCESSAR_IMAGENS,
-            (msg) => this.processarMensagem(msg, channel),
-            { noAck: false } 
-          );
+      case ROUTING_KEYS.IMAGEM_USUARIO_UPLOAD:
+        await this.processarImagemPerfil(conteudo);
+        break;
 
-          this.logger.log(`Consumindo fila: ${FILAS.PROCESSAR_IMAGENS}`);
-        },
-      });
+      case ROUTING_KEYS.IMAGEM_COMUNIDADE_UPLOAD:
+        await this.processarImagemComunidade(conteudo);
+        break;
 
-      await this.channelWrapper.waitForConnect();
-      
-    } catch (error) {
-      this.logger.error('Erro ao conectar consumer de imagens:', error);
-      throw error;
+      default:
+        this.logger.warn(`Tipo de imagem não tratado: ${routingKey}`);
     }
   }
 
-
-  private async processarMensagem(
-    msg: ConsumeMessage | null,
-    channel: ConfirmChannel,
-  ): Promise<void> {
-    if (!msg) return;
-
-    try {
-      const conteudo = JSON.parse(msg.content.toString());
-
-      switch (conteudo.tipo) {
-        case 'post':
-          await this.processarImagensPost(conteudo);
-          break;
-
-        case 'perfil':
-          await this.processarImagemPerfil(conteudo);
-          break;
-
-        case 'comunidade':
-          await this.processarImagemComunidade(conteudo);
-          break;
-
-        default:
-          this.logger.warn(`Tipo de imagem não tratado: ${conteudo.tipo}`);
-      }
-
-      channel.ack(msg);
-
-    } catch (error) {
-      this.logger.error('Erro ao processar mensagem:', error);
-      
-      channel.nack(msg, false, false); 
-    }
-  }
-
+  /**
+   * Processa imagens de posts
+   * @todo Implementar: validação, redimensionamento, otimização, upload CDN
+   */
   private async processarImagensPost(dados: any): Promise<void> {
-    // TODO: Validar, redimensionar, otimizar, upload CDN
+    this.logger.log(`Processando imagens de post: ${dados.postId}`);
+    // TODO: Implementar processamento real
   }
 
+  /**
+   * Processa imagem de perfil do usuário
+   * @todo Implementar: avatar circular, thumbnail, upload CDN
+   */
   private async processarImagemPerfil(dados: any): Promise<void> {
-    // TODO: Avatar circular, thumbnail, upload CDN
+    this.logger.log(`Processando imagem de perfil: ${dados.userId}`);
+    // TODO: Implementar processamento real
   }
 
-
+  /**
+   * Processa imagens de comunidade
+   * @todo Implementar: redimensionar para diferentes resoluções
+   */
   private async processarImagemComunidade(dados: any): Promise<void> {
-    // TODO: Redimensionar para diferentes resoluções
-  }
-
-
-  async onModuleDestroy() {
-    try {
-      await this.channelWrapper.close();
-      await this.connection.close();
-      this.logger.log('Consumer de Imagens desconectado');
-    } catch (error) {
-      this.logger.error('Erro ao fechar consumer:', error);
-    }
+    this.logger.log(`Processando imagem de comunidade: ${dados.comunidadeId}`);
+    // TODO: Implementar processamento real
   }
 }

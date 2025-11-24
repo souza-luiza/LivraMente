@@ -1,130 +1,86 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as amqp from 'amqp-connection-manager';
-import { ChannelWrapper } from 'amqp-connection-manager';
-import { ConfirmChannel, ConsumeMessage } from 'amqplib';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { getRabbitMQConfig } from '../queue.config';
 import { FILAS, ROUTING_KEYS } from '../queue.constants';
+import { BaseConsumer } from './base-consumer.abstract';
 
+/**
+ * Consumer responsável por processar métricas e analytics
+ * Atualiza estatísticas de posts, usuários e comunidades
+ * 
+ * @todo Implementar atualização real de métricas
+ * @example
+ * - Posts: contagem de curtidas, pontos de gamificação
+ * - Leitura: tempo total, progresso, XP
+ * - Comunidade: atividades diárias, membros ativos
+ */
 @Injectable()
-export class MetricasConsumer {
-  private readonly logger = new Logger(MetricasConsumer.name);
-  private connection: amqp.AmqpConnectionManager;
-  private channelWrapper: ChannelWrapper;
-
-  constructor(
-    private readonly configService: ConfigService,
-  ) {}
-
-  async inicializar(): Promise<void> {
-    await this.conectar();
+export class MetricasConsumer extends BaseConsumer {
+  constructor(configService: ConfigService) {
+    super(configService, MetricasConsumer.name);
   }
 
+  protected getQueueName(): string {
+    return FILAS.ATUALIZAR_METRICAS;
+  }
 
-  private async conectar(): Promise<void> {
-    try {
-      const config = getRabbitMQConfig(this.configService);
-      
-      this.logger.log('Consumer de Métricas: Conectando ao RabbitMQ...');
-      
-      this.connection = amqp.connect([config.url], {
-        heartbeatIntervalInSeconds: config.options.heartbeat,
-        reconnectTimeInSeconds: 5,
-      });
+  protected getPrefetchCount(): number {
+    return 5; // Processa 5 métricas simultaneamente
+  }
 
-      this.connection.on('connect', () => {
-        this.logger.log('Consumer de Métricas conectado!');
-      });
+  protected async processar(conteudo: any, routingKey: string): Promise<void> {
+    this.logger.debug(`Processando métrica: ${routingKey}`, conteudo);
 
-      this.connection.on('disconnect', ({ err }) => {
-        this.logger.error('Consumer de Métricas desconectado', err);
-      });
+    switch (routingKey) {
+      case ROUTING_KEYS.METRICAS_POST_CRIADO:
+        await this.atualizarMetricasPost(conteudo);
+        break;
 
-      this.channelWrapper = this.connection.createChannel({
-        setup: async (channel: ConfirmChannel) => {
-          await channel.prefetch(5);
+      case ROUTING_KEYS.METRICAS_USUARIO_LENDO:
+        await this.atualizarMetricasLeitura(conteudo);
+        break;
 
-          await channel.consume(
-            FILAS.ATUALIZAR_METRICAS,
-            (msg) => this.processarMensagem(msg, channel),
-            { noAck: false } 
-          );
+      case ROUTING_KEYS.METRICAS_ATIVIDADE_COMUNIDADE:
+        await this.atualizarMetricasComunidade(conteudo);
+        break;
 
-          this.logger.log(`Consumindo fila: ${FILAS.ATUALIZAR_METRICAS}`);
-        },
-      });
-
-      await this.channelWrapper.waitForConnect();
-      
-    } catch (error) {
-      this.logger.error('Erro ao conectar consumer de métricas:', error);
-      throw error;
+      default:
+        this.logger.warn(`Métrica não tratada: ${routingKey}`);
     }
   }
 
-
-  private async processarMensagem(
-    msg: ConsumeMessage | null,
-    channel: ConfirmChannel,
-  ): Promise<void> {
-    if (!msg) return;
-
-    try {
-      const conteudo = JSON.parse(msg.content.toString());
-      const routingKey = msg.fields.routingKey;
-
-
-      switch (routingKey) {
-        case ROUTING_KEYS.METRICAS_POST_CRIADO:
-          await this.atualizarMetricasPost(conteudo);
-          break;
-
-        case ROUTING_KEYS.METRICAS_USUARIO_LENDO:
-          await this.atualizarMetricasLeitura(conteudo);
-          break;
-
-        case ROUTING_KEYS.METRICAS_ATIVIDADE_COMUNIDADE:
-          await this.atualizarMetricasComunidade(conteudo);
-          break;
-
-        default:
-          this.logger.warn(`Métrica não tratada: ${routingKey}`);
-      }
-
-      channel.ack(msg);
-
-    } catch (error) {
-      this.logger.error('Erro ao processar métrica:', error);
-      channel.nack(msg, false, false);
-    }
-  }
-
-
+  /**
+   * Atualiza métricas relacionadas a posts
+   * @todo Implementar: contagem de curtidas, pontos de gamificação do autor
+   */
   private async atualizarMetricasPost(dados: any): Promise<void> {
-    // TODO: Implementar
-    // - contagemCurtidas++, autor.pontosGamificacao++
+    this.logger.log(`Atualizando métricas de post: ${dados.postId}`);
+    // TODO: Implementar:
+    // - contagemCurtidas++
+    // - autor.pontosGamificacao++
   }
 
-
+  /**
+   * Atualiza métricas de leitura do usuário
+   * @todo Implementar: tempo de leitura, progresso, pontos, XP
+   */
   private async atualizarMetricasLeitura(dados: any): Promise<void> {
-    // TODO: Implementar
-    // - usuario.tempoLeituraTotal, progresso, pontosGamificacao, XP
+    this.logger.log(`Atualizando métricas de leitura: ${dados.userId}`);
+    // TODO: Implementar:
+    // - usuario.tempoLeituraTotal
+    // - progresso
+    // - pontosGamificacao
+    // - XP
   }
 
-
+  /**
+   * Atualiza métricas da comunidade
+   * @todo Implementar: atividades diárias, membros ativos, engajamento
+   */
   private async atualizarMetricasComunidade(dados: any): Promise<void> {
-    // TODO: Implementar
-    // - comunidade.atividadesDia++, membrosAtivos, taxaEngajamento
-  }
-
-
-  async onModuleDestroy() {
-    try {
-      await this.channelWrapper.close();
-      await this.connection.close();
-      this.logger.log('Consumer de Métricas desconectado');
-    } catch (error) {
-      this.logger.error('Erro ao fechar consumer:', error);
-    }
+    this.logger.log(`Atualizando métricas de comunidade: ${dados.comunidadeId}`);
+    // TODO: Implementar:
+    // - comunidade.atividadesDia++
+    // - membrosAtivos
+    // - taxaEngajamento
   }
 }
