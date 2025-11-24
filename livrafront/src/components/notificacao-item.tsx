@@ -4,6 +4,7 @@ import { Notificacao } from "@/types/notificacao";
 import { formatarData } from "@/utils/formatarData";
 import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
 import InfoIcon from "./icons/InfoIcon";
+import { titleToSlug } from "@/lib/slugify";
 
 interface NotificacaoItemProps {
     notificacao: Notificacao;
@@ -37,6 +38,10 @@ export default function NotificacaoItem({
     }, [menuAberto]);
 
     const navegarParaConteudo = () => {
+        if (!notificacao.lida && onMarcarComoLida) {
+            onMarcarComoLida(notificacao.id);
+        }
+
         switch (notificacao.tipo) {
             case 'novo_seguidor':
                 if (notificacao.remetente?.username) {
@@ -48,20 +53,20 @@ export default function NotificacaoItem({
             case 'promovido_moderador':
             case 'novo_post_comunidade':
                 if (notificacao.comunidadeNome) {
-                    router.push(`/comunidade/${notificacao.comunidadeNome}`);
+                    router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
                 }
                 break;
 
             case 'curtida_post':
             case 'comentario_post':
                 if (notificacao.postId && notificacao.comunidadeNome) {
-                    router.push(`/comunidade/${notificacao.comunidadeNome}/postagem/${notificacao.postId}`);
+                    router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
                 }
                 break;
         
             case 'moderacao_post':
                 if (notificacao.postId && notificacao.comunidadeNome) {
-                    router.push(`/comunidade/${notificacao.comunidadeNome}/postagem/${notificacao.postId}`);
+                    router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
                 }
                 break;
             default:
