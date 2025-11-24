@@ -3,7 +3,7 @@ import { ComunidadesService } from './comunidades.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Comunidade } from './entities/comunidade.entity';
-import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
+import { CurrentUserDto } from '../auth/dto/current-user.dto';
 
 describe('ComunidadesService', () => {
   let service: ComunidadesService;

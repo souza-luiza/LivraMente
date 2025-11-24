@@ -4,8 +4,8 @@ import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Comentários')
 @ApiBearerAuth()

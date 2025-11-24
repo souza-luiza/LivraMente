@@ -4,7 +4,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
-import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
+import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { NotFoundException } from '@nestjs/common';
 
 describe('PostsController', () => {
