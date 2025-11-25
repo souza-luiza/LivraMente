@@ -1,3 +1,5 @@
+"use client";
+
 import ProgressoLivros from "@/components/progresso-livros";
 import LivrosReadlist from "@/components/livros-readlist";
 import SearchBar from "@/components/searchbar";
@@ -6,10 +8,38 @@ import Image from "next/image";
 import Button from "@/components/button";
 import Edit2Icon from "@/components/icons/Edit2Icon";
 import HeartIcon from "@/components/icons/HeartIcon";
-import ClosedBookIcon from "@/components/icons/ClosedBookIcon";
 import OpenBookIcon from "@/components/icons/OpenBookIcon";
+import TrashIcon from "@/components/icons/TrashIcon";
+import { useState } from "react";
+import { Readlist } from "@/types/readlist";
 
 export default function ReadlistPage() {
+    const [isOwner, setIsOwner] = useState(true);
+    const [readlistInfo, setReadlistInfo] = useState<Readlist>();
+
+    const handleRemoveBook = async (targetBookId: string) => {
+        if (!readlistInfo || !isOwner || !targetBookId) return;
+
+        //setLoadingMembers(true);
+
+        try {
+            // Remove membro da comunidade
+            //await communityService.removeMember(communityInfo.nome, targetUserId);
+
+            // Atualiza lista de membros e contagem
+            //const updatedMembers = await communityService.getMembers(communityInfo.nome);
+            //setMembers(updatedMembers);
+
+        } catch (err) {
+
+            //console.error("Erro ao remover membro da comunidade:", err);
+
+        } finally {
+
+            //setLoadingMembers(false);
+
+        }
+    }
 
     const livros = [
     {
@@ -208,7 +238,7 @@ export default function ReadlistPage() {
             <div className="flex-1 flex flex-col">
                 <SearchBar />
 
-                <div className="w-full flex gap-4 pt-2">
+                <div className="w-full flex gap-4 p-4">
                     <div className="flex flex-col gap-2 items-center">
                         <main className="bg-[#E8DDD4] w-[240px] h-fit flex flex-col medium-border-radius p-5 gap-2 text-[var(--secondary-700)]">
                             <div className="relative w-full aspect-[1/1]">
@@ -236,13 +266,23 @@ export default function ReadlistPage() {
                             </div>
                             <ProgressoLivros lidos={2} total={5}/>
                         </main>
-                        <Button icon={<OpenBookIcon/>} text={"Adicionar livro"}/>
+                        <Button icon={<OpenBookIcon/>} text={"Adicionar livro"} fullwidth={true}/>
+                        <Button icon={<TrashIcon/>} text={"Apagar readlist"} fullwidth={true} variant="rejeitar"/>
                     </div>
             
                     <div className="flex flex-col gap-2">
-                        <p className="text-b2 pl-4 pr-2">Em um futuro distópico na nação de Panem, a Capital obriga cada um dos 12 distritos a enviar um menino e uma menina entre 12 e 18 anos para os Jogos Vorazes. Os jovens, chamados "tributos", devem lutar até a morte em uma arena televisionada, onde apenas um sobrevivente é permitido. A trama segue Katniss Everdeen, do Distrito 12, que se oferece no lugar de sua irmã e precisa usar suas habilidades de caça e sobrevivência para vencer a competição morta</p>
+                        <p className="text-b2 pl-4 pr-2">Em um futuro distópico na nação de Panem, a Capital obriga cada um dos 12 distritos a enviar um menino e uma menina entre 12 e 18 anos para os Jogos Vorazes. Os jovens, chamados "tributos", devem lutar até a morte em uma arena televisionada, onde apenas um sobrevivente é permitido. A trama segue Katniss Everdeen, do Distrito 12, que se oferece no lugar de sua irmã e precisa usar suas habilidades de caça e sobrevivência para vencer a competição mortal.</p>
                         <div className="w-full border-b" style={{ borderColor: '#E0E0E0' }}></div>
-                        <LivrosReadlist livros={livros} />
+                        <div className="w-full grid grid-cols-8 pr-2 pl-2 pb-2">
+                            {livros.map((livro) => (
+                                <LivrosReadlist
+                                    key={livro._id}
+                                    livro={livro}
+                                    isCurrentUserOwner={isOwner}
+                                    handleRemoveBook={handleRemoveBook}
+                                />  
+                            ))}
+                        </div>
                     </div>
     
                 </div>
