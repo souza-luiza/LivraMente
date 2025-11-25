@@ -89,6 +89,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(p-retry|is-network-error|@langchain|langchain|uuid)/)"
+    ],
     "collectCoverageFrom": [
       "src/**/*.(t|j)s",
       "!src/schemas/**",
