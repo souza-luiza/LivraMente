@@ -84,7 +84,9 @@ export default function NotificacoesPage() {
         <div className="flex min-h-screen h-screen m-0 bg-white">
             <Sidebar />
             {isLoading ? (
+                    <div className="fixed inset-0 flex items-center justify-center">
                     <LoadingPage />
+                    </div>
             ) : (
             <div className="flex-1 flex flex-col">
                 <SearchBar />
