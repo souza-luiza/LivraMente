@@ -24,6 +24,8 @@
   "dependencies": {
     "@google/genai": "^1.28.0",
     "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "^0.2.0",
+    "@langchain/google-genai": "^2.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -38,6 +40,7 @@
     "class-validator": "^0.14.2",
     "cloudinary": "^2.8.0",
     "connect-mongo": "^5.1.0",
+    "langchain": "^1.1.1",
     "mongoose": "^8.18.3",
     "multer": "^2.0.2",
     "passport": "^0.7.0",
