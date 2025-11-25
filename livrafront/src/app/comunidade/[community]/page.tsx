@@ -117,7 +117,7 @@ export default function CommunityPage(){
 
             } catch (err) {
 
-                console.error("Erro ao carregar comunidade:", err);
+                console.error(err);
                 router.replace("/not-found");
 
             } finally {

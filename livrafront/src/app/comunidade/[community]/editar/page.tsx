@@ -32,6 +32,8 @@ import { CommunityTags, Comunidade, CreateCommunityData, UpdateCommunityData } f
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
 import SaveIcon from '@/components/icons/SaveIcon';
 import PopUp from '@/components/pop-up';
+import { set } from 'date-fns';
+import { boolean } from 'zod';
 
 export default function CreateCommunityPage() {
 
@@ -88,7 +90,7 @@ export default function CreateCommunityPage() {
         setEditedCommunityData({
           nome: communityData.nome,
           descricao: communityData.descricao,
-          capaUrl: communityData.capaUrl,
+          capaUrl: communityData.capaUrl === '/CommunityDefault.png' ? '' : communityData.capaUrl,
           bannerUrl: communityData.bannerUrl,
           tags: communityData.tags,
           slug: communityData.slug
@@ -118,12 +120,9 @@ export default function CreateCommunityPage() {
       });
     }
 
-    const slug = titleToSlug(e.target.value);
-
     setEditedCommunityData({
       ...editedCommunityData,
-      nome: e.target.value,
-      slug: slug
+      nome: e.target.value
     });
   }
 
@@ -293,6 +292,45 @@ export default function CreateCommunityPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkCover = () => {
+    if (!originalCommunityData || !editedCommunityData) return false;
+
+    const isCoverDefault: boolean = (editedCommunityData.capaUrl === '' && originalCommunityData.capaUrl === '/CommunityDefault.png');
+    const hasCoverChanged: boolean = (editedCommunityData.capaUrl !== originalCommunityData.capaUrl && !isCoverDefault);
+
+    return hasCoverChanged;
+  }
+
+  const checkBanner = () => {
+    if (!originalCommunityData || !editedCommunityData) return false;
+
+    const hasBannerChanged: boolean = (editedCommunityData.bannerUrl !== originalCommunityData.bannerUrl);
+
+    return hasBannerChanged;
+  }
+
+  const checkEdits = () => {
+    if (!originalCommunityData || !editedCommunityData) return false;
+
+    const editedData = {
+      nome: editedCommunityData.nome,
+      descricao: editedCommunityData.descricao,
+      tags: editedCommunityData.tags,
+      slug: editedCommunityData.slug
+    };
+
+    const originalData = {
+      nome: originalCommunityData.nome,
+      descricao: originalCommunityData.descricao,
+      tags: originalCommunityData.tags,
+      slug: originalCommunityData.slug
+    };
+    
+    if (JSON.stringify(editedData) === JSON.stringify(originalData)) return false;
+
+    return true;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -307,44 +345,49 @@ export default function CreateCommunityPage() {
 
       setIsLoading(true);
 
-      // TODO: OLHAR ISSO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // Verificar se alguma alteração foi feita, se não, apenas retornar
-      if (JSON.stringify(editedCommunityData) === JSON.stringify({
-        nome: originalCommunityData.nome,
-        descricao: originalCommunityData.descricao,
-        tags: originalCommunityData.tags,
-        capaUrl: originalCommunityData.capaUrl,
-        bannerUrl: originalCommunityData.bannerUrl,
-        slug: originalCommunityData.slug
-      })) {
+      // Verificar se alguma alteração foi feita, se não, apenas retorna
+      const hasCoverChanged   = checkCover();
+      const hasBannerChanged  = checkBanner();
+      const hasBeenEdited     = checkEdits();
+
+      console.log("hasCoverChanged:", hasCoverChanged);
+      console.log("hasBannerChanged:", hasBannerChanged);
+      console.log("hasBeenEdited:", hasBeenEdited);
+
+      if (!hasCoverChanged && !hasBannerChanged && !hasBeenEdited) {
         toast.info('Nenhuma alteração feita na comunidade.');
         router.back();
         return;
       }
 
-      // Preparação do payload
-      const communityPayload = {
-        ...editedCommunityData,
+      let payload: UpdateCommunityData = {
+        descricao: editedCommunityData.descricao,
+        tags: editedCommunityData.tags,
       };
 
-      delete communityPayload.capaUrl;
-      delete communityPayload.bannerUrl;
+      // Tira lixo do nome da comunidade e atualiza o slug
+      if (editedCommunityData.nome && editedCommunityData.nome !== originalCommunityData.nome) {
+        const name = editedCommunityData.nome.trim();
+        const slug = titleToSlug(name);
+
+        payload = {
+          ...payload,
+          nome: name,
+          slug: slug
+        }
+      }
 
       // Edição da Comunidade
-      const updatedCommunity: Comunidade = await communityService.updateCommunity(originalCommunityData.nome, communityPayload)
+      const updatedCommunity: Comunidade = await communityService.updateCommunity(originalCommunityData.nome, payload)
 
-      toast.success('Comunidade criada com sucesso!');
+      toast.success('Comunidade editada com sucesso!');
 
       setIsRedirecting(true);
 
       // Upload/Remoção da imagem de capa, se houver
       try {
         
-        // TODO: OLHAR ISSO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        const coverResetToDefault = (editedCommunityData.capaUrl === '');
-        const isOriginalCoverDefault = (originalCommunityData.capaUrl === '' || originalCommunityData.capaUrl === '/CommunityDefault.png');
-
-        if (croppedCoverBlob || (coverResetToDefault && !isOriginalCoverDefault)) {
+        if (croppedCoverBlob || hasCoverChanged) {
 
           const formDataUpload = new FormData();
 
@@ -369,10 +412,7 @@ export default function CreateCommunityPage() {
       // Upload/Remoção do banner, se houver
       try {
 
-        // TODO: OLHAR ISSO AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (croppedBannerBlob || 
-          (editedCommunityData.bannerUrl !== originalCommunityData.bannerUrl
-          && !originalCommunityData.bannerUrl)) {
+        if (croppedBannerBlob || hasBannerChanged) {
 
           const formDataUpload = new FormData();
 

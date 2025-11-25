@@ -65,12 +65,9 @@ export default function CreateCommunityPage() {
       });
     }
 
-    const slug = titleToSlug(e.target.value);
-
     setCommunityData({
       ...CommunityData,
-      nome: e.target.value,
-      slug: slug
+      nome: e.target.value
     });
   }
 
