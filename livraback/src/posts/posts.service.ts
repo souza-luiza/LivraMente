@@ -97,7 +97,8 @@ export class PostsService {
             postId: (savedPost._id as Types.ObjectId).toString(),
             autorId: userId,
             comunidadeId: (comunidade._id as Types.ObjectId).toString(),
-            conteudoPreview: createPostDto.conteudo.substring(0, 100),
+            comunidadeNome: comunidade.nome,
+            conteudo: createPostDto.conteudo,
           }
         );
 
@@ -144,15 +145,17 @@ export class PostsService {
       await this.postModel.updateOne({ _id: postId }, { $addToSet: { curtidas: id } });
 
       // Notificar autor do post 
-      const fullPost = await this.postModel.findById(postId, 'autor');
+      const fullPost = await this.postModel.findById(postId).populate('comunidade', 'nome');
       if (fullPost && !fullPost.autor.equals(id)) {
         try {
+          const comunidadeNome = (fullPost.comunidade as any)?.nome;
           await this.queueProducer.publish(
             ROUTING_KEYS.NOTIFICAR_POST_CURTIDO,
             {
               postId: postId,
-              autorPostId: fullPost.autor.toString(),
-              usuarioCurtiuId: userId,
+              autorId: fullPost.autor.toString(),
+              userId: userId,
+              comunidadeNome: comunidadeNome,
             }
           );
         } catch (error) {

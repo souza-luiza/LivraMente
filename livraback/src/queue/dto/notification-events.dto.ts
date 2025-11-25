@@ -15,6 +15,7 @@ export interface PostCurtidoEventDto {
   postId: string;
   userId: string;
   autorId: string;
+  comunidadeNome: string;
 }
 
 export interface PostModeradoEventDto {
@@ -30,8 +31,27 @@ export interface MembroEntrouEventDto {
   comunidadeNome: string;
 }
 
+export interface ComentarioCriadoEventDto {
+  comentarioId: string;
+  postId: string;
+  autorComentarioId: string;
+  autorPostId: string;
+  conteudo: string;
+  comunidadeNome: string;
+}
+
+export interface ComentarioCurtidoEventDto {
+  comentarioId: string;
+  postId: string;
+  userId: string;
+  autorId: string;
+  comunidadeNome: string;
+}
+
 export type NotificationEventDto =
   | PostCriadoEventDto
   | PostCurtidoEventDto
   | PostModeradoEventDto
-  | MembroEntrouEventDto;
+  | MembroEntrouEventDto
+  | ComentarioCriadoEventDto
+  | ComentarioCurtidoEventDto;

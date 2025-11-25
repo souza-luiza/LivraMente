@@ -44,21 +44,22 @@ export default function NotificacaoItem({
 
         switch (notificacao.tipo) {
             case 'novo_seguidor':
+            case 'entrar_comunidade':
                 if (notificacao.remetente?.username) {
                     router.push(`/${notificacao.remetente.username}`);
                 }
                 break;
             
-            case 'entrar_comunidade':
             case 'promovido_moderador':
             case 'novo_post_comunidade':
-                if (notificacao.comunidadeNome) {
+                if (notificacao.comunidadeNome && notificacao.postId) {
                     router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
                 }
                 break;
 
             case 'curtida_post':
             case 'comentario_post':
+            case 'curtida_comentario':
                 if (notificacao.postId && notificacao.comunidadeNome) {
                     router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
                 }

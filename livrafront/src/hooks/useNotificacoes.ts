@@ -45,7 +45,7 @@ export function useNotificacoes() {
                         console.warn('Erro na conexão SSE:', error);
                     }
                 );
-            } catch (error: any) {
+            } catch (error) {
                 console.warn('Erro ao carregar notificações:', error);
             }
         };

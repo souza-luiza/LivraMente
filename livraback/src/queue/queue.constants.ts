@@ -23,6 +23,7 @@ export const ROUTING_KEYS = {
   NOTIFICAR_POST_CRIADO: 'notificar.post.criado',
   NOTIFICAR_POST_MODERADO: 'notificar.post.moderado',
   NOTIFICAR_COMENTARIO_CRIADO: 'notificar.comentario.criado',
+  NOTIFICAR_COMENTARIO_CURTIDO: 'notificar.comentario.curtido',
   NOTIFICAR_POST_CURTIDO: 'notificar.post.curtido',
   NOTIFICAR_MEMBRO_ENTROU: 'notificar.membro.entrou',
   NOTIFICAR_READLIST_FAVORITADA: 'notificar.readlist.favoritada',
