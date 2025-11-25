@@ -84,6 +84,7 @@ describe('useNotificacoes Hook', () => {
 
         await waitFor(() => {
             expect(mensageriaService.conectarNotificacoes).toHaveBeenCalledWith(
+                expect.any(Function),
                 expect.any(Function)
             );
         });

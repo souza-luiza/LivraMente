@@ -40,7 +40,10 @@ export function useNotificacoes() {
                                 icon: '/favicon.ico'
                             });
                         }
-                    }, 
+                    },
+                    (error) => {
+                        console.warn('Erro na conexão SSE:', error);
+                    }
                 );
             } catch (error: any) {
                 console.warn('Erro ao carregar notificações:', error);
