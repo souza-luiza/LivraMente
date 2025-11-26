@@ -8,7 +8,7 @@ export class LivrosController {
 
     @Get()
     @ApiOperation({ 
-        summary: 'Lista todas os livros',
+        summary: 'Lista todos os livros',
         description: 'Retorna todos os livros existentes'
     })
     @ApiResponse({
@@ -38,7 +38,7 @@ export class LivrosController {
 
     @Get(':slug/readlists')
     @ApiOperation({
-        summary: 'Busca readlists relacionados a um livro pela slug do livro',
+        summary: 'Busca readlists relacionadas a um livro pela slug do livro',
         description: 'Retorna detalhes de readlists relacionadas a um livro por slug'
     })
     @ApiResponse({
@@ -55,7 +55,7 @@ export class LivrosController {
 
     @Get(':slug/comunidades')
     @ApiOperation({
-        summary: 'Busca comunidades relacionados a um livro pela slug do livro',
+        summary: 'Busca comunidades relacionadas a um livro pela slug do livro',
         description: 'Retorna detalhes de comunidades relacionadas a um livro por slug'
     })
     @ApiResponse({
