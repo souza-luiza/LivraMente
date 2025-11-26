@@ -6,6 +6,7 @@ import NotificacaoList from '@/components/notificacao-list';
 import Button from '@/components/button';
 import SearchBar from '@/components/searchbar';
 import CheckIcon from '@/components/icons/CheckIcon';
+import BlockIcon from '@/components/icons/BlockIcon';
 import { getSessionInfos } from '@/services/auth';
 import { useRouter } from 'next/navigation';
 import LoadingPage from '@/components/loading';
@@ -69,13 +70,22 @@ export default function NotificacoesPage() {
         }
     };
 
+    const handleRemoverTodasNotificacoes = async () => {
+        try {
+            const { removerTodasNotificacoes } = await import('@/services/mensageria');
+            await removerTodasNotificacoes();
+            definirNotificacoes([]);
+        } catch (error) {
+            toast.error('Erro ao remover todas as notificações.');
+        }
+    };
+
     const handleRemover = async (id: string) => {
         try {
             const { removerNotificacao } = await import('@/services/mensageria');
             await removerNotificacao(id);
             removerNotificacaoLocal(id);
         } catch (error) {
-            console.error('Erro ao remover notificação:', error);
             toast.error('Erro ao remover notificação.');
         }
     };
@@ -100,13 +110,22 @@ export default function NotificacoesPage() {
                                     {naoLidas} não lida{naoLidas !== 1 ? 's' : ''}
                                 </p>
                             </div>
-                            <Button
-                                text="Marcar todas como lidas"
-                                icon= < CheckIcon />
-                                size="small"
-                                colorScheme="light-green"
-                                onClick={handleMarcarTodasComoLidas}
-                            />
+                            <div className="flex gap-2">
+                                <Button
+                                    text="Remover todas"
+                                    icon={<BlockIcon />}
+                                    size="small"
+                                    colorScheme="light-green"
+                                    onClick={handleRemoverTodasNotificacoes}
+                                />
+                                <Button
+                                    text="Marcar todas como lidas"
+                                    icon={<CheckIcon />}
+                                    size="small"
+                                    colorScheme="light-green"
+                                    onClick={handleMarcarTodasComoLidas}
+                                />
+                            </div>
                         </div>
                     </div>
                     {/* Lista de notificações */}

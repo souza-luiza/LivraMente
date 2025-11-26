@@ -62,6 +62,18 @@ export async function removerNotificacao(id: string): Promise<void> {
   }
 }
 
+//Remover todas as notificações
+export async function removerTodasNotificacoes(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/notificacoes/remover-todas`, {
+    method: 'DELETE',
+    credentials: 'include', 
+    headers: getAuthHeaders()
+  });
+  if (!response.ok) {
+    throw new Error('Erro ao remover todas as notificações');
+  }
+}
+
 //Conectar ao servidor via SSE pra receber notificações em tempo real
 export function conectarNotificacoes(
   onNotificacao: (notificacao: Notificacao) => void,
