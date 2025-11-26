@@ -38,7 +38,6 @@ describe('llm service functions', () => {
         genres: ['fantasia'],
         storyId: null,
       };
-      const token = 'jwt-token-123';
       const controller = new AbortController();
 
       const mockResponse: LlmResponseDTO = {
@@ -52,11 +51,7 @@ describe('llm service functions', () => {
         json: jest.fn().mockResolvedValue(mockResponse),
       });
 
-      const result = await postGenerateText(
-        payload,
-        token,
-        controller.signal,
-      );
+      const result = await postGenerateText(payload, controller.signal);
 
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(global.fetch).toHaveBeenCalledWith(
@@ -65,9 +60,9 @@ describe('llm service functions', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
+          credentials: 'include',
           signal: controller.signal,
         }),
       );
@@ -84,7 +79,7 @@ describe('llm service functions', () => {
         text: jest.fn().mockResolvedValue('falha interna no LLM'),
       });
 
-      await expect(postGenerateText(payload, 'token')).rejects.toThrow(
+      await expect(postGenerateText(payload)).rejects.toThrow(
         'LLM 500: falha interna no LLM',
       );
     });
@@ -96,11 +91,11 @@ describe('llm service functions', () => {
         ok: false,
         status: 400,
         statusText: 'Bad Request',
-        text: jest.fn().mockResolvedValue(''),
+        text: jest.fn().mockResolvedValue('request inválido'),
       });
 
-      await expect(postGenerateText(payload, 'token')).rejects.toThrow(
-        'LLM 400: Bad Request',
+      await expect(postGenerateText(payload)).rejects.toThrow(
+        'LLM 400: request inválido',
       );
     });
   });
