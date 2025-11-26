@@ -62,10 +62,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }
 
+let _useChatWarned = false;
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (context === undefined) {
-    throw new Error('useChat deve ser usado dentro de um ChatProvider');
+    if (!_useChatWarned) {
+      // One-time developer warning to help migration; avoid runtime crash.
+      // eslint-disable-next-line no-console
+      console.warn('useChat usado fora de um ChatProvider — retornando fallback no-op.');
+      _useChatWarned = true;
+    }
+
+    // Safe no-op fallback to avoid runtime exceptions when provider is missing.
+    return {
+      messages: [],
+      isOpen: false,
+      isLoading: false,
+      toggleOpen: () => undefined,
+      sendMessage: async () => undefined,
+      resetChat: () => undefined,
+    } as ChatContextValue;
   }
   return context;
 };
