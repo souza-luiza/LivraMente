@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
 import { Readlist, ReadlistSchema } from '../readlists/entities/readlist.entity';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
-import { ReadlistsModule } from 'src/readlists/readlists.module';
+import { ReadlistsModule } from '../readlists/readlists.module';
 
 @Module({
   imports: [
@@ -18,6 +18,6 @@ import { ReadlistsModule } from 'src/readlists/readlists.module';
   ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService]
+  exports: [UsersService, MongooseModule]
 })
 export class UsersModule {}

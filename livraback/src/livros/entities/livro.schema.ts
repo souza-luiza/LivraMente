@@ -1,19 +1,15 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-@Schema({ _id: false })
-export class Personagem {
-  @Prop({ required: true })
-  nome: string;
-
-  @Prop()
-  descricao: string;
-}
+export type LivroDocument = HydratedDocument<Livro>;
 
 @Schema({ timestamps: true })
-export class Livro extends Document {
+export class Livro {
   @Prop({ required: true })
   titulo: string;
+
+  @Prop({ required: false })
+  slug: string;
 
   @Prop({ required: true })
   isbn: string;
@@ -44,6 +40,19 @@ export class Livro extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
   readlists?: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Comunidade' }], default: [] })
+  comunidades?: Types.ObjectId[];
+
+  // Resenhas do livro
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Resenha' }], default: [] })
+  resenhas?: Types.ObjectId[];
+
+  @Prop({ default: 0 })
+  avaliacoes_count: number;  // Quantas pessoas avaliaram
+
+  @Prop({ default: 0 })
+  avaliacoes_media: number;  // Média das estrelas (float de 1-5)
 }
 
 export const LivroSchema = SchemaFactory.createForClass(Livro);

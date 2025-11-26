@@ -14,6 +14,7 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
     CloudinaryModule
     ],
     controllers: [ComunidadesController],
-    providers: [ComunidadesService]
+    providers: [ComunidadesService],
+    exports: [MongooseModule]
 })
 export class ComunidadesModule {}
