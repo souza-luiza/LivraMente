@@ -43,19 +43,19 @@ export default function HomePage() {
 
     const sliderItems = [
         {
-            imageUrl: '/images/banner-comunidades.jpg',
+            imageUrl: 'https://picsum.photos/1420/400',
             title: 'Comunidades',
             description: 'Conecte-se com outros leitores',
             path: '/comunidades',
         },
         {
-            imageUrl: '/images/banner-historias.jpg',
+            imageUrl: 'https://picsum.photos/1422/400',
             title: 'Crie suas Histórias',
             description: 'Expanda sua criatividade e compartilhe',
             path: '/criar-historia',
         },
         {
-            imageUrl: '/images/banner-leitura.jpg',
+            imageUrl: 'https://picsum.photos/1424/400',
             title: 'Acompanhe sua Leitura',
             description: 'Registre seu progresso e ganhe XP',
             path: '/leitura',
@@ -246,9 +246,9 @@ export default function HomePage() {
                         </div>
                         <div className="relative flex items-center justify-center">
                             <div className='flex flex-col gap-4 align-middle items-center'>
-                                <Button icon={<CommunityIcon />} colorScheme="dark-green" size="large" path="/comunidades" text="Comunidades" />
-                                <Button icon={<OpenBookIcon />} colorScheme="dark-green" size="large" path="/criar-historia" text="Criar História" />
-                                <Button icon={<LogoIcon/>} colorScheme='dark-green' size='large' path='/livratime' text='Créditos'/>
+                                <Button icon={<CommunityIcon />} colorScheme="dark-green" fullwidth={true} size="large" path="/comunidades" text="Comunidades" />
+                                <Button icon={<OpenBookIcon />} colorScheme="dark-green" fullwidth={true} size="large" path="/criar-historia" text="Criar História" />
+                                <Button icon={<LogoIcon/>} colorScheme='dark-green' fullwidth={true} size='large' path='/livratime' text='Créditos'/>
                             </div>  
                         </div>
                     </main>
