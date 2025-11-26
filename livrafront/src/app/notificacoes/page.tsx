@@ -112,18 +112,18 @@ export default function NotificacoesPage() {
                             </div>
                             <div className="flex gap-2">
                                 <Button
-                                    text="Remover todas"
-                                    icon={<BlockIcon />}
-                                    size="small"
-                                    colorScheme="light-green"
-                                    onClick={handleRemoverTodasNotificacoes}
-                                />
-                                <Button
                                     text="Marcar todas como lidas"
                                     icon={<CheckIcon />}
                                     size="small"
                                     colorScheme="light-green"
                                     onClick={handleMarcarTodasComoLidas}
+                                />
+                                <Button
+                                    text="Remover todas"
+                                    icon={<BlockIcon />}
+                                    size="small"
+                                    colorScheme="light-green"
+                                    onClick={handleRemoverTodasNotificacoes}
                                 />
                             </div>
                         </div>
