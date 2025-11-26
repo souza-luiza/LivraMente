@@ -115,7 +115,7 @@ export class LlmAgentService {
       return "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
     }
 
-    const tools = [
+    const tools: any[] = [
       // Ferramentas de História
       this.toolsService.createGetUserStoriesTool(userId),
       this.toolsService.createGetRecentStoriesTool(),
@@ -152,14 +152,14 @@ export class LlmAgentService {
 
     // cria o agente com a API unificada
     const agent = createAgent({
-      model: this.llm,
+      model: this.llm as unknown as any,
       tools,
       systemPrompt: promptString, // pode ser string ou SystemMessage
-    });
+    }) as unknown as any;
 
-    try {
-      // chama o agente diretamente, passando a conversa como mensagens
-      const result: any = await (agent as any).invoke({
+    try {      
+       // chama o agente diretamente, passando a conversa como mensagens
+      const result: any = await agent.invoke({
         messages: [{ role: 'user', content: userPrompt }],
       });
 
