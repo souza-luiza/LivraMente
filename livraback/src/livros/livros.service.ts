@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Livro, LivroDocument } from './entities/livro.schema';
 import { Model } from 'mongoose';
@@ -10,8 +10,24 @@ export class LivrosService {
     ) {}
 
     async findAll() {
-        return await this.livroModel.find().select('-sinopse -citacoes -resenhas -readlists -comunidades').exec(); //talvez só selecionar oq quero.
+        return await this.livroModel.find().select('titulo isbn slug ano_publicacao numero_paginas -_id').exec();
     }
 
-    
+    async findOne(slug: string) {
+        const livro = await this.livroModel.findOne({ slug }).exec();
+        if(!livro) throw new NotFoundException('Livro não encontrado');
+        return livro;
+    }
+
+    async findOneReadlists(slug: string) {
+        const livro = await this.livroModel.findOne({ slug }).populate('readlists').select('readlists').exec();
+        if (!livro) throw new NotFoundException('Livro não encontrado');
+        return livro.readlists;
+    }
+
+    async findOneComunidades(slug: string) {
+        const livro = await this.livroModel.findOne({ slug }).populate('comunidades').select('comunidades').exec();
+        if (!livro) throw new NotFoundException('Livro não encontrado');
+        return livro.comunidades;
+    }
 }

@@ -35,4 +35,38 @@ export class LivrosController {
     async findOne(@Param('slug') slug: string) {
         return this.livrosService.findOne(slug);
     }
+
+    @Get(':slug/readlists')
+    @ApiOperation({
+        summary: 'Busca readlists relacionados a um livro pela slug do livro',
+        description: 'Retorna detalhes de readlists relacionadas a um livro por slug'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Detalhes das readlists relacionadas ao livro retornados com sucesso'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Livro não encontrado'
+    })
+    async findOneReadlists(@Param('slug') slug: string) {
+        return this.livrosService.findOneReadlists(slug);
+    }
+
+    @Get(':slug/comunidades')
+    @ApiOperation({
+        summary: 'Busca comunidades relacionados a um livro pela slug do livro',
+        description: 'Retorna detalhes de comunidades relacionadas a um livro por slug'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Detalhes das comunidades relacionadas ao livro retornados com sucesso'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Livro não encontrado'
+    })
+    async findOneComunidades(@Param('slug') slug: string) {
+        return this.livrosService.findOneComunidades(slug);
+    }
 }
