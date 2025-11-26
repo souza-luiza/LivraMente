@@ -30,11 +30,23 @@ describe('ChatContext (sem JWT/token explícito)', () => {
     mockedPostAnalyzeAgent.mockReset();
   });
 
-  it('dispara erro se useChat for usado fora de um ChatProvider', () => {
-    expect(() => renderHook(() => useChat())).toThrow(
-      new Error('useChat deve ser usado dentro de um ChatProvider'),
-    );
-  });
+it('retorna fallback seguro quando usado fora de um ChatProvider e não lança', () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+  const { result } = renderHook(() => useChat());
+
+  expect(result.current.messages).toEqual([]);
+  expect(result.current.isOpen).toBe(false);
+  expect(result.current.isLoading).toBe(false);
+
+  expect(typeof result.current.toggleOpen).toBe('function');
+  expect(typeof result.current.sendMessage).toBe('function');
+  expect(typeof result.current.resetChat).toBe('function');
+
+  expect(warnSpy).toHaveBeenCalled();
+
+  warnSpy.mockRestore();
+});
 
   it('toggleOpen alterna o estado isOpen', () => {
     const { result } = renderHook(() => useChat(), { wrapper });
