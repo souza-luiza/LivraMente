@@ -177,7 +177,8 @@ describe('CommunityPage', () => {
   const mockCommunityData = {
     nome: 'Harry Potter',
     descricao: 'Uma comunidade sobre Harry Potter',
-    imagem_url: '/harry-potter.jpg',
+    capaUrl: '/harry-potter.jpg',
+    bannerUrl: '/harry-potter-banner.jpg',
   };
 
   const mockMembers = [

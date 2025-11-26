@@ -36,6 +36,7 @@ import TrashIcon from "@/components/icons/TrashIcon";
 import ClockIcon from "@/components/icons/ClockIcon";
 import PillarIcon from "@/components/icons/PillarIcon";
 import StarIcon from "@/components/icons/StarIcon";
+import ArrowUpIcon from "@/components/icons/ArrowUpIcon";
 
 export default function PostPage() {
     const router = useRouter();
@@ -64,6 +65,9 @@ export default function PostPage() {
     // Filtro de comentários
     const filters = ["Mais Recentes", "Mais Antigos", "Mais Populares"];
     const [currentFilter, setCurrentFilter] = useState(filters[0]);
+
+    // Qualidade de vida
+    const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
     useEffect(() => {
         if (!community || !postId) {
@@ -114,7 +118,19 @@ export default function PostPage() {
         }
 
         fetchData();
-    }, [community, postId, router])
+    }, [community, postId, router]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const mainHeader = document.querySelector('.comments-header');
+            if (!mainHeader) return;
+            const rect = mainHeader.getBoundingClientRect();
+            setShowScrollTopButton(rect.bottom <= 0);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         setComments((prev) => sortComments(prev));
@@ -299,7 +315,7 @@ export default function PostPage() {
                                 disableActions={loading || isSendingComment}
                             />
                             {/*Seção de Comentários*/}
-                            <div className="flex flex-row justify-between">
+                            <div className="flex flex-row justify-between comments-header">
                                 <div className="flex flex-row items-center medium-box dark-brown gap-1">
                                     <CommentIcon size={20} />
                                     <h6 className="text-h6">Comentários</h6>
@@ -318,6 +334,16 @@ export default function PostPage() {
                                     colorScheme="dark-brown"
                                 />
                             </div>  
+                            {showScrollTopButton &&
+                            <div className="sticky top-16 flex justify-center z-30 ">
+                                <Button
+                                    text="Voltar ao Topo"
+                                    icon={<ArrowUpIcon />}
+                                    size="small"
+                                    colorScheme="dark-brown"
+                                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                                />
+                            </div>}
                             {loadingComments ? (
                                 <LoadingComponent 
                                     size="small"

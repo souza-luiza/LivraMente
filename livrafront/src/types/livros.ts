@@ -21,5 +21,5 @@ export interface Livro {
 export interface Autor {
     nome: string;
     foto_url?: string;
-    livros: string[];
+    livros?: string[];
 }
