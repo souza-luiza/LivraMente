@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { NotificacoesConsumer } from './notificacoes.consumer';
 import { NotificacoesService } from '../../notificacoes/notificacoes.service';
 import { ComunidadesService } from '../../comunidades/comunidades.service';
-import { TipoNotificacao } from '../../schemas/notificacao.schema';
 import { FILAS, ROUTING_KEYS } from '../queue.constants';
 import { PostCriadoEventDto, PostCurtidoEventDto, PostModeradoEventDto, MembroEntrouEventDto, ComentarioCriadoEventDto, ComentarioCurtidoEventDto } from '../dto';
 

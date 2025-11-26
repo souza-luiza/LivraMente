@@ -2,7 +2,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { useNotificacoes, useSolicitaPermissao } from '@/hooks/useNotificacoes';
 import { useNotificationsStore, useNotPrefStore } from '@/stores/notificacoesStore';
 import * as mensageriaService from '@/services/mensageria';
-import { toast } from 'react-toastify';
 import { Notificacao } from '@/types/notificacao';
 
 // Mock dos módulos

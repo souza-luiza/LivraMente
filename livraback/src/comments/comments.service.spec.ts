@@ -61,16 +61,6 @@ describe('CommentsService', () => {
     })
   }));
 
-  // Helper para sobrescrever o retorno do populate para casos específicos
-  function mockFindByIdWithPopulate(returned) {
-    if (returned === null) {
-      mockComentarioModel.findById.mockImplementationOnce(() => null);
-    } else {
-      mockComentarioModel.findById.mockImplementationOnce(() => ({
-        populate: jest.fn().mockResolvedValue(returned)
-      }));
-    }
-  }
   mockComentarioModel.findOne = jest.fn();
   mockComentarioModel.findOneAndUpdate = jest.fn();
   mockComentarioModel.find = jest.fn();

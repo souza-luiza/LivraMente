@@ -2,7 +2,6 @@ import { Controller, Get, Patch, Delete, Param, UseGuards, Sse, Req, HttpCode, H
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { NotificacoesService } from './notificacoes.service';
 import { Observable, map } from 'rxjs';
-import { NotificacaoDocument } from '../schemas/notificacao.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { SUCCESS_MESSAGES } from './notificacoes.constants';
 

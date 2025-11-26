@@ -286,12 +286,6 @@ describe('PostsService', () => {
       curtidas: [],
     };
 
-    const mockPostWithDifferentAuthor = {
-      _id: mockPostObjectId,
-      autor: new Types.ObjectId('507f1f77bcf86cd799439099'),
-      curtidas: [],
-    };
-
     beforeEach(() => {
       mockPostModel.findById.mockResolvedValue(mockPost);
       mockPostModel.updateOne.mockResolvedValue({ modifiedCount: 1 });

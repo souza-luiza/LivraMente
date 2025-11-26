@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { QueueProducerService } from './queue.producer.service';
 import * as amqp from 'amqp-connection-manager';
-import { ConfirmChannel } from 'amqplib';
 
 jest.mock('amqp-connection-manager');
 
