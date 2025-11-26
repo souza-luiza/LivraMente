@@ -8,7 +8,13 @@ import { Autor } from './livros/entities/autor.schema';
 
 const JA_ADICIONADOS = [
   /* 
-  'Harry Potter e a Pedra Filosofal J.K. Rowling',
+  'Harry Potter e a Pedra Filosofal | J.K. Rowling',
+  'Harry Potter e a Câmara Secreta | J.K. Rowling',
+  'Harry Potter e o Prisioneiro de Azkaban | J.K. Rowling | 1781103704', 
+  'Harry Potter e o Cálice de Fogo | J.K. Rowling',
+  'Harry Potter e a Ordem da Fênix | J.K. Rowling',
+  'Harry Potter e o Enigma do Príncipe | J.K. Rowling',
+  'Harry Potter e as Relíquias da Morte | J.K. Rowling | 1781104069'
   'O Senhor dos Anéis | J.R.R. Tolkien',
   'O Hobbit | J.R.R. Tolkien',
   'Jogos Vorazes | Suzanne Collins',
@@ -24,8 +30,6 @@ const JA_ADICIONADOS = [
   'A Escolha | Kiera Cass',
   'A Herdeira | Kiera Cass',
   'A Coroa | Kiera Cass',
-  'Harry Potter e o Cálice de Fogo | J.K. Rowling',
-  'Harry Potter e a Ordem da Fênix | J.K. Rowling',
   'O Último Desejo | Andrzej Sapkowski',
   'A Espada do Destino | Andrzej Sapkowski',
   'O Sangue dos Elfos | Andrzej Sapkowski',
@@ -117,9 +121,9 @@ const JA_ADICIONADOS = [
   */
 ];
 
-// Lista de livros populares para buscar
-const LIVROS_POPULARES = [
-  
+// Lista de livros populares para buscar (agora aceita ISBN opcional no final)
+const LIVROS_POPULARES: string[] = [
+
 ];
 
 interface GoogleBookItem {
@@ -142,6 +146,58 @@ interface GoogleBookItem {
   };
 }
 
+function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-');
+}
+
+async function generateUniqueSlug(livroModel: Model<Livro>, base: string): Promise<string> {
+  let slug = base;
+  let counter = 1;
+
+  while (true) {
+    const exists = await livroModel.findOne({ slug });
+    if (!exists) return slug;
+    counter++;
+    slug = `${base}-${counter}`;
+  }
+}
+
+// Busca por ISBN primeiro
+async function buscarPorISBN(isbn: string): Promise<GoogleBookItem | null> {
+  try {
+    const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.items || data.items.length === 0) {
+      console.log(`   ❌ Nenhum resultado via ISBN (${isbn})`);
+      return null;
+    }
+
+    const item = data.items[0] as GoogleBookItem;
+    if (!item.volumeInfo.imageLinks?.thumbnail) {
+      console.log(`   ❌ ISBN encontrado, mas sem capa`);
+      return null;
+    }
+
+    console.log(`   🎯 Encontrado via ISBN (${isbn}) com capa!`);
+    return item;
+
+  } catch (err) {
+    console.log(`   ⚠️ Erro buscando por ISBN:`, err);
+    return null;
+  }
+}
+
+// Busca antiga por título e autor
 async function buscarLivroGoogleBooks(busca: string): Promise<GoogleBookItem | null> {
   try {
     const [tituloOriginal, autorOriginal] = busca.split('|').map(s => s.trim());
@@ -165,48 +221,30 @@ async function buscarLivroGoogleBooks(busca: string): Promise<GoogleBookItem | n
 
     const items = data.items as GoogleBookItem[];
 
-    // Helper: só aceita resultados com capa
-    const comCapa = (item: GoogleBookItem) =>
-      !!item.volumeInfo.imageLinks?.thumbnail;
+    const comCapa = (item: GoogleBookItem) => !!item.volumeInfo.imageLinks?.thumbnail;
 
-    // ---------------------------------------
-    // 1️⃣ PRIORIDADE: TÍTULO EXATO + CAPA
-    // ---------------------------------------
-    const matchExato = items.find(item => {
-      const title = item.volumeInfo.title?.toLowerCase() ?? "";
-      return title === tituloLower && comCapa(item);
-    });
-
+    const matchExato = items.find(item =>
+      item.volumeInfo.title?.toLowerCase() === tituloLower && comCapa(item)
+    );
     if (matchExato) {
       console.log("   🎯 Título exato encontrado com capa!");
       return matchExato;
     }
 
-    // ---------------------------------------
-    // 2️⃣ TÍTULO COMEÇA IGUAL + CAPA
-    // ---------------------------------------
-    const matchInicial = items.find(item => {
-      const title = item.volumeInfo.title?.toLowerCase() ?? "";
-      return title.startsWith(tituloLower) && comCapa(item);
-    });
-
+    const matchInicial = items.find(item =>
+      item.volumeInfo.title?.toLowerCase().startsWith(tituloLower) && comCapa(item)
+    );
     if (matchInicial) {
       console.log("   🎯 Título inicia igual com capa.");
       return matchInicial;
     }
 
-    // ---------------------------------------
-    // 3️⃣ FILTRO NORMAL — EXIGE CAPA
-    // ---------------------------------------
     const filtrados = items.filter(item => {
       const info = item.volumeInfo;
-
       if (!comCapa(item)) return false;
       if ((info.pageCount || 0) < 20) return false;
       if (!info.authors?.some(a => a.toLowerCase().includes(autorLower))) return false;
-
-      const title = info.title?.toLowerCase() ?? "";
-      return title.includes(tituloLower.substring(0, 4));
+      return info.title?.toLowerCase().includes(tituloLower.substring(0, 4));
     });
 
     if (filtrados.length > 0) {
@@ -214,14 +252,10 @@ async function buscarLivroGoogleBooks(busca: string): Promise<GoogleBookItem | n
       return filtrados[0];
     }
 
-    // ---------------------------------------
-    // 4️⃣ ÚLTIMO FALLBACK — SOMENTE SE TIVER CAPA
-    // ---------------------------------------
-    const fallbackComCapa = items.find(comCapa);
-
-    if (fallbackComCapa) {
+    const fallback = items.find(comCapa);
+    if (fallback) {
       console.log("   ⚠️ Usando fallback com capa.");
-      return fallbackComCapa;
+      return fallback;
     }
 
     console.log("   ❌ Nenhum resultado com capa encontrado.");
@@ -233,6 +267,7 @@ async function buscarLivroGoogleBooks(busca: string): Promise<GoogleBookItem | n
   }
 }
 
+// Seed principal
 async function seedLivros() {
   console.log('🌱 Iniciando seed de livros...\n');
 
@@ -243,11 +278,28 @@ async function seedLivros() {
   let sucessos = 0;
   let erros = 0;
 
-  for (const tituloLivro of LIVROS_POPULARES) {
-    console.log(`📖 Buscando: ${tituloLivro}...`);
-    
-    const bookData = await buscarLivroGoogleBooks(tituloLivro);
-    
+  for (const entrada of LIVROS_POPULARES) {
+    console.log(`📖 Buscando: ${entrada}...`);
+
+    const partes = entrada.split('|').map(v => v.trim());
+    const titulo = partes[0];
+    const autor = partes[1];
+    const isbnInformado = partes[2] ?? null;
+
+    let bookData: GoogleBookItem | null = null;
+
+    // tenta via ISBN
+    if (isbnInformado) {
+      console.log(`   🔍 Tentando buscar via ISBN: ${isbnInformado}`);
+      bookData = await buscarPorISBN(isbnInformado);
+    }
+
+    // fallback via título
+    if (!bookData) {
+      console.log(`   🔍 Buscando via título e autor...`);
+      bookData = await buscarLivroGoogleBooks(`${titulo} | ${autor}`);
+    }
+
     if (!bookData) {
       console.log(`   ❌ Não encontrado\n`);
       erros++;
@@ -256,10 +308,9 @@ async function seedLivros() {
 
     const { volumeInfo } = bookData;
 
-    // Verificar se o livro já existe
-    const isbn = volumeInfo.industryIdentifiers?.find(id => 
+    const isbn = volumeInfo.industryIdentifiers?.find(id =>
       id.type === 'ISBN_13' || id.type === 'ISBN_10'
-    )?.identifier || `NO-ISBN-${Date.now()}`;
+    )?.identifier || isbnInformado || `NO-ISBN-${Date.now()}`;
 
     const livroExistente = await livroModel.findOne({ isbn });
     if (livroExistente) {
@@ -268,58 +319,53 @@ async function seedLivros() {
     }
 
     try {
-      // Criar ou buscar autores
       const autoresIds: any[] = [];
-      if (volumeInfo.authors && volumeInfo.authors.length > 0) {
+
+      if (volumeInfo.authors?.length) {
         for (const nomeAutor of volumeInfo.authors) {
-          let autor = await autorModel.findOne({ nome: nomeAutor });
-          
-          if (!autor) {
-            autor = await autorModel.create({
-              nome: nomeAutor,
-              livros: [], // Inicializa array vazio
-            });
+          let autorDoc = await autorModel.findOne({ nome: nomeAutor });
+          if (!autorDoc) {
+            autorDoc = await autorModel.create({ nome: nomeAutor, livros: [] });
             console.log(`   👤 Autor criado: ${nomeAutor}`);
           }
-          
-          autoresIds.push(autor._id);
+          autoresIds.push(autorDoc._id);
         }
       }
 
-      // Impede salvar livro sem capa
       if (!volumeInfo.imageLinks?.thumbnail) {
         console.log("   ❌ Livro ignorado porque não possui capa.\n");
         continue;
       }
 
+      const baseSlug = slugify(volumeInfo.title);
+      const slugUnico = await generateUniqueSlug(livroModel, baseSlug);
+
       const novoLivro = await livroModel.create({
         titulo: volumeInfo.title,
-        isbn: isbn,
+        isbn,
         autores: autoresIds,
         editora: volumeInfo.publisher,
-        ano_publicacao: volumeInfo.publishedDate
-          ? parseInt(volumeInfo.publishedDate.split('-')[0])
-          : undefined,
+        ano_publicacao: volumeInfo.publishedDate?.split('-')[0],
         sinopse: volumeInfo.description,
-        numero_paginas: volumeInfo.pageCount || undefined,  // nunca salva null
+        numero_paginas: volumeInfo.pageCount,
         generos: volumeInfo.categories || [],
         capa_url: volumeInfo.imageLinks.thumbnail.replace('http://', 'https://'),
+        slug: slugUnico,
       });
 
-      // Atualizar autores com referência ao livro (relacionamento bidirecional)
       for (const autorId of autoresIds) {
-        await autorModel.findByIdAndUpdate(
-          autorId,
-          { $addToSet: { livros: novoLivro._id } }, // $addToSet evita duplicatas
-        );
+        await autorModel.findByIdAndUpdate(autorId, {
+          $addToSet: { livros: novoLivro._id }
+        });
       }
 
       console.log(`   ✅ Livro criado: ${novoLivro.titulo}`);
       console.log(`   📚 ISBN: ${isbn}`);
+      console.log(`   🔗 Slug: ${slugUnico}`);
       console.log(`   📄 Páginas: ${volumeInfo.pageCount || 'N/A'}\n`);
+
       sucessos++;
 
-      // Delay para não sobrecarregar a API
       await new Promise(resolve => setTimeout(resolve, 500));
 
     } catch (error) {
@@ -339,7 +385,7 @@ async function seedLivros() {
   process.exit(0);
 }
 
-seedLivros().catch(error => {
-  console.error('❌ Erro fatal no seed:', error);
+seedLivros().catch(err => {
+  console.error('❌ Erro fatal no seed:', err);
   process.exit(1);
 });
