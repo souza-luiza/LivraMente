@@ -22,7 +22,7 @@ export default function SearchBar({ className, defaultValue, ...props }: InputHT
 
   return (
     <div 
-      className="sticky top-0 z-40 w-full bg-[#FFFFFF] py-2"
+      className="sticky top-0 z-40 w-full py-2"
       style={{ borderBottomWidth: '1px', borderBottomColor: '#E0E0E0' }}
     >
       <search className="relative h-fit w-[min(90%,600px)] mx-auto block" role="search">

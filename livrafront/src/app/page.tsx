@@ -18,6 +18,7 @@ import { UserProfile } from '@/types/users';
 import Sidebar from '@/components/sidebar';
 import SearchBar from '@/components/searchbar';
 import Link from 'next/dist/client/link';
+import ImageSlider from '@/components/ImageSlider';
 
 export default function HomePage() {
 
@@ -39,6 +40,27 @@ export default function HomePage() {
     ]
 
     const GAP = 16;
+
+    const sliderItems = [
+        {
+            imageUrl: '/images/banner-comunidades.jpg',
+            title: 'Comunidades',
+            description: 'Conecte-se com outros leitores',
+            path: '/comunidades',
+        },
+        {
+            imageUrl: '/images/banner-historias.jpg',
+            title: 'Crie suas Histórias',
+            description: 'Expanda sua criatividade e compartilhe',
+            path: '/criar-historia',
+        },
+        {
+            imageUrl: '/images/banner-leitura.jpg',
+            title: 'Acompanhe sua Leitura',
+            description: 'Registre seu progresso e ganhe XP',
+            path: '/leitura',
+        },
+    ]
 
     useEffect(() => {
         if (!itemRef.current) return
@@ -213,7 +235,15 @@ export default function HomePage() {
                     <nav className=''>
                         <SearchBar/>
                     </nav>
-                    <main className="flex-1 flex items-center justify-center">
+                    <main className="flex-1 flex flex-col items-center">
+                        <div className="flex w-full p-4">
+                            <ImageSlider 
+                                items={sliderItems} 
+                                autoPlay={true} 
+                                autoPlayInterval={5000}
+                                height="400px"
+                            />
+                        </div>
                         <div className="relative flex items-center justify-center">
                             <div className='flex flex-col gap-4 align-middle items-center'>
                                 <Button icon={<CommunityIcon />} colorScheme="dark-green" size="large" path="/comunidades" text="Comunidades" />
