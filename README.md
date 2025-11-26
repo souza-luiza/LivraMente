@@ -63,6 +63,8 @@ es-unifesp-2025-2-grupo-alpha/
 - **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
+
+## System Design
 <img width="1172" height="945" alt="image" src="https://github.com/user-attachments/assets/cd6431d2-7710-4f87-a9b1-3dfbbf1a3ad9" />
 
 
