@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { ConflictException, NotFoundException, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ComunidadesController } from './comunidades.controller';
 import { ComunidadesService } from './comunidades.service';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
@@ -21,6 +21,9 @@ describe('ComunidadesController', () => {
     verifyMemberOrMod: jest.fn(),
     addMembro: jest.fn(),
     removeMembro: jest.fn(),
+    removerMembroComoModerador: jest.fn(),
+    tornarMembroModerador: jest.fn(),
+    deleteCommunity: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -307,7 +310,7 @@ describe('ComunidadesController', () => {
       const mockUser: CurrentUserDto = { userId: '123', email: 'membro@email.com' };
       const mockResponse = { 
         isMember: true, 
-        isModerador: false 
+        isModerator: false 
       };
 
       mockComunidadesService.verifyMemberOrMod.mockResolvedValue(mockResponse);
@@ -317,14 +320,14 @@ describe('ComunidadesController', () => {
       expect(service.verifyMemberOrMod).toHaveBeenCalledWith('123', 'fantasia');
       expect(result).toEqual(mockResponse);
       expect(result.isMember).toBe(true);
-      expect(result.isModerador).toBe(false);
+      expect(result.isModerator).toBe(false);
     });
 
     it('deve verificar que usuário é moderador', async () => {
       const mockUser: CurrentUserDto = { userId: '123', email: 'moderador@email.com' };
       const mockResponse = { 
         isMember: true, 
-        isModerador: true 
+        isModerator: true 
       };
 
       mockComunidadesService.verifyMemberOrMod.mockResolvedValue(mockResponse);
@@ -334,14 +337,14 @@ describe('ComunidadesController', () => {
       expect(service.verifyMemberOrMod).toHaveBeenCalledWith('123', 'fantasia');
       expect(result).toEqual(mockResponse);
       expect(result.isMember).toBe(true);
-      expect(result.isModerador).toBe(true);
+      expect(result.isModerator).toBe(true);
     });
 
     it('deve verificar que usuário não é membro nem moderador', async () => {
       const mockUser: CurrentUserDto = { userId: '123', email: 'nao-membro@email.com' };
       const mockResponse = { 
         isMember: false, 
-        isModerador: false 
+        isModerator: false 
       };
 
       mockComunidadesService.verifyMemberOrMod.mockResolvedValue(mockResponse);
@@ -351,7 +354,7 @@ describe('ComunidadesController', () => {
       expect(service.verifyMemberOrMod).toHaveBeenCalledWith('123', 'fantasia');
       expect(result).toEqual(mockResponse);
       expect(result.isMember).toBe(false);
-      expect(result.isModerador).toBe(false);
+      expect(result.isModerator).toBe(false);
     });
 
     it('deve lançar erro quando comunidade não for encontrada', async () => {
@@ -369,6 +372,173 @@ describe('ComunidadesController', () => {
       mockComunidadesService.verifyMemberOrMod.mockRejectedValue(new UnauthorizedException('Usuário não autenticado'));
 
       await expect(controller.verificarMembro('fantasia', mockUser)).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('removerMembroComoModerador', () => {
+    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const comunidadeNome = 'fantasia';
+    const targetUserId = 'userToRemove';
+
+    it('deve remover membro como moderador com sucesso', async () => {
+      const mockResponse = { message: 'Membro removido da comunidade com sucesso' };
+      
+      mockComunidadesService.removerMembroComoModerador = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.removerMembroComoModerador(mockUser, comunidadeNome, targetUserId);
+
+      expect(service.removerMembroComoModerador).toHaveBeenCalledWith('moderator1', 'fantasia', 'userToRemove');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar NotFoundException quando comunidade não existir', async () => {
+      mockComunidadesService.removerMembroComoModerador = jest.fn().mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
+
+      await expect(
+        controller.removerMembroComoModerador(mockUser, 'inexistente', targetUserId)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
+      mockComunidadesService.removerMembroComoModerador = jest.fn().mockRejectedValue(new ForbiddenException('Apenas moderadores podem remover membros'));
+
+      await expect(
+        controller.removerMembroComoModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('deve propagar BadRequestException quando usuário alvo não for membro', async () => {
+      mockComunidadesService.removerMembroComoModerador = jest.fn().mockRejectedValue(new BadRequestException('Usuário alvo não é membro'));
+
+      await expect(
+        controller.removerMembroComoModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve propagar ForbiddenException quando tentar remover outro moderador', async () => {
+      mockComunidadesService.removerMembroComoModerador = jest.fn().mockRejectedValue(new ForbiddenException('Não pode remover moderadores'));
+
+      await expect(
+        controller.removerMembroComoModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('tornarMembroModerador', () => {
+    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const comunidadeNome = 'fantasia';
+    const targetUserId = 'userToPromote';
+
+    it('deve promover membro a moderador com sucesso', async () => {
+      const mockResponse = { message: 'Membro promovido a moderador com sucesso' };
+      
+      mockComunidadesService.tornarMembroModerador = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.tornarMembroModerador(mockUser, comunidadeNome, targetUserId);
+
+      expect(service.tornarMembroModerador).toHaveBeenCalledWith('moderator1', 'fantasia', 'userToPromote');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar NotFoundException quando comunidade não existir', async () => {
+      mockComunidadesService.tornarMembroModerador = jest.fn().mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
+
+      await expect(
+        controller.tornarMembroModerador(mockUser, 'inexistente', targetUserId)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
+      mockComunidadesService.tornarMembroModerador = jest.fn().mockRejectedValue(new ForbiddenException('Apenas moderadores podem promover'));
+
+      await expect(
+        controller.tornarMembroModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('deve propagar BadRequestException quando usuário alvo não for membro', async () => {
+      mockComunidadesService.tornarMembroModerador = jest.fn().mockRejectedValue(new BadRequestException('Usuário alvo não é membro'));
+
+      await expect(
+        controller.tornarMembroModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('deve propagar ConflictException quando usuário já for moderador', async () => {
+      mockComunidadesService.tornarMembroModerador = jest.fn().mockRejectedValue(new ConflictException('Usuário já é moderador'));
+
+      await expect(
+        controller.tornarMembroModerador(mockUser, comunidadeNome, targetUserId)
+      ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('delete', () => {
+    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const comunidadeNome = 'fantasia';
+
+    it('deve deletar comunidade com sucesso', async () => {
+      const mockResponse = { message: 'Comunidade apagada com sucesso' };
+      
+      mockComunidadesService.deleteCommunity = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await controller.delete(mockUser, comunidadeNome);
+
+      expect(service.deleteCommunity).toHaveBeenCalledWith('moderator1', 'fantasia');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar NotFoundException quando comunidade não existir', async () => {
+      mockComunidadesService.deleteCommunity = jest.fn().mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
+
+      await expect(
+        controller.delete(mockUser, 'inexistente')
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
+      mockComunidadesService.deleteCommunity = jest.fn().mockRejectedValue(new ForbiddenException('Apenas moderadores podem apagar'));
+
+      await expect(
+        controller.delete(mockUser, comunidadeNome)
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('Edge cases and error propagation', () => {
+    const mockUser: CurrentUserDto = { userId: '123', email: 'user@email.com' };
+
+    describe('Service method not mocked errors', () => {
+      it('deve lidar com métodos de serviço não implementados no mock', async () => {
+        expect(() => service.removerMembroComoModerador).toBeDefined();
+        expect(() => service.tornarMembroModerador).toBeDefined();
+        expect(() => service.deleteCommunity).toBeDefined();
+      });
+    });
+
+    describe('Parameter validation', () => {
+      it('deve lidar com parâmetros vazios ou inválidos', async () => {
+        await expect(controller.findOne('')).rejects.toThrow();
+        await expect(controller.findAllPosts('')).rejects.toThrow();
+      });
+    });
+
+    describe('CurrentUser edge cases', () => {
+      it('deve lidar com CurrentUser sem userId', async () => {
+        const invalidUser: CurrentUserDto = { userId: '', email: 'test@email.com' };
+        
+        mockComunidadesService.verifyMemberOrMod.mockRejectedValue(new UnauthorizedException());
+        
+        await expect(controller.verificarMembro('fantasia', invalidUser))
+          .rejects.toThrow(UnauthorizedException);
+      });
+
+      it('deve lidar com CurrentUser undefined', async () => {
+        const undefinedUser = undefined as unknown as CurrentUserDto;
+        
+        await expect(controller.create(undefinedUser, { nome: 'test' }))
+          .rejects.toThrow();
+      });
     });
   });
 });

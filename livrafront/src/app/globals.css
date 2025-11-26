@@ -138,7 +138,8 @@
 }
 
 html {
-  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: currentColor transparent;
 }
 
 /* Temas Padrão */

@@ -56,7 +56,7 @@ const user2Readlists = [
 // (Remove top-level beforeEach)
 describe('useReadlistsList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: jest.fn((key: string) => {
@@ -103,7 +103,7 @@ describe('useReadlistsList', () => {
       json: async () => ({ foo: 'bar' }),
     });
     const { result } = renderHook(() => useReadlistsList('1'));
-    await waitFor(() => result.current.loading === false);
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.readlists).toEqual([]);
     expect(result.current.error).toBeNull();
   });
@@ -114,7 +114,7 @@ describe('useReadlistsList', () => {
       json: async () => null,
     });
     const { result } = renderHook(() => useReadlistsList('1'));
-    await waitFor(() => result.current.loading === false);
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.readlists).toEqual([]);
     expect(result.current.error).toBeNull();
   });
@@ -125,7 +125,7 @@ describe('useReadlistsList', () => {
       json: async () => undefined,
     });
     const { result } = renderHook(() => useReadlistsList('1'));
-    await waitFor(() => result.current.loading === false);
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.readlists).toEqual([]);
     expect(result.current.error).toBeNull();
   });
@@ -145,7 +145,7 @@ describe('useReadlistsList', () => {
 // Isolated error test
 describe('useReadlistsList erro ao buscar readlists', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: jest.fn((key: string) => {

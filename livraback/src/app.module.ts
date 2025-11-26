@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 // Importar todos os schemas
 import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
+import { CommentsModule } from './comments/comments.module';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
 import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
 import { ReadlistsModule } from './readlists/readlists.module';
@@ -39,6 +40,7 @@ import { LivrosModule } from './livros/livros.module';
     ReadlistsModule,
     PostsModule,
     ComunidadesModule,
+    CommentsModule,
     LlmModule,
     SearchModule,
     LivrosModule,

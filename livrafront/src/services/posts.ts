@@ -1,165 +1,95 @@
-import { CreatePostData, Post, LikeResponse } from '@/types/post';
+import { Comentario } from '@/types/comentario';
+import { CreatePostData, Post, LikeResponse, PostCategoria, ModeratePostResponse } from '@/types/post';
 
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  const data = await response.json();
-
-  if (!response.ok) {
-    const errorMessage = data.message || data.error || 'Erro ao processar requisição';
-    throw new Error(errorMessage);
-  }
-
-  return data;
-}
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 export const postsService = {
 
-  async createPost(data: CreatePostData, token: string): Promise<Post> {
-    const response = await fetch(`${API_URL}/posts`, {
-      method: 'POST',                                 
+  // Criar novo post
+  async createPost(data: CreatePostData): Promise<Post> {
+    const response = await fetch(`${API_BASE_URL}/posts`, {
+      method: 'POST',
+      credentials: "include",                            
       headers: {
-        'Authorization': `Bearer ${token}`,            
         'Content-Type': 'application/json',            
       },
       body: JSON.stringify(data),                      
     });
 
-    return handleResponse<Post>(response);
+    if (!response.ok) throw new Error(`Erro ao criar post`);
+    return response.json();
   },
 
-
-  async getPostsByComunidade(comunidadeId: string, token: string): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    return handleResponse<Post[]>(response);
-  },
-
-  async getPostsByCategoria(
-    comunidadeId: string,
-    categoria: 'geral' | 'fanart' | 'fanfic',
-    token: string
-  ): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}/categoria/${categoria}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    return handleResponse<Post[]>(response);
-  },
-
-
-  async getPendentes(comunidadeId: string, token: string): Promise<Post[]> {
-    const url = `${API_URL}/posts/comunidade/${comunidadeId}/pendentes`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    return handleResponse<Post[]>(response);
-  },
-
-
-  async getPost(postId: string, token: string): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    return handleResponse<Post>(response);
-  },
-
-
-  async updatePost(
-    postId: string,
-    data: Partial<CreatePostData>,
-    token: string
-  ): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}`;
-
-    const response = await fetch(url, {
-      method: 'PATCH',                                
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),                     
-    });
-
-    return handleResponse<Post>(response);
-  },
-
-
-  async deletePost(postId: string, token: string): Promise<{ message: string }> {
-    const url = `${API_URL}/posts/${postId}`;
-
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    return handleResponse<{ message: string }>(response);
-  },
-
-
-  async curtirPost(postId: string, token: string): Promise<LikeResponse> {
-    const url = `${API_URL}/posts/${postId}/curtir`;
-
-    const response = await fetch(url, {
+  // Curtir post
+  async likePost(postId: string): Promise<LikeResponse> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/curtir`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),                       
+      credentials: "include",
     });
 
-    return handleResponse<LikeResponse>(response);
+    if (!response.ok) throw new Error(`Erro ao curtir/descurtir post`);
+    return response.json();
   },
 
+  // Excluir post
+  async removePost(postId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/excluir`, {
+      method: 'DELETE',
+      credentials: "include",
+    });
 
-  async moderarPost(
-    postId: string,
-    aprovar: boolean,
-    categoria: 'geral' | 'fanart' | 'fanfic',
-    token: string
-  ): Promise<Post> {
-    const url = `${API_URL}/posts/${postId}/moderar`;
+    if (!response.ok) throw new Error(`Erro ao excluir post`);
+    return response.json();
+  },
 
-    const response = await fetch(url, {
+  // Editar post
+  async updatePost(postId: string, data: Partial<CreatePostData>): Promise<Post> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/editar`, {
       method: 'PATCH',
+      credentials: "include",
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        aprovar,                                       
-        categoria,                                     
-      }),
+      body: JSON.stringify(data),
     });
 
-    return handleResponse<Post>(response);
+    if (!response.ok) throw new Error(`Erro ao editar post`);
+    return response.json();
   },
+
+  // Moderar post
+  async moderatePost(postId: string, aprovar: boolean, categoria: PostCategoria): Promise<ModeratePostResponse> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/moderar`, {
+      method: 'PATCH',
+      credentials: "include",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ aprovar, categoria }),
+    });
+
+    if (!response.ok) throw new Error(`Erro ao moderar post`);
+    return response.json();
+  },
+
+  async getPostById(postId: string, communityName: string): Promise<Post> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comunidade/${encodeURIComponent(communityName)}`, {
+      credentials: "include",
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) throw new Error('Erro ao encontrar post');
+    return response.json();
+  },
+
+  async getComments(postId: string): Promise<Comentario[]> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error('Erro ao encontrar comentários');
+    return response.json();
+  }
 };

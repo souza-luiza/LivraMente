@@ -54,7 +54,7 @@ export class AuthController {
     @Get('session-info')
     @ApiOperation({
         summary: 'Retorna informações acerca da sessão do usuário',
-        description: 'Retorna username, email, id e avatarUrl do usuário autenticado'
+        description: 'Retorna id, username, email, avatarUrl e pronomes do usuário autenticado'
     })
     @ApiResponse({
         status: 200,

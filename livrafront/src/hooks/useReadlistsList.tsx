@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Readlist } from '../types/readlist';
+import { FavoriteReadlist, Readlist } from '../types/readlist';
 import {
   getPublicReadlists,
   getOwnReadlists,
@@ -10,7 +10,7 @@ export function useReadlistsList(
   target: string,
   type: 'criadas' | 'favoritadas' = 'criadas'
 ) {
-  const [readlists, setReadlists] = useState<Readlist[]>([]);
+  const [readlists, setReadlists] = useState<Readlist[] | FavoriteReadlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +25,7 @@ export function useReadlistsList(
     setError(null);
 
     try {
-      let data: Readlist[] = [];
+      let data: Readlist[] | FavoriteReadlist[] = [];
       const loggedUserId =
         typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 

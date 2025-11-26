@@ -640,7 +640,7 @@ describe('UsersService', () => {
       });
 
       await expect(service.updateAvatar('user-id', file, mockSession as any)).rejects.toThrow(NotFoundException);
-    })
+    });
 
     it('deve lançar erro se o arquivo for inválido', async () => {
       mockUserModel.findById.mockReturnValue({
@@ -650,7 +650,7 @@ describe('UsersService', () => {
       });
 
       await expect(service.updateAvatar('1', {} as any, mockSession as any)).rejects.toThrow(BadRequestException);
-    })
+    });
 
     it('deve fazer upload e atualizar avatar corretamente', async () => {
       const mockUser = {
@@ -675,5 +675,5 @@ describe('UsersService', () => {
       expect(mockUser.save).toHaveBeenCalled();
       expect(result).toEqual({ username: 'john' });
     });
-  })
+  });
 });

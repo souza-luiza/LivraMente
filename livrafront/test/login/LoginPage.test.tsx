@@ -37,7 +37,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     const mockResponse = { _id: '1', username: 'teste', email: 'teste@exemplo.com' };
     
-    mockLoginUser.mockResolvedValueOnce(mockResponse);
+    mockLoginUser.mockResolvedValueOnce(mockResponse as any);
     render(<LoginPage />);
     
     await user.type(screen.getByLabelText('E-mail'), 'teste@exemplo.com');
