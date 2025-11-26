@@ -47,7 +47,6 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        domain: process.env.NODE_ENV === 'development' ? '.localhost' : 'livramente.vercel.app',
         secure: process.env.NODE_ENV === 'development' ? false : true,
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
         maxAge: 1000 * 60 * 60 * 24, // 1 dia
