@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SearchService } from './search.service';
+import { SearchDto } from './dto/search.dto';
 
 @Controller('search')
 export class SearchController {
@@ -15,7 +16,8 @@ export class SearchController {
         status: 200,
         description: 'Melhor resultado e lista de usuários, comunidades, readlists e livros relacionados retornados com sucesso'
     })
-    async search(@Query('q') q: string) {
+    async search(@Query() query: SearchDto) {
+        const { q } = query;
         return this.searchService.search(q);
     }
 }
