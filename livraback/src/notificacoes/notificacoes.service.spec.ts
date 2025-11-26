@@ -33,9 +33,9 @@ describe('NotificacoesService', () => {
     const mockModel = {
       create: jest.fn(),
       find: jest.fn(),
-      updateOne: jest.fn(),
+      updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 }),
       updateMany: jest.fn(),
-      deleteOne: jest.fn(),
+      deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
     };
 
     const module: TestingModule = await Test.createTestingModule({

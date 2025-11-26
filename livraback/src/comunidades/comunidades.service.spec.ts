@@ -4,6 +4,11 @@ import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Comunidade } from './entities/comunidade.entity';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { QueueProducerService } from '../queue/queue.producer.service';
+
+const ROUTING_KEYS = {
+  NOTIFICAR_MEMBRO_ENTROU: 'notificar.membro.entrou',
+};
 
 describe('ComunidadesService', () => {
   let service: ComunidadesService;
@@ -33,7 +38,8 @@ describe('ComunidadesService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
+      providers:
+      [
         ComunidadesService,
         {
           provide: getModelToken(Comunidade.name),
