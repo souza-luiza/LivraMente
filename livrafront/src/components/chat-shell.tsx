@@ -19,12 +19,18 @@ export function ChatShell({ children }: ChatShellProps) {
     pathname === '/livratime' ||
     pathname === '/configuracoes' ||
     pathname === '/carregando';
+  // detecta rotas onde um widget embutido é renderizado na página
+  const hasEmbeddedWidget =
+    typeof pathname === 'string' &&
+    pathname.includes('/comunidade/') &&
+    pathname.includes('/postagem/');
 
-// só mostra o widget se NÃO for página de login ou registro
+  // só mostra o widget flutuante se NÃO for página de login/registro E
+  // não for uma rota que já renderiza o widget embutido (para evitar duplicidade)
   return (
     <ChatProvider>
       {children}
-      {!isAuthPage && <WidgetChat />}
+      {!isAuthPage && !hasEmbeddedWidget && <WidgetChat />}
     </ChatProvider>
   );
 }
