@@ -11,7 +11,7 @@ export type TipoResultado = 'user' | 'comunidade' | 'readlist' | 'livro';
 
 export interface CandidatoResultado {
     tipo: TipoResultado;
-    item: User | Readlist | Comunidade | Livro;
+    item: UserDocument | ReadlistDocument | ComunidadeDocument | LivroDocument;
     score: number;
 };
 
@@ -31,32 +31,32 @@ export class SearchService {
         const regexInsensitive = RegExp(query, 'i'); // ignora maisculas e minusculas
 
         let [users, comunidades, readlists, livros] = await Promise.all([
-            this.userModel.find({ username: regexInsensitive }).select('username avatarUrl readlists -_id').limit(5), // 5 eh o numero maximo de resultados para retornar
-            this.comunidadeModel.find({ nome: regexInsensitive }).select('nome imagem_url -_id').limit(5),
-            this.readlistModel.find({ nome: regexInsensitive, publica: true }).select('nome capa_url slug -_id criador').populate('criador', 'username -_id').limit(5),
-            this.livroModel.find({ titulo: regexInsensitive }).select('titulo autores capa_url -_id').populate('autores', 'nome -_id').limit(5),
+            this.userModel.find({ username: regexInsensitive }).select('username avatarUrl readlists').limit(5), // 5 eh o numero maximo de resultados para retornar
+            this.comunidadeModel.find({ nome: regexInsensitive }).select('nome imagem_url').limit(5),
+            this.readlistModel.find({ nome: regexInsensitive, publica: true }).select('nome capa_url slug criador').populate('criador', 'username -_id').limit(5),
+            this.livroModel.find({ titulo: regexInsensitive }).select('titulo autores capa_url').populate('autores', 'nome -_id').limit(5),
         ]);
 
         // Adicionando readlists que pertençam aos users encontrados
         const idsReadlistsDosUsers = users.flatMap(u => u.readlists || []);
-        const readlistsDosUsers = await this.readlistModel.find({ _id: { $in: idsReadlistsDosUsers }, publica: true }).select('nome capa_url slug -_id criador').populate('criador', 'username -_id').limit(5);
+        const readlistsDosUsers = await this.readlistModel.find({ _id: { $in: idsReadlistsDosUsers }, publica: true }).select('nome capa_url slug criador').populate('criador', 'username -_id').limit(5);
         readlists = readlists.concat(readlistsDosUsers);
 
         // Buscar livros por autor
         const autores = await this.autorModel.find({ nome: regexInsensitive }).select('_id').limit(5);
         if(autores.length > 0) {
             const autoresIds = autores.map(a => a._id);
-            const livrosDoAutor = await this.livroModel.find({ autores: { $in: autoresIds } }).select('titulo autores capa_url -_id').limit(5);
+            const livrosDoAutor = await this.livroModel.find({ autores: { $in: autoresIds } }).select('titulo autores capa_url').limit(5);
             livros = livros.concat(livrosDoAutor);
         }
 
         const melhorResultado = this.getMelhorResultado(query, { users, comunidades, readlists, livros });
 
         if(melhorResultado) { // para melhorResultado nao aparecer duplicado
-            if(melhorResultado.tipo === 'user') users = users.filter(u => u.username !== (melhorResultado.item as User).username);
-            if(melhorResultado.tipo === 'comunidade') comunidades = comunidades.filter(c => c.nome !== (melhorResultado.item as Comunidade).nome);
-            if(melhorResultado.tipo === 'readlist') readlists = readlists.filter(r => r.nome !== (melhorResultado.item as Readlist).nome);
-            if(melhorResultado.tipo === 'livro') livros = livros.filter(l => l.titulo !== (melhorResultado.item as Livro).titulo);
+            if(melhorResultado.tipo === 'user') users = users.filter(u => !u._id.equals((melhorResultado.item as UserDocument)._id));
+            if(melhorResultado.tipo === 'comunidade') comunidades = comunidades.filter(c => !c._id.equals((melhorResultado.item as ComunidadeDocument)._id));
+            if(melhorResultado.tipo === 'readlist') readlists = readlists.filter(r => !r._id.equals((melhorResultado.item as ReadlistDocument)._id));
+            if(melhorResultado.tipo === 'livro') livros = livros.filter(l => !l._id.equals((melhorResultado.item as LivroDocument)._id));
         }
 
         return {
@@ -68,7 +68,7 @@ export class SearchService {
         };
     }
 
-    getMelhorResultado(query: string, data: { users: User[], comunidades: Comunidade[], readlists: Readlist[], livros: Livro[] }): CandidatoResultado | null {
+    getMelhorResultado(query: string, data: { users: UserDocument[], comunidades: ComunidadeDocument[], readlists: ReadlistDocument[], livros: LivroDocument[] }): CandidatoResultado | null {
         const score = (text: string) => {
             if(!text) return 0;
             const lower = text.toLowerCase();

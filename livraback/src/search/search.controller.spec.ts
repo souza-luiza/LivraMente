@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
+import { SearchDto } from './dto/search.dto';
 
 describe('SearchController', () => {
   let controller: SearchController;
@@ -30,18 +31,19 @@ describe('SearchController', () => {
   });
 
   it('should call SearchService.search with correct query', async () => {
-    const query = 'test';
+    const dto: SearchDto = { q: 'test' };
     service.search = jest.fn().mockResolvedValue('mock-result');
 
-    await controller.search(query);
+    await controller.search(dto);
 
-    expect(service.search).toHaveBeenCalledWith(query);
+    expect(service.search).toHaveBeenCalledWith('test');
   });
 
   it('should return the value from SearchService.search', async () => {
+    const dto: SearchDto = { q: 'term' };
     service.search = jest.fn().mockResolvedValue(['result1', 'result2']);
 
-    const res = await controller.search('term');
+    const res = await controller.search(dto);
 
     expect(res).toEqual(['result1', 'result2']);
   });

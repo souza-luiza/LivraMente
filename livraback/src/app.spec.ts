@@ -3,13 +3,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getModelToken } from '@nestjs/mongoose';
-
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ReadlistsModule } from './readlists/readlists.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
+import { PostsModule } from './posts/posts.module';
+import { CommentsModule } from './comments/comments.module';
+import { LlmModule } from './llm/llm.module';
+import { SearchModule } from './search/search.module';
+import { LivrosModule } from './livros/livros.module';
+import { LlmApiService } from './llm/llm.api.service';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
@@ -68,19 +73,102 @@ describe('App Integration with Mocks', () => {
       exec: jest.fn().mockResolvedValue(null),
     }),
     findOneAndUpdate: jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: 'mockReadlistId', nome: 'Atualizado' }),
+      exec: jest.fn().mockResolvedValue({ _id: 'mockComunidadeId', nome: 'Atualizado' }),
     }),
+  };
+
+  // Mock do model Post
+  const mockPostModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockPostId', nome: 'Atualizado' }),
+    }),
+  };
+
+  // Mock do model Comment
+  const mockCommentModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockCommentId', nome: 'Atualizado' }),
+    }),
+  };
+
+  // Mock do model Story
+  const mockStoryModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockStoryId', nome: 'Atualizado' }),
+    }),
+  };
+
+  const mockLivroModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockStoryId', nome: 'Atualizado' }),
+    }),
+  };
+
+  const mockAutorModel = {
+    findOne: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    }),
+    findOneAndUpdate: jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: 'mockStoryId', nome: 'Atualizado' }),
+    }),
+  };
+
+  const mockLlmApiService = {
+    onModuleInit: jest.fn(),
+    generate: jest.fn().mockResolvedValue('mocked response'),
   };
 
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        UsersModule,
+        AuthModule,
+        ReadlistsModule,
+        PostsModule,
+        ComunidadesModule,
+        CommentsModule,
+        LlmModule,
+        SearchModule,
+        LivrosModule,
+      ],
       controllers: [AppController],
       providers: [AppService],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)
+      .overrideProvider(getModelToken('User'))
+      .useValue(mockUserModel)
+      .overrideProvider(getModelToken('Readlist'))
+      .useValue(mockReadlistModel)
+      .overrideProvider(getModelToken('Comunidade'))
+      .useValue(mockComunidadeModel)
+      .overrideProvider(getModelToken('Post'))
+      .useValue(mockPostModel)
+      .overrideProvider(getModelToken('Comentario'))
+      .useValue(mockCommentModel)
+      .overrideProvider(getModelToken('Story'))
+      .useValue(mockStoryModel)
+      .overrideProvider(getModelToken('Livro'))
+      .useValue(mockLivroModel)
+      .overrideProvider(getModelToken('Autor'))
+      .useValue(mockAutorModel)
+      .overrideProvider(LlmApiService)
+      .useValue(mockLlmApiService)
       .compile();
 
     app = moduleFixture.createNestApplication();

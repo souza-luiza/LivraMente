@@ -8,6 +8,9 @@ export class Livro {
   @Prop({ required: true })
   titulo: string;
 
+  @Prop({ required: false })
+  slug: string;
+
   @Prop({ required: true })
   isbn: string;
 
@@ -35,9 +38,21 @@ export class Livro {
   @Prop()
   capa_url?: string;
 
-  // Referência à saga, se tiver
-  @Prop({ type: Types.ObjectId, ref: 'Saga' })
-  saga?: Types.ObjectId;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Readlist' }], default: [] })
+  readlists?: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Comunidade' }], default: [] })
+  comunidades?: Types.ObjectId[];
+
+  // Resenhas do livro
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Resenha' }], default: [] })
+  resenhas?: Types.ObjectId[];
+
+  @Prop({ default: 0 })
+  avaliacoes_count: number;  // Quantas pessoas avaliaram
+
+  @Prop({ default: 0 })
+  avaliacoes_media: number;  // Média das estrelas (float de 1-5)
 }
 
 export const LivroSchema = SchemaFactory.createForClass(Livro);
