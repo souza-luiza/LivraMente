@@ -10,7 +10,7 @@ export class LivrosService {
     ) {}
 
     async findAll() {
-        return await this.livroModel.find().select('titulo isbn slug ano_publicacao numero_paginas -_id').exec();
+        return await this.livroModel.find().select('titulo isbn slug ano_publicacao numero_paginas').exec();
     }
 
     async findOne(slug: string) {
