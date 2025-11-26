@@ -5,12 +5,14 @@ import { Post } from '../schemas/post.schema';
 import { Model } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ComunidadesService {
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
-        @InjectModel(Post.name) private postModel: Model<Post>
+        @InjectModel(Post.name) private postModel: Model<Post>,
+        private readonly cloudinary: CloudinaryService,
 ) {}
 
     async findAll() {
@@ -224,10 +226,93 @@ export class ComunidadesService {
         const isModerator = comunidade.moderadores.some((m) => m.toString() === userId);
         if (!isModerator) throw new ForbiddenException('Apenas moderadores podem apagar a comunidade');
 
+        // Apaga capa e banner da comunidade no Cloudinary, se existirem
+        if (comunidade.capaPublicId) {
+            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+        }
+        if (comunidade.bannerPublicId) {
+            await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+        }
+
+        // APAGAR COMENTÁRIOS!!!!!
+
+        // Apaga todos os posts da comunidade
         await this.postModel.deleteMany({ comunidade: comunidade._id });
 
+        // Apaga a comunidade
         await comunidade.deleteOne();
         
         return { message: 'Comunidade apagada com sucesso' };
+    }
+
+    async uploadCapa(userId: string, comunidadeNome: string, file?: Express.Multer.File) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
+        if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+        const isModerator = comunidade.moderadores.some((m) => m.toString() === userId);
+        if (!isModerator) throw new ForbiddenException('Apenas moderadores podem alterar a capa da comunidade');
+
+        // Simples remoção da capa (voltando para a capa padrão)
+        if (!file) {
+            if (comunidade.capaPublicId) {
+            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+            }
+
+            comunidade.capaUrl = '/CommunityDefault.png';
+            comunidade.capaPublicId = '';
+            await comunidade.save();
+
+            return { capaUrl: comunidade.capaUrl };
+        }
+
+        // Upload/Atualização de capa existente
+        if (!file.buffer) throw new BadRequestException('Arquivo inválido');
+
+        const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/capas');
+
+        if (comunidade.capaPublicId) {
+            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+        }
+
+        comunidade.capaUrl = uploaded.secure_url;
+        comunidade.capaPublicId = uploaded.public_id;
+        await comunidade.save();
+
+        return { capaUrl: comunidade.capaUrl };
+    }
+
+    async uploadBanner(userId: string, comunidadeNome: string, file: Express.Multer.File) {
+        const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
+        if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
+
+        const isModerator = comunidade.moderadores.some((m) => m.toString() === userId);
+        if (!isModerator) throw new ForbiddenException('Apenas moderadores podem alterar o banner da comunidade');
+
+        // Simples remoção do banner
+        if (!file) {
+            if (comunidade.bannerPublicId) {
+                await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+            }
+
+            comunidade.bannerUrl = '';
+            comunidade.bannerPublicId = '';
+            await comunidade.save();
+
+            return { bannerUrl: comunidade.bannerUrl };
+        }
+
+        // Upload/Atualização de banner existente
+        if (!file.buffer) throw new BadRequestException('Arquivo inválido');
+
+        const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/banners');
+        if (comunidade.bannerPublicId) {
+            await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+        }
+
+        comunidade.bannerUrl = uploaded.secure_url;
+        comunidade.bannerPublicId = uploaded.public_id;
+        await comunidade.save();
+
+        return { bannerUrl: comunidade.bannerUrl};
     }
 }

@@ -1,13 +1,14 @@
 export interface Comunidade {
     _id: string;
     nome: string;
-    slug?: string;
     descricao?: string;
     moderadores: string[];
     membros: string[];
     posts: string[];
-    imagem_url?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
     tags?: string[];
+    slug?: string;
     createdAt: string; 
     updatedAt: string;
 }
@@ -15,7 +16,8 @@ export interface Comunidade {
 export interface CreateCommunityData {
     nome: string;
     descricao?: string;
-    imagem_url?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
     tags?: string[];
     slug?: string;
 }
@@ -23,12 +25,12 @@ export interface CreateCommunityData {
 export type UpdateCommunityData = Partial<CreateCommunityData>;
 
 export const CommunityTags = [
-    'Romance',
-    'Aventura',
-    'Fantasia',
-    'Drama',
-    'Terror',
-    'Suspense',
-    'Comédia',
-    'Distopia',
+    'romance',
+    'aventura',
+    'fantasia',
+    'drama',
+    'terror',
+    'suspense',
+    'comedia',
+    'distopia',
 ]
