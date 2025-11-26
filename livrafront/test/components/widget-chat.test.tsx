@@ -35,7 +35,7 @@ describe('WidgetChat', () => {
     renderWithProvider();
 
     // estado inicial: apenas botão "Abrir chat"
-    const openButton = screen.getByRole('button', { name: /abrir chat/i });
+    const openButton = screen.getByRole('button', { name: /assistente/i });
     expect(openButton).toBeInTheDocument();
 
     // clica para abrir
@@ -43,11 +43,11 @@ describe('WidgetChat', () => {
 
     // header do chat deve aparecer
     expect(
-        screen.getByText(/Assistente LivraMente/i),
+      screen.getByRole('dialog', { name: /Widget de atendimento LivraMente/i }),
     ).toBeInTheDocument();
 
     // botão agora tem aria-label "Fechar chat"
-    const closeButton = screen.getByRole('button', { name: /fechar chat/i });
+    const closeButton = screen.getByRole('button', { name: /fechar/i });
     expect(closeButton).toBeInTheDocument();
 
     // clica para fechar
@@ -69,7 +69,7 @@ describe('WidgetChat', () => {
     renderWithProvider();
 
     // abre o chat
-    fireEvent.click(screen.getByRole('button', { name: /abrir chat/i }));
+    fireEvent.click(screen.getByRole('button', { name: /assistente/i }));
 
     const input = screen.getByPlaceholderText(/escreva aqui/i);
     const sendButton = screen.getByRole('button', { name: /enviar/i });
@@ -108,7 +108,7 @@ describe('WidgetChat', () => {
     renderWithProvider();
 
     // abre o chat
-    fireEvent.click(screen.getByRole('button', { name: /abrir chat/i }));
+    fireEvent.click(screen.getByRole('button', { name: /assistente/i }));
 
     const input = screen.getByPlaceholderText(/escreva aqui/i);
     const sendButton = screen.getByRole('button', { name: /enviar/i });

@@ -3,18 +3,20 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LogoIcon from '@/components/icons/LogoIcon';
+import CommentIcon from '@/components/icons/CommentIcon';
+
 import Button from '@/components/button';
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon';
 import { useChat } from '@/contexts/chat-context';
 
-export default function WidgetChat() {
+export default function WidgetChat({ embedded = false }: { embedded?: boolean }) {
   const { isOpen, toggleOpen, messages, sendMessage, isLoading } = useChat();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [input, setInput] = useState('');
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -31,50 +33,52 @@ export default function WidgetChat() {
 
   return (
     <>
-      {/* Floating button */}
-      <motion.button
-        aria-label={isOpen ? 'Fechar chat' : 'Abrir chat'}
-        onClick={toggleOpen}
-        className="group fixed bottom-4 right-4 z-50 rounded-full shadow-lg px-4 py-3 bg-[var(--primary-300)] text-[#1F2A17] flex items-center gap-3 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-300)]"
-        
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <span className="sr-only">{isOpen ? 'Fechar chat' : 'Abrir chat'}</span>
+      {/* Botão flutuante (não renderiza quando embutido) */}
+      {!embedded && (
+        <motion.button
+          aria-label={isOpen ? 'Fechar' : 'Assistente'}
+          onClick={toggleOpen}
+          className="group fixed bottom-4 right-4 z-50 rounded-full shadow-lg px-4 py-3 bg-[var(--primary-300)] text-[#1F2A17] flex items-center gap-3 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-300)]"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <span className="sr-only">{isOpen ? 'Fechar' : 'Assistente'}</span>
 
-        {/* Icon only on small screens, logo + text on larger */}
-        <LogoIcon size={30} fill="#1F2A17" />
+          <CommentIcon size={30} fill="#e8e8e8" />
+
+          {/* Tooltip */}
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                data-testid="tooltip"
+                className={`absolute z-40 right-full mr-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
+                role="tooltip"
+                initial={{ opacity: 0, x: 0 }}
+                animate={{ opacity: 1, x: -10 }}
+                exit={{ opacity: 0, x: 0 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
+              >
+                {isOpen ? 'Fechar' : 'Assistente'}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      )}
 
 
-        {/* Tooltip (use same visual pattern as `Button`): animated, themed */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              data-testid="tooltip"
-              className={`absolute z-40 right-full mr-2 top-1/2 -translate-y-1/2 px-[10px] py-[5px] dark-brown text-h6 rounded-[8px] whitespace-nowrap pointer-events-none`}
-              role="tooltip"
-              initial={{ opacity: 0, x: 0 }}
-              animate={{ opacity: 1, x: -10 }}
-              exit={{ opacity: 0, x: 0 }}
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
-            >
-              {isOpen ? 'Fechar chat' : 'Abrir chat'}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
-
-
-      {/* Chat window */}
+      {/* Janela do chat */}
       <AnimatePresence>
-        {isOpen && (
+        {(embedded || isOpen) && (
           <motion.aside
             key="widget-chat"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="fixed bottom-20 right-4 z-40 w-80 sm:w-96 h-[28rem] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col"
+            className={embedded
+              ? 'w-full h-full bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col'
+              : 'fixed bottom-20 right-4 z-40 w-80 sm:w-96 h-[28rem] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col'
+            }
             role="dialog"
             aria-label="Widget de atendimento LivraMente"
           >
@@ -86,15 +90,13 @@ export default function WidgetChat() {
               <div className="flex items-center gap-3">
                 <LogoIcon size={28} fill="#1F2A17" />
                 <div className="flex flex-col">
-                  {/* Title uses b1 / bl-semibold as spec */}
-                  <span className="text-b1 bl-semibold text-[#1F2A17]">Assistente LivraMente</span>
+                  <span className="text-b1 bl-semibold text-[#1F2A17]">LivraBot</span>
                 </div>
               </div>
             </div>
 
-            {/* Main content */}
+            {/* Conteúdo principal */}
             <div className="flex-1 p-3 flex flex-col overflow-hidden">
-              {/* Empty state prompt (b2 / b3) */}
               {!messages.some((m) => m.role === 'user') && (
                 <div className="mb-2 text-center">
                   <h2 className="text-b1 body-semibold text-gray-900">Como posso te ajudar?</h2>
@@ -102,7 +104,7 @@ export default function WidgetChat() {
                 </div>
               )}
 
-              {/* Messages area */}
+              {/* Área de mensagens */}
               <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto space-y-3 pr-1 mt-2 pb-2"
@@ -133,7 +135,7 @@ export default function WidgetChat() {
                 )}
               </div>
 
-              {/* Input area (boxed, matching story-creator) */}
+              {/* Área de input */}
               <div className="border-t border-gray-200 bg-white">
                 <div className="max-w-full mx-auto px-2 py-2 flex flex-col">
                   <div className="flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-lg p-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
