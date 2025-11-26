@@ -54,7 +54,7 @@ const mockTools = {
   users_get_my_readlists: { name: 'users_get_my_readlists' },
   users_get_my_profile: { name: 'users_get_my_profile' },
   users_get_my_favorites_readlists: { name: 'users_get_my_favorites_readlists' },
-  
+
   // A única de escrita permitida
   gravar_leitura: { name: 'gravar_leitura' },
 };
@@ -77,7 +77,7 @@ const mockLlmToolsService = {
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
   createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites_readlists),
-  
+
   // Mocks das ferramentas removidas (caso o service ainda tente chamar, retorna undefined)
   createJoinCommunityTool: jest.fn(),
   createLeaveCommunityTool: jest.fn(),
@@ -97,7 +97,7 @@ describe('LlmAgentService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -158,6 +158,27 @@ describe('LlmAgentService', () => {
         '[LlmAgentService] Erro ao executar o Agente:',
         error,
       );
+    });
+
+    it('deve retornar a resposta PADRÃO para perguntas de ajuda (SEM chamar a IA)', async () => {
+      const userPrompt = 'ajuda';
+      const respostaEsperada = 'Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.';
+      const result = await service.runAnalysisAgent(userPrompt, 'user-123');
+
+      expect(result).toBe(respostaEsperada);
+      expect(createAgent).not.toHaveBeenCalled();
+    });
+
+    it('deve chamar o Agente para perguntas normais', async () => {
+      const userPrompt = 'Qual a história mais longa?';
+      mockAgentRunnable.invoke.mockResolvedValue({ output: 'A história X.' });
+      const result = await service.runAnalysisAgent(userPrompt, userId);
+
+      expect(result).toBe('A história X.');
+      expect(createAgent).toHaveBeenCalled();
+      expect(mockAgentRunnable.invoke).toHaveBeenCalledWith({
+        messages: [{ role: 'user', content: userPrompt }]
+      });
     });
   });
 });
