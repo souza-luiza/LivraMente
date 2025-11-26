@@ -2,16 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SearchService } from './search.service';
 import { getModelToken } from '@nestjs/mongoose';
 
+// mock de ObjectId com equals()
+const mockId = (id: string) => ({
+  toString: () => id,
+  equals: (other: any) => other?.toString() === id,
+});
+
+const createQueryMock = (data: any) => ({
+  select: jest.fn().mockReturnThis(),
+  limit: jest.fn().mockReturnValue(data),
+  populate: jest.fn().mockReturnThis(),
+});
+
 describe('SearchService', () => {
   let service: SearchService;
-
-  // mocks dos modelos do mongoose
-  const mockModel = () => ({
-    find: jest.fn(),
-    select: jest.fn(),
-    limit: jest.fn(),
-    populate: jest.fn(),
-  });
 
   let userModel: any;
   let readlistModel: any;
@@ -20,11 +24,11 @@ describe('SearchService', () => {
   let autorModel: any;
 
   beforeEach(async () => {
-    userModel = mockModel();
-    readlistModel = mockModel();
-    comunidadeModel = mockModel();
-    livroModel = mockModel();
-    autorModel = mockModel();
+    userModel = { find: jest.fn() };
+    readlistModel = { find: jest.fn() };
+    comunidadeModel = { find: jest.fn() };
+    livroModel = { find: jest.fn() };
+    autorModel = { find: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -44,6 +48,10 @@ describe('SearchService', () => {
     expect(service).toBeDefined();
   });
 
+  // -------------------------------------------------------------------
+  // getMelhorResultado
+  // -------------------------------------------------------------------
+
   describe('getMelhorResultado', () => {
     it('should return null when no candidates exist', () => {
       const result = service.getMelhorResultado('abc', {
@@ -58,29 +66,33 @@ describe('SearchService', () => {
 
     it('should return the best matching user', () => {
       const result = service.getMelhorResultado('john', {
-        users: [{ username: 'john' }] as any,
+        users: [{ _id: mockId('1'), username: 'john' }] as any,
         comunidades: [],
         readlists: [],
         livros: [],
       });
-    
+
       expect(result?.tipo).toBe('user');
       expect((result?.item as any).username).toBe('john');
-      expect(result?.score).toBe(3); // match exato
+      expect(result?.score).toBe(3);
     });
 
     it('should prioritize exact match over partial match', () => {
       const result = service.getMelhorResultado('har', {
-        users: [{ username: 'harry' }] as any,
-        comunidades: [{ nome: 'har' }] as any,
+        users: [{ _id: mockId('1'), username: 'harry' }] as any,
+        comunidades: [{ _id: mockId('2'), nome: 'har' }] as any,
         readlists: [],
         livros: [],
       });
 
       expect(result?.tipo).toBe('comunidade');
-      expect(result?.score).toBe(3);
+      expect(result?.score).toBe(3); // match exato
     });
   });
+
+  // -------------------------------------------------------------------
+  // search()
+  // -------------------------------------------------------------------
 
   describe('search', () => {
     it('should return null when query is empty', async () => {
@@ -88,68 +100,87 @@ describe('SearchService', () => {
       expect(res).toBeNull();
     });
 
-    it('should call all models with regex', async () => {
-      const regex = /test/i;
+    it('should merge readlists of users', async () => {
+      userModel.find.mockReturnValue(
+        createQueryMock([
+          {
+            _id: mockId('u1'),
+            username: 'john',
+            readlists: [mockId('rl1')],
+          },
+        ]),
+      );
 
-      // mocks retornando arrays
-      userModel.find.mockReturnValue({
-        select: () => ({ limit: () => [] }),
-      });
+      comunidadeModel.find.mockReturnValue(createQueryMock([]));
+      livroModel.find.mockReturnValue(createQueryMock([]));
 
-      comunidadeModel.find.mockReturnValue({
-        select: () => ({ limit: () => [] }),
-      });
+      readlistModel.find.mockReturnValueOnce(
+        createQueryMock([]), // readlists por nome
+      );
 
-      readlistModel.find.mockReturnValue({
-        select: () => ({ populate: () => ({ limit: () => [] }) }),
-      });
+      readlistModel.find.mockReturnValueOnce(
+        createQueryMock([
+          {
+            _id: mockId('rl1'),
+            nome: 'Lista do John',
+          },
+        ]),
+      );
 
-      livroModel.find.mockReturnValue({
-        select: () => ({ populate: () => ({ limit: () => [] }) }),
-      });
+      autorModel.find.mockReturnValue(createQueryMock([]));
 
-      autorModel.find.mockReturnValue({
-        select: () => ({ limit: () => [] }),
-      });
+      const res = await service.search('john');
 
-      const res = await service.search('test');
-
-      expect(res).toHaveProperty('melhorResultado');
-      expect(res).toHaveProperty('users');
-      expect(userModel.find).toHaveBeenCalledTimes(1);
-      expect(comunidadeModel.find).toHaveBeenCalledTimes(1);
-      expect(readlistModel.find).toHaveBeenCalledTimes(2);
-      expect(livroModel.find).toHaveBeenCalledTimes(1);
-      expect(autorModel.find).toHaveBeenCalledTimes(1);
+      expect(res?.readlists.length).toBe(1);
+      expect(res?.readlists[0].nome).toBe('Lista do John');
     });
 
     it('should merge livros encontrados por autor', async () => {
-      userModel.find.mockReturnValue({ select: () => ({ limit: () => [] }) });
-      comunidadeModel.find.mockReturnValue({ select: () => ({ limit: () => [] }) });
-      readlistModel.find.mockReturnValue({ select: () => ({ populate: () => ({ limit: () => [] }) }) });
+      userModel.find.mockReturnValue(createQueryMock([]));
+      comunidadeModel.find.mockReturnValue(createQueryMock([]));
+      readlistModel.find.mockReturnValue(createQueryMock([]));
 
-      livroModel.find.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          populate: jest.fn().mockReturnValue({
-            limit: jest.fn().mockReturnValue([{ titulo: 'Livro 1' }]),
-          }),
-        }),
-      });
+      // livros por título
+      livroModel.find.mockReturnValueOnce(
+        createQueryMock([
+          { _id: mockId('l1'), titulo: 'Livro 1', autores: [] },
+        ]),
+      );
 
-      autorModel.find.mockReturnValue({
-        select: () => ({ limit: () => [{ _id: 'autor123' }] }),
-      });
+      // autores encontrados
+      autorModel.find.mockReturnValue(
+        createQueryMock([{ _id: mockId('a1') }]),
+      );
 
-      livroModel.find.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          limit: jest.fn().mockReturnValue([{ titulo: 'Livro Autor', autores:['autor123'] }]),
-        }),
-      });
+      // livros por autor
+      livroModel.find.mockReturnValueOnce(
+        createQueryMock([
+          { _id: mockId('l2'), titulo: 'Livro do Autor', autores: [mockId('a1')] },
+        ]),
+      );
 
-      const res = await service.search('test');
+      const res = await service.search('harry');
 
       expect(res?.livros.length).toBe(1);
-      expect(res?.livros[0].titulo).toBe('Livro Autor');
+      expect(res?.livros[0].titulo).toBe('Livro do Autor');
+    });
+
+    it('should avoid duplicating melhorResultado', async () => {
+      userModel.find.mockReturnValue(
+        createQueryMock([
+          { _id: mockId('1'), username: 'john', readlists: [] },
+        ]),
+      );
+
+      comunidadeModel.find.mockReturnValue(createQueryMock([]));
+      readlistModel.find.mockReturnValue(createQueryMock([]));
+      livroModel.find.mockReturnValue(createQueryMock([]));
+      autorModel.find.mockReturnValue(createQueryMock([]));
+
+      const res = await service.search('john');
+
+      expect(res?.users.length).toBe(0); // removido por ser o melhorResultado
+      expect(res?.melhorResultado?.tipo).toBe('user');
     });
   });
 });
