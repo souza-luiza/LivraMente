@@ -133,6 +133,32 @@ describe('Mensageria Service', () => {
             await expect(marcarNotificacaoComoLida('123')).rejects.toThrow('Erro ao marcar notificação como lida');
         });
     });
+    describe('removerTodasNotificacoes', () => {
+        it('deve remover todas as notificações com sucesso', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+            });
+
+            const { removerTodasNotificacoes } = await import('@/services/mensageria');
+            await removerTodasNotificacoes();
+
+            expect(global.fetch).toHaveBeenCalledWith(
+                'http://localhost:3001/notificacoes/remover-todas',
+                expect.objectContaining({
+                    method: 'DELETE',
+                })
+            );
+        });
+
+        it('deve lançar erro quando falha', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+            });
+
+            const { removerTodasNotificacoes } = await import('@/services/mensageria');
+            await expect(removerTodasNotificacoes()).rejects.toThrow('Erro ao remover todas as notificações');
+        });
+    });
 
     describe('marcarTodasComoLidas', () => {
         it('deve marcar todas as notificações como lidas', async () => {
