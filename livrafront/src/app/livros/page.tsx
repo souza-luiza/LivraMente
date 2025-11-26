@@ -9,6 +9,7 @@ import SearchBar from "@/components/searchbar";
 import DropdownFilter from "@/components/filter";
 import LoadingPage from "@/components/loading";
 import ToastNotification from "@/components/toast-notification";
+import BookCard from "@/components/book";
 
 export default function ComunidadesPage() {
 
@@ -23,7 +24,7 @@ export default function ComunidadesPage() {
             try {
 
                 // Chamar API para buscar livros
-                // const livros = await 
+                // const livros = await ...
 
             } catch (error) {
                 
@@ -51,7 +52,7 @@ export default function ComunidadesPage() {
                 <SearchBar backgroundcolor="#E5EEDF" divider={true} />
 
                 <div className="w-full flex flex-row items-center justify-between">
-                    <h1 className="text-h2">LivraBooks</h1>
+                    <h1 className="text-h2">Livros</h1>
                     {/*<DropdownFilter 
                         filters={filters}
                         currentFilter={currentFilter}
@@ -61,8 +62,32 @@ export default function ComunidadesPage() {
                 </div>
 
                 {/* Listar todos os livros */}
-                <div className="w-full h-full medium-border-radius small-padding shadow-sm bg-white">
-                    
+                <div className="w-full h-full grid grid-cols-3 gap-1 medium-border-radius small-padding shadow-sm bg-white">
+                    <BookCard
+                        bookCoverUrl="/CommunityDefault.png"
+                        bootkTitle="A Arte da Impaciência"
+                        bookAuthor="Kemi Funnycats'"
+                    />
+                    <BookCard
+                        bookCoverUrl="/CommunityDefault.png"
+                        bootkTitle="A Arte da Impaciência e Outras Histórias Para Gatos Impacientes"
+                        bookAuthor="Kemi Funnycats'"
+                    />
+                    <BookCard
+                        bookCoverUrl="/CommunityDefault.png"
+                        bootkTitle="A Arte da Impaciência"
+                        bookAuthor="Kemi Funnycats'"
+                    />
+                    <BookCard
+                        bookCoverUrl="/CommunityDefault.png"
+                        bootkTitle="A Arte da Impaciência"
+                        bookAuthor="Kemi Funnycats'"
+                    />
+                    <BookCard
+                        bookCoverUrl="/CommunityDefault.png"
+                        bootkTitle="A Arte da Impaciência"
+                        bookAuthor="Kemi Funnycats'"
+                    />
                 </div>
             </main>
             
