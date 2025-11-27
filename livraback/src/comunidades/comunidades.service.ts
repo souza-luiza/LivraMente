@@ -6,14 +6,17 @@ import { Model } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class ComunidadesService {
+    private readonly logger = new Logger(ComunidadesService.name);
+
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
         @InjectModel(Post.name) private postModel: Model<Post>,
         private readonly cloudinary: CloudinaryService,
-) {}
+    ) {}
 
     async findAll() {
         return await this.comunidadeModel.find().exec();
@@ -255,7 +258,11 @@ export class ComunidadesService {
         // Simples remoção da capa (voltando para a capa padrão)
         if (!file) {
             if (comunidade.capaPublicId) {
-            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+                try {
+                    await this.cloudinary.deleteImage(comunidade.capaPublicId);
+                } catch (err) {
+                    this.logger.warn(`Erro ao deletar imagem ${comunidade.capaPublicId} no Cloudinary: ${err.message}`);
+                }
             }
 
             comunidade.capaUrl = '/CommunityDefault.png';
@@ -271,7 +278,11 @@ export class ComunidadesService {
         const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/capas');
 
         if (comunidade.capaPublicId) {
-            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+            try {
+                await this.cloudinary.deleteImage(comunidade.capaPublicId);
+            } catch (err) {
+                this.logger.warn(`Erro ao deletar imagem ${comunidade.capaPublicId} no Cloudinary: ${err.message}`);
+            }
         }
 
         comunidade.capaUrl = uploaded.secure_url;
@@ -281,7 +292,7 @@ export class ComunidadesService {
         return { capaUrl: comunidade.capaUrl };
     }
 
-    async uploadBanner(userId: string, comunidadeNome: string, file: Express.Multer.File) {
+    async uploadBanner(userId: string, comunidadeNome: string, file?: Express.Multer.File) {
         const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
         if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
 
@@ -291,7 +302,11 @@ export class ComunidadesService {
         // Simples remoção do banner
         if (!file) {
             if (comunidade.bannerPublicId) {
-                await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+                try {
+                    await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+                } catch (err) {
+                    this.logger.warn(`Erro ao deletar imagem ${comunidade.bannerPublicId} no Cloudinary: ${err.message}`);
+                }
             }
 
             comunidade.bannerUrl = '';
@@ -306,7 +321,11 @@ export class ComunidadesService {
 
         const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/banners');
         if (comunidade.bannerPublicId) {
-            await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+            try {
+                await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+            } catch (err) {
+                this.logger.warn(`Erro ao deletar imagem ${comunidade.bannerPublicId} no Cloudinary: ${err.message}`);
+            }
         }
 
         comunidade.bannerUrl = uploaded.secure_url;

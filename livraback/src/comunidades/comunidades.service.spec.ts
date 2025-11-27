@@ -2,8 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ComunidadesService } from './comunidades.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import { Comunidade } from './entities/comunidade.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { Types } from 'mongoose';
 
 describe('ComunidadesService', () => {
   let service: ComunidadesService;
@@ -17,13 +19,13 @@ describe('ComunidadesService', () => {
       populate: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       exec: jest.fn(),
-      deleteOne: jest.fn(), // Add this line
+      deleteOne: jest.fn(),
     };
     const mockPostModel = {
       find: jest.fn(),
       findOne: jest.fn(),
       findById: jest.fn(),
-      deleteMany: jest.fn(), // Add this line
+      deleteMany: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +38,13 @@ describe('ComunidadesService', () => {
         {
           provide: getModelToken('Post'),
           useValue: mockPostModel,
+        },
+        {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue({}),
+          },
         },
       ],
     }).compile();
@@ -710,6 +719,408 @@ describe('ComunidadesService', () => {
     });
   });
 
+  describe('ComunidadesService - Upload Methods', () => {
+    let service: ComunidadesService;
+    let comunidadeModel: Comunidade;
+    let cloudinaryService: CloudinaryService;
+
+    const mockComunidadeModel = {
+      findOne: jest.fn(),
+    };
+
+    const mockCloudinaryService: Partial<CloudinaryService> & { uploadImage: jest.Mock; deleteImage: jest.Mock } = {
+      uploadImage: jest.fn(),
+      deleteImage: jest.fn(),
+    } as any;
+    const mockPostModel = {
+      deleteMany: jest.fn(),
+      find: jest.fn(),
+      findById: jest.fn(),
+    };
+
+    const mockUserId = new Types.ObjectId().toString();
+    const mockComunidadeNome = 'fantasia';
+    const mockComunidadeId = new Types.ObjectId();
+
+    const mockComunidade: Partial<ComunidadeDocument> & { save: jest.Mock } = {
+      _id: mockComunidadeId,
+      nome: mockComunidadeNome,
+      moderadores: [new Types.ObjectId(mockUserId)],
+      capaUrl: '/existing-capa.jpg',
+      capaPublicId: 'existing-capa-id',
+      bannerUrl: '/existing-banner.jpg',
+      bannerPublicId: 'existing-banner-id',
+      save: jest.fn(),
+    };
+
+    const mockFile = {
+      fieldname: 'file',
+      originalname: 'test.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: 1024,
+      buffer: Buffer.from('test-image-data'),
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    } as unknown as Express.Multer.File;
+
+    const mockUploadResult = {
+      secure_url: 'https://res.cloudinary.com/test/image/upload/v123/test.jpg',
+      public_id: 'livra/comunidades/capas/test123',
+    };
+
+    beforeEach(async () => {
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          ComunidadesService,
+          {
+            provide: getModelToken(Comunidade.name),
+            useValue: mockComunidadeModel,
+          },
+          {
+            provide: getModelToken('Post'),
+            useValue: mockPostModel,
+          },
+          {
+            provide: CloudinaryService,
+            useValue: mockCloudinaryService,
+          },
+        ],
+      }).compile();
+
+      service = module.get<ComunidadesService>(ComunidadesService);
+      comunidadeModel = module.get<Comunidade>(getModelToken(Comunidade.name));
+      cloudinaryService = module.get<CloudinaryService>(CloudinaryService);
+      
+      jest.clearAllMocks();
+
+      // Reset mutable fields on the shared mockComunidade to a clean state
+      mockComunidade.capaUrl = '/existing-capa.jpg';
+      mockComunidade.capaPublicId = 'existing-capa-id';
+      mockComunidade.bannerUrl = '/existing-banner.jpg';
+      mockComunidade.bannerPublicId = 'existing-banner-id';
+      mockComunidade.moderadores = [new Types.ObjectId(mockUserId)];
+      mockComunidade.save = jest.fn().mockResolvedValue(mockComunidade);
+    });
+
+    describe('uploadCapa', () => {
+      it('should upload capa successfully when user is moderator', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockCloudinaryService.deleteImage.mockResolvedValue(true);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ capaUrl: mockUploadResult.secure_url });
+        expect(mockComunidadeModel.findOne).toHaveBeenCalledWith({ nome: mockComunidadeNome });
+        expect(mockCloudinaryService.uploadImage).toHaveBeenCalledWith(
+          mockFile.buffer,
+          'livra/comunidades/capas'
+        );
+        expect(mockCloudinaryService.deleteImage).toHaveBeenCalledWith('existing-capa-id');
+        expect(mockComunidade.capaUrl).toBe(mockUploadResult.secure_url);
+        expect(mockComunidade.capaPublicId).toBe(mockUploadResult.public_id);
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should remove capa successfully when no file is provided', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.deleteImage.mockResolvedValue(true);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, undefined);
+
+        expect(result).toEqual({ capaUrl: '/CommunityDefault.png' });
+        expect(mockCloudinaryService.deleteImage).toHaveBeenCalledWith('existing-capa-id');
+        expect(mockComunidade.capaUrl).toBe('/CommunityDefault.png');
+        expect(mockComunidade.capaPublicId).toBe('');
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should remove capa without calling cloudinary when no publicId exists', async () => {
+        const comunidadeWithoutPublicId = {
+          ...mockComunidade,
+          capaPublicId: '',
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithoutPublicId) } as any);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, undefined);
+
+        expect(result).toEqual({ capaUrl: '/CommunityDefault.png' });
+        expect(mockCloudinaryService.deleteImage).not.toHaveBeenCalled();
+        expect(comunidadeWithoutPublicId.capaUrl).toBe('/CommunityDefault.png');
+        expect(comunidadeWithoutPublicId.capaPublicId).toBe('');
+      });
+
+      it('should throw NotFoundException when comunidade does not exist', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) } as any);
+
+        await expect(
+          service.uploadCapa(mockUserId, 'non-existent-comunidade', mockFile)
+        ).rejects.toThrow(NotFoundException);
+        await expect(
+          service.uploadCapa(mockUserId, 'non-existent-comunidade', mockFile)
+        ).rejects.toThrow('Comunidade não encontrada');
+      });
+
+      it('should throw ForbiddenException when user is not moderator', async () => {
+        const comunidadeWithDifferentModerator = {
+          ...mockComunidade,
+          moderadores: [new Types.ObjectId()],
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithDifferentModerator) } as any);
+
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow(ForbiddenException);
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Apenas moderadores podem alterar a capa da comunidade');
+      });
+
+      it('should throw BadRequestException when file buffer is empty', async () => {
+        const fileWithoutBuffer = {
+          ...mockFile,
+          buffer: null,
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, fileWithoutBuffer)
+        ).rejects.toThrow(BadRequestException);
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, fileWithoutBuffer)
+        ).rejects.toThrow('Arquivo inválido');
+      });
+
+      it('should handle cloudinary upload errors', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockRejectedValue(new Error('Cloudinary upload failed'));
+
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Cloudinary upload failed');
+      });
+
+      it('should handle cloudinary delete errors gracefully', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockCloudinaryService.deleteImage.mockRejectedValue(new Error('Delete failed but should continue'));
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ capaUrl: mockUploadResult.secure_url });
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should handle comunidade save errors', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockComunidade.save.mockRejectedValue(new Error('Database save failed'));
+
+        await expect(
+          service.uploadCapa(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Database save failed');
+      });
+
+      it('should work with string moderator IDs', async () => {
+        const comunidadeWithStringModerator = {
+          ...mockComunidade,
+          moderadores: [mockUserId],
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithStringModerator) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ capaUrl: mockUploadResult.secure_url });
+      });
+    });
+
+    describe('uploadBanner', () => {
+      it('should upload banner successfully when user is moderator', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockCloudinaryService.deleteImage.mockResolvedValue(true);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ bannerUrl: mockUploadResult.secure_url });
+        expect(mockComunidadeModel.findOne).toHaveBeenCalledWith({ nome: mockComunidadeNome });
+        expect(mockCloudinaryService.uploadImage).toHaveBeenCalledWith(
+          mockFile.buffer,
+          'livra/comunidades/banners'
+        );
+        expect(mockCloudinaryService.deleteImage).toHaveBeenCalledWith('existing-banner-id');
+        expect(mockComunidade.bannerUrl).toBe(mockUploadResult.secure_url);
+        expect(mockComunidade.bannerPublicId).toBe(mockUploadResult.public_id);
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should remove banner successfully when no file is provided', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.deleteImage.mockResolvedValue(true);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, undefined);
+
+        expect(result).toEqual({ bannerUrl: '' });
+        expect(mockCloudinaryService.deleteImage).toHaveBeenCalledWith('existing-banner-id');
+        expect(mockComunidade.bannerUrl).toBe('');
+        expect(mockComunidade.bannerPublicId).toBe('');
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should remove banner without calling cloudinary when no publicId exists', async () => {
+        const comunidadeWithoutBannerPublicId = {
+          ...mockComunidade,
+          bannerPublicId: '',
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithoutBannerPublicId) } as any);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, undefined);
+
+        expect(result).toEqual({ bannerUrl: '' });
+        expect(mockCloudinaryService.deleteImage).not.toHaveBeenCalled();
+        expect(comunidadeWithoutBannerPublicId.bannerUrl).toBe('');
+        expect(comunidadeWithoutBannerPublicId.bannerPublicId).toBe('');
+      });
+
+      it('should throw NotFoundException when comunidade does not exist', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) } as any);
+
+        await expect(
+          service.uploadBanner(mockUserId, 'non-existent-comunidade', mockFile)
+        ).rejects.toThrow(NotFoundException);
+        await expect(
+          service.uploadBanner(mockUserId, 'non-existent-comunidade', mockFile)
+        ).rejects.toThrow('Comunidade não encontrada');
+      });
+
+      it('should throw ForbiddenException when user is not moderator', async () => {
+        const comunidadeWithDifferentModerator = {
+          ...mockComunidade,
+          moderadores: [new Types.ObjectId()], // Different moderator
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithDifferentModerator) } as any);
+
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow(ForbiddenException);
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Apenas moderadores podem alterar o banner da comunidade');
+      });
+
+      it('should throw BadRequestException when file buffer is empty', async () => {
+        const fileWithoutBuffer = {
+          ...mockFile,
+          buffer: null,
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, fileWithoutBuffer)
+        ).rejects.toThrow(BadRequestException);
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, fileWithoutBuffer)
+        ).rejects.toThrow('Arquivo inválido');
+      });
+
+      it('should handle cloudinary upload errors for banner', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockRejectedValue(new Error('Cloudinary upload failed'));
+
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Cloudinary upload failed');
+      });
+
+      it('should handle cloudinary delete errors gracefully for banner', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockCloudinaryService.deleteImage.mockRejectedValue(new Error('Delete failed but should continue'));
+
+        // Should still complete successfully even if delete fails
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ bannerUrl: mockUploadResult.secure_url });
+        expect(mockComunidade.save).toHaveBeenCalled();
+      });
+
+      it('should handle comunidade save errors for banner', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+        mockComunidade.save.mockRejectedValue(new Error('Database save failed'));
+
+        await expect(
+          service.uploadBanner(mockUserId, mockComunidadeNome, mockFile)
+        ).rejects.toThrow('Database save failed');
+      });
+
+      it('should work with string moderator IDs for banner', async () => {
+        const comunidadeWithStringModerator = {
+          ...mockComunidade,
+          moderadores: [mockUserId], // String ID instead of ObjectId
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithStringModerator) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ bannerUrl: mockUploadResult.secure_url });
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle empty file object for uploadCapa', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, null);
+
+        expect(result).toEqual({ capaUrl: '/CommunityDefault.png' });
+      });
+
+      it('should handle empty file object for uploadBanner', async () => {
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockComunidade) } as any);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, null);
+
+        expect(result).toEqual({ bannerUrl: '' });
+      });
+
+      it('should handle comunidade with no existing capa for uploadCapa', async () => {
+        const comunidadeWithoutCapa = {
+          ...mockComunidade,
+          capaUrl: '',
+          capaPublicId: '',
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithoutCapa) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+
+        const result = await service.uploadCapa(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ capaUrl: mockUploadResult.secure_url });
+        expect(mockCloudinaryService.deleteImage).not.toHaveBeenCalled();
+      });
+
+      it('should handle comunidade with no existing banner for uploadBanner', async () => {
+        const comunidadeWithoutBanner = {
+          ...mockComunidade,
+          bannerUrl: '',
+          bannerPublicId: '',
+        };
+        mockComunidadeModel.findOne.mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeWithoutBanner) } as any);
+        mockCloudinaryService.uploadImage.mockResolvedValue(mockUploadResult);
+
+        const result = await service.uploadBanner(mockUserId, mockComunidadeNome, mockFile);
+
+        expect(result).toEqual({ bannerUrl: mockUploadResult.secure_url });
+        expect(mockCloudinaryService.deleteImage).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('removeMembro - edge cases', () => {
     it('deve remover moderador que não é o único moderador', async () => {
       const comunidadeMock = {
@@ -1199,13 +1610,12 @@ describe('ComunidadesService', () => {
 
   describe('Error messages', () => {
     it('deve ter mensagens de erro consistentes', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'test@email.com' };
+      const mockUser: CurrentUserDto = { userId: '123', email: 'test@email.com', username: 'testuser', avatarUrl: '', pronouns: 'she/her' };
       
       comunidadeModel.findOne.mockResolvedValue(null);
       await expect(service.findOne('inexistente'))
         .rejects.toThrow('Comunidade "inexistente" não encontrada');
 
-      // Service.create uses findOne(...).exec(), so return an object with exec()
       comunidadeModel.findOne.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue({ nome: 'existente' }) } as any);
       await expect(service.create('123', { nome: 'existente' }))
         .rejects.toThrow('Nome de comunidade em uso');
