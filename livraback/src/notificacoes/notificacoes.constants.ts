@@ -35,5 +35,6 @@ export const SUCCESS_MESSAGES = {
     MARKED_AS_READ: 'Notificação marcada como lida',
     ALL_MARKED_AS_READ: 'Todas as notificações marcadas como lidas',
     DELETED: 'Notificação removida',
+    ALL_DELETED: 'Todas as notificações removidas',
   },
 } as const;

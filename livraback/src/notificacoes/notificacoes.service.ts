@@ -126,6 +126,19 @@ export class NotificacoesService {
     }
   }
 
+  /**
+   * Remove todas as notificações de um usuário
+   * @param userId - ID do usuário
+   * @returns Número de notificações removidas
+   */
+  async removerTodas(userId: string): Promise<number> {
+    const result = await this.notificacaoModel.deleteMany({
+      usuario: new Types.ObjectId(userId),
+    });
+        
+    return result.deletedCount;
+  }
+
 
   /**
    * Registra um cliente SSE para receber notificações em tempo real

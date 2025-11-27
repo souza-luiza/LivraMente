@@ -2,6 +2,7 @@ import { Controller, Get, Patch, Delete, Param, UseGuards, Sse, Req, HttpCode, H
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { NotificacoesService } from './notificacoes.service';
 import { Observable, map } from 'rxjs';
+import { NotificacaoDocument } from '../schemas/notificacao.schema';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { SUCCESS_MESSAGES } from './notificacoes.constants';
 
@@ -67,6 +68,18 @@ export class NotificacoesController {
   async marcarTodasComoLidas(@Req() req: any) {
     await this.notificacoesService.marcarTodasComoLidas(req.session.user.userId);
     return { message: SUCCESS_MESSAGES.NOTIFICATION.ALL_MARKED_AS_READ };
+  }
+
+  @Delete('remover-todas')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remover todas as notificações' })
+  @ApiResponse({ status: 200, description: 'Todas as notificações removidas' })
+  async removerTodas(@Req() req: any) {
+    const count = await this.notificacoesService.removerTodas(req.session.user.userId);
+    return { 
+      message: SUCCESS_MESSAGES.NOTIFICATION.ALL_DELETED,
+      count 
+    };
   }
 
   @Delete(':id')

@@ -10,8 +10,6 @@ import {
   PostCurtidoEventDto,
   PostModeradoEventDto,
   MembroEntrouEventDto,
-  ComentarioCriadoEventDto,
-  ComentarioCurtidoEventDto,
 } from '../dto';
 
 /**
@@ -60,14 +58,6 @@ export class NotificacoesConsumer extends BaseConsumer {
         await this.notificarMembroEntrou(conteudo as MembroEntrouEventDto);
         break;
 
-      case ROUTING_KEYS.NOTIFICAR_COMENTARIO_CRIADO:
-        await this.notificarComentarioCriado(conteudo as ComentarioCriadoEventDto);
-        break;
-
-      case ROUTING_KEYS.NOTIFICAR_COMENTARIO_CURTIDO:
-        await this.notificarComentarioCurtido(conteudo as ComentarioCurtidoEventDto);
-        break;
-
       default:
         this.logger.warn(`Tipo de notificação não tratado: ${routingKey}`);
     }
@@ -111,7 +101,7 @@ export class NotificacoesConsumer extends BaseConsumer {
    * @param dados - Dados do evento de curtida
    */
   private async notificarPostCurtido(dados: PostCurtidoEventDto): Promise<void> {
-    const { postId, userId, autorId, comunidadeNome } = dados;
+    const { postId, userId, autorId } = dados;
 
     // Não notificar se o usuário curtir o próprio post
     if (userId === autorId) {
@@ -126,7 +116,6 @@ export class NotificacoesConsumer extends BaseConsumer {
         mensagem: 'Seu post foi curtido!',
         remetente: userId,
         postId,
-        comunidadeNome,
       });
 
       this.logger.debug(`Notificação de curtida enviada para autor ${autorId}`);
@@ -193,67 +182,6 @@ export class NotificacoesConsumer extends BaseConsumer {
       this.logger.log(`Notificações de novo membro enviadas para ${comunidade.moderadores.length} moderadores`);
     } catch (error) {
       this.logger.error(`Erro ao notificar moderadores sobre novo membro em ${comunidadeNome}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Notifica autor do post quando recebe um comentário
-   * @param dados - Dados do evento de comentário criado
-   */
-  private async notificarComentarioCriado(dados: ComentarioCriadoEventDto): Promise<void> {
-    const { comentarioId, postId, autorComentarioId, autorPostId, conteudo, comunidadeNome } = dados;
-
-    // Não notificar se o usuário comentar no próprio post
-    if (autorComentarioId === autorPostId) {
-      this.logger.debug('Auto-comentário detectado, notificação não enviada');
-      return;
-    }
-
-    try {
-      await this.notificacoesService.criar({
-        usuario: autorPostId,
-        tipo: TipoNotificacao.COMENTARIO_POST,
-        mensagem: `Novo comentário no seu post: ${conteudo.substring(0, 50)}...`,
-        remetente: autorComentarioId,
-        postId,
-        comunidadeNome,
-      });
-
-      this.logger.debug(`Notificação de comentário enviada para autor ${autorPostId}`);
-    } catch (error) {
-      this.logger.error(`Erro ao notificar comentário ${comentarioId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Notifica autor do comentário quando recebe uma curtida
-   * @param dados - Dados do evento de curtida em comentário
-   */
-  private async notificarComentarioCurtido(dados: ComentarioCurtidoEventDto): Promise<void> {
-    const { comentarioId, postId, userId, autorId, comunidadeNome } = dados;
-
-    // Não notificar se o usuário curtir o próprio comentário
-    if (userId === autorId) {
-      this.logger.debug('Auto-curtida em comentário detectada, notificação não enviada');
-      return;
-    }
-
-    try {
-      await this.notificacoesService.criar({
-        usuario: autorId,
-        tipo: TipoNotificacao.CURTIDA_COMENTARIO,
-        mensagem: 'Seu comentário foi curtido!',
-        remetente: userId,
-        postId,
-        comentarioId,
-        comunidadeNome,
-      });
-
-      this.logger.debug(`Notificação de curtida em comentário enviada para autor ${autorId}`);
-    } catch (error) {
-      this.logger.error(`Erro ao notificar curtida no comentário ${comentarioId}:`, error);
       throw error;
     }
   }
