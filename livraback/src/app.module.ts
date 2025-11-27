@@ -11,13 +11,14 @@ import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { CommentsModule } from './comments/comments.module';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
-import { Resenha, ResenhaSchema } from './schemas/resenha.schema';
+import { Resenha, ResenhaSchema } from './resenhas/entities/resenha.schema';
 import { ReadlistsModule } from './readlists/readlists.module';
 import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
 import { LlmModule } from './llm/llm.module';
 import { SearchModule } from './search/search.module';
 import { LivrosModule } from './livros/livros.module';
+import { ResenhasModule } from './resenhas/resenhas.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { LivrosModule } from './livros/livros.module';
     LlmModule,
     SearchModule,
     LivrosModule,
+    ResenhasModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, HydratedDocument, Types } from 'mongoose';
+
+export type ResenhaDocument = HydratedDocument<Resenha>;
 
 @Schema({ timestamps: true })
 export class Resenha extends Document {
@@ -15,15 +17,8 @@ export class Resenha extends Document {
   @Prop({ required: true })
   conteudo: string;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
-  curtidas: Types.ObjectId[];
-
   @Prop({ default: false })
   spoiler: boolean;
-
-  // Comentários na resenha
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Comentario' }], default: [] })
-  comentarios: Types.ObjectId[];
 }
 
 export const ResenhaSchema = SchemaFactory.createForClass(Resenha);
