@@ -228,7 +228,249 @@ export default function ReadlistPage() {
         numero_paginas: 198,
         generos: ["Fantasia", "Folclore"],
         editora: "Aurora Editorial"
-    }
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
+    {
+        _id: "5",
+        titulo: "Histórias que o Vento Conta",
+        isbn: "978-85-7522-123-4",
+        autores: ["João Figueiredo"],
+        ano_publicacao: 2010,
+        sinopse: "Uma coletânea de contos inspirados em lendas populares e histórias transmitidas entre gerações.",
+        numero_paginas: 198,
+        generos: ["Fantasia", "Folclore"],
+        editora: "Aurora Editorial"
+    },
     ];
 
     return (
@@ -243,7 +485,7 @@ export default function ReadlistPage() {
                         <main className="bg-[#E8DDD4] w-[240px] h-fit flex flex-col medium-border-radius p-5 gap-2 text-[var(--secondary-700)]">
                             <div className="relative w-full aspect-[1/1]">
                                 <Image 
-                                    src={"/team/Kemi.jpg"}
+                                    src={"/ReadlistDefault.png"}
                                     alt={"Foto da readlist"}
                                     fill
                                     className="object-cover rounded-lg" 
