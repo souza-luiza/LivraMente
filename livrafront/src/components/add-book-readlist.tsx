@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Button from "./button";
 import AddIcon from "./icons/AddIcon";
+import TrashIcon from "./icons/TrashIcon";
 
 interface AddBookReadlistProps {
     tipo?: "book" | "readlist";
@@ -419,7 +420,7 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                 onClick={onClose}
             >
                 <div className="flex flex-shrink-0 flex-row justify-center bg-white medium-padding medium-border-radius gap-4"
-                    style={{ color: 'var(--primary-800)', maxWidth: '80%', maxHeight: '80%' }}
+                    style={{ color: 'var(--primary-800)', width: '80%', height: '80%' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="flex flex-col items-center justify-center gap-2 w-1/2">
@@ -433,11 +434,11 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                             onChange={handleChange}
                             fullWidth
                         />
-                        <div className="w-full grid grid-cols-4 p-2 bg-gray-100 overflow-y-auto">
+                        <div className="w-full grid grid-cols-3 p-2 gap-2 bg-gray-200 overflow-y-auto medium-border-radius">
                             {livros.map((livro) => (
-                                <div className="w-full flex items-center p-4 gap-1 hover:shadow-md transition-shadow medium-border-radius">
+                                <div className="w-full flex items-center p-2 gap-2 bg-white hover:shadow-md transition-shadow medium-border-radius">
                                     <Image 
-                                        src={livro.capa_url ? livro.capa_url : '/ReadlistDefault.png'}
+                                        src={livro.capa_url ? livro.capa_url : '/team/Kemi.jpg'}
                                         alt="Capa do livro"
                                         width={40}
                                         height={60}
@@ -449,7 +450,7 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                         </div>
                     </div>
                     <div className="w-1/2 flex flex-col items-center gap-2">
-                        <label className="text-h5">Livros adicionados:</label> {/*overflow-y-auto aqui!*/}
+                        <label className="text-h5">Livros selecionados:</label> {/*overflow-y-auto aqui!*/}
                         <motion.div 
                             className="w-full flex flex-row items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
                                 active:opacity-95
@@ -471,7 +472,6 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                             titulo
                         </motion.div>
                         <Button icon={<AddIcon/>} text={'Adicionar livros'} colorScheme="dark-green" fullwidth />
-                            
                     </div>
                 </div>
             </motion.div>
