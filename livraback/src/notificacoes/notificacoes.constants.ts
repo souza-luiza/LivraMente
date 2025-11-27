@@ -11,6 +11,10 @@ export const NOTIFICATION_MESSAGES = {
     APROVADO: (categoria: string) => `Seu post foi aprovado na categoria ${categoria}!`,
     REJEITADO: 'Seu post foi rejeitado pela moderação.',
   },
+  COMENTARIO: {
+    NOVO: (preview: string) => `Novo comentário no seu post: "${preview}"`,
+    CURTIDO: 'Seu comentário foi curtido!',
+  },
   COMUNIDADE: {
     NOVO_MEMBRO: (comunidadeNome: string) => 
       `Novo membro entrou na comunidade ${comunidadeNome}!`,
