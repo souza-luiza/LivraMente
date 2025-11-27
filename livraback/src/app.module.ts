@@ -7,8 +7,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 
 // Importar todos os schemas
-import { Livro, LivroSchema } from './schemas/livro.schema';
-import { Autor, AutorSchema } from './schemas/autor.schema';
 import { Post, PostSchema } from './schemas/post.schema';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema';
 import { CommentsModule } from './comments/comments.module';
@@ -18,6 +16,8 @@ import { ReadlistsModule } from './readlists/readlists.module';
 import { PostsModule } from './posts/posts.module';
 import { ComunidadesModule } from './comunidades/comunidades.module';
 import { LlmModule } from './llm/llm.module';
+import { SearchModule } from './search/search.module';
+import { LivrosModule } from './livros/livros.module';
 
 @Module({
   imports: [
@@ -30,8 +30,6 @@ import { LlmModule } from './llm/llm.module';
     }),
     // Registrar todos os schemas
     MongooseModule.forFeature([
-      { name: Livro.name, schema: LivroSchema },
-      { name: Autor.name, schema: AutorSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comentario.name, schema: ComentarioSchema },
       { name: Quiz.name, schema: QuizSchema },
@@ -44,6 +42,8 @@ import { LlmModule } from './llm/llm.module';
     ComunidadesModule,
     CommentsModule,
     LlmModule,
+    SearchModule,
+    LivrosModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

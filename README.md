@@ -1,6 +1,6 @@
 <!-- [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3MvknvtX) -->
 
-# Livramente - A rede social dos leitores brasileiros
+# LivraMente - A rede social dos leitores brasileiros
 <img width="1800" height="234" alt="banner-readme" src="https://github.com/user-attachments/assets/0167a5ad-2194-4ead-b57e-13cf8aaca00e" />
 
 <!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
@@ -53,7 +53,6 @@ es-unifesp-2025-2-grupo-alpha/
 - Npm
 - Git
 
-
 ## 👥 Equipe
 
 - **Enzo de Almeida Belfort Rizzi Di Chiara** - [@EnzoBelfort](https://github.com/EnzoBelfort)
@@ -63,6 +62,9 @@ es-unifesp-2025-2-grupo-alpha/
 - **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
+
+## System Design
+
 <img width="1172" height="945" alt="image" src="https://github.com/user-attachments/assets/cd6431d2-7710-4f87-a9b1-3dfbbf1a3ad9" />
 
 
