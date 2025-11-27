@@ -1,15 +1,16 @@
+import { Livro } from "./livros";
+
 export interface Resenha {
-    _id: string;                                         
+    _id: string;
     autor: {                                             
         _id: string;
         username: string;
         avatarUrl: string;
     };
-    // referência ao livro
+    livro: Livro;
+    avaliacao: number;
     conteudo: string;
-    curtidas: string[];
-    comentarios: string[];
-    spoilers: boolean;
+    spoiler: boolean;
     createdAt: string | Date;
     updatedAt: string | Date;
 }
