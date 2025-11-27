@@ -12,6 +12,8 @@ import { getSessionInfos } from "@/services/auth";
 import { getFavoriteReadlists, getOwnReadlists, getPublicReadlists } from "@/services/readlists";
 import { toast } from "react-toastify";
 import ToastNotification from '@/components/toast-notification';
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 import LogoIcon from "@/components/icons/LogoIcon";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import Button from "@/components/button";
@@ -103,6 +105,7 @@ export default function ReadlistsPage() {
   }
   
   return (
+    <ChatProvider>
     <div className="flex min-h-screen bg-[#E5EEDF]">
       <Sidebar />
       <main className="flex-1 flex flex-col p-8">
@@ -171,5 +174,7 @@ export default function ReadlistsPage() {
       </main>
       <ToastNotification/>
     </div>
+    <WidgetChat />
+    </ChatProvider>
   )
 }

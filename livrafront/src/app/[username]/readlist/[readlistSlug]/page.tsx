@@ -21,6 +21,8 @@ import ErrorIcon from '@/components/icons/ErrorIcon';
 import { getSessionInfos } from '@/services/auth';
 import { toast } from 'react-toastify';
 import ToastNotification from '@/components/toast-notification';
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 
 export default function ReadlistPage() {
   const router = useRouter();
@@ -194,6 +196,7 @@ export default function ReadlistPage() {
   };
 
   return (
+    <ChatProvider>
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Modal de Edição */}
       <EditReadlistModal
@@ -550,5 +553,7 @@ export default function ReadlistPage() {
       </div>
       <ToastNotification/>
     </div>
+    <WidgetChat />
+    </ChatProvider>
   );
 }

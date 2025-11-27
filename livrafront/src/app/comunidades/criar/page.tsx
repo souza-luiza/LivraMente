@@ -16,6 +16,8 @@ import ImageIcon from '@/components/icons/ImageIcon';
 import AddIcon from '@/components/icons/AddIcon';
 import Image from 'next/image';
 import { CommunityTags, CreateCommunityData } from '@/types/comunidade';
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 
 export default function CreateCommunityPage() {
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | null }>({ text: '', type: null });
@@ -89,6 +91,7 @@ export default function CreateCommunityPage() {
     }
   };
   return (
+    <ChatProvider>
     <div className="flex w-full h-screen items-center bg-white">
       <Sidebar />
       {message.text ? (
@@ -212,5 +215,7 @@ export default function CreateCommunityPage() {
           </div>
       )}
     </div>
+    <WidgetChat />
+    </ChatProvider>
   );
 }

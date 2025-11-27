@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type React from 'react';
-import { ChatShell } from '@/components/chat-shell';
 
 import { Geist, Geist_Mono, Poppins, Judson } from "next/font/google";
 import "./globals.css";
@@ -42,9 +41,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${judson.variable} antialiased`}
       >
-        <ChatShell>
           {children}
-        </ChatShell>
       </body>
     </html>
   );

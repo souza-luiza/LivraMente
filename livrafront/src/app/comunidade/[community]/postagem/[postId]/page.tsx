@@ -3,6 +3,8 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 
 // Funções Auxiliares
 import { slugToTitle } from "@/lib/slugify";
@@ -277,6 +279,7 @@ export default function PostPage() {
     if (!communityInfo || !postInfo || !userInfo) return null;
 
     return (
+        <ChatProvider>
         <div className="min-h-screen flex bg-[#FFFFFF]">
             {/*Barra Lateral Fixa*/}
             <Sidebar />
@@ -434,6 +437,8 @@ export default function PostPage() {
                     </div>
                 </main>
             </div>
+            <WidgetChat embedded={true} />
         </div>
+        </ChatProvider>
     );
 }

@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
@@ -181,10 +183,11 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="flex items-center h-screen bg-gray-50">
-      <Sidebar />
+    <ChatProvider>
+      <div className="flex items-center h-screen bg-gray-50">
+        <Sidebar />
 
-      <main className="flex-grow flex flex-col overflow-hidden">
+        <main className="flex-grow flex flex-col overflow-hidden">
         <div className="flex-grow overflow-y-auto p-8">
           <div className="max-w-2xl mx-auto bg-white large-border-radius p-8 shadow-sm">
             <h1 className="text-h4 font-bold text-[#23160A] mb-6">
@@ -269,13 +272,15 @@ export default function EditProfilePage() {
         </div>
       </main>
 
-      <ImageCropModal
-        isOpen={showCropModal}
-        imageUrl={tempImageUrl}
-        onClose={handleCropCancel}
-        onSave={handleCropSave}
-      />
-      <ToastNotification />
-    </div>
+        <ImageCropModal
+          isOpen={showCropModal}
+          imageUrl={tempImageUrl}
+          onClose={handleCropCancel}
+          onSave={handleCropSave}
+        />
+        <ToastNotification />
+        <WidgetChat />
+      </div>
+    </ChatProvider>
   );
 }

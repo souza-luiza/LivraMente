@@ -43,6 +43,8 @@ import PopUp from "@/components/pop-up";
 // Funções
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
 import { getSessionInfos } from "@/services/auth";
+import { ChatProvider } from '@/contexts/chat-context';
+import WidgetChat from '@/components/widget-chat';
 
 export default function CommunityPage(){
     const router = useRouter();
@@ -299,6 +301,7 @@ export default function CommunityPage(){
     const communityTitle = slugToTitle(community);
 
     return (
+        <ChatProvider>
         <div className="min-h-screen flex bg-[#FFFFFF]">
             {/*Barra Lateral Fixa*/}
             <Sidebar />
@@ -644,6 +647,8 @@ export default function CommunityPage(){
                     </div>
                 </main>
             </div>
+            <WidgetChat />
         </div>
+        </ChatProvider>
     );
 }
