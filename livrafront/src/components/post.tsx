@@ -30,6 +30,7 @@ import { postsService } from "@/services/posts";
 // Funções Auxiliares
 import { getTimeAgo } from "@/lib/time";
 import { titleToSlug } from "@/lib/slugify";
+import { set } from "date-fns";
 
 interface PostProps {
     post: Post;
@@ -116,10 +117,12 @@ export default function PostComponent({
     }, [showOptions]);
 
     const handleRedirectToCommunity = () => {
+        setLoading(true);
         router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}`);
     }
 
     const handleRedirectToProfile = () => {
+        setLoading(true);
         router.push(`/${post.autor.username}`);
     }
 
@@ -130,6 +133,8 @@ export default function PostComponent({
 
     const handleLikePost = async () => {
         try {
+            setLoading(true);
+            
             // Curtir/descurtir post
             const { liked, likeAmount } = await postsService.likePost(post._id);
 
@@ -137,7 +142,12 @@ export default function PostComponent({
             setLikeAmount(likeAmount);
 
         } catch (error) {
+
             console.error("Erro ao curtir/descurtir o post:", error);
+
+        } finally {
+
+            setLoading(false);
         }
     }
 
@@ -220,7 +230,7 @@ export default function PostComponent({
                             </h6>
                         </div>
                     </div>
-                    {(isOwner || isModerator) && !disableActions && <div onClick={handleMoreOptions}>
+                    {(isOwner || isModerator) && !disableActions && <div data-testid="botao-mais-opcoes" onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
                 </div>
@@ -326,6 +336,7 @@ export default function PostComponent({
                     onMouseLeave={() => setShowOptions(false)}
                 >
                     <Button
+                        data-testid="botao-deletar"
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"

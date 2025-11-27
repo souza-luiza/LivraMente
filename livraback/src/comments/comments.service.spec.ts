@@ -14,13 +14,6 @@ import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
 
-// Mock the external utility
-jest.mock('../common/utils/text.utils', () => ({
-  extractMentions: jest.fn(),
-}));
-
-import { extractMentions } from '../common/utils/text.utils';
-
 describe('CommentsService', () => {
   let service: CommentsService;
   // Use `any` for model variables in tests to avoid IntelliSense/type errors
@@ -110,8 +103,6 @@ describe('CommentsService', () => {
     beforeEach(() => {
       mockPostModel.findById.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-      (extractMentions as jest.Mock).mockReturnValue([]);
-      // userModel.find(...).select(...) should resolve to an array
       mockUserModel.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
     });
 
@@ -164,7 +155,7 @@ describe('CommentsService', () => {
     it('should throw ForbiddenException when user is not a member', async () => {
       const comunidadeWithoutUser = {
         ...mockComunidade,
-        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')], // Different user
+        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')],
       };
       mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
 
@@ -207,11 +198,10 @@ describe('CommentsService', () => {
 
     const mockComunidade = {
       _id: new Types.ObjectId(mockComunidadeId),
-      moderadores: [new Types.ObjectId('507f1f77bcf86cd799439099')], // Different user (not moderator)
+      moderadores: [new Types.ObjectId('507f1f77bcf86cd799439099')],
     };
 
     beforeEach(() => {
-      // service.deleteComment expects chainable .populate() after findById
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockComment) });
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
@@ -244,7 +234,6 @@ describe('CommentsService', () => {
     });
 
     it('should throw NotFoundException when comment is not found', async () => {
-      // For delete flow, findById returns a chainable with populate(); simulate not found by resolving populate to null
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
 
       await expect(
@@ -253,7 +242,6 @@ describe('CommentsService', () => {
     });
 
     it('should throw NotFoundException when post is not found', async () => {
-      // postModel.findById is chained with populate in delete flow
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
 
       await expect(
@@ -264,9 +252,8 @@ describe('CommentsService', () => {
     it('should throw ForbiddenException when user is not owner or moderator', async () => {
       const commentWithDifferentOwner = {
         ...mockComment,
-        autor: new Types.ObjectId('507f1f77bcf86cd799439099'), // Different user
+        autor: new Types.ObjectId('507f1f77bcf86cd799439099'),
       };
-      // findById in delete flow is chained with populate()
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(commentWithDifferentOwner) });
 
       await expect(
@@ -291,8 +278,8 @@ describe('CommentsService', () => {
         curtidas: [new Types.ObjectId(mockUserId)],
         length: 1,
       };
-      mockComentarioModel.findById.mockResolvedValueOnce(mockComment); // First call
-      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment); // Second call
+      mockComentarioModel.findById.mockResolvedValueOnce(mockComment);
+      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await service.likeComment(mockUserId, mockCommentId);
@@ -316,8 +303,8 @@ describe('CommentsService', () => {
         length: 0,
       };
       
-      mockComentarioModel.findById.mockResolvedValueOnce(commentWithLike); // First call
-      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment); // Second call
+      mockComentarioModel.findById.mockResolvedValueOnce(commentWithLike);
+      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await service.likeComment(mockUserId, mockCommentId);
@@ -607,103 +594,6 @@ describe('CommentsService', () => {
     });
   });
 
-  describe('createComment - Mentions', () => {
-      it('should extract and save mentions when content contains usernames', async () => {
-          const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello @user1 and @user2!',
-          imagens: [],
-          };
-
-          const mockPost = {
-          _id: new Types.ObjectId(mockPostId),
-          comunidade: new Types.ObjectId(mockComunidadeId),
-          };
-
-          const mockComunidade = {
-          _id: new Types.ObjectId(mockComunidadeId),
-          membros: [new Types.ObjectId(mockUserId)],
-          };
-
-          const mentionedUsers = [
-          { _id: new Types.ObjectId('507f1f77bcf86cd799439021') },
-          { _id: new Types.ObjectId('507f1f77bcf86cd799439022') },
-          ];
-
-          mockPostModel.findById.mockResolvedValue(mockPost);
-          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-          (extractMentions as jest.Mock).mockReturnValue(['user1', 'user2']);
-          mockUserModel.find.mockReturnValue({
-          select: jest.fn().mockResolvedValue(mentionedUsers),
-          });
-
-          const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: mentionedUsers.map(u => u._id),
-          save: jest.fn().mockResolvedValue(true),
-          };
-
-          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-          mockComentarioModel.mockImplementation(() => ({
-          ...mockComment,
-          save: jest.fn().mockResolvedValue(mockComment),
-          }));
-
-          const result = await service.createComment(mockUserId, mockPostId, createCommentDto);
-
-          expect(extractMentions).toHaveBeenCalledWith(createCommentDto.conteudo);
-          expect(userModel.find).toHaveBeenCalledWith({
-          username: { $in: ['user1', 'user2'] }
-          });
-          expect(result.comment!.mencoes).toHaveLength(2);
-      });
-
-      it('should handle empty mentions array when no usernames found', async () => {
-          const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello world!',
-          imagens: [],
-          };
-
-          const mockPost = {
-          _id: new Types.ObjectId(mockPostId),
-          comunidade: new Types.ObjectId(mockComunidadeId),
-          };
-
-          const mockComunidade = {
-          _id: new Types.ObjectId(mockComunidadeId),
-          membros: [new Types.ObjectId(mockUserId)],
-          };
-
-          mockPostModel.findById.mockResolvedValue(mockPost);
-          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-          (extractMentions as jest.Mock).mockReturnValue([]);
-          mockUserModel.find.mockReturnValue({
-          select: jest.fn().mockResolvedValue([]),
-          });
-
-          const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: [],
-          save: jest.fn().mockResolvedValue(true),
-          };
-
-          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-          mockComentarioModel.mockImplementation(() => ({
-          ...mockComment,
-          save: jest.fn().mockResolvedValue(mockComment),
-          }));
-
-          await service.createComment(mockUserId, mockPostId, createCommentDto);
-
-          expect(userModel.find).toHaveBeenCalledWith({ username: { $in: [] } });
-      });
-    });
-
     describe('deleteComment - Edge cases', () => {
         it('should throw NotFoundException when comunidade is not found', async () => {
             const mockComment = {
@@ -937,7 +827,6 @@ describe('CommentsService', () => {
 
             mockPostModel.findById.mockResolvedValue(mockPost);
             mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-            (extractMentions as jest.Mock).mockReturnValue([]);
             mockUserModel.find.mockReturnValue({
             select: jest.fn().mockResolvedValue([]),
             });

@@ -36,7 +36,9 @@ describe('LivrosService', () => {
       const result = [{ titulo: 'Livro A' }];
       model.find.mockReturnValue({
         select: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(result),
+          populate: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue(result),
+          }),
         }),
       });
 
