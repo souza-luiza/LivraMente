@@ -49,7 +49,7 @@ export class ReadlistsService {
     }
 
     async findOne(criadorId: string, slug: string) {
-        const readlist = await this.readlistModel.findOne({ slug: slug, criador: criadorId }).exec();
+        const readlist = await this.readlistModel.findOne({ slug: slug, criador: criadorId }).populate('livros').exec();
         if(!readlist) throw new NotFoundException('Readlist não encontrada');
         return readlist;
     }
@@ -99,7 +99,7 @@ export class ReadlistsService {
     async findOnePublic(username: string, slug: string) {
         const user = await this.usersService.getByUsername(username);
         if (!user) throw new NotFoundException('Usuário não encontrado');
-        const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-capa_public_id').exec();
+        const readlist = await this.readlistModel.findOne({ slug: slug, criador: user._id.toString(), publica: true }).select('-capa_public_id').populate('livros').exec();
         if(!readlist) throw new NotFoundException('Readlist não encontrada');
         return readlist;
     }

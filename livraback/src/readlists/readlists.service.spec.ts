@@ -30,6 +30,7 @@ describe('ReadlistsService', () => {
       exec: jest.fn().mockResolvedValue([mockReadlist]),
     })),
     findOne: jest.fn().mockReturnValue({
+      populate: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue(mockReadlist),
     }),
     findOneAndUpdate: jest.fn().mockReturnValue({
@@ -168,6 +169,7 @@ describe('ReadlistsService', () => {
 
     it('should throw NotFoundException if not found', async () => {
       mockReadlistModel.findOne.mockReturnValueOnce({
+        populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(null),
       });
 
@@ -319,6 +321,7 @@ describe('ReadlistsService', () => {
 
     it('deve lançar erro se o usuário não for encontrado', async () => {
       mockReadlistModel.findOne.mockReturnValueOnce({
+        populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(null),
       });
 
@@ -327,6 +330,7 @@ describe('ReadlistsService', () => {
 
     it('deve lançar erro se o arquivo for inválido', async () => {
       mockReadlistModel.findOne.mockReturnValueOnce({
+        populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockReadlist),
       });
 
@@ -341,6 +345,7 @@ describe('ReadlistsService', () => {
       };
 
       mockReadlistModel.findOne.mockReturnValueOnce({
+        populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockReadlist),
       });
 
