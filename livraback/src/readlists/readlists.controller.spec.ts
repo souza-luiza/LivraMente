@@ -100,11 +100,14 @@ describe('ReadlistsController', () => {
 
   describe('addLivro', () => {
     it('should add a livro to readlist', async () => {
-      const result = { id: '1', livros: ['livro123'] };
+      const dto = { livroIds: ['livro123', 'livro456'] };
+      const result = { id: '1', livros: dto.livroIds };
+
       mockReadlistsService.addLivro.mockResolvedValue(result);
 
-      const response = await controller.addLivro(mockUser, '1', 'livro123');
-      expect(service.addLivro).toHaveBeenCalledWith(mockUser.userId, '1', 'livro123');
+      const response = await controller.addLivro(mockUser, '1', dto);
+
+      expect(service.addLivro).toHaveBeenCalledWith(mockUser.userId, '1', dto.livroIds);
       expect(response).toEqual(result);
     });
   });

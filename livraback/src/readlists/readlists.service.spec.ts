@@ -40,6 +40,11 @@ describe('ReadlistsService', () => {
     }),
   };
 
+  const mockLivroModel = {
+    updateMany: jest.fn().mockResolvedValue({}),
+    findByIdAndUpdate: jest.fn().mockResolvedValue({})
+  };
+
   const mockPopulate = jest.fn().mockReturnValue({
     exec: jest.fn().mockResolvedValue({ readlists: [publicReadlist] }),
   });
@@ -64,6 +69,10 @@ describe('ReadlistsService', () => {
         {
           provide: getModelToken('User'),
           useValue: mockUserModel,
+        },
+        {
+          provide: getModelToken('Livro'),
+          useValue: mockLivroModel,
         },
         {
           provide: UsersService,
@@ -107,6 +116,7 @@ describe('ReadlistsService', () => {
         mockConstructor as any,
         mockUserModel as any,
         mockUsersService as any,
+        mockLivroModel as any,
         mockCloudinaryService as any
       );
 
@@ -206,13 +216,20 @@ describe('ReadlistsService', () => {
   });
 
   describe('addLivro', () => {
-    it('should add a livro to the readlist', async () => {
-      const result = await service.addLivro('user123', '1', 'livro123');
+    it('should add a livro to the readlist and update livroModel', async () => {
+      const result = await service.addLivro('user123', '1', ['livro123']);
+
       expect(mockReadlistModel.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: '1', criador: 'user123' },
-        { $addToSet: { livros: 'livro123' } },
+        { $addToSet: { livros: { $each: ['livro123'] } } },
         { new: true, runValidators: true }
       );
+
+      expect(mockLivroModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: ['livro123'] } },
+        { $addToSet: { readlists: '1' } }
+      );
+
       expect(result).toEqual({ ...mockReadlist, nome: 'Atualizado' });
     });
 
@@ -221,7 +238,7 @@ describe('ReadlistsService', () => {
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.addLivro('user123', '1', 'livro123')).rejects.toThrow(NotFoundException);
+      await expect(service.addLivro('user123', '1', ['livro123'])).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException on CastError', async () => {
@@ -229,18 +246,25 @@ describe('ReadlistsService', () => {
         exec: jest.fn().mockRejectedValue({ name: 'CastError' }),
       });
 
-      await expect(service.addLivro('user123', 'invalid', 'livro123')).rejects.toThrow(BadRequestException);
+      await expect(service.addLivro('user123', 'invalid', ['livro123'])).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('removeLivro', () => {
     it('should remove a livro from the readlist', async () => {
       const result = await service.removeLivro('user123', '1', 'livro123');
+
       expect(mockReadlistModel.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: '1', criador: 'user123' },
         { $pull: { livros: 'livro123' } },
         { new: true }
       );
+
+      expect(mockLivroModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'livro123',
+        { $pull: { readlists: '1' } }
+      );
+      
       expect(result).toEqual({ ...mockReadlist, nome: 'Atualizado' });
     });
 
