@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
-import { Livro } from './schemas/livro.schema';
-import { Autor } from './schemas/autor.schema';
+import { Livro } from './livros/entities/livro.schema';
+import { Autor } from './livros/entities/autor.schema';
 
 async function limparBanco() {
   console.log('🧹 Iniciando limpeza do banco de dados...\n');
