@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useEffect, useRef, useState } from 'react'
+import ActionButton from '@/components/action-button';
 import Button from '@/components/button';
 import LoginIcon from '@/components/icons/LoginIcon';
 import LogoIcon from '@/components/icons/LogoIcon';
@@ -17,7 +18,6 @@ import { toast } from 'react-toastify/unstyled';
 import { UserProfile } from '@/types/users';
 import Sidebar from '@/components/sidebar';
 import SearchBar from '@/components/searchbar';
-import Link from 'next/dist/client/link';
 import ImageSlider from '@/components/ImageSlider';
 
 export default function HomePage() {
@@ -245,10 +245,11 @@ export default function HomePage() {
                             />
                         </div>
                         <div className="relative flex items-center justify-center">
-                            <div className='flex flex-col gap-4 align-middle items-center'>
-                                <Button icon={<CommunityIcon />} colorScheme="dark-green" fullwidth={true} size="large" path="/comunidades" text="Comunidades" />
-                                <Button icon={<OpenBookIcon />} colorScheme="dark-green" fullwidth={true} size="large" path="/criar-historia" text="Criar História" />
-                                <Button icon={<LogoIcon/>} colorScheme='dark-green' fullwidth={true} size='large' path='/livratime' text='Créditos'/>
+                            <div className='flex gap-4 align-middle items-center'>
+                                <ActionButton icon={<LogoIcon/>} colorScheme="dark-green" size="large" fullwidth={true} path="/" text="0 Dias"/>
+                                <ActionButton icon={<CommunityIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/comunidades" text="Comunidades" />
+                                <ActionButton icon={<OpenBookIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/criar-historia" text="Criar História" />
+                                <ActionButton icon={<LogoIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/livratime' text='Créditos'/>
                             </div>  
                         </div>
                     </main>
