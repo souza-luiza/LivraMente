@@ -101,4 +101,22 @@ export class ResenhasController {
     async deleteResenha(@CurrentUser() user: CurrentUserDto, @Param('resenhaId') resenhaId: string) {
         return this.resenhasService.deleteResenha(user.userId, resenhaId);
     }
+
+    // Buscar uma resenha por ID
+    @Get('unico/:resenhaId')
+    @ApiOperation({
+        summary: 'Buscar resenha por ID',
+        description: 'Retorna uma resenha específica pelo seu ID.'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Resenha encontrada'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Resenha não encontrada'
+    })
+    async getResenha(@Param('resenhaId') resenhaId: string) {
+        return this.resenhasService.getResenhaById(resenhaId);
+    }
 }

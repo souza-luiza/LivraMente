@@ -84,4 +84,11 @@ export class ResenhasService {
 
         return { message: 'Resenha apagada com sucesso' };
     }
+    
+    // Buscar uma resenha por ID
+    async getResenhaById(resenhaId: string) {
+        const resenha = await this.resenhaModel.findById(resenhaId).lean();
+        if (!resenha) throw new NotFoundException('Resenha não encontrada');
+            return resenha;
+    }
 }
