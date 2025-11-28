@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Button from "./button";
-import AddIcon from "./icons/AddIcon";
 import TrashIcon from "./icons/TrashIcon";
+import SaveIcon from "./icons/SaveIcon";
 
 interface AddBookReadlistProps {
     tipo?: "book" | "readlist";
@@ -150,7 +150,10 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                                 <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
                             </motion.div>
                         ))}
-                        <Button icon={<AddIcon/>} text={'Adicionar livros'} colorScheme="dark-green" fullwidth />
+                        <div className="flex w-full justify-end gap-2">
+                            <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" />
+                            <Button icon={<SaveIcon/>} text={'Adicionar Livros'} colorScheme="dark-green"  />
+                        </div>
                     </div>
                 </div>
             </motion.div>
