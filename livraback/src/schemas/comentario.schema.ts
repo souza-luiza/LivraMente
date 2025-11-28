@@ -18,6 +18,9 @@ export class Comentario extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   curtidas: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  mencoes: Types.ObjectId[];
 }
 
 export const ComentarioSchema = SchemaFactory.createForClass(Comentario);

@@ -13,18 +13,13 @@ export class CreateComunidadeDto {
     @IsOptional()
     descricao?: string;
 
-    @ApiProperty({ description: 'Imagem de capa da comunidade'} )
+    @ApiProperty({ description: 'Imagem da comunidade'} )
     @IsOptional()
     @IsUrl()
-    capaUrl?: string;
-
-    @ApiProperty({ description: 'Banner da comunidade'} )
-    @IsOptional()
-    @IsUrl()
-    bannerUrl?: string;
+    imagem_url?: string;
 
     @ApiProperty({ description: 'Tags/Categorias da comunidade'} )
-    @IsOptional()
+    @IsOptional() // é opcional
     @IsArray()
     tags?: string[];
 

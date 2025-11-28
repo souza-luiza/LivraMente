@@ -6,6 +6,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
+import { extractMentions } from '../common/utils/text.utils';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -30,13 +31,19 @@ export class CommentsService {
         if ((createCommentDto.imagens && createCommentDto.imagens.length > 4) || !createCommentDto.conteudo) {
             throw new BadRequestException('Comentário deve conter texto e no máximo 4 imagens')
         }
+
+        // Retirando menções do texto
+        const mentionedUsernames = extractMentions(createCommentDto.conteudo);
+        const mentionedUsers = await this.userModel.find({username: { $in: mentionedUsernames }}).select("_id");
+        const mentionedUserIds = mentionedUsers.map(u => u._id);
         
         // Criando comentário
         const comment = new this.comentarioModel({
             ...createCommentDto,
             autor: new Types.ObjectId(userId),
             post: new Types.ObjectId(postId),
-            curtidas: []
+            curtidas: [],
+            mencoes: mentionedUserIds
         })
 
         await comment.save();

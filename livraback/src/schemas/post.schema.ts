@@ -33,18 +33,25 @@ export class Post extends Document {
   @Prop({ default: false })
   solicitacao_revisao: boolean;
 
+  @Prop({ type: Types.ObjectId, ref: 'Livro' })
+  livro_referenciado?: Types.ObjectId;
+
+  // Curtidas - array de usuários que curtiram
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   curtidas: Types.ObjectId[];
 
+  // Comentários - array de referências
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Comentario' }], default: [] })
   comentarios: Types.ObjectId[];
 
+  // Comunidade onde o post foi feito
   @Prop({ type: Types.ObjectId, ref: 'Comunidade', required: true })
   comunidade: Types.ObjectId;
 
   @Prop({ default: true })
   publico: boolean;
 
+  // Tags/Topics
   @Prop({ type: [String], default: [] })
   tags: string[];
 }

@@ -18,7 +18,7 @@ export default function Comunidades({ genero, comunidades }: ComunidadesProps) {
                     id={comunidade._id}
                     nome={comunidade.nome}
                     descricao={comunidade.descricao}
-                    image={comunidade.capaUrl}
+                    image={comunidade.imagem_url}
                 />
             ))}
         </div>

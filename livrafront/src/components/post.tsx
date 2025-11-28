@@ -220,7 +220,7 @@ export default function PostComponent({
                             </h6>
                         </div>
                     </div>
-                    {(isOwner || isModerator) && !disableActions && <div data-testid="botao-mais-opcoes" onClick={handleMoreOptions}>
+                    {(isOwner || isModerator) && !disableActions && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
                 </div>
@@ -326,7 +326,6 @@ export default function PostComponent({
                     onMouseLeave={() => setShowOptions(false)}
                 >
                     <Button
-                        data-testid="botao-deletar"
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"

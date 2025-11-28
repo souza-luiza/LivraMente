@@ -117,7 +117,7 @@ export default function CommunityPage(){
 
             } catch (err) {
 
-                console.error(err);
+                console.error("Erro ao carregar comunidade:", err);
                 router.replace("/not-found");
 
             } finally {
@@ -294,8 +294,6 @@ export default function CommunityPage(){
     }
 
     if (loading) return <LoadingPage />;
-
-    // MUDAR ISSO AQUIII
     if (!communityInfo || !userInfo) return null;
 
     const communityTitle = slugToTitle(community);
@@ -313,32 +311,31 @@ export default function CommunityPage(){
                 <main className="w-full pl-2 pr-4 py-2">
 
                     {/*Header da Comunidade*/}
-                    <div className="w-full flex flex-col community-header">
+                    <div className={`w-full flex flex-col community-header ${communityInfo.imagem_url && 'h-[300px]'}`}>
                         {/*Banner*/}
-                        {communityInfo.bannerUrl && <div className="relative w-full h-36 overflow-hidden large-border-radius bg-[#D9D9D9]">
-                            <Image
-                                src={communityInfo.bannerUrl}
+                        <div className="w-full flex-grow overflow-hidden rounded-[12px]">
+                            {/*SUBSTITUIR POR BANNER QUANDO TIVERMOS communityInfo.banner*/}
+                            {communityInfo.imagem_url && <Image
+                                src={communityInfo.imagem_url}
                                 alt={`${communityInfo.nome} banner`}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>}
+                                className="w-full h-full object-cover"
+                            />}
+                        </div>
                         <div className="flex flex-row flex-shrink-0 items-start gap-3 mt-2 px-4">
                             {/*Foto da Comunidade */}
-                            <div className="relative flex-shrink-0 w-24 h-24 rounded-full overflow-hidden">
-                                <Image
-                                    src={communityInfo.capaUrl ? communityInfo.capaUrl : "/CommunityDefault.png"}
+                            <div className={`flex-shrink-0 w-24 h-24 rounded-full overflow-hidden bg-[#472B15] ${communityInfo.imagem_url && 'medium-border-width boder-[#1F2A17]'}`}>
+                                {communityInfo.imagem_url && <Image
+                                    src={communityInfo.imagem_url}
                                     alt={`${communityInfo.nome} photo`}
-                                    fill
                                     className="object-cover"
-                                />
+                                />}
                             </div>
                             {/*Info da Comunidade */}
-                            <div className="w-full flex flex-col text-[#1F2A17] gap-1">
+                            <div className="flex flex-col text-[#1F2A17] gap-1">
                                 <h1 className="text-h4">
                                     {communityTitle}
                                 </h1>
-                                <p className="text-b2 text-justify line-clamp-4">
+                                <p className="text-b2 text-justify">
                                     {communityInfo.descricao}
                                 </p>
                                 {/*Botões*/}
@@ -536,7 +533,7 @@ export default function CommunityPage(){
 
                                         return filteredPosts.length === 0 ? (
                                         <p className="text-b1 body-quotation light-neutral text-center pt-4">
-                                            Nenhuma solicitação de revisão ainda.
+                                            Nenhuma solicitação de revisão nesta comunidade.
                                         </p>
                                         ) : (
                                         <div className="flex flex-col gap-4">

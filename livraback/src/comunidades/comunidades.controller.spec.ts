@@ -24,7 +24,6 @@ describe('ComunidadesController', () => {
     removerMembroComoModerador: jest.fn(),
     tornarMembroModerador: jest.fn(),
     deleteCommunity: jest.fn(),
-    uploadCapa: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -502,18 +501,6 @@ describe('ComunidadesController', () => {
 
       await expect(
         controller.delete(mockUser, comunidadeNome)
-      ).rejects.toThrow(ForbiddenException);
-    });
-  });
-  
-  describe('uploadCapa', () => {
-    it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: 'moderador1', email: 'mod@email.com', username: 'usuario123', avatarUrl: '', pronouns: 'ele/dele' };
-      const comunidadeNome = 'fantasia';
-
-      mockComunidadesService.uploadCapa = jest.fn().mockRejectedValue(new ForbiddenException('Apenas moderadores podem alterar a capa'));
-      await expect(
-        controller.uploadCapa(mockUser, comunidadeNome, null as unknown as Express.Multer.File)
       ).rejects.toThrow(ForbiddenException);
     });
   });
