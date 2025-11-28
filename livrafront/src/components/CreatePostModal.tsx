@@ -24,7 +24,7 @@ export default function CreatePostModal({
   onSuccess,
 }: CreatePostModalProps) {
   const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
   const [requestReview, setRequestReview] = useState(false);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
@@ -68,21 +68,21 @@ export default function CreatePostModal({
     if (!validateContent(content)) {
       return;
     }
-
-    setIsSubmitting(true);
-    setSubmitError('');
-
+    
     try {
+      setIsSubmitting(true);
+      setSubmitError('');
+
       // Criar o post via API
       const createdPost = await postsService.createPost(
         {
           conteudo: content.trim(),
           comunidade: communityName,
-          imagens: images.length > 0 ? images : undefined,
           solicitacao_revisao: requestReview,
           categoria: 'geral', // Categoria inicial, pode ser alterada pelo moderador se for solicitado
           publico: true,
-        }
+        },
+        images
       );
 
       // Reset do modal
@@ -108,70 +108,14 @@ export default function CreatePostModal({
     }
   };
 
-  // Função para comprimir imagem
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement('img');
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Falha ao criar contexto canvas'));
-            return;
-          }
-
-          // Definir tamanho máximo
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
-
-          // Calcular novas dimensões mantendo aspect ratio
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Comprimir para JPEG com 70% de qualidade
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(compressedDataUrl);
-        };
-        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const remainingSlots = 4 - images.length;
-      const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    if (!files) return;
 
-      Promise.all(filesToProcess.map(compressImage))
-        .then((newImages) => {
-          setImages([...images, ...newImages]);
-        })
-        .catch((error: unknown) => {
-          console.error('Erro ao processar imagens:', error);
-          setSubmitError('Erro ao processar imagens. Tente novamente.');
-        });
-    }
+    const remainingSlots = 4 - images.length;
+    const selectedFiles = Array.from(files).slice(0, remainingSlots);
+
+    setImages((prev) => [...prev, ...selectedFiles]);
   };
 
   const removeImage = (index: number) => {

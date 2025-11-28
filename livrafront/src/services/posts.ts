@@ -1,19 +1,40 @@
 import { Comentario } from '@/types/comentario';
-import { CreatePostData, Post, LikeResponse, PostCategoria, ModeratePostResponse } from '@/types/post';
+import { CreatePostData, Post, LikeResponse, PostCategoria, ModeratePostResponse, UpdatePostData } from '@/types/post';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 export const postsService = {
 
   // Criar novo post
-  async createPost(data: CreatePostData): Promise<Post> {
+  async createPost(data: CreatePostData, imagens: File[]): Promise<Post> {
+    const formData = new FormData();
+
+    formData.append("conteudo", data.conteudo);
+    formData.append("comunidade", data.comunidade);
+
+    if (data.solicitacao_revisao !== undefined)
+      formData.append("solicitacao_revisao", String(data.solicitacao_revisao));
+
+    if (data.categoria)
+      formData.append("categoria", data.categoria);
+
+    if (data.tags)
+      data.tags.forEach(tag => formData.append("tags", tag));
+
+    if (data.livro_referenciado)
+      formData.append("livro_referenciado", data.livro_referenciado);
+
+    if (data.publico !== undefined)
+      formData.append("publico", String(data.publico));
+
+    imagens.forEach((file) => {
+      formData.append("imagens", file);
+    });
+    
     const response = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',
       credentials: "include",                            
-      headers: {
-        'Content-Type': 'application/json',            
-      },
-      body: JSON.stringify(data),                      
+      body: formData,                      
     });
 
     if (!response.ok) throw new Error(`Erro ao criar post`);
@@ -43,7 +64,7 @@ export const postsService = {
   },
 
   // Editar post
-  async updatePost(postId: string, data: Partial<CreatePostData>): Promise<Post> {
+  async updatePost(postId: string, data: UpdatePostData): Promise<Post> {
     const response = await fetch(`${API_BASE_URL}/posts/${postId}/editar`, {
       method: 'PATCH',
       credentials: "include",

@@ -255,14 +255,14 @@ export default function PostComponent({
                 {/*Imagens*/}
                 {post.imagens && post.imagens.length > 0 && (
                 <div className="flex flex-nowrap gap-2 overflow-x-auto">
-                    {post.imagens.map((imgUrl, index) => (
+                    {post.imagens.map((img, index) => (
                     <div 
                         key={index} 
                         className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
-                        onClick={() => handleOpenImageModal(imgUrl)}
+                        onClick={() => handleOpenImageModal(img.secure_url)}
                     >
                         <Image
-                            src={imgUrl}
+                            src={img.secure_url}
                             alt={`Imagem do post ${index + 1}`}
                             fill
                             className="object-cover"
