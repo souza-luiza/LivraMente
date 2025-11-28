@@ -58,4 +58,13 @@ export const resenhasService = {
     if (!response.ok) throw new Error("Erro ao excluir resenha.");
     return response.json();
   },
+  
+  // Buscar uma resenha por ID
+  async getResenha(resenhaId: string): Promise<Resenha> {
+    const response = await fetch(`${API_BASE_URL}/resenhas/unico/${resenhaId}`, {
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Erro ao buscar resenha.");
+    return response.json();
+  },
 };
