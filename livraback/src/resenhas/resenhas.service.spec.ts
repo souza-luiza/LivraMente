@@ -352,6 +352,24 @@ describe('ResenhasService', () => {
       ).rejects.toThrow('Delete failed');
     });
   });
+  describe('getResenhaById', () => {
+      it('should return a resenha by id successfully', async () => {
+        mockResenhaModel.findById.mockReturnValue({
+          lean: jest.fn().mockResolvedValue(mockResenha),
+        });
+        const result = await service.getResenhaById(mockResenhaId);
+        expect(result).toEqual(mockResenha);
+        expect(mockResenhaModel.findById).toHaveBeenCalledWith(mockResenhaId);
+      });
+
+      it('should throw NotFoundException if resenha not found', async () => {
+        mockResenhaModel.findById.mockReturnValue({
+          lean: jest.fn().mockResolvedValue(null),
+        });
+        await expect(service.getResenhaById(mockResenhaId)).rejects.toThrow(NotFoundException);
+        await expect(service.getResenhaById(mockResenhaId)).rejects.toThrow('Resenha não encontrada');
+      });
+    });
 
   describe('edge cases', () => {
     it('should handle different user ObjectId formats', async () => {
