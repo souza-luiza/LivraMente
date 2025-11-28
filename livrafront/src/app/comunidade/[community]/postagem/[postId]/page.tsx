@@ -3,11 +3,10 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { ChatProvider } from '@/contexts/chat-context';
-import WidgetChat from '@/components/widget-chat';
 
 // Funções Auxiliares
 import { slugToTitle } from "@/lib/slugify";
+import { ChatProvider } from '@/contexts/chat-context';
 
 // Integração com a API
 import { communityService } from "@/services/comunidade";
@@ -30,6 +29,7 @@ import CommentComponent from "@/components/comment";
 import Button from "@/components/button";
 import LoadingComponent from "@/components/portable-loading";
 import DropdownFilter from "@/components/filter";
+import WidgetChat from '@/components/widget-chat';
 
 // Ícones
 import ImageIcon from "@/components/icons/ImageIcon";

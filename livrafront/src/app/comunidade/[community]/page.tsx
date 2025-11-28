@@ -15,6 +15,7 @@ import CommunityMember from "@/components/community-member";
 import CreatePostModal from "@/components/CreatePostModal";
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
 import CompactCommunityHeader from "@/components/compact-community-header";
+import WidgetChat from '@/components/widget-chat';
 
 // Ícones
 import AddIcon from "@/components/icons/AddIcon";
@@ -44,7 +45,6 @@ import PopUp from "@/components/pop-up";
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
 import { getSessionInfos } from "@/services/auth";
 import { ChatProvider } from '@/contexts/chat-context';
-import WidgetChat from '@/components/widget-chat';
 
 export default function CommunityPage(){
     const router = useRouter();

@@ -71,31 +71,37 @@ export default function ReadlistsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex bg-[#E5EEDF]">
-        <Sidebar />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="relative flex items-center justify-center">
-            <div className="absolute w-48 h-48 border-16 border-[#B0CC9E] border-t-[#5C8046] rounded-full animate-[spin_1.5s_ease-in-out_infinite]" />
-            <div className="w-24 h-24 text-[#1F2A17]">
-              <LogoIcon />
+      <ChatProvider>
+        <div className="min-h-screen flex bg-[#E5EEDF]">
+          <Sidebar />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute w-48 h-48 border-16 border-[#B0CC9E] border-t-[#5C8046] rounded-full animate-[spin_1.5s_ease-in-out_infinite]" />
+              <div className="w-24 h-24 text-[#1F2A17]">
+                <LogoIcon />
+              </div>
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+          <WidgetChat />
+        </div>
+      </ChatProvider>
     );
   }
 
   if(error || !readlists) {
     return (
-      <div className="flex min-h-screen bg-[#E5EEDF]">
-        <Sidebar />
-        <main className="flex-1 flex flex-col p-8">
-          <h2 className="text-h2 mb-4">Readlists</h2>
-          <div className="flex items-center justify-center p-8">
-            <p className="text-b1">Nenhuma readlist encontrada.</p>
-          </div>
-        </main>
-      </div>
+      <ChatProvider>
+        <div className="flex min-h-screen bg-[#E5EEDF]">
+          <Sidebar />
+          <main className="flex-1 flex flex-col p-8">
+            <h2 className="text-h2 mb-4">Readlists</h2>
+            <div className="flex items-center justify-center p-8">
+              <p className="text-b1">Nenhuma readlist encontrada.</p>
+            </div>
+          </main>
+          <WidgetChat />
+        </div>
+      </ChatProvider>
     )
   }
 
@@ -173,8 +179,8 @@ export default function ReadlistsPage() {
         </TabProvider>
       </main>
       <ToastNotification/>
+      <WidgetChat />
     </div>
-    <WidgetChat />
     </ChatProvider>
   )
 }

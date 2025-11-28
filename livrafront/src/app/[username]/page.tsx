@@ -75,6 +75,7 @@ export default function UserProfilePage(){
 
     if (isLoading) {
         return (
+            <ChatProvider>
             <div className="min-h-screen flex bg-[#E5EEDF]">
                 <Sidebar />
                 <main className="flex-1 flex items-center justify-center">
@@ -85,12 +86,15 @@ export default function UserProfilePage(){
                         </div>
                     </div>
                 </main>
+                <WidgetChat />
             </div>
+            </ChatProvider>
         );
     }
 
     if (error || !userData) {
         return (
+            <ChatProvider>
             <div className="min-h-screen flex bg-[#E5EEDF]">
                 <Sidebar />
                 <main className="flex flex-col justify-center items-center w-full p-12 text-black">
@@ -112,7 +116,9 @@ export default function UserProfilePage(){
                         </Link>
                     </div>
                 </main>
+                <WidgetChat />
             </div>
+            </ChatProvider>
         );
     }
 
@@ -164,8 +170,8 @@ export default function UserProfilePage(){
                 </div>
             </main>
             <ToastNotification/>
+            <WidgetChat />
         </div>
-        <WidgetChat />
         </ChatProvider>
     );
 }

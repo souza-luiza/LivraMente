@@ -552,8 +552,8 @@ export default function ReadlistPage() {
 
       </div>
       <ToastNotification/>
+      <WidgetChat />
     </div>
-    <WidgetChat />
     </ChatProvider>
   );
 }
