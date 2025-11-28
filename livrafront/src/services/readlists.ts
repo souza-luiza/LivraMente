@@ -91,6 +91,19 @@ export async function unfavoriteReadlist(username: string, readlistSlug: string)
   return response.json();
 }
 
+export async function checkReadlistFav(readlistId: string) {
+  const response = await fetch(`${API_BASE_URL}/users/me/favoritar/${readlistId}`, {
+    method: 'GET',
+    credentials: "include"
+  });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Usuário não autenticado.');
+    if (response.status === 500) throw new Error('Erro interno do servidor.');
+    throw new Error('Erro ao verificar se readlist está favoritada.');
+  }
+  return response.json();
+} 
+
 // Buscar detalhes de uma readlist especifica do usuario autenticado por slug
 export async function getReadlistBySlug(readlistSlug: string): Promise<Readlist> {
   const response = await fetch(`${API_BASE_URL}/readlists/${readlistSlug}`, {
@@ -168,18 +181,20 @@ export async function deleteReadlist(readlistSlug: string) {
   return response.json();
 }
 
-// Adicionar um livro à readlist
-export async function addBookToReadlist(readlistId: string, livroId: string): Promise<Readlist> {
-  const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}/livros/${livroId}`, {
+// Adicionar livros na readlist
+export async function addBookToReadlist(readlistId: string, livroIds: string[]): Promise<Readlist> {
+  const response = await fetch(`${API_BASE_URL}/readlists/${readlistId}/livros`, {
     method: 'PATCH',
     credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ livroIds })
   });
+
   if (!response.ok) {
-    if (response.status === 404) {
-      return Promise.reject(new Error('Readlist ou livro não encontrado'));
-    }
+    if (response.status === 404) return Promise.reject(new Error('Readlist não encontrada'));
     return Promise.reject(new Error('Erro ao adicionar livro à readlist'));
   }
+
   return response.json();
 }
 
