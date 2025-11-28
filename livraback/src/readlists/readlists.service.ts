@@ -8,6 +8,7 @@ import { User, UserDocument } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import slugify from 'slugify';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Livro, LivroDocument } from '../livros/entities/livro.schema';
 
 @Injectable()
 export class ReadlistsService {
@@ -16,6 +17,7 @@ export class ReadlistsService {
         @InjectModel(Readlist.name) private readonly readlistModel: Model<ReadlistDocument>,
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
         @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
+        @InjectModel(Livro.name) private readonly livroModel: Model<LivroDocument>,
         private readonly cloudinary: CloudinaryService,
     ) {}
 
@@ -121,7 +123,7 @@ export class ReadlistsService {
         return obj;
     }
 
-    async addLivro(criadorId: string, readlistId: string, livroId: string) {
+    async addLivro(criadorId: string, readlistId: string, livroIds: string[]) {
         try {
             const updated = await this.readlistModel.findOneAndUpdate(
                 {
@@ -129,7 +131,7 @@ export class ReadlistsService {
                     criador: criadorId
                 },
                 {
-                    $addToSet: { livros: livroId } // para evitar duplicatas
+                    $addToSet: { livros: { $each: livroIds } } // para evitar duplicatas
                 },
                 {
                     new: true,
@@ -137,14 +139,17 @@ export class ReadlistsService {
                 }
             ).exec();
 
-            if(!updated) {
-                throw new NotFoundException('Readlist não encontrada');
-            }
+            if(!updated) throw new NotFoundException('Readlist não encontrada');
+
+            // Adiciona readlist relacionada aos livros no schema dos mesmos.
+            await this.livroModel.updateMany(
+                { _id: { $in: livroIds } },
+                { $addToSet: { readlists: readlistId } }
+            );
+            
             return updated;
         } catch(error) {
-            if(error.name === 'CastError') {
-                throw new BadRequestException('ID inválido');
-            }
+            if(error.name === 'CastError') throw new BadRequestException('ID inválido');
             throw error;
         }
     }
@@ -164,14 +169,18 @@ export class ReadlistsService {
                 }
             ).exec();
 
-            if(!removed) {
-                throw new NotFoundException('Readlist não encontrada');
-            }
+            if(!removed) throw new NotFoundException('Readlist não encontrada');
+
+            // Remove readlist relacionada ao livro deletado no schema do mesmo.
+            await this.livroModel.findByIdAndUpdate(
+                livroId,
+                { $pull: { readlists: readlistId } }
+            );
+            
             return removed;
         } catch(error) {
-            if(error.name === 'CastError') {
-                throw new BadRequestException('ID inválido');
-            }
+            if(error.name === 'CastError') throw new BadRequestException('ID inválido');
+            
             throw error;
         }
     }
