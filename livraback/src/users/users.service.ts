@@ -174,6 +174,15 @@ export class UsersService {
     return user.readlists_favoritas;
   }
 
+  async checkReadlistFav(userId: string, readlistId: string) {
+    const user = await this.findOne(userId);
+
+    const readlistsFav = user.readlists_favoritas.map((r) => r.toString());
+    const isFavorited = readlistsFav.includes(readlistId);
+
+    return { isFavorited };
+  }
+
   async updateAvatar(id: string, file: Express.Multer.File, session: Record<string, any>) {
     const user = await this.findOne(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
