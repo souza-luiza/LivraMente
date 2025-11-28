@@ -138,15 +138,16 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                         <label className="text-h5">Livros selecionados:</label>
                         {listaSelecionados.map((livro) => (
                             <motion.div 
-                                className="w-full flex flex-row items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
+                                className="w-full flex flex-row justify-between items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
                                     active:opacity-95
                                     hover:opacity-90 hover:cursor-pointer
                                     disabled:opacity-70 disabled:cursor-not-allowed
-                                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black group"
                                 whileHover={{ scale: 1.01, transition: { duration: 0.3 }, backgroundColor: '#E3A988', color: '#2B0F05' }}
                                 onClick={() => handleRemoveSelect(livro._id)}
                             >
-                                {livro.titulo}
+                                <span>{livro.titulo}</span>
+                                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
                             </motion.div>
                         ))}
                         <Button icon={<AddIcon/>} text={'Adicionar livros'} colorScheme="dark-green" fullwidth />
