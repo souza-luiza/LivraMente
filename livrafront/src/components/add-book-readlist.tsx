@@ -134,23 +134,26 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                             })}
                         </div>
                     </div>
-                    <div className="w-1/2 flex flex-col items-center pr-2 pl-2 overflow-y-auto gap-2">
+                    <div className="w-1/2 flex flex-col items-center px-2 gap-2">
                         <label className="text-h5">Livros selecionados:</label>
-                        {listaSelecionados.map((livro) => (
-                            <motion.div 
-                                className="w-full flex flex-row justify-between items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
-                                    active:opacity-95
-                                    hover:opacity-90 hover:cursor-pointer
-                                    disabled:opacity-70 disabled:cursor-not-allowed
-                                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black group"
-                                whileHover={{ scale: 1.01, transition: { duration: 0.3 }, backgroundColor: '#E3A988', color: '#2B0F05' }}
-                                onClick={() => handleRemoveSelect(livro._id)}
-                            >
-                                <span>{livro.titulo}</span>
-                                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
-                            </motion.div>
-                        ))}
-                        <div className="flex w-full justify-end gap-2">
+                        <div className="w-full overflow-y-auto flex flex-1 flex-col gap-2 px-2">
+                            {listaSelecionados.map((livro) => (
+                                <motion.div 
+                                    key={livro._id}
+                                    className="w-full flex flex-row justify-between items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
+                                        active:opacity-95
+                                        hover:opacity-90 hover:cursor-pointer
+                                        disabled:opacity-70 disabled:cursor-not-allowed
+                                        focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black group"
+                                    whileHover={{ scale: 1.01, transition: { duration: 0.3 }, backgroundColor: '#E3A988', color: '#2B0F05' }}
+                                    onClick={() => handleRemoveSelect(livro._id)}
+                                >
+                                    <span>{livro.titulo}</span>
+                                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
+                                </motion.div>
+                            ))}
+                        </div>
+                        <div className="flex w-full justify-end gap-2 px-2">
                             <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" />
                             <Button icon={<SaveIcon/>} text={'Adicionar Livros'} colorScheme="dark-green"  />
                         </div>
