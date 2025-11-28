@@ -6,6 +6,10 @@ import Image from "next/image";
 import Button from "./button";
 import TrashIcon from "./icons/TrashIcon";
 import SaveIcon from "./icons/SaveIcon";
+import { livrosService } from "@/services/livros";
+import ToastNotification from "@/components/toast-notification";
+import { toast } from "react-toastify";
+import LoadingComponent from "./portable-loading";
 
 interface AddBookProps {
     isOpen: boolean;
@@ -15,64 +19,40 @@ interface AddBookProps {
 
 export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
     const [livros, setLivros] = useState<Livro[]>([]);
+    const [livrosTotal, setLivrosTotal] = useState<Livro[]>([]);
     const [busca, setBusca] = useState<string>("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [listaSelecionados, setListaSelecionados] = useState<Livro[]>([]);
 
     useEffect(() => {
-        async function carregarLivros() {
-            // const livrosTotal = await findAllBooks();
-            // setLivros(livrosTotal);
 
-            const MOCK: Livro[] = [
-                { _id: '1',  titulo: "Dom Casmurro",             slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '2',  titulo: "O Senhor dos Anéis",       slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '3',  titulo: "1984",                     slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '4',  titulo: "Harry Potter e a Pedra Filosofal", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '5',  titulo: "Harry Potter e a Câmara Secreta", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '6',  titulo: "Harry Potter e o Prisioneiro de Azkaban", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '7',  titulo: "O Código Da Vinci",        slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '8',  titulo: "A Culpa é das Estrelas",   slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '9',  titulo: "Percy Jackson: O Ladrão de Raios", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '10', titulo: "O Pequeno Príncipe",       slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '11', titulo: "Moby Dick",                slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '12', titulo: "Orgulho e Preconceito",    slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '13', titulo: "O Morro dos Ventos Uivantes", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '14', titulo: "Crime e Castigo",          slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '15', titulo: "O Hobbit",                 slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '16', titulo: "Sherlock Holmes: Um Estudo em Vermelho", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '17', titulo: "A Metamorfose",            slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '18', titulo: "O Alquimista",             slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '19', titulo: "It: A Coisa",              slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '20', titulo: "O Iluminado",              slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '21', titulo: "O Nome do Vento",          slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '22', titulo: "Neuromancer",              slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '23', titulo: "Duna",                     slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '24', titulo: "Admirável Mundo Novo",     slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '25', titulo: "O Senhor das Moscas",      slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '26', titulo: "A Revolução dos Bichos",   slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '27', titulo: "O Conto da Aia",           slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '28', titulo: "O Sol é Para Todos",       slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '29', titulo: "A Menina que Roubava Livros", slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 },
-                { _id: '30', titulo: "Jogos Vorazes",            slug: "", isbn: "", autores: [], ano_publicacao: 0, sinopse: "", numero_paginas: 0, generos: [], avaliacoes_count: 0, avaliacoes_media: 0 }
-            ];
-            setLivros(MOCK);
-        }
+        const fetchBooks = async () => {
+            try {
+                const totalLivros = await livrosService.getBooks();
+                setLivros(totalLivros);
+                setLivrosTotal(totalLivros);
 
-        carregarLivros();
+            } catch(error) {
+                toast.error("Erro ao carregar livros.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchBooks();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { // busca livro pelo input
-        const value  = e.target.value;
-        setBusca(value);
+        const value = e.target.value;
+        setBusca(e.target.value);
 
-        if(value.trim() !== "") {
-            // const livrosBuscados = await findBooks(value); endpoint que procura livros por titulo
-            // setLivros(livrosBuscados);
-        } else {
-            // const livrosTotal = await findAllBooks();
-            // setLivros(livrosTotal);
+        if(value.trim() === "") {
+            setLivros(livrosTotal);
+            return;
         }
+        
+        const livrosFiltrados = livrosTotal.filter((livro) => livro.titulo.toLowerCase().includes(value.toLowerCase()));
+        setLivros(livrosFiltrados);
     };
 
     const handleSelect = (livro: Livro) => {
@@ -103,7 +83,7 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
                     style={{ color: 'var(--primary-800)', width: '80%', height: '80%' }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex flex-col items-center justify-center gap-2 w-1/2">
+                    <div className="flex flex-col items-center gap-2 w-1/2">
                         <label className="text-h5">Selecione os livros para sua readlist</label>
                         <Input 
                             id="busca"
@@ -114,27 +94,31 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
                             onChange={handleChange}
                             fullWidth
                         />
-                        <div className="w-full grid grid-cols-3 p-2 gap-2 bg-gray-200 overflow-y-auto medium-border-radius">
-                            {livros.map((livro) => {
-                                const isSelected = listaSelecionados.some(l => l._id === livro._id);
-
-                                return (
-                                    <div key={livro._id} className={`w-full flex items-center p-2 gap-2 bg-white hover:shadow-md 
-                                                                    hover:cursor-pointer transition-shadow medium-border-radius 
-                                                                    ${isSelected ? "opacity-50 pointer-events-none" : "opacity-100"}`} 
-                                                                    onClick={() => handleSelect(livro)}>
-                                        <Image 
-                                            src={livro.capa_url ? livro.capa_url : '/team/Kemi.jpg'}
-                                            alt="Capa do livro"
-                                            width={40}
-                                            height={60}
-                                            className="object-cover rounded-lg"
-                                        />
-                                        <p className="text-b2 line-clamp-2">{livro.titulo}</p>
-                                    </div>
-                                )
-                            })}
-                        </div>
+                        { isLoading ? (
+                            <LoadingComponent size="small" className="p-8" />
+                        ) : (
+                            <div className="w-full grid grid-cols-3 p-2 gap-2 bg-gray-200 overflow-y-auto medium-border-radius">
+                                    {livros.map((livro) => {
+                                        const isSelected = listaSelecionados.some(l => l._id === livro._id);
+        
+                                        return (
+                                            <div key={livro._id} className={`w-full flex items-center p-2 gap-2 bg-white hover:shadow-md 
+                                                                            hover:cursor-pointer transition-shadow medium-border-radius 
+                                                                            ${isSelected ? "opacity-50 pointer-events-none" : "opacity-100"}`} 
+                                                                            onClick={() => handleSelect(livro)}>
+                                                <Image 
+                                                    src={livro.capa_url ? livro.capa_url : '/team/Kemi.jpg'}
+                                                    alt="Capa do livro"
+                                                    width={40}
+                                                    height={60}
+                                                    className="object-cover rounded-lg"
+                                                />
+                                                <p className="text-b2 line-clamp-2">{livro.titulo}</p>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        )}
                     </div>
                     <div className="w-1/2 flex flex-col items-center px-2 gap-2">
                         <label className="text-h5">Livros selecionados:</label>
@@ -168,6 +152,7 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
                     </div>
                 </div>
             </motion.div>
+            <ToastNotification />
         </AnimatePresence>
     )
 }
