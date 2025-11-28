@@ -7,14 +7,13 @@ import Button from "./button";
 import TrashIcon from "./icons/TrashIcon";
 import SaveIcon from "./icons/SaveIcon";
 
-interface AddBookReadlistProps {
-    tipo?: "book" | "readlist";
+interface AddBookProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (livros: Livro) => void; // para adicionar livro/readlist
+    onSave: () => void; // para adicionar livro/readlist
 }
 
-export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBookReadlistProps) {
+export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
     const [livros, setLivros] = useState<Livro[]>([]);
     const [busca, setBusca] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
@@ -120,7 +119,10 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                                 const isSelected = listaSelecionados.some(l => l._id === livro._id);
 
                                 return (
-                                    <div key={livro._id} className={`w-full flex items-center p-2 gap-2 bg-white hover:shadow-md hover:cursor-pointer transition-shadow medium-border-radius ${isSelected ? "opacity-50 pointer-events-none" : "opacity-100"}`} onClick={() => handleSelect(livro)}>
+                                    <div key={livro._id} className={`w-full flex items-center p-2 gap-2 bg-white hover:shadow-md 
+                                                                    hover:cursor-pointer transition-shadow medium-border-radius 
+                                                                    ${isSelected ? "opacity-50 pointer-events-none" : "opacity-100"}`} 
+                                                                    onClick={() => handleSelect(livro)}>
                                         <Image 
                                             src={livro.capa_url ? livro.capa_url : '/team/Kemi.jpg'}
                                             alt="Capa do livro"
@@ -137,21 +139,27 @@ export default function AddBookReadlist({ tipo, isOpen, onClose, onSave }: AddBo
                     <div className="w-1/2 flex flex-col items-center px-2 gap-2">
                         <label className="text-h5">Livros selecionados:</label>
                         <div className="w-full overflow-y-auto flex flex-1 flex-col gap-2 px-2">
-                            {listaSelecionados.map((livro) => (
-                                <motion.div 
-                                    key={livro._id}
-                                    className="w-full flex flex-row justify-between items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
-                                        active:opacity-95
-                                        hover:opacity-90 hover:cursor-pointer
-                                        disabled:opacity-70 disabled:cursor-not-allowed
-                                        focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black group"
-                                    whileHover={{ scale: 1.01, transition: { duration: 0.3 }, backgroundColor: '#E3A988', color: '#2B0F05' }}
-                                    onClick={() => handleRemoveSelect(livro._id)}
-                                >
-                                    <span>{livro.titulo}</span>
-                                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
-                                </motion.div>
-                            ))}
+                            {listaSelecionados.length === 0 ? (
+                                <p className="text-b1 body-quotation light-neutral text-center pt-4">
+                                    Nenhum livro foi selecionado ainda.
+                                </p>
+                            ) : (
+                                listaSelecionados.map((livro) => (
+                                    <motion.div 
+                                        key={livro._id}
+                                        className="w-full flex flex-row justify-between items-center medium-box text-h6 text-[#1F2A17] bg-[#E5EEDF] gap-2
+                                            active:opacity-95
+                                            hover:opacity-90 hover:cursor-pointer
+                                            disabled:opacity-70 disabled:cursor-not-allowed
+                                            focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black group"
+                                        whileHover={{ scale: 1.01, transition: { duration: 0.3 }, backgroundColor: '#E3A988', color: '#2B0F05' }}
+                                        onClick={() => handleRemoveSelect(livro._id)}
+                                    >
+                                        <span>{livro.titulo}</span>
+                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"><TrashIcon size={24}/></span>
+                                    </motion.div>
+                                ))
+                            )}
                         </div>
                         <div className="flex w-full justify-end gap-2 px-2">
                             <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" />

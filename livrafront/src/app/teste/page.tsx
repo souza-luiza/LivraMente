@@ -1,14 +1,14 @@
 "use client";
 
-import AddBookReadlist from "@/components/add-book-readlist";
+import AddBook from "@/components/add-book";
+import AddReadlist from "@/components/add-readlist";
 
 export default function PageTest() {
     return (
-        <AddBookReadlist
-            tipo="book"
+        <AddReadlist
             isOpen={true}
             onClose={() => console.log("Fechou")}
-            onSave={(livro) => console.log("Livro salvo:", livro)}
+            onSave={() => console.log("Livro salvo:")}
         />
     );
 }
