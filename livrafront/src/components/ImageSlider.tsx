@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -58,26 +58,80 @@ export default function ImageSlider({
 }: ImageSliderProps) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+    const [isWindowFocused, setIsWindowFocused] = useState(true)
+    const [progressKey, setProgressKey] = useState(0)
+    const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+    // Função para resetar o timer
+    const resetTimer = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
+        setProgressKey(prev => prev + 1) // Reseta a barra de progresso
+    }, [])
+
+    // Detecta foco/desfoco da janela
     useEffect(() => {
-        if (!autoPlay || isPaused) return
-        const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % items.length)
-        }, autoPlayInterval)
-        return () => clearInterval(interval)
-    }, [autoPlay, autoPlayInterval, items.length, isPaused])
+        const handleVisibilityChange = () => {
+            setIsWindowFocused(!document.hidden)
+        }
 
-    const nextSlide = () => {
+        const handleFocus = () => setIsWindowFocused(true)
+        const handleBlur = () => setIsWindowFocused(false)
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        window.addEventListener('focus', handleFocus)
+        window.addEventListener('blur', handleBlur)
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            window.removeEventListener('focus', handleFocus)
+            window.removeEventListener('blur', handleBlur)
+        }
+    }, [])
+
+    // AutoPlay com reset apropriado
+    useEffect(() => {
+        const shouldPlay = autoPlay && !isPaused && isWindowFocused
+
+        if (!shouldPlay) {
+            resetTimer()
+            return
+        }
+
+        intervalRef.current = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % items.length)
+            setProgressKey(prev => prev + 1)
+        }, autoPlayInterval)
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
+    }, [autoPlay, autoPlayInterval, items.length, isPaused, isWindowFocused, resetTimer])
+
+    const nextSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev + 1) % items.length)
-    }
+        resetTimer()
+    }, [items.length, resetTimer])
     
-    const prevSlide = () => {
+    const prevSlide = useCallback(() => {
         setCurrentIndex((prev) => (prev - 1 + items.length) % items.length)
-    }
+        resetTimer()
+    }, [items.length, resetTimer])
+
+    const goToSlide = useCallback((index: number) => {
+        setCurrentIndex(index)
+        resetTimer()
+    }, [resetTimer])
 
     const togglePause = () => {
         setIsPaused((prev) => !prev)
     }
+
+    const shouldAnimate = autoPlay && !isPaused && isWindowFocused
 
     return (
         <div 
@@ -161,7 +215,7 @@ export default function ImageSlider({
                     {items.map((_, i) => (
                         <button
                             key={i}
-                            onClick={() => setCurrentIndex(i)}
+                            onClick={() => goToSlide(i)}
                             className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                                 i === currentIndex 
                                     ? 'w-8 bg-white' 
@@ -177,11 +231,11 @@ export default function ImageSlider({
             {autoPlay && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10 overflow-hidden">
                     <motion.div
-                        key={`progress-${currentIndex}`}
+                        key={`progress-${currentIndex}-${progressKey}`}
                         initial={{ scaleX: 0 }}
-                        animate={{ scaleX: isPaused ? 0 : 1 }}
+                        animate={{ scaleX: shouldAnimate ? 1 : 0 }}
                         transition={{ 
-                            duration: isPaused ? 0 : autoPlayInterval / 1000, 
+                            duration: shouldAnimate ? autoPlayInterval / 1000 : 0, 
                             ease: 'linear'
                         }}
                         style={{ transformOrigin: 'left' }}
