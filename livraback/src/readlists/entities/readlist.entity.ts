@@ -14,7 +14,7 @@ export class Readlist {
   @Prop({ required: false, default: '' })
   descricao?: string;
 
-  @Prop({ required: false, default: '/Readlist.svg' })
+  @Prop({ required: false, default: '/ReadlistDefault.png' })
   capa_url?: string;
 
   @Prop({ required: false, default: '' })
