@@ -42,7 +42,7 @@ export default function LivrosReadlist({ livro, isCurrentUserOwner = false, hand
             onHoverEnd={() => setShowOptions(false)}
         >
             <motion.div 
-                className="w-full flex flex-row items-center p-2 rounded-lg
+                className="w-full flex flex-row items-center px-2 pb-2 rounded-lg
                     active:opacity-95
                     hover:opacity-90 hover:cursor-pointer
                     disabled:opacity-70 disabled:cursor-not-allowed"

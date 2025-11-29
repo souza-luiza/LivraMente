@@ -13,12 +13,14 @@ import { useEffect, useState } from "react";
 import { Readlist } from "@/types/readlist";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { getSessionInfos } from "@/services/auth";
-import { checkReadlistFav, favoriteReadlist, getOnePublicReadlist, getReadlistBySlug, removeBookFromReadlist, unfavoriteReadlist, updateReadlist } from "@/services/readlists";
+import { checkReadlistFav, deleteReadlist, favoriteReadlist, getOnePublicReadlist, getReadlistBySlug, removeBookFromReadlist, unfavoriteReadlist, updateReadlist } from "@/services/readlists";
 import { toast } from "react-toastify";
 import ToastNotification from '@/components/toast-notification';
 import LoadingPage from "@/components/loading";
 import EditReadlistModal from "@/components/EditReadlistModal";
 import AddBook from "@/components/add-book";
+import PopUp from "@/components/pop-up";
+import RemoveIcon from "@/components/icons/RemoveIcon";
 
 export default function ReadlistPage() {
     const router = useRouter();
@@ -37,6 +39,9 @@ export default function ReadlistPage() {
 
     // Componente de adicionar livro
     const [isAddBookOpen, setIsAddBookOpen] = useState(false);
+
+    // Pop-up para confirmar delete 
+    const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
 
     useEffect(() => {
         if(!readlistSlug) notFound();
@@ -171,6 +176,20 @@ export default function ReadlistPage() {
         }
     }
 
+    const handleDeleteReadlist = async () => {
+        setLoading(true);
+
+        try {
+            await deleteReadlist(readlistSlug);
+            setShowConfirmDeletePopUp(false);
+            router.push(`/${username}/readlists`);
+
+        } catch (err) {
+            toast.error('Erro ao apagar readlist.');
+
+        }
+    }
+
     if(loading) return <LoadingPage />;
     if(!readlistInfo) return null;
 
@@ -230,7 +249,7 @@ export default function ReadlistPage() {
                             <>
                             <Button icon={<Edit2Icon/>} size="medium" colorScheme="light-green" text={"Editar Readlist"} fullwidth={true} onClick={() => setIsEditModalOpen(true)}/>
                             <Button icon={<OpenBookIcon/>} text={"Adicionar livro"} fullwidth={true} onClick={() => setIsAddBookOpen(true)}/>
-                            <Button icon={<TrashIcon/>} text={"Apagar readlist"} fullwidth={true} variant="rejeitar"/>
+                            <Button icon={<TrashIcon/>} text={"Apagar readlist"} fullwidth={true} variant="rejeitar" onClick={() => setShowConfirmDeletePopUp(true)}/>
                             </>
                         ) : (
                             <Button icon={<HeartIcon fill={isFavorited ? "currentColor" : "none"} />} size="medium" colorScheme="light-green" text={"Favoritar"} fullwidth={true} onClick={handleFavoritar} />
@@ -261,10 +280,16 @@ export default function ReadlistPage() {
                             </div>
                         )}
                     </div>
-    
                 </div>
-
             </div>
+            <PopUp
+                title="Apagar Readlist?"
+                description="Esta ação não pode ser desfeita."
+                isOpen={showConfirmDeletePopUp}
+                button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-green", onClick: () => setShowConfirmDeletePopUp(false)}}
+                button2={{text: "Apagar", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeleteReadlist}}
+                onClose={() => setShowConfirmDeletePopUp(false)}
+            />
             <ToastNotification/>
         </div>
     )

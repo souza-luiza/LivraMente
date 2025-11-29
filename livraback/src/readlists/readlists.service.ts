@@ -78,13 +78,20 @@ export class ReadlistsService {
         const readlist = await this.readlistModel.findOne({ slug, criador: criadorId }).exec();
         if(!readlist) throw new NotFoundException('Readlist não encontrada');
 
+        if(readlist.capa_public_id) {
+            await this.cloudinary.deleteImage(readlist.capa_public_id);
+        }
+
         await this.readlistModel.deleteOne({ _id: readlist._id }).exec();
         
-        //Remove ID na lista de readlists do usuario:
+        //Remove Id na lista de readlists do usuario:
         await this.userModel.findByIdAndUpdate(
             criadorId,
             { $pull: { readlists: readlist._id }}
         );
+
+        //Remove Id na lista de readlists do livro:
+        await this.livroModel.updateMany({ readlists: readlist._id }, { $pull: { readlists: readlist._id } });
 
         return { deleted: true, slug };
     }
