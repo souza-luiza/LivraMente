@@ -431,13 +431,13 @@ export default function PostPage() {
                     </div>
                     {/*Seção Direita - Recomendações, Chatbot etc...*/}
                     <div className="sticky top-16 w-1/4 max-h-screen flex items-center justify-center medium-box bg-gray-100">
+                        {/*<WidgetChat embedded={true} />*/}
                         <p className="text-b1 body-quotation">
                             Em breve....
                         </p>
                     </div>
                 </main>
             </div>
-            <WidgetChat embedded={true} />
         </div>
         </ChatProvider>
     );
