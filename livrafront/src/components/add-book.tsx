@@ -45,7 +45,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
         };
 
         fetchBooks();
-    }, []);
+    }, [isOpen]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { // busca livro pelo input
         const value = e.target.value;
@@ -80,12 +80,19 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
             const updatedReadlist = await addBookToReadlist(readlistId, livroIds);
 
             onSave?.();
+            setListaSelecionados([]);
             onClose();
 
             toast.success("Livros adicionados com sucesso!");
         } catch(error)  {
             toast.error("Erro ao adicionar livros à readlist.")
         }
+    }
+
+    const handleCancel = async () => {
+        setListaSelecionados([]);
+        setBusca("");
+        onClose();
     }
 
     if(!isOpen) return null;
@@ -99,7 +106,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
-                onClick={onClose}
+                onClick={handleCancel}
             >
                 <div className="flex flex-shrink-0 flex-row justify-center bg-white medium-padding medium-border-radius gap-4"
                     style={{ color: 'var(--primary-800)', width: '80%', height: '80%' }}
@@ -168,7 +175,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
                             )}
                         </div>
                         <div className="flex w-full justify-end gap-2 px-2">
-                            <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" onClick={onClose} />
+                            <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" onClick={handleCancel} />
                             <Button icon={<SaveIcon/>} text={'Adicionar Livros'} colorScheme="dark-green" onClick={handleAddBook} />
                         </div>
                     </div>

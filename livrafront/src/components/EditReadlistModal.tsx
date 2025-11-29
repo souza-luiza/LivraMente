@@ -41,6 +41,7 @@ export default function EditReadlistModal({
   const [title, setTitle] = useState(readlist.title);
   const [description, setDescription] = useState(readlist.description);
   const [coverImage, setCoverImage] = useState(readlist.coverImage);
+  const [previewImage, setPreviewImage] = useState(readlist.coverImage);
   const [isPrivate, setIsPrivate] = useState(readlist.isPrivate);
   const [titleError, setTitleError] = useState('');
   const [isTitleFocused, setIsTitleFocused] = useState(false);
@@ -110,7 +111,7 @@ export default function EditReadlistModal({
 
     const reader = new FileReader();
     reader.onload = () => {
-      setCoverImage(reader.result as string);
+      setPreviewImage(reader.result as string);
       setShowCropModal(true);
     };
     reader.readAsDataURL(file);
@@ -126,17 +127,26 @@ export default function EditReadlistModal({
 
   const handleCropCancel = () => {
     setShowCropModal(false);
-    setCoverImage("");
+    setPreviewImage("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleCancel = () => {
+    setTitle(readlist.title);
+    setDescription(readlist.description);
+    setCoverImage(readlist.coverImage);
+    setPreviewImage(readlist.coverImage);
+    setIsPrivate(readlist.isPrivate);
+    onClose();
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-      onClick={onClose}
+      onClick={handleCancel}
     >
       <div
         className="relative w-full max-w-lg large-padding large-border-radius"
@@ -302,7 +312,7 @@ export default function EditReadlistModal({
               icon={<TrashIcon />}
               size="medium"
               colorScheme="dark-brown"
-              onClick={onClose}
+              onClick={handleCancel}
               aria-label="Fechar"
             />
           </div>
@@ -320,7 +330,7 @@ export default function EditReadlistModal({
         </div>
         <ReadlistCropModal
           isOpen={showCropModal}
-          imageUrl={coverImage}
+          imageUrl={previewImage}
           onClose={handleCropCancel}
           onSave={handleCropSave}
         />
