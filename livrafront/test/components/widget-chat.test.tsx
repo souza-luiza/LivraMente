@@ -10,13 +10,12 @@ jest.mock('@/services/llm', () => ({
 
 // polyfill simples do crypto.randomUUID para ambiente de teste
 beforeAll(() => {
-  if (!('crypto' in global)) {
-    (global as any).crypto = {};
-  }
-  if (!(global.crypto as any).randomUUID) {
-    (global.crypto as any).randomUUID = () => 'test-id';
-  }
+  if (!('crypto' in global)) (global as any).crypto = {};
+  (global.crypto as any).randomUUID = jest.fn(() =>
+    Math.random().toString(36).slice(2, 10),
+  );
 });
+
 
 describe('WidgetChat', () => {
   beforeEach(() => {
