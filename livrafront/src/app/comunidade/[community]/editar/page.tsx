@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/sidebar";
-import { ChatProvider } from '@/contexts/chat-context';
 import WidgetChat from '@/components/widget-chat';
 import Input from "@/components/general-input";
 import TagsDropdown from '@/components/tags-dropdown';
@@ -175,7 +174,6 @@ function EditCommunityPage() {
   }
 
   return (
-    <ChatProvider>
       <div className="flex w-full h-screen bg-white">
         <Sidebar />
 
@@ -326,7 +324,6 @@ function EditCommunityPage() {
 
         <WidgetChat />
       </div>
-    </ChatProvider>
   );
 }
 

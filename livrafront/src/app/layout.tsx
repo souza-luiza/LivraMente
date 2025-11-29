@@ -3,6 +3,7 @@ import type React from 'react';
 
 import { Geist, Geist_Mono, Poppins, Judson } from "next/font/google";
 import "./globals.css";
+import { ChatProvider } from '@/contexts/chat-context';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +42,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${judson.variable} antialiased`}
       >
+        <ChatProvider>
           {children}
+        </ChatProvider>
       </body>
     </html>
   );

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChatProvider } from '@/contexts/chat-context';
 import WidgetChat from '@/components/widget-chat';
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
@@ -183,7 +182,6 @@ export default function EditProfilePage() {
   };
 
   return (
-    <ChatProvider>
       <div className="flex items-center h-screen bg-gray-50">
         <Sidebar />
 
@@ -281,6 +279,5 @@ export default function EditProfilePage() {
         <ToastNotification />
         <WidgetChat />
       </div>
-    </ChatProvider>
   );
 }

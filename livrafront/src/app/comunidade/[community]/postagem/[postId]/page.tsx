@@ -6,7 +6,6 @@ import Image from "next/image";
 
 // Funções Auxiliares
 import { slugToTitle } from "@/lib/slugify";
-import { ChatProvider } from '@/contexts/chat-context';
 
 // Integração com a API
 import { communityService } from "@/services/comunidade";
@@ -29,7 +28,6 @@ import CommentComponent from "@/components/comment";
 import Button from "@/components/button";
 import LoadingComponent from "@/components/portable-loading";
 import DropdownFilter from "@/components/filter";
-import WidgetChat from '@/components/widget-chat';
 
 // Ícones
 import ImageIcon from "@/components/icons/ImageIcon";
@@ -279,7 +277,6 @@ export default function PostPage() {
     if (!communityInfo || !postInfo || !userInfo) return null;
 
     return (
-        <ChatProvider>
         <div className="min-h-screen flex bg-[#FFFFFF]">
             {/*Barra Lateral Fixa*/}
             <Sidebar />
@@ -431,7 +428,6 @@ export default function PostPage() {
                     </div>
                     {/*Seção Direita - Recomendações, Chatbot etc...*/}
                     <div className="sticky top-16 w-1/4 max-h-screen flex items-center justify-center medium-box bg-gray-100">
-                        {/*<WidgetChat embedded={true} />*/}
                         <p className="text-b1 body-quotation">
                             Em breve....
                         </p>
@@ -439,6 +435,5 @@ export default function PostPage() {
                 </main>
             </div>
         </div>
-        </ChatProvider>
     );
 }
