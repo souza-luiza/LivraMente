@@ -204,6 +204,9 @@ export default function ReadlistPage() {
 
     return (
         <div className="min-h-screen flex bg-[#FFFFFF]">
+            {/*Sidebar*/}
+            <Sidebar />
+
             {/* Modal de Edição */}
             <EditReadlistModal
                 isOpen={isEditModalOpen}
@@ -224,9 +227,6 @@ export default function ReadlistPage() {
                 onSave={handleRefreshBooks}
                 livrosReadlist={readlistInfo.livros}
             />
-
-            {/*Sidebar*/}
-            <Sidebar />
 
             <div className="flex-1 flex flex-col">
                 <SearchBar />

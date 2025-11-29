@@ -3,7 +3,6 @@
 import { Livro } from "@/types/livro";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Button from "./button";
 import ClosedBookIcon from "./icons/ClosedBookIcon";

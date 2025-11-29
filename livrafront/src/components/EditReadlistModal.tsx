@@ -163,7 +163,7 @@ export default function EditReadlistModal({
           className="text-h4 mb-6"
           style={{ color: 'var(--secondary-800)' }}
         >
-          Editar detalhes 
+          Editar Readlist 
         </h4>
 
         {/* Container Principal com Imagem e Campos */}

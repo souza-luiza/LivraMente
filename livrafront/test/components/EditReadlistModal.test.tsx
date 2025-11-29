@@ -93,7 +93,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      expect(screen.getByText('Editar detalhes')).toBeInTheDocument();
+      expect(screen.getByText('Editar Readlist')).toBeInTheDocument();
     });
 
     it('deve renderizar todos os campos do formulário', () => {
@@ -188,7 +188,7 @@ describe('EditReadlistModal', () => {
         />
       );
 
-      const modalContent = screen.getByText('Editar detalhes').closest('div');
+      const modalContent = screen.getByText('Editar Readlist').closest('div');
       if (modalContent) {
         fireEvent.click(modalContent);
       }
