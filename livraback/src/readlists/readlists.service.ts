@@ -191,4 +191,34 @@ export class ReadlistsService {
             throw error;
         }
     }
+
+    async addReadlist(livroId: string, readlistIds: string[]) {
+        try {
+            const updated = await this.livroModel.findOneAndUpdate(
+                {
+                    _id: livroId,
+                },
+                {
+                    $addToSet: { readlists: { $each: readlistIds } } // para evitar duplicatas
+                },
+                {
+                    new: true,
+                    runValidators: true
+                }
+            ).exec();
+
+            if(!updated) throw new NotFoundException('Livro não encontrado');
+
+            // Adiciona o livro nas readlists relacionadas no schema das mesmas.
+            await this.readlistModel.updateMany(
+                { _id: { $in: readlistIds } },
+                { $addToSet: { livros: livroId } }
+            );
+            
+            return updated;
+        } catch(error) {
+            if(error.name === 'CastError') throw new BadRequestException('ID inválido');
+            throw error;
+        }
+    }
 } 
