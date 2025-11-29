@@ -192,7 +192,7 @@ export async function addBookToReadlist(readlistId: string, livroIds: string[]):
 
   if (!response.ok) {
     if (response.status === 404) return Promise.reject(new Error('Readlist não encontrada'));
-    return Promise.reject(new Error('Erro ao adicionar livro à readlist'));
+    return Promise.reject(new Error('Erro ao adicionar livros à readlist'));
   }
 
   return response.json();
@@ -205,5 +205,22 @@ export async function removeBookFromReadlist(readlistId: string, livroId: string
     credentials: "include",
   });
   if (!response.ok) return Promise.reject(new Error('Erro ao remover livro da readlist'));
+  return response.json();
+}
+
+// Adicionar livro em readlists
+export async function addReadlistToBook(livroId: string, readlistIds: string[]): Promise<Readlist> {
+  const response = await fetch(`${API_BASE_URL}/readlists/${livroId}`, {
+    method: 'PATCH',
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ readlistIds })
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) return Promise.reject(new Error('Livro não encontrado'));
+    return Promise.reject(new Error('Erro ao adicionar livro nas readlists'));
+  }
+
   return response.json();
 }
