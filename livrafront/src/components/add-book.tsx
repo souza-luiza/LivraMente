@@ -81,6 +81,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
 
             onSave?.();
             setListaSelecionados([]);
+            setBusca("");
             onClose();
 
             toast.success("Livros adicionados com sucesso!");
@@ -136,7 +137,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
                                                                             ${isSelected ? "opacity-50 pointer-events-none" : "opacity-100"}`} 
                                                                             onClick={() => handleSelect(livro)}>
                                                 <Image 
-                                                    src={livro.capa_url ? livro.capa_url : '/team/Kemi.jpg'}
+                                                    src={livro.capa_url}
                                                     alt="Capa do livro"
                                                     width={40}
                                                     height={60}
