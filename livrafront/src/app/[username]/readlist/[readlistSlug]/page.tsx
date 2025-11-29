@@ -21,6 +21,9 @@ import EditReadlistModal from "@/components/EditReadlistModal";
 import AddBook from "@/components/add-book";
 import PopUp from "@/components/pop-up";
 import RemoveIcon from "@/components/icons/RemoveIcon";
+import { getProfile } from "@/services/userService";
+import { UserProfile } from "@/types/users";
+import LoadingComponent from "@/components/portable-loading";
 
 export default function ReadlistPage() {
     const router = useRouter();
@@ -30,9 +33,11 @@ export default function ReadlistPage() {
 
     const [isOwner, setIsOwner] = useState(true);
     const [readlistInfo, setReadlistInfo] = useState<Readlist>();
+    const [ownerInfo, setOwnerInfo] = useState<UserProfile>();
 
     const [isFavorited, setIsFavorited] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [loadingBooks, setLoadingBooks] = useState(false);
     
     // Edit Modal
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -73,10 +78,14 @@ export default function ReadlistPage() {
                     try {
                         const { isFavorited } = await checkReadlistFav(foundReadlist._id);
                         setIsFavorited(isFavorited);
+                        const userInfo = await getProfile(username);
+                        setOwnerInfo(userInfo);
                     }
                     catch(error) {
                         toast.error('Erro ao verificar se readlist está favoritada.');
                     }
+                } else {
+                    setOwnerInfo(user);
                 }
 
             } catch(error) {
@@ -92,7 +101,7 @@ export default function ReadlistPage() {
     const handleRemoveBook = async (targetBookId: string) => {
         if (!readlistInfo || !isOwner || !targetBookId) return;
 
-        setLoading(true);
+        setLoadingBooks(true);
 
         try {
             // Remove livro da readlist
@@ -108,7 +117,7 @@ export default function ReadlistPage() {
 
         } finally {
 
-            setLoading(false);
+            setLoadingBooks(false);
 
         }
     };
@@ -161,7 +170,7 @@ export default function ReadlistPage() {
     const handleRefreshBooks = async () => {
         if (!readlistInfo || !isOwner ) return;
 
-        setLoading(true);
+        setLoadingBooks(true);
 
         try {
             // Atualiza dados da readlist
@@ -172,7 +181,7 @@ export default function ReadlistPage() {
             toast.error("Erro ao adicionar livro na readlist.");
 
         } finally {
-            setLoading(false);
+            setLoadingBooks(false);
         }
     }
 
@@ -191,7 +200,7 @@ export default function ReadlistPage() {
     }
 
     if(loading) return <LoadingPage />;
-    if(!readlistInfo) return null;
+    if(!readlistInfo || !ownerInfo) return notFound();
 
     return (
         <div className="min-h-screen flex bg-[#FFFFFF]">
@@ -236,13 +245,13 @@ export default function ReadlistPage() {
                             <h3 className="text-h3 text-center break-words">{readlistInfo.nome}</h3>
                             <div className="flex flex-row justify-center items-center gap-1">
                                 <Image 
-                                    src="/AbstractUser.png"
+                                    src={ownerInfo.avatarUrl || "/AbstractUser.png"}
                                     alt="Foto do dono da readlist"
                                     width={24}
                                     height={24}
                                     className="rounded-full object-cover"
                                 />
-                                <p className="text-b2">@{username}</p>
+                                <p className="text-h6">@{username}</p>
                             </div>                  
                         </main>
                         {isOwner ? (
@@ -257,13 +266,16 @@ export default function ReadlistPage() {
                     </div>
             
                     <div className="w-full flex flex-col gap-2">
-                    {readlistInfo.descricao && (
-                        <>
-                            <p className="text-b2 pl-4 pr-2">{readlistInfo.descricao}</p>
-                            <div className="w-full border-b" style={{ borderColor: '#E0E0E0' }}></div>
-                        </>
-                    )}
-                    {readlistInfo.livros.length === 0 ? (
+                        {readlistInfo.descricao && (
+                            <>
+                                <p className="text-b2 pl-4 pr-2">{readlistInfo.descricao}</p>
+                                <div className="w-full border-b" style={{ borderColor: '#E0E0E0' }}></div>
+                            </>
+                        )}
+                        {loadingBooks ? (
+                            <LoadingComponent size="small" className="p-8" />
+                        ) :
+                        readlistInfo.livros.length === 0 ? (
                             <p className="text-b1 body-quotation light-neutral text-center pt-4">
                                 Nenhum livro ainda nesta readlist.
                             </p>
