@@ -9,6 +9,7 @@ import { ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { AddLivrosDto } from './dto/add-livros.dto';
+import { AddReadlistsDto } from './dto/add-readlists.dto';
 
 @ApiCookieAuth() //Informa que usa cookies
 @UseGuards(SessionAuthGuard)
@@ -240,5 +241,30 @@ export class ReadlistsController {
     })
     async removeLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Param('livroId') livroId: string) {
         return this.readlistsService.removeLivro(user.userId, id, livroId);
+    }
+
+    @Patch(':livroId')
+    @ApiOperation({
+        summary: 'Adiciona livro em várias readlists',
+        description: 'Adiciona livroId na lista de IDs de readlists do usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Livro adicionado com sucesso nas readlists'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Livro não encontrado'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Sessão inválida'
+    })
+    async addReadlist(@Param('livroId') livroId: string, @Body() body: AddReadlistsDto) {
+        return this.readlistsService.addReadlist(livroId, body.readlistIds);
     }
 }
