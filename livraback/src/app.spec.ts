@@ -14,10 +14,12 @@ import { CommentsModule } from './comments/comments.module';
 import { LlmModule } from './llm/llm.module';
 import { SearchModule } from './search/search.module';
 import { LivrosModule } from './livros/livros.module';
-import { LlmApiService } from './llm/llm.api.service';
+import { LlmApiService } from './llm/writer/llm-api.service';
+import { ComunidadesService } from './comunidades/comunidades.service';
+import { LlmToolsService } from './llm/assistant/llm-tools.service';
 
 describe('App Integration with Mocks', () => {
-  let app: INestApplication;
+  let app: INestApplication | null = null;
 
   // Mock ConfigService
   const mockConfigService = {
@@ -130,6 +132,15 @@ describe('App Integration with Mocks', () => {
     generate: jest.fn().mockResolvedValue('mocked response'),
   };
 
+  const mockComunidadesService = {
+    checkMemberOrMod: jest.fn().mockResolvedValue({ isMember: false, isModerator: false }),
+    getComunidadeByName: jest.fn().mockResolvedValue(null),
+  };
+
+  const mockLlmToolsService = {
+    analyze: jest.fn().mockResolvedValue({}),
+  };
+
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
@@ -167,6 +178,10 @@ describe('App Integration with Mocks', () => {
       .useValue(mockLivroModel)
       .overrideProvider(getModelToken('Autor'))
       .useValue(mockAutorModel)
+      .overrideProvider(ComunidadesService)
+      .useValue(mockComunidadesService)
+      .overrideProvider(LlmToolsService)
+      .useValue(mockLlmToolsService)
       .overrideProvider(LlmApiService)
       .useValue(mockLlmApiService)
       .compile();
@@ -185,7 +200,7 @@ describe('App Integration with Mocks', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) await app.close();
   });
 
   it('should respond to GET /', async () => {
