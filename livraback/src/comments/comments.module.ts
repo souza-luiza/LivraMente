@@ -16,5 +16,6 @@ import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade
     ])],
     controllers: [CommentsController],
     providers: [CommentsService],
+    exports: [CommentsService, MongooseModule],
 })
 export class CommentsModule {}

@@ -7,7 +7,7 @@ import { LivrosController } from './livros.controller';
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: Livro.name, schema: LivroSchema }, { name: Autor.name, schema: AutorSchema }])],
-    exports: [MongooseModule],
+    exports: [MongooseModule, LivrosService],
     providers: [LivrosService],
     controllers: [LivrosController]
 })

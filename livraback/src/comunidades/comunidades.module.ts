@@ -12,6 +12,6 @@ import { Post, PostSchema } from '../schemas/post.schema';
     ])],
     controllers: [ComunidadesController],
     providers: [ComunidadesService],
-    exports: [MongooseModule]
+    exports: [MongooseModule, ComunidadesService]
 })
 export class ComunidadesModule {}
