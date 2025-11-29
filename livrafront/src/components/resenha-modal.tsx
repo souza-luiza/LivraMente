@@ -25,6 +25,7 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
   const [isResenhaFocused, setIsResenhaFocused] = useState(false);
   const [spoiler, setSpoiler] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
 
   // Carrega dados da resenha ao abrir para edição
   useEffect(() => {
@@ -52,6 +53,54 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
   }, [isOpen, resenhaId]);
 
   if (!isOpen) return null;
+
+  async function handleSalvar() {
+    if (avaliacao < 1) {
+      setError("Selecione uma avaliação.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      if (resenhaId) {
+        await resenhasService.updateResenha(resenhaId, {
+          conteudo: resenha,
+          avaliacao,
+          spoiler,
+        });
+      } else {
+        await resenhasService.createResenha(bookId, {
+          conteudo: resenha,
+          avaliacao,
+          spoiler,
+        });
+      }
+      setAvaliacao(0);
+      setResenha("");
+      setSpoiler(false);
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (e) {
+      toast.error("Erro ao salvar resenha.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleExcluir() {
+    if (!resenhaId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await resenhasService.removeResenha(resenhaId);
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (e) {
+      toast.error("Erro ao excluir resenha.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -137,11 +186,12 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
                   text="Excluir"
                   colorScheme="dark-brown"
                   size="medium"
+                  onClick={handleExcluir}
                   icon={<RemoveIcon />}
                   disabled={loading}
                 />
               )}
-            </div>           
+            </div>
             <div className="flex gap-2 justify-end">
               <Button
                 text="Voltar"
@@ -157,6 +207,7 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
                 size="medium"
                 icon={<CheckIcon />}
                 disabled={avaliacao < 1 || loading}
+                onClick={handleSalvar}
               />
             </div>
           </div>
