@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import ToastNotification from '@/components/toast-notification';
 import LoadingPage from "@/components/loading";
 import EditReadlistModal from "@/components/EditReadlistModal";
+import AddBook from "@/components/add-book";
 
 export default function ReadlistPage() {
     const router = useRouter();
@@ -33,6 +34,9 @@ export default function ReadlistPage() {
     
     // Edit Modal
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    // Componente de adicionar livro
+    const [isAddBookOpen, setIsAddBookOpen] = useState(false);
 
     useEffect(() => {
         if(!readlistSlug) notFound();
@@ -149,6 +153,24 @@ export default function ReadlistPage() {
         }
     };
 
+    const handleRefreshBooks = async () => {
+        if (!readlistInfo || !isOwner ) return;
+
+        setLoading(true);
+
+        try {
+            // Atualiza dados da readlist
+            const updatedReadlist = isOwner ? await getReadlistBySlug(readlistSlug) : await getOnePublicReadlist(username, readlistSlug);
+            setReadlistInfo(updatedReadlist);
+
+        } catch (err) {
+            toast.error("Erro ao adicionar livro na readlist.");
+
+        } finally {
+            setLoading(false);
+        }
+    }
+
     if(loading) return <LoadingPage />;
     if(!readlistInfo) return null;
 
@@ -166,6 +188,16 @@ export default function ReadlistPage() {
                 }}
                 onSave={handleSaveReadlist}
             />
+
+            <AddBook
+                isOpen={isAddBookOpen}
+                onClose={() => setIsAddBookOpen(false)}
+                readlistId={readlistInfo._id}
+                onSave={handleRefreshBooks}
+                livrosReadlist={readlistInfo.livros}
+            />
+
+            {/*Sidebar*/}
             <Sidebar />
 
             <div className="flex-1 flex flex-col">
@@ -197,7 +229,7 @@ export default function ReadlistPage() {
                         {isOwner ? (
                             <>
                             <Button icon={<Edit2Icon/>} size="medium" colorScheme="light-green" text={"Editar Readlist"} fullwidth={true} onClick={() => setIsEditModalOpen(true)}/>
-                            <Button icon={<OpenBookIcon/>} text={"Adicionar livro"} fullwidth={true}/>
+                            <Button icon={<OpenBookIcon/>} text={"Adicionar livro"} fullwidth={true} onClick={() => setIsAddBookOpen(true)}/>
                             <Button icon={<TrashIcon/>} text={"Apagar readlist"} fullwidth={true} variant="rejeitar"/>
                             </>
                         ) : (

@@ -16,7 +16,6 @@ interface LivrosReadlistProps {
 }
 
 export default function LivrosReadlist({ livro, isCurrentUserOwner = false, handleRemoveBook }: LivrosReadlistProps) {
-    const router = useRouter();
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -73,15 +72,15 @@ export default function LivrosReadlist({ livro, isCurrentUserOwner = false, hand
                     onMouseLeave={() => setShowOptions(false)}
                 >    
                     <Button
-                        text={livro.titulo ? `Visitar Página de ${livro.titulo}` : 'Visitar Página'}
+                        text={'Visitar Página do Livro'}
                         icon={<ClosedBookIcon />}
                         size="small"
                         colorScheme="dark-brown"
-                        path={livro.titulo ? `/${livro.titulo}` : '/not-found'}
+                        path={`/livro/${livro.slug}`}
                         fullwidth={true}
                     />
                     <Button
-                        text={livro.titulo ? `Remover ${livro.titulo} da Readlist` : 'Remover da Readlist'}
+                        text={'Remover da Readlist'}
                         icon={<RemoveIcon />}
                         size="small"
                         colorScheme="dark-brown"
