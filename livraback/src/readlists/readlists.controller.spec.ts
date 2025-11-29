@@ -19,7 +19,8 @@ describe('ReadlistsController', () => {
     addLivro: jest.fn(),
     removeLivro: jest.fn(),
     findAllPublic: jest.fn(),
-    updatePhoto: jest.fn()
+    updatePhoto: jest.fn(),
+    addReadlist: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -170,6 +171,21 @@ describe('ReadlistsController', () => {
     it('deve propagar erro do service', async () => {
       mockReadlistsService.updatePhoto = jest.fn().mockRejectedValue(new Error('Erro interno'));
       await expect(controller.updatePhoto(fakeUser as any, fakeFile, 'slug')).rejects.toThrow('Erro interno');
+    });
+  });
+
+  describe('addReadlist', () => {
+    it('should add livro to multiple readlists', async () => {
+      const livroId = 'livro999';
+      const dto = { readlistIds: ['rl1', 'rl2', 'rl3'] };
+
+      const result = { livroId, readlists: dto.readlistIds };
+      mockReadlistsService.addReadlist.mockResolvedValue(result);
+
+      const response = await controller.addReadlist(livroId, dto);
+
+      expect(service.addReadlist).toHaveBeenCalledWith(livroId, dto.readlistIds);
+      expect(response).toEqual(result);
     });
   });
 });

@@ -39,9 +39,11 @@ describe('ReadlistsService', () => {
     deleteOne: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue({ deletedCount: 1 }),
     }),
+    updateMany: jest.fn().mockResolvedValue({}),
   };
 
   const mockLivroModel = {
+    findOneAndUpdate: jest.fn(),
     updateMany: jest.fn().mockResolvedValue({}),
     findByIdAndUpdate: jest.fn().mockResolvedValue({})
   };
@@ -358,6 +360,55 @@ describe('ReadlistsService', () => {
       expect(cloudinaryService.deleteImage).toHaveBeenCalledWith('old_public_id');
       expect(mockReadlist.save).toHaveBeenCalled();
       expect(result).toEqual({ name: 'john', slug: 'slug' });
+    });
+  });
+
+  describe('addReadlist', () => {
+    it('should add a readlist to livro and update readlistModel', async () => {
+      const livroId = 'livro999';
+      const readlistIds = ['rl1', 'rl2', 'rl3'];
+
+      const updatedLivro = { _id: livroId, readlists: readlistIds };
+      mockLivroModel.findOneAndUpdate = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue(updatedLivro),
+      });
+
+      mockReadlistModel.updateMany = jest.fn().mockResolvedValue({});
+
+      const result = await service.addReadlist(livroId, readlistIds);
+
+      expect(mockLivroModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: livroId },
+        { $addToSet: { readlists: { $each: readlistIds } } },
+        { new: true, runValidators: true },
+      );
+
+      expect(mockReadlistModel.updateMany).toHaveBeenCalledWith(
+        { _id: { $in: readlistIds } },
+        { $addToSet: { livros: livroId } },
+      );
+
+      expect(result).toEqual(updatedLivro);
+    });
+
+    it('should throw NotFoundException if livro not found', async () => {
+      mockLivroModel.findOneAndUpdate = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.addReadlist('livroInvalido', ['rl1']))
+        .rejects
+        .toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException on CastError', async () => {
+      mockLivroModel.findOneAndUpdate = jest.fn().mockReturnValue({
+        exec: jest.fn().mockRejectedValue({ name: 'CastError' }),
+      });
+
+      await expect(service.addReadlist('livroInvalido', ['rl1']))
+        .rejects
+        .toThrow(BadRequestException);
     });
   });
 });
