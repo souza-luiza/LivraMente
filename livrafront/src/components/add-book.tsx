@@ -1,4 +1,4 @@
-import { Livro } from "@/types/livros";
+import { Livro } from "@/types/livro";
 import Input from "./general-input";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,14 +10,17 @@ import { livrosService } from "@/services/livros";
 import ToastNotification from "@/components/toast-notification";
 import { toast } from "react-toastify";
 import LoadingComponent from "./portable-loading";
+import { addBookToReadlist } from "@/services/readlists";
 
 interface AddBookProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: () => void; // para adicionar livro/readlist
+    readlistId: string;
+    onSave: () => void;
+    livrosReadlist: Livro[];
 }
 
-export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
+export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosReadlist }: AddBookProps) {
     const [livros, setLivros] = useState<Livro[]>([]);
     const [livrosTotal, setLivrosTotal] = useState<Livro[]>([]);
     const [busca, setBusca] = useState<string>("");
@@ -28,9 +31,11 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
 
         const fetchBooks = async () => {
             try {
-                const totalLivros = await livrosService.getBooks();
-                setLivros(totalLivros);
-                setLivrosTotal(totalLivros);
+                const totalLivros = await livrosService.getLivros();
+                const livrosFilt = totalLivros.filter((livro) => !livrosReadlist.some(l => l._id === livro._id)); // elimina do total os livros que ja estao na readlist
+
+                setLivros(livrosFilt);
+                setLivrosTotal(livrosFilt);
 
             } catch(error) {
                 toast.error("Erro ao carregar livros.");
@@ -64,6 +69,23 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
 
     const handleRemoveSelect = (id: string) => {
         setListaSelecionados(prev => prev.filter(l => l._id !== id));
+    };
+
+    const handleAddBook = async () => {
+        if(listaSelecionados.length === 0) return;
+
+        try {
+            // Adicionar lista de livros na readlist
+            const livroIds = listaSelecionados.map(l => l._id);
+            const updatedReadlist = await addBookToReadlist(readlistId, livroIds);
+
+            onSave?.();
+            onClose();
+
+            toast.success("Livros adicionados com sucesso!");
+        } catch(error)  {
+            toast.error("Erro ao adicionar livros à readlist.")
+        }
     }
 
     if(!isOpen) return null;
@@ -146,8 +168,8 @@ export default function AddBook({ isOpen, onClose, onSave }: AddBookProps) {
                             )}
                         </div>
                         <div className="flex w-full justify-end gap-2 px-2">
-                            <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" />
-                            <Button icon={<SaveIcon/>} text={'Adicionar Livros'} colorScheme="dark-green"  />
+                            <Button icon={<TrashIcon/>} text={'Cancelar'} colorScheme="light-brown" onClick={onClose} />
+                            <Button icon={<SaveIcon/>} text={'Adicionar Livros'} colorScheme="dark-green" onClick={handleAddBook} />
                         </div>
                     </div>
                 </div>
