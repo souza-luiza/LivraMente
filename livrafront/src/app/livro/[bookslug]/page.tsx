@@ -17,6 +17,7 @@ import CommunityIcon from "@/components/icons/CommunityIcon";
 import StarIcon from "@/components/icons/StarIcon";
 import OpenBookIcon from "@/components/icons/OpenBookIcon";
 import ReviewComponent from "@/components/resenha";
+import ResenhaModal from "@/components/resenha-modal";
 import Button from "@/components/button";
 import AddIcon from "@/components/icons/AddIcon";
 import InfoIcon from "@/components/icons/InfoIcon";
@@ -33,6 +34,7 @@ export default function LivroPage() {
     const [book, setBook] = useState<Livro>();
     const [readlists, setReadlists] = useState<TypeReadlist[]>([]);
     const [communities, setCommunities] = useState<TypeCommunity[]>([]);
+    const [showResenhaModal, setShowResenhaModal] = useState(false);
 
     const [value, setValue] = useState('resenhas');
     
@@ -137,7 +139,16 @@ export default function LivroPage() {
                                     colorScheme="dark-brown"
                                     size="medium"
                                     fullwidth={true}
+                                    onClick={() => setShowResenhaModal(true)}
                                 />
+                                {book && (
+                                    <ResenhaModal
+                                        isOpen={showResenhaModal}
+                                        onClose={() => setShowResenhaModal(false)}
+                                        bookId={book._id}
+                                        onSuccess={handleRefreshReviews}
+                                    />
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-col medium-box light-neutral shadow-sm hover:shadow-md gap-1 overflow-y-auto">
