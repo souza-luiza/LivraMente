@@ -446,7 +446,7 @@ export default function CommunityPage(){
                                             Nenhum post ainda nesta comunidade.
                                         </p>
                                         ) : (
-                                        <div className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-2">
                                             {filteredPosts.map((post) => {
                                                 return (
                                                     <PostComponent 
