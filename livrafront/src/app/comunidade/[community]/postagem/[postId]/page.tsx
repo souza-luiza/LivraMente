@@ -37,6 +37,7 @@ import ClockIcon from "@/components/icons/ClockIcon";
 import PillarIcon from "@/components/icons/PillarIcon";
 import StarIcon from "@/components/icons/StarIcon";
 import ArrowUpIcon from "@/components/icons/ArrowUpIcon";
+import { toast } from "react-toastify";
 
 export default function PostPage() {
     const router = useRouter();
@@ -52,7 +53,8 @@ export default function PostPage() {
     const [comments, setComments] = useState<Comentario[]>([])
 
     // Dados dos comentários
-    const [commentData, setCommentData] = useState<CreateCommentData>({ conteudo: "", imagens: [] })
+    const [commentContent, setCommentContent] = useState<string>('')
+    const [tempImages, setTempImages] = useState<{ preview: string, file: File }[]>([]);
     
     // Criação de comentários
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -140,10 +142,7 @@ export default function PostPage() {
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const el = textareaRef.current;
 
-        setCommentData(prev => ({
-            ...prev,
-            conteudo: e.target.value
-        }));
+        setCommentContent(e.target.value);
 
         if (!el) return;
 
@@ -152,66 +151,44 @@ export default function PostPage() {
         el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
     };
 
-    const compressImage = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.createElement('img');
-                img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                if (!ctx) {
-                    reject(new Error('Falha ao criar contexto canvas'));
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+
+        const selectedFiles = Array.from(e.target.files);
+
+        if (tempImages.length + selectedFiles.length > 4) {
+            toast.error("Máximo de 4 imagens!");
+            return;
+        }
+
+        const readFiles = selectedFiles.map(file => {
+            return new Promise<{ preview: string; file: File }>((resolve, reject) => {
+                if (!file.type.startsWith("image/")) {
+                    toast.error("Por favor, selecione uma imagem válida");
                     return;
                 }
 
-                const MAX_WIDTH = 1200;
-                const MAX_HEIGHT = 1200;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                    width *= MAX_HEIGHT / height;
-                    height = MAX_HEIGHT;
-                    }
+                if (file.size > 5 * 1024 * 1024) {
+                    toast.error("A imagem deve ter no máximo 5MB");
+                    return;
                 }
 
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-
-                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                resolve(compressedDataUrl);
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve({ preview: reader.result as string, file });
                 };
-                img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-                img.src = e.target?.result as string;
-            };
-            reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-            reader.readAsDataURL(file);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        });
+
+        Promise.all(readFiles).then(newImages => {
+            setTempImages(prev => [...prev, ...newImages]);
         });
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files) {
-            const remainingSlots = 4 - commentData.imagens.length;
-            const filesToProcess = Array.from(files).slice(0, remainingSlots);
-
-            Promise.all(filesToProcess.map(compressImage))
-                .then((newImages) => {
-                setCommentData({ conteudo: commentData.conteudo, imagens: [...commentData.imagens, ...newImages] });
-                });
-        }
-    };
-
     const removeImage = (index: number) => {
-        setCommentData({conteudo: commentData.conteudo, imagens: commentData.imagens.filter((_, i) => i !== index)});
+        setTempImages(tempImages.filter((_, i) => i !== index));
     };
 
     const handleImageButtonClick = () => {
@@ -223,18 +200,26 @@ export default function PostPage() {
     }
 
     const handleSendComment = async () => {
-        if (!commentData || !postInfo) return;
+        if (!commentContent || !postInfo) return;
 
         try {
             setIsSendingComment(true);
 
+            const imageFiles = tempImages.map(img => img.file);
+
+            const payload: CreateCommentData = {
+                conteudo: commentContent,
+                imagens: imageFiles,
+            };
+
             // Criar comentário
-            await commentsService.createComment(postInfo._id, commentData);
+            await commentsService.createComment(postInfo._id, payload);
             
             // Recarregar comentários
             handleRefreshComments();
 
-            setCommentData({ conteudo: "", imagens: [] });
+            setTempImages([]);
+            setCommentContent('');
 
             if (textareaRef.current) {
                 textareaRef.current.style.height = "auto";
@@ -378,7 +363,7 @@ export default function PostPage() {
                                 <div className="w-full h-full flex flex-col gap-2">
                                     <textarea
                                         ref={textareaRef}
-                                        value={commentData?.conteudo}
+                                        value={commentContent}
                                         onChange={handleTextareaChange}
                                         onKeyDown={handleKeyDown}
                                         placeholder={`Comente no post de @${postInfo.autor.username}`} 
@@ -387,9 +372,9 @@ export default function PostPage() {
                                         disabled={loading || isSendingComment || loadingComments}
                                     />
                                     {/*Imagens*/}
-                                    {commentData.imagens.length > 0 && (
+                                    {tempImages && tempImages.length > 0 && (
                                     <div className="flex flex-row gap-2">
-                                    {commentData.imagens.map((image, index) => (
+                                    {tempImages.map((image, index) => (
                                         <div
                                             key={index}
                                             className="w-16 h-16 relative overflow-hidden group"
@@ -399,7 +384,7 @@ export default function PostPage() {
                                             }}
                                             >
                                             <Image
-                                                src={image}
+                                                src={image.preview}
                                                 alt={`Preview ${index + 1}`}
                                                 fill
                                                 className="object-cover"
@@ -427,7 +412,7 @@ export default function PostPage() {
                                             accept="image/*"  
                                             multiple
                                             onChange={handleImageChange}
-                                            disabled={loading || isSendingComment || loadingComments || commentData.imagens.length >= 4}
+                                            disabled={loading || isSendingComment || loadingComments || tempImages.length >= 4}
                                             style={{ display: "none" }}
                                         />
                                         <Button
@@ -437,7 +422,7 @@ export default function PostPage() {
                                             tooltip="Adicionar Imagens"
                                             aria-label="Adicionar Imagens"
                                             onClick={handleImageButtonClick}
-                                            disabled={loading || isSendingComment || loadingComments || commentData.imagens.length >= 4}
+                                            disabled={loading || isSendingComment || loadingComments || tempImages.length >= 4}
                                         />
                                     </div>
                                     <Button
@@ -446,7 +431,7 @@ export default function PostPage() {
                                         size="medium"
                                         tooltip="Comentar"
                                         onClick={handleSendComment}
-                                        disabled={loading || isSendingComment || loadingComments || !commentData.conteudo.trim()}
+                                        disabled={loading || isSendingComment || loadingComments || !commentContent.trim()}
                                     />
                                 </div>
                             </div>

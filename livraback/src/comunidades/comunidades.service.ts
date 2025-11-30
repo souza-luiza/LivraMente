@@ -7,6 +7,7 @@ import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Logger } from '@nestjs/common';
+import { Comentario } from 'src/schemas/comentario.schema';
 
 @Injectable()
 export class ComunidadesService {
@@ -15,6 +16,7 @@ export class ComunidadesService {
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
         @InjectModel(Post.name) private postModel: Model<Post>,
+        @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
         private readonly cloudinary: CloudinaryService,
     ) {}
 
@@ -237,7 +239,42 @@ export class ComunidadesService {
             await this.cloudinary.deleteImage(comunidade.bannerPublicId);
         }
 
-        // APAGAR COMENTÁRIOS!!!!!
+        // Encontra todos os posts da comunidade
+        const posts = await this.postModel.find(
+            { comunidade: comunidade._id },
+            { _id: 1 }
+        );
+        const postIds = posts.map(p => p._id);
+
+        // Encoontra todas as imagens dos comentários da comunidade
+        const comentarios = await this.comentarioModel.find(
+            { post: { $in: postIds } },
+            { imagens: 1 }
+        );
+        const commentImageIds = comentarios.flatMap(c =>
+            c.imagens.map(img => img.public_id)
+        );
+
+        // Encoontra todas as imagens dos posts da comunidade
+        const postsWithImages = await this.postModel.find(
+            { _id: { $in: postIds } },
+            { imagens: 1 }
+        );
+        const postImageIds = postsWithImages.flatMap(p =>
+            p.imagens.map(img => img.public_id)
+        );
+
+        const allImageIds = [...commentImageIds, ...postImageIds];
+
+        // Apaga todas as imagens associadas aos posts e comentários da comunidade no Cloudinary
+        if (allImageIds.length > 0) {
+            await Promise.all(
+                allImageIds.map(id => this.cloudinary.deleteImage(id))
+            );
+        }
+
+        // Apaga todos os comentários da comunidade
+        await this.comentarioModel.deleteMany({ post: { $in: postIds } });
 
         // Apaga todos os posts da comunidade
         await this.postModel.deleteMany({ comunidade: comunidade._id });

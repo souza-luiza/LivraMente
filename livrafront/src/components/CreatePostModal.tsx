@@ -9,6 +9,9 @@ import ImageIcon from './icons/ImageIcon';
 import { postsService } from '@/services/posts';
 import Edit2Icon from './icons/Edit2Icon';
 import CommunityIcon from './icons/CommunityIcon';
+import { CreatePostData } from '@/types/post';
+import { toast } from 'react-toastify';
+import ToastNotification from './toast-notification';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -23,9 +26,20 @@ export default function CreatePostModal({
   communityName,
   onSuccess,
 }: CreatePostModalProps) {
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [requestReview, setRequestReview] = useState(false);
+
+  const [data, setData] = useState<CreatePostData>({
+    conteudo: '',                             
+    comunidade: communityName,          
+    solicitacao_revisao: false,                      
+    categoria: 'geral',          
+    tags: [],                            
+    livro_referenciado: '',                    
+    publico: true,                          
+    imagens: [],
+  });
+
+  const [tempImages, setTempImages] = useState<{ preview: string, file: File }[]>([]);
+  
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,7 +71,7 @@ export default function CreatePostModal({
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    setContent(value);
+    setData({...data, conteudo: value});
     if (contentError) {
       validateContent(value);
     }
@@ -65,7 +79,7 @@ export default function CreatePostModal({
 
   const handlePost = async () => {
     // Validar conteúdo
-    if (!validateContent(content)) {
+    if (!validateContent(data.conteudo)) {
       return;
     }
     
@@ -73,61 +87,105 @@ export default function CreatePostModal({
       setIsSubmitting(true);
       setSubmitError('');
 
+      // Criar array de arquivos de imagem
+      const imageFiles = tempImages.map(img => img.file);
+
+      const payload: CreatePostData = {...data, imagens: imageFiles };
+
       // Criar o post via API
-      const createdPost = await postsService.createPost(
-        {
-          conteudo: content.trim(),
-          comunidade: communityName,
-          solicitacao_revisao: requestReview,
-          categoria: 'geral', // Categoria inicial, pode ser alterada pelo moderador se for solicitado
-          publico: true,
-        },
-        images
-      );
+      const createdPost = await postsService.createPost(payload);
 
       // Reset do modal
-      setContent('');
-      setImages([]);
-      setRequestReview(false);
+      setData({
+        conteudo: '',                             
+        comunidade: communityName,          
+        solicitacao_revisao: false,                      
+        categoria: 'geral',          
+        tags: [],                            
+        livro_referenciado: '',                    
+        publico: true,                          
+        imagens: [],
+      });
+
+      setTempImages([]);
+
       setContentError('');
       setSubmitError('');
       
-      if (onSuccess) {
-        onSuccess();
-      }
-      
+      onSuccess && onSuccess();
       onClose();
+
     } catch (error: unknown) {
+
       console.error('Erro ao criar post:', error);
       const message = error instanceof Error ? error.message : String(error);
       setSubmitError(
         message || 'Erro ao criar postagem. Tente novamente.'
       );
+
     } finally {
+
       setIsSubmitting(false);
     }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+    if (!e.target.files) return;
 
-    const remainingSlots = 4 - images.length;
-    const selectedFiles = Array.from(files).slice(0, remainingSlots);
+    const selectedFiles = Array.from(e.target.files);
 
-    setImages((prev) => [...prev, ...selectedFiles]);
+    if (tempImages.length + selectedFiles.length > 4) {
+      toast.error("Máximo de 4 imagens!");
+      return;
+    }
+
+    const readFiles = selectedFiles.map(file => {
+      return new Promise<{ preview: string; file: File }>((resolve, reject) => {
+        if (!file.type.startsWith("image/")) {
+          toast.error("Por favor, selecione uma imagem válida");
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error("A imagem deve ter no máximo 5MB");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({ preview: reader.result as string, file });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readFiles).then(newImages => {
+      setTempImages(prev => [...prev, ...newImages]);
+    });
   };
 
   const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    setTempImages(tempImages.filter((_, i) => i !== index));
   };
 
   const handleCancel = () => {
-    setContent('');
-    setImages([]);
-    setRequestReview(false);
+    setData({
+      conteudo: '',                             
+      comunidade: communityName,          
+      solicitacao_revisao: false,                      
+      categoria: 'geral',          
+      tags: [],                            
+      livro_referenciado: '',                    
+      publico: true,                          
+      imagens: [],
+    });
+
+    setTempImages([]);
+
     setContentError('');
     setSubmitError('');
+
     onClose();
   };
 
@@ -176,12 +234,12 @@ export default function CreatePostModal({
             </label>
             <textarea
               id="content-textarea"
-              value={content}
+              value={data.conteudo}
               onChange={handleContentChange}
               onFocus={() => setIsContentFocused(true)}
               onBlur={() => {
                 setIsContentFocused(false);
-                validateContent(content);
+                validateContent(data.conteudo);
               }}
               className="w-full px-3 py-2 text-b2 rounded resize-none light-neutral medium-box transition-all duration-200 small-border-width border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-900 placeholder:text-gray-400 text-gray-900"
               style={{
@@ -199,13 +257,13 @@ export default function CreatePostModal({
           </div>
 
           {/* Preview de Imagens */}
-          {images.length > 0 && (
+          {tempImages && tempImages.length > 0 && (
             <div className="mb-6">
               <h5 className="text-b2 mb-2" style={{ color: 'var(--secondary-800)' }}>
-                Imagens ({images.length}/4)
+                Imagens ({tempImages.length}/4)
               </h5>
               <div className="grid grid-cols-4 gap-2">
-                {images.map((image, index) => (
+                {tempImages.map((image, index) => (
                   <div
                     key={index}
                     className="relative overflow-hidden group"
@@ -215,7 +273,7 @@ export default function CreatePostModal({
                     }}
                   >
                     <Image
-                      src={image}
+                      src={image.preview}
                       alt={`Preview ${index + 1}`}
                       fill
                       className="object-cover"
@@ -241,8 +299,8 @@ export default function CreatePostModal({
             <input
               type="checkbox"
               id="review-checkbox"
-              checked={requestReview}
-              onChange={(e) => setRequestReview(e.target.checked)}
+              checked={data.solicitacao_revisao}
+              onChange={(e) => setData({...data, solicitacao_revisao: e.target.checked})}
               className="w-4 h-4 cursor-pointer"
               style={{
                 accentColor: 'var(--primary-600)',
@@ -275,17 +333,17 @@ export default function CreatePostModal({
                 accept="image/*"  
                 multiple
                 onChange={handleImageChange}
-                disabled={images.length >= 4}
+                disabled={data.imagens && data.imagens.length >= 4}
                 style={{ display: "none" }}
               />
               <Button
-                text={`${images.length === 0 ? 'Adicionar ' : ''}Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
+                text={`${data.imagens && data.imagens.length === 0 ? 'Adicionar ' : ''}Imagens ${data.imagens && data.imagens.length > 0 ? `(${data.imagens.length}/4)` : ''}`}
                 icon={<ImageIcon />}
                 size="medium"
                 colorScheme="light-green"
                 onClick={handleButtonClick}
                 aria-label="Adicionar imagens"
-                disabled={images.length >= 4 || isSubmitting}
+                disabled={data.imagens && data.imagens.length >= 4 || isSubmitting}
               />
             </div>
 

@@ -38,11 +38,6 @@ export class PostsController {
     description: 'Cria uma nova postagem em uma comunidade. Se solicitação_revisao for true, o post fica pendente de moderação.'
   })
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({
-    summary: 'Cria uma nova postagem',
-    description:
-      'Cria uma nova postagem em uma comunidade. Se solicitacao_revisao for true, o post fica pendente de moderação.',
-  })
   @ApiBody({
     schema: {
       type: 'object',

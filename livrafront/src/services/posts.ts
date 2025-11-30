@@ -6,30 +6,29 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3
 export const postsService = {
 
   // Criar novo post
-  async createPost(data: CreatePostData, imagens: File[]): Promise<Post> {
+  async createPost(data: CreatePostData): Promise<Post> {
     const formData = new FormData();
 
     formData.append("conteudo", data.conteudo);
     formData.append("comunidade", data.comunidade);
 
-    if (data.solicitacao_revisao !== undefined)
+    if (data.solicitacao_revisao)
       formData.append("solicitacao_revisao", String(data.solicitacao_revisao));
 
     if (data.categoria)
       formData.append("categoria", data.categoria);
 
-    if (data.tags)
-      data.tags.forEach(tag => formData.append("tags", tag));
-
-    if (data.livro_referenciado)
-      formData.append("livro_referenciado", data.livro_referenciado);
-
     if (data.publico !== undefined)
       formData.append("publico", String(data.publico));
 
-    imagens.forEach((file) => {
-      formData.append("imagens", file);
-    });
+    if (data.livro_referenciado && data.livro_referenciado.trim() !== "")
+      formData.append("livro_referenciado", data.livro_referenciado);
+
+    if (data.tags)
+      data.tags.forEach(tag => formData.append("tags", tag));
+
+    if (data.imagens)
+      data.imagens.forEach((file) => formData.append("imagens", file));
     
     const response = await fetch(`${API_BASE_URL}/posts`, {
       method: 'POST',

@@ -193,7 +193,7 @@ export default function EditPostModal({
 
           {/* Preview de Imagens */}
           {images.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-6 hover:cursor-not-allowed">
               <h5 className="text-b2 mb-2" style={{ color: 'var(--secondary-800)' }}>
                 Imagens ({images.length}/4)
               </h5>
@@ -201,7 +201,7 @@ export default function EditPostModal({
                 {images.map((image, index) => (
                   <div
                     key={index}
-                    className="relative overflow-hidden group hover:cursor-not-allowed"
+                    className="relative overflow-hidden group"
                     style={{
                       aspectRatio: '1',
                       borderRadius: 'var(--medium-border-radius)',

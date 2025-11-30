@@ -58,7 +58,8 @@ export class PostsService {
     if (imagens) {
       try {
         imagesInfo = await Promise.all(
-          imagens.map((file) => this.cloudinary.uploadImage(file.buffer, 'livra/posts/imagens')));
+          imagens.map((file) => this.cloudinary.uploadImage(file.buffer, 'livra/posts/imagens'))
+        );
       } catch (error) {
         await Promise.all(
           imagesInfo.map(img => this.cloudinary.deleteImage(img.public_id))
@@ -155,13 +156,11 @@ export class PostsService {
     if (!isOwner && !isModerator) throw new ForbiddenException('Usuário não tem permissão para deletar este post');
 
     // apagar imagens dos comentários associados
-    //const comentarios = await this.comentarioModel.find({ post: post._id }, 'imagens' );
-    //const imagensParaApagar: string[] = [];
-    //comentarios.forEach((comentario) => {
-    //  comentario.imagens.forEach((img) => {
-    //    imagensParaApagar.push(img.public_id);
-    //  });
-    //});
+    const comentarios = await this.comentarioModel.find({ post: post._id }, 'imagens' );
+    const imagesToDelete = comentarios.flatMap(c => c.imagens.map(img => img.public_id));
+
+    if (imagesToDelete.length > 0)
+      await Promise.all(imagesToDelete.map(id => this.cloudinary.deleteImage(id)));
 
     // apagar comentários
     await this.comentarioModel.deleteMany({ post: post._id });
