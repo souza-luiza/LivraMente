@@ -3,6 +3,7 @@ import { ComunidadesService } from './comunidades.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException, BadRequestException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Comentario } from 'src/schemas/comentario.schema';
 import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { Types } from 'mongoose';
@@ -28,6 +29,12 @@ describe('ComunidadesService', () => {
       deleteMany: jest.fn(),
     };
 
+    const mockComentarioModel = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      deleteMany: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ComunidadesService,
@@ -38,6 +45,10 @@ describe('ComunidadesService', () => {
         {
           provide: getModelToken('Post'),
           useValue: mockPostModel,
+        },
+        {
+          provide: getModelToken(Comentario.name),
+          useValue: mockComentarioModel,
         },
         {
           provide: CloudinaryService,
@@ -51,6 +62,10 @@ describe('ComunidadesService', () => {
 
     service = module.get<ComunidadesService>(ComunidadesService);
     comunidadeModel = module.get(getModelToken(Comunidade.name));
+    // default comentario.find to empty array to avoid undefined when service uses .flatMap
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
   });
 
   it('should be defined', () => {
@@ -682,6 +697,7 @@ describe('ComunidadesService', () => {
 
       const mockPostModel = {
         deleteMany: jest.fn().mockResolvedValue({}),
+        find: jest.fn().mockResolvedValue([]),
       };
       (service as any).postModel = mockPostModel;
 
@@ -772,6 +788,12 @@ describe('ComunidadesService', () => {
     };
 
     beforeEach(async () => {
+      const mockComentarioModel2 = {
+        find: jest.fn(),
+        deleteMany: jest.fn(),
+        findOne: jest.fn(),
+      };
+
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           ComunidadesService,
@@ -782,6 +804,10 @@ describe('ComunidadesService', () => {
           {
             provide: getModelToken('Post'),
             useValue: mockPostModel,
+          },
+          {
+            provide: getModelToken(Comentario.name),
+            useValue: mockComentarioModel2,
           },
           {
             provide: CloudinaryService,
@@ -1537,6 +1563,7 @@ describe('ComunidadesService', () => {
 
         const mockPostModel = {
           deleteMany: jest.fn().mockRejectedValue(new Error('Delete posts failed')),
+          find: jest.fn().mockResolvedValue([]),
         };
         (service as any).postModel = mockPostModel;
 
@@ -1558,6 +1585,7 @@ describe('ComunidadesService', () => {
 
         const mockPostModel = {
           deleteMany: jest.fn().mockResolvedValue({}),
+          find: jest.fn().mockResolvedValue([]),
         };
         (service as any).postModel = mockPostModel;
 

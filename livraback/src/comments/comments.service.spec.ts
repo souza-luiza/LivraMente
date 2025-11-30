@@ -13,6 +13,7 @@ import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('CommentsService', () => {
   let service: CommentsService;
@@ -72,6 +73,14 @@ describe('CommentsService', () => {
           provide: getModelToken(User.name),
           useValue: mockUserModel,
         },
+        // provide a simple CloudinaryService mock so the service's constructor can resolve
+        {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue(true),
+          },
+        },
       ],
     }).compile();
 
@@ -81,13 +90,18 @@ describe('CommentsService', () => {
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
 
+    // default comentarioModel.find to an empty array to avoid undefined
+    // when other services call .find(...).flatMap(...) on the result
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
+
     jest.clearAllMocks();
   });
 
   describe('createComment', () => {
     const createCommentDto: CreateCommentDto = {
       conteudo: 'This is a test comment',
-      imagens: ['image1.jpg', 'image2.jpg'],
     };
 
     const mockPost = {
@@ -177,9 +191,9 @@ describe('CommentsService', () => {
         ...createCommentDto,
         imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
       };
-
+      // pass imagens as the fourth argument (files) so the service checks length
       await expect(
-        service.createComment(mockUserId, mockPostId, invalidDto)
+        service.createComment(mockUserId, mockPostId, invalidDto, invalidDto.imagens as any)
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -356,7 +370,6 @@ describe('CommentsService', () => {
     it('should successfully update a comment', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Updated content',
-        imagens: ['new-image.jpg'],
       };
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
@@ -385,7 +398,7 @@ describe('CommentsService', () => {
           post: new Types.ObjectId(mockPostId),
           autor: new Types.ObjectId(mockUserId),
         },
-        { $set: updateCommentDto },
+        { $set: { conteudo: updateCommentDto.conteudo } },
         { new: true }
       );
 
@@ -499,21 +512,31 @@ describe('CommentsService', () => {
       expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when there are more than 4 images', async () => {
+    it('should ignore imagens field and update when imagens provided in dto', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Valid content',
         imagens: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'],
-      };
+      } as any;
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
       mockPostModel.findOne.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
 
-      await expect(
-        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
-      ).rejects.toThrow(BadRequestException);
+      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockUpdatedComment) });
 
-      expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
+      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
+
+      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: new Types.ObjectId(mockCommentId),
+          post: new Types.ObjectId(mockPostId),
+          autor: new Types.ObjectId(mockUserId),
+        },
+        { $set: { conteudo: updateCommentDto.conteudo } },
+        { new: true }
+      );
+
+      expect(result.comment).toBeDefined();
     });
 
     it('should handle updating only content without images', async () => {
@@ -548,7 +571,7 @@ describe('CommentsService', () => {
       expect(result.comment!.conteudo).toBe('Updated content only');
     });
 
-    it('should handle updating only images without content', async () => {
+    it('should reject when attempting to update only images without content', async () => {
       const updateCommentDto: UpdateCommentDto = {
         imagens: ['new-image1.jpg', 'new-image2.jpg'],
       };
@@ -564,20 +587,9 @@ describe('CommentsService', () => {
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedCommentImagesOnly) });
 
-      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
-
-      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
-        {
-          _id: new Types.ObjectId(mockCommentId),
-          post: new Types.ObjectId(mockPostId),
-          autor: new Types.ObjectId(mockUserId),
-        },
-        { $set: updateCommentDto },
-        { new: true }
-      );
-
-      expect(result.comment).toBeDefined();
-      expect(result.comment!.imagens).toEqual(['new-image1.jpg', 'new-image2.jpg']);
+      await expect(
+        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto as any)
+      ).rejects.toThrow();
     });
 
     it('should handle ObjectId conversion errors gracefully', async () => {
@@ -729,7 +741,6 @@ describe('CommentsService', () => {
 
             const expectedFilteredUpdate = {
             conteudo: 'Updated content',
-            imagens: ['image1.jpg'],
             };
 
             mockPostModel.findById.mockResolvedValue(mockPost);

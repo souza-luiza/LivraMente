@@ -142,10 +142,12 @@ describe('CreatePostModal', () => {
           {
             conteudo: 'Conteúdo válido',
             comunidade: 'Romance',
-            imagens: undefined,
+            imagens: [],
+            livro_referenciado: '',
             solicitacao_revisao: false,
             categoria: 'geral',
             publico: true,
+            tags: [],
           }
         );
       });
@@ -168,10 +170,12 @@ describe('CreatePostModal', () => {
           {
             conteudo: 'Post para avaliação',
             comunidade: 'Romance',
-            imagens: undefined,
+            imagens: [],
+            livro_referenciado: '',
             solicitacao_revisao: true,
             categoria: 'geral',
             publico: true,
+            tags: [],
           }
         );
       });
