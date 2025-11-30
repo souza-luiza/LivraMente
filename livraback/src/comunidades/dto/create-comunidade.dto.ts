@@ -32,4 +32,9 @@ export class CreateComunidadeDto {
     @IsOptional()
     @IsString()
     slug?: string;
+
+    @ApiProperty({ description: 'ID do livro principal da comunidade'} )
+    @IsOptional()
+    @IsString()
+    livro?: string;
 }

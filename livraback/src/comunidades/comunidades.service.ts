@@ -8,6 +8,7 @@ import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Logger } from '@nestjs/common';
 import { Comentario } from 'src/schemas/comentario.schema';
+import { Livro } from 'src/livros/entities/livro.schema';
 
 @Injectable()
 export class ComunidadesService {
@@ -17,6 +18,7 @@ export class ComunidadesService {
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
         @InjectModel(Post.name) private postModel: Model<Post>,
         @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
+        @InjectModel(Livro.name) private livroModel: Model<Livro>,
         private readonly cloudinary: CloudinaryService,
     ) {}
 
@@ -43,8 +45,22 @@ export class ComunidadesService {
     async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
         const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
         if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+
         const comunidade = new this.comunidadeModel({...createComunidadeDto, moderadores: [criadorId], membros: [criadorId]});
-        return await comunidade.save();
+        const novaComunidade = await comunidade.save();
+
+        if (createComunidadeDto.livro) {
+            const livro = await this.livroModel.findById(createComunidadeDto.livro).exec();
+            if (!livro) throw new NotFoundException('Livro principal não encontrado');
+
+            await this.livroModel.findByIdAndUpdate(
+                createComunidadeDto.livro,
+                { $addToSet: { comunidades: novaComunidade._id } },
+                { new: true }
+            ).exec();
+        }
+
+        return novaComunidade;
     }
 
     async update(userId: string, comunidadeNome: string, updateComunidadeDto: UpdateComunidadeDto) {
@@ -57,6 +73,23 @@ export class ComunidadesService {
         if(updateComunidadeDto.nome){
             const existingComunidade = await this.comunidadeModel.findOne({ nome: updateComunidadeDto.nome }).exec();
             if(existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+        }
+
+        // Atualiza a referência do livro principal, se necessário
+        if(updateComunidadeDto.livro && updateComunidadeDto.livro.toString() !== comunidade.livro?.toString()) {
+            const livroAntigo = await this.livroModel.findByIdAndUpdate(
+                comunidade.livro,
+                { $pull: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
+            if (!livroAntigo) throw new NotFoundException('Livro não encontrado');
+
+            const livro = await this.livroModel.findById(
+                updateComunidadeDto.livro,
+                { $addToSet: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
+            if (!livro) throw new NotFoundException('Livro não encontrado');
         }
         
         const updated = await this.comunidadeModel.findOneAndUpdate(
@@ -237,6 +270,15 @@ export class ComunidadesService {
         }
         if (comunidade.bannerPublicId) {
             await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+        }
+
+        // Remove a comunidade da lista de comunidades do livro principal, se existir
+        if (comunidade.livro) {
+            await this.livroModel.findByIdAndUpdate(
+                comunidade.livro,
+                { $pull: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
         }
 
         // Encontra todos os posts da comunidade

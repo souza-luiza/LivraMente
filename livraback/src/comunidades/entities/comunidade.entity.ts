@@ -38,9 +38,8 @@ export class Comunidade {
   @Prop()
   slug?: string;
 
-  // Livro principal da comunidade 
-  //@Prop({ type: Types.ObjectId, ref: 'Livro' })
-  //livro_principal?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Livro' })
+  livro?: Types.ObjectId;
 }
 
 export const ComunidadeSchema = SchemaFactory.createForClass(Comunidade);
