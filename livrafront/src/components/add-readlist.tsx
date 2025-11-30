@@ -101,6 +101,7 @@ export default function AddReadlist({ isOpen, onClose, livroId, onSave, readlist
     return (
         <AnimatePresence mode="wait">
             <motion.div 
+                key={'add-readlist'}
                 className="fixed inset-0 flex items-center justify-center z-50"
                 style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
                 initial={{ opacity: 0 }}
