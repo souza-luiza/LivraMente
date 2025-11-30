@@ -17,6 +17,7 @@ import { LivrosModule } from './livros/livros.module';
 import { LlmApiService } from './llm/writer/llm-api.service';
 import { ComunidadesService } from './comunidades/comunidades.service';
 import { LlmToolsService } from './llm/assistant/llm-tools.service';
+import { LlmAgentService } from './llm/assistant/llm-agent.service';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication | null = null;
@@ -141,6 +142,10 @@ describe('App Integration with Mocks', () => {
     analyze: jest.fn().mockResolvedValue({}),
   };
 
+  const mockLlmAgentService = {
+    runAnalysisAgent: jest.fn().mockResolvedValue('Resposta Mockada do Agente'),
+  };
+
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
 
@@ -184,6 +189,8 @@ describe('App Integration with Mocks', () => {
       .useValue(mockLlmToolsService)
       .overrideProvider(LlmApiService)
       .useValue(mockLlmApiService)
+      .overrideProvider(LlmAgentService)
+      .useValue(mockLlmAgentService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -204,7 +211,7 @@ describe('App Integration with Mocks', () => {
   });
 
   it('should respond to GET /', async () => {
-    const response = await request(app.getHttpServer()).get('/');
+    const response = await request(app!.getHttpServer()).get('/');
     expect(response.status).toBe(200);
   });
 });
