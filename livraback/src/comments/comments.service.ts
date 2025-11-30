@@ -40,7 +40,7 @@ export class CommentsService {
         if (imagens) {
             try {
                 imagesInfo = await Promise.all(
-                    imagens.map((file) => this.cloudinary.uploadImage(file.buffer, 'livra/posts/imagens'))
+                    imagens.map((file) => this.cloudinary.uploadImage(file.buffer, 'livra/comentarios/imagens'))
                 );
             } catch (error) {
                 await Promise.all(
