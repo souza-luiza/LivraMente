@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, BadRequestException } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
+import { FilesInterceptor } from '@nestjs/platform-express';
+
 
 @ApiTags('Posts')
 @ApiBearerAuth()
@@ -17,16 +19,55 @@ export class PostsController {
 
   // CRIAR POSTAGENS
   @Post()
+  @UseInterceptors(
+    FilesInterceptor('imagens', 4, {
+      fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(new BadRequestException('Formato de imagem inválido'), false);
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+    })
+  )
   @ApiOperation({
     summary: 'Cria uma nova postagem',
     description: 'Cria uma nova postagem em uma comunidade. Se solicitação_revisao for true, o post fica pendente de moderação.'
   })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        conteudo: { type: 'string' },
+        comunidade: { type: 'string' },
+        solicitacao_revisao: { type: 'boolean' },
+        categoria: {
+          type: 'string',
+          enum: ['geral', 'fanart', 'fanfic'],
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        livro_referenciado: { type: 'string' },
+        publico: { type: 'boolean' },
+
+        imagens: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description:
+            'Máximo de 4 imagens (JPEG, PNG, WEBP), cada uma até 5MB.',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 201,
     description: 'Post criado com sucesso'
-  })
-  @ApiBody({ 
-    type: CreatePostDto
   })
   @ApiResponse({
     status: 400,
@@ -41,11 +82,11 @@ export class PostsController {
     description: 'Comunidade não encontrada'
   })
   @ApiResponse({
-    status: 401,
-    description: 'Token JWT inválido'
+    status: 500,
+    description: 'Erro ao enviar imagens para o servidor'
   })
-  async create(@CurrentUser() user: CurrentUserDto, @Body() createPostDto: CreatePostDto) {
-    return this.postsService.createPost(user.userId, createPostDto);
+  async create(@CurrentUser() user: CurrentUserDto, @Body() createPostDto: CreatePostDto, @UploadedFiles() imagens: Express.Multer.File[]) {
+    return this.postsService.createPost(user.userId, createPostDto, imagens);
   }
 
   // CURTIR POSTAGENS

@@ -52,7 +52,9 @@ describe('LivrosService', () => {
       const slug = 'livro-a';
       const result = { titulo: 'Livro A' };
       model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(result),
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(result),
+        }),
       });
 
       expect(await service.findOne(slug)).toBe(result);
@@ -61,7 +63,9 @@ describe('LivrosService', () => {
 
     it('deve lançar NotFoundException se não encontrar o livro', async () => {
       model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null),
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
       });
 
       await expect(service.findOne('inexistente')).rejects.toThrow(NotFoundException);
