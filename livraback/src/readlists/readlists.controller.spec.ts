@@ -19,7 +19,8 @@ describe('ReadlistsController', () => {
     addLivro: jest.fn(),
     removeLivro: jest.fn(),
     findAllPublic: jest.fn(),
-    updatePhoto: jest.fn()
+    updatePhoto: jest.fn(),
+    addReadlist: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -100,11 +101,14 @@ describe('ReadlistsController', () => {
 
   describe('addLivro', () => {
     it('should add a livro to readlist', async () => {
-      const result = { id: '1', livros: ['livro123'] };
+      const dto = { livroIds: ['livro123', 'livro456'] };
+      const result = { id: '1', livros: dto.livroIds };
+
       mockReadlistsService.addLivro.mockResolvedValue(result);
 
-      const response = await controller.addLivro(mockUser, '1', 'livro123');
-      expect(service.addLivro).toHaveBeenCalledWith(mockUser.userId, '1', 'livro123');
+      const response = await controller.addLivro(mockUser, '1', dto);
+
+      expect(service.addLivro).toHaveBeenCalledWith(mockUser.userId, '1', dto.livroIds);
       expect(response).toEqual(result);
     });
   });
@@ -167,6 +171,21 @@ describe('ReadlistsController', () => {
     it('deve propagar erro do service', async () => {
       mockReadlistsService.updatePhoto = jest.fn().mockRejectedValue(new Error('Erro interno'));
       await expect(controller.updatePhoto(fakeUser as any, fakeFile, 'slug')).rejects.toThrow('Erro interno');
+    });
+  });
+
+  describe('addReadlist', () => {
+    it('should add livro to multiple readlists', async () => {
+      const livroId = 'livro999';
+      const dto = { readlistIds: ['rl1', 'rl2', 'rl3'] };
+
+      const result = { livroId, readlists: dto.readlistIds };
+      mockReadlistsService.addReadlist.mockResolvedValue(result);
+
+      const response = await controller.addReadlist(livroId, dto);
+
+      expect(service.addReadlist).toHaveBeenCalledWith(livroId, dto.readlistIds);
+      expect(response).toEqual(result);
     });
   });
 });

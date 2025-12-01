@@ -192,11 +192,11 @@ export function CreateReadlist({
           <div className="relative">
             <Image
               className="object-cover rounded-lg mb-2 object-cover w-37 h-37"
-              src={capaPreview || "/Readlist.svg"}
+              src={capaPreview || "/ReadlistDefault.png"}
               width={150}
               height={150}
               alt="Capa da readlist"
-              onError={(e) => { e.currentTarget.src = "/Readlist.svg"; }}
+              onError={(e) => { e.currentTarget.src = "/ReadlistDefault.png"; }}
             />
           </div>
           <input

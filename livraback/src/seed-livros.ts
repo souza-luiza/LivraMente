@@ -106,6 +106,7 @@ const JA_ADICIONADOS = [
   'Assassinato no Expresso do Oriente | Agatha Christie',
   'Um Corpo na Biblioteca | Agatha Christie',
   "Fazendo Meu Filme 1: A Estreia de Fani | Paula Pimenta",
+  'Fazendo meu filme 2 | Paula Pimenta | 8582356129',
   "Fazendo Meu Filme 3: O Roteiro Inesperado de Fani | Paula Pimenta",
   "Fazendo Meu Filme 4: Fani em Busca do Final Feliz | Paula Pimenta",
   "Iracema | José de Alencar",
@@ -118,6 +119,19 @@ const JA_ADICIONADOS = [
   "O Senhor dos Anéis: A Sociedade do Anel | J.R.R. Tolkien",
   "O Senhor dos Anéis: As Duas Torres | J.R.R. Tolkien",
   "O Senhor dos Anéis: O Retorno do Rei | J.R.R. Tolkien",
+  "Eu e Esse Meu Coração | C. C. Hunter | 9788555391262",
+  "Eleanor & Park | Rainbow Rowell",
+  "A Cinco Passos de Você | Rachael Lippincott",
+  "Todo Esse Tempo | Rachael Lippincott",
+  "Um de nós está mentindo | Karen McManus | 9788501114181",
+  "Um de nós é o próximo | Karen McManus | 9786555872156",
+  "Cidades de papel | John Green | 9788580573916",
+  "A vida invisível de Addie LaRue | V. E. Schwab | 9786559810475",
+  "A paciente silenciosa | Alex Michaelides | 9788501116536",
+  "A rainha vermelha | Victoria Aveyard | 9788543803548",
+  "Espada de vidro | Victoria Aveyard | 9788543804989",
+  "A prisão do rei | Victoria Aveyard | 9788543808338",
+  "Tempestade de guerra | Victoria Aveyard | 9788554511418",
   */
 ];
 

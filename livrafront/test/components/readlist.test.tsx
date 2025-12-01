@@ -55,7 +55,7 @@ describe('Readlist Component', () => {
       render(<Readlist {...defaultProps} image={undefined} />)
       
       const image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
-      expect(image.getAttribute('src')).toContain('Readlist.svg')
+      expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
     })
   })
 
@@ -120,7 +120,7 @@ describe('Readlist Component', () => {
       render(<Readlist title="Test" author="author" />)
       
       const image = screen.getByAltText('Capa da Readlist Test')
-      expect(image.getAttribute('src')).toContain('Readlist.svg')
+      expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
     })
 
     it('image has correct styling classes', () => {
@@ -225,7 +225,7 @@ describe('Readlist Component', () => {
       expect(screen.getByText('@AutorDaReadlist')).toBeInTheDocument()
       
       const image = screen.getByAltText('Capa da Readlist undefined')
-      expect(image.getAttribute('src')).toContain('Readlist.svg')
+      expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
       
       const link = screen.getByRole('link')
       expect(link).toHaveAttribute('href', '#')
@@ -247,7 +247,7 @@ describe('Readlist Component', () => {
       render(<Readlist {...defaultProps} image="" />)
       
       const image = screen.getByAltText(`Capa da Readlist ${defaultProps.title}`)
-      expect(image.getAttribute('src')).toContain('Readlist.svg')
+      expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
     })
 
     it('null values show defaults', () => {
