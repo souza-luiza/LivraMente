@@ -5,6 +5,7 @@ import { ComunidadesService } from './comunidades.service';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
+import * as multer from 'multer';
 
 describe('ComunidadesController', () => {
   let controller: ComunidadesController;

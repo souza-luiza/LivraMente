@@ -35,6 +35,12 @@ describe('ComunidadesService', () => {
       deleteMany: jest.fn(),
     };
 
+    const mockLivroModel = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      findById: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ComunidadesService,
@@ -49,6 +55,10 @@ describe('ComunidadesService', () => {
         {
           provide: getModelToken(Comentario.name),
           useValue: mockComentarioModel,
+        },
+        {
+          provide: getModelToken('Livro'),
+          useValue: mockLivroModel,
         },
         {
           provide: CloudinaryService,
@@ -754,6 +764,12 @@ describe('ComunidadesService', () => {
       findById: jest.fn(),
     };
 
+    const mockLivroModel2 = {
+      find: jest.fn(),
+      findOne: jest.fn(),
+      findById: jest.fn(),
+    };
+
     const mockUserId = new Types.ObjectId().toString();
     const mockComunidadeNome = 'fantasia';
     const mockComunidadeId = new Types.ObjectId();
@@ -808,6 +824,10 @@ describe('ComunidadesService', () => {
           {
             provide: getModelToken(Comentario.name),
             useValue: mockComentarioModel2,
+          },
+          {
+            provide: getModelToken('Livro'),
+            useValue: mockLivroModel2,
           },
           {
             provide: CloudinaryService,
