@@ -24,7 +24,6 @@
   "dependencies": {
     "@google/genai": "^1.28.0",
     "@google/generative-ai": "^0.24.1",
-    "@langchain/community": "^0.2.0",
     "@langchain/google-genai": "^2.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
