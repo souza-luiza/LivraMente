@@ -8,6 +8,8 @@ import { UpdateReadlistDto } from './dto/update-readlist.dto';
 import { ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
+import { AddLivrosDto } from './dto/add-livros.dto';
+import { AddReadlistsDto } from './dto/add-readlists.dto';
 
 @ApiCookieAuth() //Informa que usa cookies
 @UseGuards(SessionAuthGuard)
@@ -191,14 +193,14 @@ export class ReadlistsController {
         return this.readlistsService.updatePhoto(user.userId, file, slug);
     }
 
-    @Patch(':id/livros/:livroId')
+    @Patch(':id/livros')
     @ApiOperation({
-        summary: 'Adiciona um livro na readlist',
-        description: 'Adiciona um livro por ID na readlist por ID do usuário autenticado'
+        summary: 'Adiciona vários livros na readlist',
+        description: 'Adiciona uma lista de IDs de livros na readlistId do usuário autenticado'
     })
     @ApiResponse({
         status: 200,
-        description: 'Livro adicionado com sucesso na readlist'
+        description: 'Livros adicionados com sucesso na readlist'
     })
     @ApiResponse({
         status: 404,
@@ -210,16 +212,16 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
-    async addLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Param('livroId') livroId: string) {
-        return this.readlistsService.addLivro(user.userId, id, livroId);
+    async addLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Body() body: AddLivrosDto) {
+        return this.readlistsService.addLivro(user.userId, id, body.livroIds);
     }
 
     @Delete(':id/livros/:livroId')
     @ApiOperation({
         summary: 'Remove um livro da readlist',
-        description: 'Deleta um livro por ID da readlist por ID do usuário autenticado'
+        description: 'Deleta um livro por ID da readlistId do usuário autenticado'
     })
     @ApiResponse({
         status: 200,
@@ -235,9 +237,34 @@ export class ReadlistsController {
     })
     @ApiResponse({
         status: 401,
-        description: 'Token JWT inválido'
+        description: 'Sessão inválida'
     })
     async removeLivro(@CurrentUser() user: CurrentUserDto, @Param('id') id: string, @Param('livroId') livroId: string) {
         return this.readlistsService.removeLivro(user.userId, id, livroId);
+    }
+
+    @Patch(':livroId')
+    @ApiOperation({
+        summary: 'Adiciona livro em várias readlists',
+        description: 'Adiciona livroId na lista de IDs de readlists do usuário autenticado'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Livro adicionado com sucesso nas readlists'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Livro não encontrado'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'ID inválido'
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Sessão inválida'
+    })
+    async addReadlist(@Param('livroId') livroId: string, @Body() body: AddReadlistsDto) {
+        return this.readlistsService.addReadlist(livroId, body.readlistIds);
     }
 }

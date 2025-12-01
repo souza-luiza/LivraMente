@@ -29,7 +29,8 @@ describe('UsersController', () => {
       { _id: 'r2', nome: 'Readlist 2' },
     ]),
     getPublicByUsername: jest.fn().mockResolvedValue(mockUser),
-    updateAvatar: jest.fn().mockResolvedValue({ avatarUrl: 'mocked.com/test.png' })
+    updateAvatar: jest.fn().mockResolvedValue({ avatarUrl: 'mocked.com/test.png' }),
+    checkReadlistFav: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -192,6 +193,41 @@ describe('UsersController', () => {
     it('deve propagar erro do service', async () => {
       mockUsersService.updateAvatar = jest.fn().mockRejectedValue(new Error('Erro interno'));
       await expect(controller.updateAvatar(fakeUser as any, fakeFile, mockSession as any)).rejects.toThrow('Erro interno');
+    });
+  });
+
+  describe('checkReadlistFav', () => {
+    it('deve retornar true se a readlist estiver favoritada', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
+      const readlistId = 'readlist-id';
+
+      mockUsersService.checkReadlistFav = jest.fn().mockResolvedValue(true);
+
+      const result = await controller.checkReadlistFav(currentUser, readlistId);
+
+      expect(usersService.checkReadlistFav).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(result).toBe(true);
+    });
+
+    it('deve retornar false se a readlist não estiver favoritada', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
+      const readlistId = 'readlist-id';
+
+      mockUsersService.checkReadlistFav = jest.fn().mockResolvedValue(false);
+
+      const result = await controller.checkReadlistFav(currentUser, readlistId);
+
+      expect(usersService.checkReadlistFav).toHaveBeenCalledWith(currentUser.userId, readlistId);
+      expect(result).toBe(false);
+    });
+
+    it('deve propagar erro se o service lançar', async () => {
+      const currentUser = { userId: 'user-id', email: 'test@test.com', pronouns: 'ele/dele', username: 'user', avatarUrl: '' };
+      const readlistId = 'readlist-id';
+
+      mockUsersService.checkReadlistFav = jest.fn().mockRejectedValue(new Error('Erro interno'));
+
+      await expect(controller.checkReadlistFav(currentUser, readlistId)).rejects.toThrow('Erro interno');
     });
   });
 });

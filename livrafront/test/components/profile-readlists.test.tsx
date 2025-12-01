@@ -95,7 +95,7 @@ describe('ProfileReadlists Component', () => {
       const images = screen.getAllByRole('img')
       
       images.forEach(image => {
-        expect(image.getAttribute('src')).toContain('Readlist.svg')
+        expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
       })
     })
 
@@ -261,7 +261,7 @@ describe('ProfileReadlists Component', () => {
       const images = container.querySelectorAll('img')
       
       images.forEach(image => {
-        expect(image.getAttribute('src')).toContain('Readlist.svg')
+        expect(image.getAttribute('src')).toContain('ReadlistDefault.png')
       })
     })
 
