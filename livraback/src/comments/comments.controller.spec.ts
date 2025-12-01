@@ -71,7 +71,8 @@ describe('CommentsController', () => {
       expect(service.createComment).toHaveBeenCalledWith(
         mockUser.userId,
         postId,
-        createCommentDto
+        createCommentDto,
+        undefined
       );
       expect(result).toEqual(expectedResult);
     });
@@ -82,7 +83,8 @@ describe('CommentsController', () => {
       expect(service.createComment).toHaveBeenCalledWith(
         mockUser.userId,
         postId,
-        createCommentDto
+        createCommentDto,
+        undefined
       );
     });
   });

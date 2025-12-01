@@ -14,13 +14,13 @@ export class LivrosService {
     }
 
     async findOne(slug: string) {
-        const livro = await this.livroModel.findOne({ slug }).exec();
+        const livro = await this.livroModel.findOne({ slug }).populate('autores', 'nome').exec();
         if(!livro) throw new NotFoundException('Livro não encontrado');
         return livro;
     }
 
     async findOneReadlists(slug: string) {
-        const livro = await this.livroModel.findOne({ slug }).populate('readlists').select('readlists').exec();
+        const livro = await this.livroModel.findOne({ slug }).populate({path: 'readlists', populate: {path: 'criador', select: 'username'}}).select('readlists').exec();
         if (!livro) throw new NotFoundException('Livro não encontrado');
         return livro.readlists;
     }

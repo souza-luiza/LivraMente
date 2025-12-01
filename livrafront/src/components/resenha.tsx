@@ -16,24 +16,18 @@ import RemoveIcon from "./icons/RemoveIcon";
 import PopUp from "./pop-up";
 import EditCommentModal from "./EditCommentModal";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
-interface CommentComponentProps {
-    post: Post;
-    comment: Comentario;
-    currentUserId: string;
-    isModerator?: boolean;
+interface ReviewComponentProps {
+    // resenha:
     onDelete: () => void;
     onUpdate?: () => void;
 }
 
-export default function CommentComponent({
-    post,
-    comment,
-    currentUserId,
-    isModerator = false,
+export default function ReviewComponent({
     onDelete,
     onUpdate
-} : CommentComponentProps) {
+} : ReviewComponentProps) {
 
     const router = useRouter();
 
@@ -43,14 +37,6 @@ export default function CommentComponent({
     const [maxHeight, setMaxHeight] = useState<string | undefined>(undefined);
     const contentRef = useRef<HTMLParagraphElement>(null);
 
-    // Gerenciamento do modal de imagem
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [showImageModal, setShowImageModal] = useState(false);
-
-    // Curtidas
-    const [liked, setLiked] = useState(comment.curtidas.some((id) => id === currentUserId));
-    const [likeAmount, setLikeAmount] = useState(comment.curtidas.length);
-
     // Mais Opções
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -58,7 +44,12 @@ export default function CommentComponent({
     const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
     const [showEditCommentModal, setShowEditCommentModal] = useState(false);
 
-    const isOwner = (comment.autor._id === currentUserId);
+    // TODO: Mudar
+    const isOwner = true;
+
+    // TODO: Verificar se a resenha foi editada
+    // const edited = (review.createdAt !== resenha.updatedAt);
+    const edited = true;
 
     useEffect(() => {
         if (contentRef.current) {
@@ -68,46 +59,21 @@ export default function CommentComponent({
             setMaxHeight(expanded ? `${el.scrollHeight}px` : `${maxVisibleHeight}px`);
             setIsOverflowed(el.scrollHeight > maxVisibleHeight);
         }
-    }, [comment.conteudo, expanded]);
+    }, [expanded]);
 
     useEffect(() => {
         if (showOptions && menuRef.current) {
             const rect = menuRef.current.getBoundingClientRect();
             const menuWidth = rect.width;
-            const menuHeight = rect.height;
 
             setClickPosition((prev) => {
-                let x = prev.x;
-                let y = prev.y;
-
-                if (x + menuWidth > window.innerWidth) {
-                    x = window.innerWidth - menuWidth - 10;
-                }
-                if (y + menuHeight > window.innerHeight) {
-                    y = window.innerHeight - menuHeight - 10;
-                }
+                let x = prev.x - menuWidth;
+                let y = prev.y + 10;
 
                 return { x, y };
             });
         }
     }, [showOptions]);
-
-    const handleOpenImageModal = (imgUrl: string) => {
-        setSelectedImage(imgUrl);
-        setShowImageModal(true);
-    }
-
-    const handleLikeComment = async () => {
-        try {
-            const { liked, likeAmount } = await commentsService.likeComment(post._id, comment._id);
-            
-            setLiked(liked);
-            setLikeAmount(likeAmount);
-
-        } catch (error) {
-            console.error("Erro ao curtir/descurtir o comentário:", error);
-        }
-    }
 
     const handleMoreOptions = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -116,24 +82,24 @@ export default function CommentComponent({
         setShowOptions(true);
     }
 
-    const handleConfirmDeleteComment = () => {
+    const handleConfirmDeleteReview = () => {
         setShowOptions(false);
         setShowConfirmDeletePopUp(true);
     }
 
-    const handleDeleteComment = async () => {
+    const handleDeleteReview = async () => {
         try {
-            await commentsService.deleteComment(post._id, comment._id);
+            // await commentsService.deleteComment(post._id, comment._id);
 
         } catch (error) {
-            console.error("Erro ao excluir o comentário:", error);
+            toast.error("Erro ao excluir resenha.");
 
         } finally {
             onDelete && onDelete();
             setShowConfirmDeletePopUp(false);
         }
     }
-    const handleShowEditCommentModal = () => {
+    const handleShowEditReviewModal = () => {
         setShowOptions(false);
         setShowEditCommentModal(true);
     }
@@ -144,7 +110,18 @@ export default function CommentComponent({
     }
 
     const handleRedirectToProfile = () => {
-        router.push(`/${comment.autor.username}`);
+        router.push(`/${review.autor.username}`);
+    }
+
+    const review = {
+        conteudo: 'Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários.',
+        avaliacao: 4,
+        spoiler: false,
+        createdAt: new Date().toDateString(),
+        autor: {
+            username: 'eu',
+            avatarUrl: '/AbstractUser.png'
+        }
     }
 
     return (
@@ -157,20 +134,22 @@ export default function CommentComponent({
                         onClick={handleRedirectToProfile}
                     >
                         <Image
-                            src={comment.autor.avatarUrl ? comment.autor.avatarUrl : '/AbstractUser.png'}
+                            src={review.autor.avatarUrl ? review.autor.avatarUrl : '/AbstractUser.png'}
                             alt="Foto do usuário"
                             width={24}
                             height={24}
                             className="rounded-full object-cover"
                         />
                         <h6 className="text-h6">
-                            @{comment.autor.username}
+                            @{review.autor.username}
                         </h6>
                     </div>
-                    {(isOwner || isModerator) && <div onClick={handleMoreOptions}>
+                    {isOwner && <div onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
                 </div>
+
+                {/*Avaliação...*/}
 
                 {/*Corpo do Comentário*/}
                 <div className="flex-1 overflow-hidden">
@@ -179,7 +158,7 @@ export default function CommentComponent({
                         style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
                         className="text-b2 whitespace-pre-line"
                     >
-                        {comment.conteudo}
+                        {review.conteudo}
                     </p>
                     {isOverflowed && (
                         <span
@@ -191,65 +170,29 @@ export default function CommentComponent({
                     )}
                 </div>
 
-                {/*Imagens*/}
-                {comment.imagens && comment.imagens.length > 0 && (
-                <div className="flex flex-nowrap gap-2 overflow-x-auto">
-                    {comment.imagens.map((image, index) => (
-                    <div 
-                        key={index} 
-                        className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
-                        onClick={() => handleOpenImageModal(image.secure_url)}
-                    >
-                        <Image
-                            src={image.secure_url}
-                            alt={`Imagem do comentário ${index + 1}`}
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
-                    ))}
-                </div>
-                )}
-
-                {showImageModal && selectedImage && (
-                <ImageModal
-                    autor={comment.autor.username}
-                    imagem={selectedImage} 
-                    imagens={comment.imagens}
-                    onClose={() => setShowImageModal(false)} 
-                />
-                )}
-
-                <div className="flex flex-row items-end justify-between">
-                    <Button 
-                        text={String(likeAmount)}
-                        colorScheme="light-brown" 
-                        size="small"
-                        icon={<HeartIcon fill={liked ? 'currentColor' : 'none'} strokeWidth={3} />}
-                        onClick={handleLikeComment}
-                    />
+                <div className="flex justify-end">
                     <p className="text-b3 body-semibold light-neutral">
-                        {getTimeAgo(comment.createdAt)}
+                        {getTimeAgo(review.createdAt)}{edited ? ' (editado)' : ''}
                     </p>
                 </div>
             </div>
-            <EditCommentModal
+            {/*<EditReviewModal
                 post={post}
                 comment={comment}
                 isOpen={isOwner && showEditCommentModal}
                 onClose={() => setShowEditCommentModal(false)}
                 onSuccess={handleEditSuccess}
-            />
+            />*/}
             <PopUp 
-                title={`Excluir Comentário${(!isOwner && isModerator) ? ` de @${comment.autor.username}` : ''}?`}
+                title={`Excluir Comentário${!isOwner ? ` de @${review.autor.username}` : ''}?`}
                 description="Esta ação não pode ser desfeita."
                 button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-green", onClick: () => setShowConfirmDeletePopUp(false)}}
-                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeleteComment}}
-                isOpen={(isOwner || isModerator) && showConfirmDeletePopUp}
+                button2={{text: "Excluir", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeleteReview}}
+                isOpen={isOwner && showConfirmDeletePopUp}
                 onClose={() => setShowConfirmDeletePopUp(false)}
             />
             <AnimatePresence mode="wait">
-                {(isOwner || isModerator) && showOptions &&
+                {isOwner && showOptions &&
                 <motion.div 
                     ref={menuRef}
                     className="fixed z-50 flex flex-col flex-shrink-0 items-center medium-box small-border-width border-gray-300 shadow-md bg-white gap-1"
@@ -268,7 +211,7 @@ export default function CommentComponent({
                         icon={<TrashIcon />}
                         size="small"
                         colorScheme="dark-brown"
-                        onClick={handleConfirmDeleteComment}
+                        onClick={handleConfirmDeleteReview}
                         fullwidth={true}
                     />
                     {isOwner && <Button
@@ -276,7 +219,7 @@ export default function CommentComponent({
                         icon={<EditIcon />}
                         size="small"
                         colorScheme="dark-brown"
-                        onClick={handleShowEditCommentModal}
+                        onClick={handleShowEditReviewModal}
                         fullwidth={true}
                     />}
                 </motion.div>}

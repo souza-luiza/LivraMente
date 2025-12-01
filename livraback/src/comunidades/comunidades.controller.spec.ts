@@ -5,6 +5,7 @@ import { ComunidadesService } from './comunidades.service';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
+import * as multer from 'multer';
 
 describe('ComunidadesController', () => {
   let controller: ComunidadesController;
@@ -25,6 +26,7 @@ describe('ComunidadesController', () => {
     tornarMembroModerador: jest.fn(),
     deleteCommunity: jest.fn(),
     uploadCapa: jest.fn(),
+    uploadBanner: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -75,7 +77,13 @@ describe('ComunidadesController', () => {
 
   describe('create', () => {
     it('deve criar uma comunidade com sucesso', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const createDto: CreateComunidadeDto = { nome: 'livros' };
       const mockResponse = { _id: '1', nome: 'livros' };
 
@@ -88,7 +96,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar ConflictException quando nome já existir', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const createDto: CreateComunidadeDto = { nome: 'livros' };
 
       mockComunidadesService.create.mockRejectedValue(new ConflictException('Nome de comunidade em uso'));
@@ -99,7 +113,13 @@ describe('ComunidadesController', () => {
 
   describe('update', () => {
     it('deve atualizar uma comunidade com sucesso', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const updateDto: UpdateComunidadeDto = { nome: 'nova-livros' };
       const mockResponse = { _id: '1', nome: 'nova-livros' };
 
@@ -112,7 +132,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar NotFoundException quando comunidade não existir', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const updateDto: UpdateComunidadeDto = { nome: 'nova-livros' };
 
       mockComunidadesService.update.mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
@@ -121,7 +147,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar UnauthorizedException quando usuário não for moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const updateDto: UpdateComunidadeDto = { nome: 'nova-livros' };
 
       mockComunidadesService.update.mockRejectedValue(new UnauthorizedException('Apenas o moderador pode editar a comunidade'));
@@ -130,7 +162,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar ConflictException quando novo nome já existir', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const updateDto: UpdateComunidadeDto = { nome: 'nome-existente' };
 
       mockComunidadesService.update.mockRejectedValue(new ConflictException('Nome de comunidade em uso'));
@@ -177,7 +215,13 @@ describe('ComunidadesController', () => {
   
   describe('addMembro', () => {
     it('deve adicionar membro com sucesso', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const mockResponse = { message: 'Usuário adicionado à comunidade com sucesso' };
   
       mockComunidadesService.addMembro.mockResolvedValue(mockResponse);
@@ -189,7 +233,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar NotFoundException quando comunidade não existir', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
 
       mockComunidadesService.addMembro.mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
 
@@ -197,7 +247,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar BadRequestException quando ID for inválido', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
 
       mockComunidadesService.addMembro.mockRejectedValue(new BadRequestException('ID inválido'));
 
@@ -207,7 +263,13 @@ describe('ComunidadesController', () => {
 
   describe('removeMembro', () => {
     it('deve remover membro com sucesso', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const mockResponse = { message: 'Usuário removido da comunidade com sucesso' };
   
       mockComunidadesService.removeMembro.mockResolvedValue(mockResponse);
@@ -219,7 +281,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar NotFoundException quando comunidade não existir', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
 
       mockComunidadesService.removeMembro.mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
 
@@ -227,7 +295,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar BadRequestException quando for único moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
 
       mockComunidadesService.removeMembro.mockRejectedValue(new BadRequestException('Não é possível remover o único moderador da comunidade'));
 
@@ -235,7 +309,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar BadRequestException quando ID for inválido', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'a@a.com'};
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'a@a.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
 
       mockComunidadesService.removeMembro.mockRejectedValue(new BadRequestException('ID inválido'));
 
@@ -308,7 +388,13 @@ describe('ComunidadesController', () => {
 
   describe('verificarMembro', () => {
     it('deve verificar que usuário é membro mas não moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'membro@email.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'membro@email.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele',
+      };
       const mockResponse = { 
         isMember: true, 
         isModerator: false 
@@ -325,7 +411,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve verificar que usuário é moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'moderador@email.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'user@email.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele'
+      };
       const mockResponse = { 
         isMember: true, 
         isModerator: true 
@@ -342,7 +434,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve verificar que usuário não é membro nem moderador', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'nao-membro@email.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'nao-membro@email.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele'
+      };
       const mockResponse = { 
         isMember: false, 
         isModerator: false 
@@ -359,7 +457,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve lançar erro quando comunidade não for encontrada', async () => {
-      const mockUser: CurrentUserDto = { userId: '123', email: 'user@email.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '123',
+        email: 'user@email.com',
+        username: 'user123',
+        avatarUrl: '',
+        pronouns: 'ele/dele'
+      };
       
       mockComunidadesService.verifyMemberOrMod.mockRejectedValue(new Error('Comunidade não encontrada'));
 
@@ -368,7 +472,13 @@ describe('ComunidadesController', () => {
     });
 
     it('deve propagar UnauthorizedException quando userId for vazio', async () => {
-      const mockUser: CurrentUserDto = { userId: '', email: 'user@email.com' };
+      const mockUser: CurrentUserDto = {
+        userId: '',
+        email: 'user@email.com',
+        username: 'aaaa',
+        avatarUrl: '',
+        pronouns: 'ele/dele'
+      };
       
       mockComunidadesService.verifyMemberOrMod.mockRejectedValue(new UnauthorizedException('Usuário não autenticado'));
 
@@ -377,7 +487,13 @@ describe('ComunidadesController', () => {
   });
 
   describe('removerMembroComoModerador', () => {
-    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const mockUser: CurrentUserDto = {
+      userId: 'moderator1',
+      email: 'mod@email.com',
+      username: 'usuario123',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
     const comunidadeNome = 'fantasia';
     const targetUserId = 'userToRemove';
 
@@ -426,7 +542,13 @@ describe('ComunidadesController', () => {
   });
 
   describe('tornarMembroModerador', () => {
-    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const mockUser: CurrentUserDto = {
+      userId: 'moderator1',
+      email: 'mod@email.com',
+      username: 'usuario123',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
     const comunidadeNome = 'fantasia';
     const targetUserId = 'userToPromote';
 
@@ -475,7 +597,13 @@ describe('ComunidadesController', () => {
   });
 
   describe('delete', () => {
-    const mockUser: CurrentUserDto = { userId: 'moderator1', email: 'mod@email.com' };
+    const mockUser: CurrentUserDto = {
+      userId: 'moderator1',
+      email: 'mod@email.com',
+      username: 'usuario123',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
     const comunidadeNome = 'fantasia';
 
     it('deve deletar comunidade com sucesso', async () => {
@@ -507,6 +635,46 @@ describe('ComunidadesController', () => {
   });
   
   describe('uploadCapa', () => {
+    const mockUser: CurrentUserDto = {
+      userId: 'moderator1',
+      email: 'mod@email.com',
+      username: 'usuario123',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
+    const comunidadeNome = 'fantasia';
+    const mockFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: 'test.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: 1024,
+      buffer: Buffer.from('test'),
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    };
+
+    it('deve fazer upload da capa com sucesso', async () => {
+      const mockResponse = { message: 'Capa atualizada com sucesso', url: 'http://example.com/capa.jpg' };
+      
+      mockComunidadesService.uploadCapa.mockResolvedValue(mockResponse);
+
+      const result = await controller.uploadCapa(mockUser, comunidadeNome, mockFile);
+
+      expect(service.uploadCapa).toHaveBeenCalledWith('moderator1', 'fantasia', mockFile);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar NotFoundException quando comunidade não existir', async () => {
+      mockComunidadesService.uploadCapa.mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
+
+      await expect(
+        controller.uploadCapa(mockUser, 'inexistente', mockFile)
+      ).rejects.toThrow(NotFoundException);
+    });
+
     it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
       const mockUser: CurrentUserDto = { userId: 'moderador1', email: 'mod@email.com', username: 'usuario123', avatarUrl: '', pronouns: 'ele/dele' };
       const comunidadeNome = 'fantasia';
@@ -518,8 +686,72 @@ describe('ComunidadesController', () => {
     });
   });
 
+   describe('uploadBanner', () => {
+    const mockUser: CurrentUserDto = {
+      userId: 'moderator1',
+      email: 'mod@email.com',
+      username: 'usuario123',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
+    const comunidadeNome = 'fantasia';
+    const mockFile: Express.Multer.File = {
+      fieldname: 'file',
+      originalname: 'banner.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: 2048,
+      buffer: Buffer.from('test'),
+      destination: '',
+      filename: '',
+      path: '',
+      stream: null as any,
+    };
+
+    it('deve fazer upload do banner com sucesso', async () => {
+      const mockResponse = { message: 'Banner atualizado com sucesso', url: 'http://example.com/banner.jpg' };
+      
+      mockComunidadesService.uploadBanner.mockResolvedValue(mockResponse);
+
+      const result = await controller.uploadBanner(mockUser, comunidadeNome, mockFile);
+
+      expect(service.uploadBanner).toHaveBeenCalledWith('moderator1', 'fantasia', mockFile);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar NotFoundException quando comunidade não existir', async () => {
+      mockComunidadesService.uploadBanner.mockRejectedValue(new NotFoundException('Comunidade não encontrada'));
+
+      await expect(
+        controller.uploadBanner(mockUser, 'inexistente', mockFile)
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve propagar ForbiddenException quando usuário não for moderador', async () => {
+      mockComunidadesService.uploadBanner.mockRejectedValue(new ForbiddenException('Apenas moderadores podem alterar o banner'));
+
+      await expect(
+        controller.uploadBanner(mockUser, comunidadeNome, mockFile)
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('deve propagar BadRequestException quando arquivo for inválido', async () => {
+      mockComunidadesService.uploadBanner.mockRejectedValue(new BadRequestException('Arquivo inválido'));
+
+      await expect(
+        controller.uploadBanner(mockUser, comunidadeNome, mockFile)
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
   describe('Edge cases and error propagation', () => {
-    const mockUser: CurrentUserDto = { userId: '123', email: 'user@email.com' };
+    const mockUser: CurrentUserDto = {
+      userId: '123',
+      email: 'user@email.com',
+      username: 'usuario1234',
+      avatarUrl: '',
+      pronouns: 'ele/dele'
+    };
 
     describe('Service method not mocked errors', () => {
       it('deve lidar com métodos de serviço não implementados no mock', async () => {
@@ -538,7 +770,13 @@ describe('ComunidadesController', () => {
 
     describe('CurrentUser edge cases', () => {
       it('deve lidar com CurrentUser sem userId', async () => {
-        const invalidUser: CurrentUserDto = { userId: '', email: 'test@email.com' };
+        const invalidUser: CurrentUserDto = {
+          userId: '',
+          email: 'user@email.com',
+          username: 'usuario123',
+          avatarUrl: '',
+          pronouns: 'ele/dele'
+        };
         
         mockComunidadesService.verifyMemberOrMod.mockRejectedValue(new UnauthorizedException());
         
@@ -551,6 +789,44 @@ describe('ComunidadesController', () => {
         
         await expect(controller.create(undefinedUser, { nome: 'test' }))
           .rejects.toThrow();
+      });
+
+      it('deve lidar com métodos que requerem CurrentUser com dados incompletos', async () => {
+        const incompleteUser = { userId: '123' } as CurrentUserDto;
+        
+        mockComunidadesService.addMembro.mockResolvedValue({ message: 'Sucesso' });
+        
+        const result = await controller.addMembro(incompleteUser, 'fantasia');
+        expect(result).toBeDefined();
+      });
+    });
+
+    describe('File upload edge cases', () => {
+      it('deve lidar com tipos de arquivo inválidos nos interceptors', async () => {
+        const mockUser: CurrentUserDto = {
+          userId: 'moderator1',
+          email: 'mod@email.com',
+          username: 'usuario123',
+          avatarUrl: '',
+          pronouns: 'ele/dele'
+        };
+        const invalidFile: Express.Multer.File = {
+          fieldname: 'file',
+          originalname: 'file.pdf',
+          encoding: '7bit',
+          mimetype: 'application/pdf',
+          size: 2048,
+          buffer: Buffer.from('test'),
+          destination: '',
+          filename: '',
+          path: '',
+          stream: null as any,
+        };
+        
+        mockComunidadesService.uploadCapa.mockResolvedValue({ message: 'Processado' });
+        
+        const result = await controller.uploadCapa(mockUser, 'fantasia', invalidFile);
+        expect(result).toBeDefined();
       });
     });
   });

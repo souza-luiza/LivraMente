@@ -1,169 +1,533 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { useRouter } from 'next/navigation';
-import CommunityMember from '@/components/community-member';
-import type { ReactNode } from 'react';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { useRouter } from "next/navigation";
+import CommunityMember from "@/components/community-member";
+import { User } from "@/types/auth";
 
-// Mock Next.js Link component
-jest.mock('next/link', () => {
-  // forward any props to the anchor so tests can interact with it (aria, onClick, role, etc.)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Link = ({ children, href, ...props }: { children?: ReactNode; href?: string } & Record<string, any>) => {
-    return <a href={href} {...props}>{children}</a>;
-  };
-  Link.displayName = 'NextLinkMock';
-  return Link;
-});
-
-// Mock Next.js navigation (useRouter)
-jest.mock('next/navigation', () => ({
+// Mock Next.js router
+jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
-describe('CommunityMember', () => {
-  const defaultProps = {
-    user: { userId: 'user-1', username: 'testuser', avatarUrl: '', email: 'test@example.com', pronouns: '' },
-  };
+// Mock Framer Motion components to avoid animation issues in tests
+jest.mock("framer-motion", () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
 
-  let mockPush: jest.Mock;
+// Mock Next.js Image component
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: ({ src, alt, width, height, className }: any) => (
+    <img 
+      src={src} 
+      alt={alt} 
+      width={width} 
+      height={height} 
+      className={className}
+      data-testid="user-avatar"
+    />
+  ),
+}));
+
+// Mock custom components
+jest.mock("@/components/button", () => ({
+  __esModule: true,
+  default: ({ text, icon, onClick, path, fullwidth }: any) => (
+    <button 
+      onClick={onClick ? onClick : () => { (window as any).__mockPush && (window as any).__mockPush(path); }}
+      data-testid="custom-button"
+      data-text={text}
+      data-path={path}
+      data-fullwidth={fullwidth}
+    >
+      {icon && <span data-testid="button-icon">{icon}</span>}
+      {text}
+    </button>
+  ),
+}));
+
+// Mock icons
+jest.mock("@/components/icons/SingleUserIcon", () => () => <svg data-testid="single-user-icon" />);
+jest.mock("@/components/icons/RemoveIcon", () => () => <svg data-testid="remove-icon" />);
+jest.mock("@/components/icons/ToolIcon", () => () => <svg data-testid="tool-icon" />);
+jest.mock("@/components/icons/StarIcon", () => () => <svg data-testid="star-icon" />);
+
+// Define test user
+const mockUser: User = {
+  userId: "123",
+  username: "testuser",
+  avatarUrl: "https://example.com/avatar.jpg",
+  email: "test@example.com",
+  pronouns: "they/them",
+};
+
+describe("CommunityMember", () => {
+  const mockPush = jest.fn();
+  const mockHandleRemoveMember = jest.fn();
+  const mockHandleMakeModerator = jest.fn();
 
   beforeEach(() => {
-    mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('Rendering', () => {
-    it('should render the component with correct username', () => {
-      render(<CommunityMember {...defaultProps} />);
-      
-      const usernameElement = screen.getByText('@testuser');
-      expect(usernameElement).toBeInTheDocument();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
     });
-
-    it('should render with correct container classes', () => {
-        render(<CommunityMember {...defaultProps} />);
-
-        const usernameEl = screen.getByText('@testuser');
-        const innerDiv = usernameEl.closest('div');
-        expect(innerDiv).toBeInTheDocument();
-        // layout uses flex row with gap
-        expect(innerDiv).toHaveClass('flex');
-        expect(innerDiv).toHaveClass('flex-row');
+    mockPush.mockClear();
+    mockHandleRemoveMember.mockClear();
+    mockHandleMakeModerator.mockClear();
+    // expose mockPush to component/button mock via window for navigation simulation
+    (window as any).__mockPush = mockPush;
+    
+    // Mock window dimensions
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1024,
     });
-
-    it('should wrap username in Link component with correct href', () => {
-        render(<CommunityMember {...defaultProps} />);
-      const innerDiv = screen.getByText('@testuser').closest('div');
-      expect(innerDiv).toBeInTheDocument();
-      // clicking the element should navigate to the user's profile
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith('/testuser');
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: 768,
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have accessible username text', () => {
-      render(<CommunityMember {...defaultProps} />);
-      
-      const usernameElement = screen.getByText('@testuser');
-      expect(usernameElement).toBeInTheDocument();
+  describe("Basic rendering", () => {
+    it("renders user information correctly", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      expect(screen.getByText("@testuser")).toBeInTheDocument();
+      expect(screen.getByTestId("user-avatar")).toHaveAttribute("src", mockUser.avatarUrl);
     });
 
-    it('should have proper link semantics', () => {
-      render(<CommunityMember {...defaultProps} />);
-      const usernameElement = screen.getByText('@testuser');
-      expect(usernameElement).toBeInTheDocument();
-      // element should be interactive (click triggers router.push)
-      const innerDiv = usernameElement.closest('div');
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith('/testuser');
-    });
-  });
+    it("renders star icon when user is moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={true}
+        />
+      );
 
-  describe('User Interaction', () => {
-    it('should navigate to correct user profile when clicked', async () => {
-      const user = userEvent.setup();
-      render(<CommunityMember {...defaultProps} />);
-      
-      const innerDiv = screen.getByText('@testuser').closest('div');
-      await user.click(innerDiv as Element);
-      expect(mockPush).toHaveBeenCalledWith('/testuser');
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle special characters in username', () => {
-      const props = { user: { userId: 'user-1', username: 'user-name_with.special@chars123', email: 'spec@example.com', avatarUrl: '', pronouns: '' } };
-      render(<CommunityMember {...props} />);
-      
-      const usernameElement = screen.getByText('@user-name_with.special@chars123');
-      expect(usernameElement).toBeInTheDocument();
-      const innerDiv = usernameElement.closest('div');
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith('/user-name_with.special@chars123');
+      expect(screen.getByTestId("star-icon")).toBeInTheDocument();
     });
 
-    it('should handle empty username', () => {
-      const props = { user: { userId: 'user-1', username: '', email: 'empty@example.com', avatarUrl: '', pronouns: '' } };
-      render(<CommunityMember {...props} />);
-      
-      const usernameElement = screen.getByText('@');
-      expect(usernameElement).toBeInTheDocument();
-      const innerDiv = usernameElement.closest('div');
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith('/');
+    it("does not render star icon when user is not moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      expect(screen.queryByTestId("star-icon")).not.toBeInTheDocument();
     });
 
-    it('should handle very long username', () => {
-      const longUsername = 'a'.repeat(100);
-      const props = { user: { userId: 'user-1', username: longUsername, email: 'long@example.com', avatarUrl: '', pronouns: '' } };
-      render(<CommunityMember {...props} />);
-      
-      const usernameElement = screen.getByText(`@${longUsername}`);
-      expect(usernameElement).toBeInTheDocument();
-      const innerDiv = usernameElement.closest('div');
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith(`/${longUsername}`);
-    });
+    it("uses default avatar when avatarUrl is not provided", () => {
+      const userWithoutAvatar = { ...mockUser, avatarUrl: "" };
+      render(
+        <CommunityMember 
+          user={userWithoutAvatar}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
 
-    it('should handle numeric username', () => {
-      const props = { user: { userId: 'user-1', username: '12345', email: 'num@example.com', avatarUrl: '', pronouns: '' } };
-      render(<CommunityMember {...props} />);
-      
-      const usernameElement = screen.getByText('@12345');
-      expect(usernameElement).toBeInTheDocument();
-      const innerDiv = usernameElement.closest('div');
-      if (innerDiv) innerDiv.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(mockPush).toHaveBeenCalledWith('/12345');
+      expect(screen.getByTestId("user-avatar")).toHaveAttribute("src", "/AbstractUser.png");
     });
   });
 
-  describe('Snapshot Testing', () => {
-    it('should match snapshot with default props', () => {
-      const { container } = render(<CommunityMember {...defaultProps} />);
-      expect(container.firstChild).toHaveClass('flex');
-      // component uses a row layout; ensure it is present
-      expect(container.firstChild).toHaveClass('flex-col');
-      expect(screen.getByText('@testuser')).toBeInTheDocument();
+  describe("Click behavior for non-moderator users", () => {
+    it("navigates to user profile when clicked and current user is not moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      expect(mockPush).toHaveBeenCalledWith("/testuser");
     });
 
-    it('should match snapshot with special characters username', () => {
-      const props = { user: { userId: 'user-1', username: 'special-user_123', email: 'special@example.com', avatarUrl: '', pronouns: '' } };
-      const { container } = render(<CommunityMember {...props} />);
-      expect(container.firstChild).toHaveClass('flex');
-      expect(container.firstChild).toHaveClass('flex-col');
-      expect(screen.getByText('@special-user_123')).toBeInTheDocument();
+    it("navigates to user profile when clicked and target user is moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={true}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      expect(mockPush).toHaveBeenCalledWith("/testuser");
     });
   });
 
-  describe('Prop Validation', () => {
-    it('should require username prop', () => {
-      render(<CommunityMember user={{ username: 'test', userId: 'user-1', email: 'req@example.com', avatarUrl: '', pronouns: '' }} />);
-      expect(screen.getByText('@test')).toBeInTheDocument();
+  describe("Moderator options menu", () => {
+    it("shows options menu when moderator clicks on non-moderator user", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+          handleRemoveMember={mockHandleRemoveMember}
+          handleMakeModerator={mockHandleMakeModerator}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      expect(buttons).toHaveLength(3);
+    });
+
+    it("does not show options menu when current user is not moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      expect(screen.queryByTestId("custom-button")).not.toBeInTheDocument();
+    });
+
+    it("does not show options menu when target user is moderator", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={true}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      expect(screen.queryByTestId("custom-button")).not.toBeInTheDocument();
+    });
+
+    it("menu buttons have correct labels and icons", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+          handleRemoveMember={mockHandleRemoveMember}
+          handleMakeModerator={mockHandleMakeModerator}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      expect(buttons[0]).toHaveAttribute("data-text", "Visitar perfil de @testuser");
+      expect(buttons[1]).toHaveAttribute("data-text", "Remover @testuser da comunidade");
+      expect(buttons[2]).toHaveAttribute("data-text", "Tornar @testuser moderador");
+    });
+
+    it("hides menu when mouse leaves menu area", async () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      expect(buttons.length).toBeGreaterThan(0);
+
+      const menu = buttons[0].closest("div");
+      fireEvent.mouseLeave(menu!);
+
+      // Menu should be hidden
+      await waitFor(() => {
+        expect(screen.queryByTestId("custom-button")).not.toBeInTheDocument();
+      });
+    });
+
+    it("hides menu when hovering ends on main component", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const mainComponent = screen.getByText("@testuser").closest("div")?.parentElement;
+      fireEvent.mouseLeave(mainComponent!);
+
+      expect(screen.queryByTestId("custom-button")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Menu positioning", () => {
+    it("adjusts menu position when near right edge of screen", () => {
+      Object.defineProperty(window, "innerWidth", { value: 500 });
+      
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!, { clientX: 400, clientY: 100 });
+
+      // Menu should be positioned to avoid overflow
+      const buttons = screen.getAllByTestId("custom-button");
+      const menu = buttons[0].closest("div");
+      expect(menu).toHaveStyle("left: 240px"); // 500 - 250 (menu width) - 10 (padding)
+    });
+
+    it("adjusts menu position when near bottom edge of screen", () => {
+      Object.defineProperty(window, "innerHeight", { value: 400 });
+      
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!, { clientX: 100, clientY: 300 });
+
+      // Menu should be positioned to avoid overflow
+      const buttons = screen.getAllByTestId("custom-button");
+      const menu = buttons[0].closest("div");
+      expect(menu).toHaveStyle("top: 190px"); // 400 - 200 (menu height) - 10 (padding)
+    });
+
+    it("positions menu at click location when not near edges", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const clickX = 200;
+      const clickY = 300;
+      
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!, { clientX: clickX, clientY: clickY });
+
+      const buttons = screen.getAllByTestId("custom-button");
+      const menu = buttons[0].closest("div");
+      expect(menu).toHaveStyle(`left: ${clickX}px`);
+      expect(menu).toHaveStyle(`top: ${clickY}px`);
+    });
+  });
+
+  describe("Menu button actions", () => {
+    it("visit profile button navigates to user profile", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      fireEvent.click(buttons[0]);
+
+      expect(mockPush).toHaveBeenCalledWith("/testuser");
+    });
+
+    it("remove member button calls handleRemoveMember with userId", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+          handleRemoveMember={mockHandleRemoveMember}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      fireEvent.click(buttons[1]);
+
+      expect(mockHandleRemoveMember).toHaveBeenCalledWith("123");
+    });
+
+    it("make moderator button calls handleMakeModerator with userId", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+          handleMakeModerator={mockHandleMakeModerator}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      fireEvent.click(buttons[2]);
+
+      expect(mockHandleMakeModerator).toHaveBeenCalledWith("123");
+    });
+
+    it("handles missing optional handlers gracefully", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+          // No handlers provided
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      
+      // Should not throw error when clicking buttons without handlers
+      fireEvent.click(buttons[1]); // Remove button
+      fireEvent.click(buttons[2]); // Make moderator button
+      
+      // Should still navigate for profile button
+      fireEvent.click(buttons[0]);
+      expect(mockPush).toHaveBeenCalledWith("/testuser");
+    });
+  });
+
+  describe("Edge cases", () => {
+    it("handles user without username", () => {
+      const userWithoutUsername = { ...mockUser, username: "" };
+      render(
+        <CommunityMember 
+          user={userWithoutUsername}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      expect(screen.getByText("@")).toBeInTheDocument();
+    });
+
+    it("uses fallback text when username is missing in menu buttons", () => {
+      const userWithoutUsername = { ...mockUser, username: "" };
+      render(
+        <CommunityMember 
+          user={userWithoutUsername}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@").closest("div");
+      fireEvent.click(memberElement!);
+
+      const buttons = screen.getAllByTestId("custom-button");
+      expect(buttons[0]).toHaveAttribute("data-text", "Visitar Perfil");
+      expect(buttons[1]).toHaveAttribute("data-text", "Remover da Comunidade");
+      expect(buttons[2]).toHaveAttribute("data-text", "Tornar Moderador");
+    });
+
+    it("toggles menu on subsequent clicks", async () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={true}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      
+      // First click shows menu
+      fireEvent.click(memberElement!);
+      const buttons = screen.getAllByTestId("custom-button");
+      expect(buttons.length).toBeGreaterThan(0);
+
+      // Second click hides menu
+      fireEvent.click(memberElement!);
+      await waitFor(() => {
+        expect(screen.queryByTestId("custom-button")).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Accessibility and interactions", () => {
+    it("has proper ARIA attributes and keyboard support", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      const mainElement = memberElement?.parentElement;
+
+      // Should have focus visible styles
+      expect(mainElement).toHaveClass("focus-visible:outline-none");
+      expect(mainElement).toHaveClass("focus-visible:ring-1");
+      expect(mainElement).toHaveClass("focus-visible:ring-black");
+
+      // Should have hover styles
+      expect(mainElement).toHaveClass("hover:opacity-90");
+      expect(mainElement).toHaveClass("hover:cursor-pointer");
+
+      // Should have active styles
+      expect(mainElement).toHaveClass("active:opacity-95");
+    });
+
+    it("handles disabled state styling", () => {
+      render(
+        <CommunityMember 
+          user={mockUser}
+          isCurrentUserModerator={false}
+          isTargetUserModerator={false}
+        />
+      );
+
+      const memberElement = screen.getByText("@testuser").closest("div");
+      const mainElement = memberElement?.parentElement;
+
+      // Check for disabled state classes
+      expect(mainElement).toHaveClass("disabled:opacity-70");
+      expect(mainElement).toHaveClass("disabled:cursor-not-allowed");
     });
   });
 });

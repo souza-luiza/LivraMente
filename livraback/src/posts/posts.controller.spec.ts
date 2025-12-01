@@ -83,7 +83,7 @@ describe('PostsController', () => {
       mockPostsService.createPost.mockResolvedValue(expectedResponse);
 
       const result = await controller.create(mockUser, dto);
-      expect(service.createPost).toHaveBeenCalledWith(mockUser.userId, dto);
+      expect(service.createPost).toHaveBeenCalledWith(mockUser.userId, dto, undefined);
       expect(result).toEqual(expectedResponse);
     });
   });

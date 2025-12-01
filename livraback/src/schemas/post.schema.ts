@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { CloudinaryImage, CloudinaryImageSchema } from 'src/cloudinary/entities/image.schema';
 
 export enum PostCategoria {
   GERAL = 'geral',
@@ -21,8 +22,8 @@ export class Post extends Document {
   @Prop({ required: true })
   conteudo: string;
 
-  @Prop({ type: [String], default: [] })
-  imagens: string[];
+  @Prop({ type: [CloudinaryImageSchema], default: [] })
+  imagens: CloudinaryImage[];
 
   @Prop({ type: String, enum: PostCategoria, default: PostCategoria.GERAL })
   categoria: PostCategoria;

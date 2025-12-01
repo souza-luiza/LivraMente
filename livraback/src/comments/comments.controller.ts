@@ -1,11 +1,12 @@
-import { UseGuards, Controller, Post, Get, Delete, Patch, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UseGuards, Controller, Post, Get, Delete, Patch, Body, Param, UseInterceptors, BadRequestException, UploadedFiles } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Comentários')
 @ApiBearerAuth()
@@ -16,9 +17,39 @@ export class CommentsController {
 
     // CRIAR COMENTÁRIO
     @Post(':postId/comentarios')
+    @UseInterceptors(
+        FilesInterceptor('imagens', 4, {
+          fileFilter: (req, file, cb) => {
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowed.includes(file.mimetype)) {
+              return cb(new BadRequestException('Formato de imagem inválido'), false);
+            }
+            cb(null, true);
+          },
+          limits: {
+            fileSize: 5 * 1024 * 1024,
+          },
+        })
+      )
     @ApiOperation({
         summary: 'Comentar um post',
         description: 'Criar comentário em um post específico'
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                conteudo: { type: 'string' },
+
+                imagens: {
+                    type: 'array',
+                    items: { type: 'string', format: 'binary' },
+                    description:
+                    'Máximo de 4 imagens (JPEG, PNG, WEBP), cada uma até 5MB.',
+                },
+            },
+        },
     })
     @ApiResponse({
         status: 201,
@@ -36,8 +67,8 @@ export class CommentsController {
         status: 404,
         description: 'Post/Comunidade não encontrado/a'
     })
-    async createComment(@CurrentUser() user: CurrentUserDto, @Param('postId') postId: string, @Body() createCommentDto: CreateCommentDto) {
-        return this.commentsService.createComment(user.userId, postId, createCommentDto);
+    async createComment(@CurrentUser() user: CurrentUserDto, @Param('postId') postId: string, @Body() createCommentDto: CreateCommentDto, @UploadedFiles() imagens: Express.Multer.File[]) {
+        return this.commentsService.createComment(user.userId, postId, createCommentDto, imagens);
     }
 
     @Delete(':postId/comentarios/:commentId')

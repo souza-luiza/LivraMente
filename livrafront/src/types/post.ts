@@ -5,7 +5,7 @@
 export interface CreatePostData {
   conteudo: string;                                    
   comunidade: string;                                  
-  imagens?: string[];                                 
+  imagens?: File[];                                 
   solicitacao_revisao?: boolean;                      
   categoria?: 'geral' | 'fanart' | 'fanfic';          
   tags?: string[];                                   
@@ -28,7 +28,7 @@ export interface Post {
   };
   categoria: 'geral' | 'fanart' | 'fanfic';           
   status: 'publicado' | 'pendente_moderacao' | 'rejeitado'; 
-  imagens: string[];                                   
+  imagens: Imagens[];                                   
   tags: string[];                                     
   curtidas: string[];                                  
   comentarios: string[];                                 
@@ -39,6 +39,10 @@ export interface Post {
   solicitacao_revisao: boolean;                        
 }
 
+export interface Imagens {
+  secure_url: string;
+  public_id: string;
+}
 
 export interface LikeResponse {                              
   liked: boolean;                                 

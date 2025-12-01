@@ -6,14 +6,21 @@ import { Model } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Logger } from '@nestjs/common';
+import { Comentario } from 'src/schemas/comentario.schema';
+import { Livro } from 'src/livros/entities/livro.schema';
 
 @Injectable()
 export class ComunidadesService {
+    private readonly logger = new Logger(ComunidadesService.name);
+
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
         @InjectModel(Post.name) private postModel: Model<Post>,
+        @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
+        @InjectModel(Livro.name) private livroModel: Model<Livro>,
         private readonly cloudinary: CloudinaryService,
-) {}
+    ) {}
 
     async findAll() {
         return await this.comunidadeModel.find().exec();
@@ -38,8 +45,22 @@ export class ComunidadesService {
     async create(criadorId: string, createComunidadeDto: CreateComunidadeDto) {
         const existingComunidade = await this.comunidadeModel.findOne({ nome: createComunidadeDto.nome }).exec();
         if (existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+
         const comunidade = new this.comunidadeModel({...createComunidadeDto, moderadores: [criadorId], membros: [criadorId]});
-        return await comunidade.save();
+        const novaComunidade = await comunidade.save();
+
+        if (createComunidadeDto.livro) {
+            const livro = await this.livroModel.findById(createComunidadeDto.livro).exec();
+            if (!livro) throw new NotFoundException('Livro principal não encontrado');
+
+            await this.livroModel.findByIdAndUpdate(
+                createComunidadeDto.livro,
+                { $addToSet: { comunidades: novaComunidade._id } },
+                { new: true }
+            ).exec();
+        }
+
+        return novaComunidade;
     }
 
     async update(userId: string, comunidadeNome: string, updateComunidadeDto: UpdateComunidadeDto) {
@@ -52,6 +73,23 @@ export class ComunidadesService {
         if(updateComunidadeDto.nome){
             const existingComunidade = await this.comunidadeModel.findOne({ nome: updateComunidadeDto.nome }).exec();
             if(existingComunidade) throw new ConflictException('Nome de comunidade em uso');
+        }
+
+        // Atualiza a referência do livro principal, se necessário
+        if(updateComunidadeDto.livro && updateComunidadeDto.livro.toString() !== comunidade.livro?.toString()) {
+            const livroAntigo = await this.livroModel.findByIdAndUpdate(
+                comunidade.livro,
+                { $pull: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
+            if (!livroAntigo) throw new NotFoundException('Livro não encontrado');
+
+            const livro = await this.livroModel.findById(
+                updateComunidadeDto.livro,
+                { $addToSet: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
+            if (!livro) throw new NotFoundException('Livro não encontrado');
         }
         
         const updated = await this.comunidadeModel.findOneAndUpdate(
@@ -234,7 +272,51 @@ export class ComunidadesService {
             await this.cloudinary.deleteImage(comunidade.bannerPublicId);
         }
 
-        // APAGAR COMENTÁRIOS!!!!!
+        // Remove a comunidade da lista de comunidades do livro principal, se existir
+        if (comunidade.livro) {
+            await this.livroModel.findByIdAndUpdate(
+                comunidade.livro,
+                { $pull: { comunidades: comunidade._id } },
+                { new: true }
+            ).exec();
+        }
+
+        // Encontra todos os posts da comunidade
+        const posts = await this.postModel.find(
+            { comunidade: comunidade._id },
+            { _id: 1 }
+        );
+        const postIds = posts.map(p => p._id);
+
+        // Encoontra todas as imagens dos comentários da comunidade
+        const comentarios = await this.comentarioModel.find(
+            { post: { $in: postIds } },
+            { imagens: 1 }
+        );
+        const commentImageIds = comentarios.flatMap(c =>
+            c.imagens.map(img => img.public_id)
+        );
+
+        // Encoontra todas as imagens dos posts da comunidade
+        const postsWithImages = await this.postModel.find(
+            { _id: { $in: postIds } },
+            { imagens: 1 }
+        );
+        const postImageIds = postsWithImages.flatMap(p =>
+            p.imagens.map(img => img.public_id)
+        );
+
+        const allImageIds = [...commentImageIds, ...postImageIds];
+
+        // Apaga todas as imagens associadas aos posts e comentários da comunidade no Cloudinary
+        if (allImageIds.length > 0) {
+            await Promise.all(
+                allImageIds.map(id => this.cloudinary.deleteImage(id))
+            );
+        }
+
+        // Apaga todos os comentários da comunidade
+        await this.comentarioModel.deleteMany({ post: { $in: postIds } });
 
         // Apaga todos os posts da comunidade
         await this.postModel.deleteMany({ comunidade: comunidade._id });
@@ -255,7 +337,11 @@ export class ComunidadesService {
         // Simples remoção da capa (voltando para a capa padrão)
         if (!file) {
             if (comunidade.capaPublicId) {
-            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+                try {
+                    await this.cloudinary.deleteImage(comunidade.capaPublicId);
+                } catch (err) {
+                    this.logger.warn(`Erro ao deletar imagem ${comunidade.capaPublicId} no Cloudinary: ${err.message}`);
+                }
             }
 
             comunidade.capaUrl = '/CommunityDefault.png';
@@ -271,7 +357,11 @@ export class ComunidadesService {
         const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/capas');
 
         if (comunidade.capaPublicId) {
-            await this.cloudinary.deleteImage(comunidade.capaPublicId);
+            try {
+                await this.cloudinary.deleteImage(comunidade.capaPublicId);
+            } catch (err) {
+                this.logger.warn(`Erro ao deletar imagem ${comunidade.capaPublicId} no Cloudinary: ${err.message}`);
+            }
         }
 
         comunidade.capaUrl = uploaded.secure_url;
@@ -281,7 +371,7 @@ export class ComunidadesService {
         return { capaUrl: comunidade.capaUrl };
     }
 
-    async uploadBanner(userId: string, comunidadeNome: string, file: Express.Multer.File) {
+    async uploadBanner(userId: string, comunidadeNome: string, file?: Express.Multer.File) {
         const comunidade = await this.comunidadeModel.findOne({ nome: comunidadeNome }).exec();
         if(!comunidade) throw new NotFoundException('Comunidade não encontrada');
 
@@ -291,7 +381,11 @@ export class ComunidadesService {
         // Simples remoção do banner
         if (!file) {
             if (comunidade.bannerPublicId) {
-                await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+                try {
+                    await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+                } catch (err) {
+                    this.logger.warn(`Erro ao deletar imagem ${comunidade.bannerPublicId} no Cloudinary: ${err.message}`);
+                }
             }
 
             comunidade.bannerUrl = '';
@@ -306,7 +400,11 @@ export class ComunidadesService {
 
         const uploaded = await this.cloudinary.uploadImage(file.buffer, 'livra/comunidades/banners');
         if (comunidade.bannerPublicId) {
-            await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+            try {
+                await this.cloudinary.deleteImage(comunidade.bannerPublicId);
+            } catch (err) {
+                this.logger.warn(`Erro ao deletar imagem ${comunidade.bannerPublicId} no Cloudinary: ${err.message}`);
+            }
         }
 
         comunidade.bannerUrl = uploaded.secure_url;
