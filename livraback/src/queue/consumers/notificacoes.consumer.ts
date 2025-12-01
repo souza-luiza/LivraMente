@@ -113,7 +113,7 @@ export class NotificacoesConsumer extends BaseConsumer {
    * @param dados - Dados do evento de curtida
    */
   private async notificarPostCurtido(dados: PostCurtidoEventDto): Promise<void> {
-    const { postId, userId, autorId } = dados;
+    const { postId, userId, autorId, comunidadeNome } = dados;
 
     // Não notificar se o usuário curtir o próprio post
     if (userId === autorId) {
@@ -127,6 +127,7 @@ export class NotificacoesConsumer extends BaseConsumer {
         mensagem: 'Seu post foi curtido!',
         remetente: userId,
         postId,
+        comunidadeNome,
       });
 
       this.logger.debug(`Notificação de curtida enviada para autor ${autorId}`);
@@ -141,7 +142,7 @@ export class NotificacoesConsumer extends BaseConsumer {
    * @param dados - Dados do evento de moderação
    */
   private async notificarPostModerado(dados: PostModeradoEventDto): Promise<void> {
-    const { postId, aprovado, categoria, autorId } = dados;
+    const { postId, aprovado, categoria, autorId, comunidadeNome } = dados;
 
     this.logger.log(`Processando notificação de moderação - Post: ${postId}, Autor: ${autorId}, Aprovado: ${aprovado}`);
 
@@ -155,6 +156,7 @@ export class NotificacoesConsumer extends BaseConsumer {
         tipo: TipoNotificacao.MODERACAO_POST,
         mensagem,
         postId,
+        comunidadeNome,
       });
 
       this.logger.log(`Notificação de moderação criada com sucesso para autor: ${autorId}`);

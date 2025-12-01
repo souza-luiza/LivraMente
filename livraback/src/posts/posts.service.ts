@@ -301,6 +301,7 @@ export class PostsService {
           autorId: post.autor._id.toString(),
           aprovado: moderarPostDto.aprovar,
           categoria: moderarPostDto.aprovar ? moderarPostDto.categoria : null,
+          comunidadeNome: (post.comunidade as any).nome,
         }
       );
     } catch (error) {

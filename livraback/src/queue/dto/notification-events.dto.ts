@@ -23,6 +23,7 @@ export interface PostModeradoEventDto {
   autorId: string;
   aprovado: boolean;
   categoria: string | null;
+  comunidadeNome: string;
 }
 
 export interface MembroEntrouEventDto {
