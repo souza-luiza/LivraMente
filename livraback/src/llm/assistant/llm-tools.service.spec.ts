@@ -190,7 +190,6 @@ describe('LlmToolsService', () => {
     const userId = 'user-123';
     const readlistId = 'readlist-abc';
     const readlistName = 'Favoritos';
-    const livroId = 'livro-xyz';
 
     it('createFindReadlistByNameTool: should find readlist by name', async () => {
       const mockReadlists = [{ nome: 'Favoritos', _id: readlistId }];

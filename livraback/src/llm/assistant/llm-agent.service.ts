@@ -5,8 +5,6 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createAgent } from 'langchain';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
-import { DynamicStructuredTool } from 'langchain';
-import { DuckDuckGoSearch } from '@langchain/community/tools/duckduckgo_search';
 
 const AGENT_PROMPT_TEMPLATE = `
 Você é um assistente prestativo do site Livramente. Responda à pergunta do usuário da melhor forma que puder.
@@ -137,7 +135,7 @@ export class LlmAgentService {
       this.toolsService.createUsersGetMyFavoritesReadlistsTool(userId),
 
       // Ferramenta de Busca Externa
-      new DuckDuckGoSearch(),
+      this.toolsService.createDuckDuckGoTool(),
     ];
 
     // monta o prompt final como string (pré-preenchendo variáveis)

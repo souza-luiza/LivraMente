@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe, UsePipes, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, UsePipes, UseGuards } from '@nestjs/common';
 import { GenerateTextDTO } from './writer/dto/generate-text.dto';
 import { LlmResponseDTO } from './writer/dto/llm-response.dto';
 import { LlmStoryService } from './writer/llm-story.service';
