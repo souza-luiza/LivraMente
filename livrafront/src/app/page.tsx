@@ -19,6 +19,10 @@ import { UserProfile } from '@/types/users';
 import Sidebar from '@/components/sidebar';
 import SearchBar from '@/components/searchbar';
 import ImageSlider from '@/components/ImageSlider';
+import SearchIcon from '@/components/icons/SearchIcon';
+import RegistroLeitura from '@/components/registro-leitura';
+import FireIcon from '@/components/icons/FireIcon';
+import Feed from '@/components/Feed';
 
 export default function HomePage() {
 
@@ -30,6 +34,7 @@ export default function HomePage() {
     const [userData, setUserData] = useState<UserProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showRegistroLeitura, setShowRegistroLeitura] = useState(false);
     const itemRef = useRef<HTMLDivElement | null>(null)
 
     const items = [
@@ -244,16 +249,43 @@ export default function HomePage() {
                                 height="400px"
                             />
                         </div>
-                        <div className="relative flex items-center justify-center">
-                            <div className='flex gap-4 align-middle items-center'>
-                                <ActionButton icon={<LogoIcon/>} colorScheme="dark-green" size="large" fullwidth={true} path="/" text="0 Dias"/>
+                        <div className="w-full px-4">
+                            <div className='w-full flex gap-4'>
+                                <ActionButton 
+                                    icon={<FireIcon/>} 
+                                    colorScheme="dark-green" 
+                                    size="large" 
+                                    fullwidth={true} 
+                                    text="0 Dias"
+                                    onClick={() => setShowRegistroLeitura(true)}
+                                />
                                 <ActionButton icon={<CommunityIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/comunidades" text="Comunidades" />
+                                <ActionButton icon={<SearchIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/busca' text='Pesquisar'/>
                                 <ActionButton icon={<OpenBookIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/criar-historia" text="Criar História" />
                                 <ActionButton icon={<LogoIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/livratime' text='Créditos'/>
                             </div>  
                         </div>
+                        <div className="w-full flex flex-col gap-4 mt-4">
+                            <div className="flex flex-1 justify-between items-center px-4">
+                                <h4 className="text-h4 mb-2 px-4" style={{color:"var(--primary-700)"}}>Posts</h4>
+                                <p className="text-b1 mb-2 px-4" style={{color:"var(--secondary-800)"}}>Role para baixo para mais</p>
+                            </div>
+                            <Feed showTrending={true} />
+                        </div>
                     </main>
                 </div>
+                
+                {/* Modal do Registro de Leitura */}
+                {showRegistroLeitura && (
+                    <div 
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                        onClick={() => setShowRegistroLeitura(false)}
+                    >
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <RegistroLeitura isLoggedIn={true} />
+                        </div>
+                    </div>
+                )}
             </div>
         )
     }

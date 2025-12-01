@@ -70,7 +70,7 @@ export default function CommunitiesCarousel({ communities }: CommunitiesCarousel
             {canScrollLeft && (
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                     aria-label="Anterior"
                 >
                     <ChevronLeftIcon size={24} />
@@ -97,7 +97,7 @@ export default function CommunitiesCarousel({ communities }: CommunitiesCarousel
             {canScrollRight && (
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                     aria-label="Próximo"
                 >
                     <ChevronRightIcon size={24} />

@@ -3,7 +3,7 @@
 import Button from '@/components/button'
 import TeamMember from '@/components/team-member'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import LogoIcon from '@/components/icons/LogoIcon'
 import LoginIcon from '@/components/icons/LoginIcon'
@@ -18,9 +18,11 @@ import LuImg from '../../../public/team/Luiza.jpeg'
 import ViviImg from '../../../public/team/Vivi.jpeg'
 import KemiImg from '../../../public/team/Kemi.jpg'
 import HomeIcon from '@/components/icons/HomeIcon'
+import { getSessionInfos } from '@/services/auth'
 
 export default function LivraTime() {
   const [isHovered, setIsHovered] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const team = [
     { name: 'Enzo',       img: EnzoImg,     github: 'https://github.com/EnzoBelfort',       linkedin: 'https://www.linkedin.com/in/enzobelfort'           },
@@ -31,6 +33,14 @@ export default function LivraTime() {
     { name: 'MagaLu',     img: LuImg,       github: 'https://github.com/souza-luiza',       linkedin: 'https://www.linkedin.com/in/luizadesouzaferreira'  },
     { name: 'Vivirgínia', img: ViviImg,     github: 'https://github.com/parkvivi',          linkedin: 'https://www.linkedin.com/in/viviane-park'          }  
   ];
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const info = await getSessionInfos()
+      setIsLoggedIn(!!info)
+    }
+    checkSession()
+  }, [])
 
   return (
     <div className="h-screen w-screen flex flex-col">
@@ -106,22 +116,24 @@ export default function LivraTime() {
 
         {/*Botões de Entrar & Cadastrar*/}
         <div className="w-1/4 h-fill">
-          <div className="flex flex-row justify-end gap-1 m-[16px]">
-              <Button 
-                  text="Entrar"
-                  colorScheme="dark-brown"
-                  size="medium"
-                  icon={<LoginIcon />}
-                  path="/entrar"
-              />
-              <Button 
-                  text="Cadastrar"
-                  colorScheme="dark-brown"
-                  size="medium"
-                  icon={<Edit3Icon />}
-                  path="/cadastro"
-              />
-          </div>
+          {!isLoggedIn && (
+            <div className="flex flex-row justify-end gap-1 m-[16px]">
+                <Button 
+                    text="Entrar"
+                    colorScheme="dark-brown"
+                    size="medium"
+                    icon={<LoginIcon />}
+                    path="/entrar"
+                />
+                <Button 
+                    text="Cadastrar"
+                    colorScheme="dark-brown"
+                    size="medium"
+                    icon={<Edit3Icon />}
+                    path="/cadastro"
+                />
+            </div>
+          )}
         </div>
       </div>
 
