@@ -17,14 +17,20 @@ import PopUp from "./pop-up";
 import EditCommentModal from "./EditCommentModal";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { resenhasService } from "@/services/resenhas";
+import ResenhaModal from "./resenha-modal";
 
 interface ReviewComponentProps {
     // resenha:
+    bookId: string;
+    resenhaId: string;
     onDelete: () => void;
     onUpdate?: () => void;
 }
 
 export default function ReviewComponent({
+    bookId,
+    resenhaId,
     onDelete,
     onUpdate
 } : ReviewComponentProps) {
@@ -43,6 +49,7 @@ export default function ReviewComponent({
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
     const [showEditCommentModal, setShowEditCommentModal] = useState(false);
+    const [showEditResenhaModal, setShowEditResenhaModal] = useState(false);
 
     // TODO: Mudar
     const isOwner = true;
@@ -89,8 +96,7 @@ export default function ReviewComponent({
 
     const handleDeleteReview = async () => {
         try {
-            // await commentsService.deleteComment(post._id, comment._id);
-
+            await resenhasService.removeResenha(resenhaId);
         } catch (error) {
             toast.error("Erro ao excluir resenha.");
 
@@ -101,11 +107,11 @@ export default function ReviewComponent({
     }
     const handleShowEditReviewModal = () => {
         setShowOptions(false);
-        setShowEditCommentModal(true);
+        setShowEditResenhaModal(true);
     }
 
     const handleEditSuccess = () => {
-        setShowEditCommentModal(false);
+        setShowEditResenhaModal(false);
         onUpdate && onUpdate();
     }
 
@@ -125,6 +131,7 @@ export default function ReviewComponent({
     }
 
     return (
+        <>
         <motion.div onHoverEnd={() => setShowOptions(false)}>
             <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm hover:shadow-md">
                 {/*Cabeçalho do Comentário*/}
@@ -176,13 +183,13 @@ export default function ReviewComponent({
                     </p>
                 </div>
             </div>
-            {/*<EditReviewModal
-                post={post}
-                comment={comment}
-                isOpen={isOwner && showEditCommentModal}
-                onClose={() => setShowEditCommentModal(false)}
+            <ResenhaModal
+                isOpen={isOwner && showEditResenhaModal}
+                onClose={() => setShowEditResenhaModal(false)}
+                bookId={bookId}
+                resenhaId={resenhaId}
                 onSuccess={handleEditSuccess}
-            />*/}
+            />
             <PopUp 
                 title={`Excluir Comentário${!isOwner ? ` de @${review.autor.username}` : ''}?`}
                 description="Esta ação não pode ser desfeita."
@@ -225,5 +232,6 @@ export default function ReviewComponent({
                 </motion.div>}
             </AnimatePresence>
         </motion.div>
+        </>
     );
 }

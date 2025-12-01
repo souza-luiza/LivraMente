@@ -1,4 +1,4 @@
-import { Livro } from "./livro";
+import { Livro } from "./livros";
 import { Comentario } from "./comentario";
 
 export interface Resenha {

@@ -22,7 +22,7 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
   const [avaliacao, setAvaliacao] = useState<number>(0);
   const [, setHover] = useState<number>(-1);
   const [resenha, setResenha] = useState("");
-  const [isResenhaFocused, setIsResenhaFocused] = useState(false);
+  const [, setIsResenhaFocused] = useState(false);
   const [spoiler, setSpoiler] = useState(false);
   const [loading, setLoading] = useState(false);
   const [, setError] = useState<string | null>(null);
@@ -68,12 +68,14 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
           avaliacao,
           spoiler,
         });
+        toast.success("Resenha atualizada com sucesso!");
       } else {
         await resenhasService.createResenha(bookId, {
           conteudo: resenha,
           avaliacao,
           spoiler,
         });
+        toast.success("Resenha criada com sucesso!");
       }
       setAvaliacao(0);
       setResenha("");
