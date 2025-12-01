@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, FilterQuery } from 'mongoose';
 import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
 import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
@@ -8,6 +8,7 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { SearchPostsDto } from './dto/search-posts.dto';
 
 @Injectable()
 export class PostsService {
@@ -265,5 +266,252 @@ export class PostsService {
     .lean();
 
     return comments;
+  }
+
+  /**
+   * Busca todos os posts do feed (de todas as comunidades)
+   * com suporte a paginação, filtros e ordenação
+   */
+  async searchPosts(searchPostsDto: SearchPostsDto) {
+    const { q, page = 1, limit = 10, categoria, comunidade, sort = 'recent' } = searchPostsDto;
+
+    // Construir filtro base - apenas posts publicados e públicos
+    const filter: FilterQuery<Post> = {
+      status: PostStatus.PUBLICADO,
+      publico: true,
+    };
+
+    // Filtrar por termo de busca (conteúdo ou tags)
+    if (q) {
+      const regexInsensitive = new RegExp(q, 'i');
+      filter.$or = [
+        { conteudo: regexInsensitive },
+        { tags: { $in: [regexInsensitive] } },
+      ];
+    }
+
+    // Filtrar por categoria
+    if (categoria) {
+      filter.categoria = categoria;
+    }
+
+    // Filtrar por comunidade (nome ou ID)
+    if (comunidade) {
+      let comunidadeDoc;
+      if (Types.ObjectId.isValid(comunidade)) {
+        comunidadeDoc = await this.comunidadeModel.findById(comunidade);
+      }
+      if (!comunidadeDoc) {
+        comunidadeDoc = await this.comunidadeModel.findOne({ nome: comunidade });
+      }
+      if (comunidadeDoc) {
+        filter.comunidade = comunidadeDoc._id;
+      } else {
+        // Se comunidade especificada não existir, retornar vazio
+        return {
+          posts: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        };
+      }
+    }
+
+    // Definir ordenação
+    const sortOptions: Record<string, any> = {};
+    if (sort === 'popular') {
+      // Ordenar por número de curtidas (decrescente) e depois por data
+      sortOptions.curtidas = -1;
+      sortOptions.createdAt = -1;
+    } else {
+      // Ordenar por data (mais recentes primeiro)
+      sortOptions.createdAt = -1;
+    }
+
+    // Calcular skip para paginação
+    const skip = (page - 1) * limit;
+
+    // Executar busca com contagem total
+    const [posts, total] = await Promise.all([
+      this.postModel
+        .find(filter)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
+        .populate('autor', 'username nome_exibicao imagem_perfil avatarUrl')
+        .populate('comunidade', 'nome imagem_url')
+        .lean(),
+      this.postModel.countDocuments(filter),
+    ]);
+
+    // Processar posts para adicionar informações úteis
+    const processedPosts = posts.map(post => ({
+      ...post,
+      totalCurtidas: post.curtidas?.length || 0,
+      totalComentarios: post.comentarios?.length || 0,
+    }));
+
+    return {
+      posts: processedPosts,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Busca posts para o feed do usuário
+   * Retorna posts das comunidades das quais o usuário é membro
+   */
+  async getFeedPosts(userId: string, searchPostsDto: SearchPostsDto) {
+    const { q, page = 1, limit = 10, categoria, sort = 'recent' } = searchPostsDto;
+
+    // Buscar comunidades do usuário
+    const userComunidades = await this.comunidadeModel
+      .find({ membros: new Types.ObjectId(userId) })
+      .select('_id');
+
+    const comunidadeIds = userComunidades.map(c => c._id);
+
+    // Construir filtro
+    const filter: FilterQuery<Post> = {
+      status: PostStatus.PUBLICADO,
+      comunidade: { $in: comunidadeIds },
+    };
+
+    // Filtrar por termo de busca
+    if (q) {
+      const regexInsensitive = new RegExp(q, 'i');
+      filter.$or = [
+        { conteudo: regexInsensitive },
+        { tags: { $in: [regexInsensitive] } },
+      ];
+    }
+
+    // Filtrar por categoria
+    if (categoria) {
+      filter.categoria = categoria;
+    }
+
+    // Definir ordenação
+    const sortOptions: Record<string, any> = {};
+    if (sort === 'popular') {
+      sortOptions.curtidas = -1;
+      sortOptions.createdAt = -1;
+    } else {
+      sortOptions.createdAt = -1;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      this.postModel
+        .find(filter)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
+        .populate('autor', 'username nome_exibicao imagem_perfil avatarUrl')
+        .populate('comunidade', 'nome imagem_url')
+        .lean(),
+      this.postModel.countDocuments(filter),
+    ]);
+
+    const processedPosts = posts.map(post => ({
+      ...post,
+      totalCurtidas: post.curtidas?.length || 0,
+      totalComentarios: post.comentarios?.length || 0,
+    }));
+
+    return {
+      posts: processedPosts,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Busca posts por tag específica
+   */
+  async getPostsByTag(tag: string, page: number = 1, limit: number = 10) {
+    const filter: FilterQuery<Post> = {
+      status: PostStatus.PUBLICADO,
+      publico: true,
+      tags: { $in: [new RegExp(tag, 'i')] },
+    };
+
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      this.postModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('autor', 'username nome_exibicao imagem_perfil avatarUrl')
+        .populate('comunidade', 'nome imagem_url')
+        .lean(),
+      this.postModel.countDocuments(filter),
+    ]);
+
+    const processedPosts = posts.map(post => ({
+      ...post,
+      totalCurtidas: post.curtidas?.length || 0,
+      totalComentarios: post.comentarios?.length || 0,
+    }));
+
+    return {
+      posts: processedPosts,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * Busca posts populares (trending)
+   * Considera curtidas e comentários recentes
+   */
+  async getTrendingPosts(limit: number = 10) {
+    // Buscar posts publicados das últimas 24 horas, ordenados por curtidas
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const posts = await this.postModel
+      .aggregate([
+        {
+          $match: {
+            status: PostStatus.PUBLICADO,
+            publico: true,
+            createdAt: { $gte: oneDayAgo },
+          },
+        },
+        {
+          $addFields: {
+            totalCurtidas: { $size: { $ifNull: ['$curtidas', []] } },
+            totalComentarios: { $size: { $ifNull: ['$comentarios', []] } },
+            // Score baseado em curtidas (peso 2) + comentários (peso 1)
+            popularityScore: {
+              $add: [
+                { $multiply: [{ $size: { $ifNull: ['$curtidas', []] } }, 2] },
+                { $size: { $ifNull: ['$comentarios', []] } },
+              ],
+            },
+          },
+        },
+        { $sort: { popularityScore: -1, createdAt: -1 } },
+        { $limit: limit },
+      ]);
+
+    // Populate manual para agregação
+    await this.postModel.populate(posts, [
+      { path: 'autor', select: 'username nome_exibicao imagem_perfil avatarUrl' },
+      { path: 'comunidade', select: 'nome imagem_url' },
+    ]);
+
+    return posts;
   }
 }
