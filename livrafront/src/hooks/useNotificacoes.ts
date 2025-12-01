@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useNotificationsStore } from "@/stores/notificacoesStore";
 import { useNotPrefStore } from "@/stores/notificacoesStore";
 import { conectarNotificacoes, getNotificacoes } from "@/services/mensageria";
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
+import { titleToSlug } from '@/lib/slugify';
 
 //Solicita permissão de notificações do navegador (primeiro acesso)
 export function useSolicitaPermissao() {
@@ -18,6 +21,38 @@ export function useSolicitaPermissao() {
 export function useNotificacoes() {
     const { adicionarNotificacao, definirNotificacoes } = useNotificationsStore();
     const { deveNotificar } = useNotPrefStore();
+    const router = useRouter();
+    
+    const navegarParaConteudo = (notificacao: any) => {
+        switch (notificacao.tipo) {
+            case 'novo_seguidor':
+            case 'entrar_comunidade':
+                if (notificacao.remetente?.username) {
+                    router.push(`/${notificacao.remetente.username}`);
+                }
+                break;
+            
+            case 'promovido_moderador':
+            case 'novo_post_comunidade':
+                if (notificacao.comunidadeNome && notificacao.postId) {
+                    router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
+                }
+                break;
+
+            case 'curtida_post':
+            case 'comentario_post':
+            case 'curtida_comentario':
+            case 'moderacao_post':
+                if (notificacao.postId && notificacao.comunidadeNome) {
+                    router.push(`/comunidade/${titleToSlug(notificacao.comunidadeNome)}/postagem/${notificacao.postId}`);
+                }
+                break;
+        
+            default:
+                router.push('/notificacoes');
+                break;
+        }
+    };
     
     useEffect(() => {
         let desconectar: (() => void) | undefined;
@@ -32,6 +67,17 @@ export function useNotificacoes() {
                             return; 
                         }
                         adicionarNotificacao(novaNotificacao);
+                        
+                        // Mostrar toast de notificação clicável
+                        const toastId = toast.info(novaNotificacao.mensagem, {
+                            position: 'top-right',
+                            autoClose: 5000,
+                            onClick: () => {
+                                toast.dismiss(toastId);
+                                navegarParaConteudo(novaNotificacao);
+                            },
+                            style: { cursor: 'pointer' },
+                        });
                         
                         // Mostrar notificação do navegador
                         if ('Notification' in window && Notification.permission === 'granted') {
@@ -55,5 +101,5 @@ export function useNotificacoes() {
         return () => {
             desconectar?.();
         };
-    }, [adicionarNotificacao, definirNotificacoes, deveNotificar]);
+    }, [adicionarNotificacao, definirNotificacoes, deveNotificar, router]);
 }

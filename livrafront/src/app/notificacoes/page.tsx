@@ -12,7 +12,6 @@ import { useRouter } from 'next/navigation';
 import LoadingPage from '@/components/loading';
 import { getNotificacoes } from '@/services/mensageria';
 import { toast } from 'react-toastify';
-import ToastNotification from '@/components/toast-notification';
 
 export default function NotificacoesPage() {
     const router = useRouter();
@@ -140,7 +139,6 @@ export default function NotificacoesPage() {
                 </div>
             </div>
             )}
-            <ToastNotification />
         </div>
     );
 }
