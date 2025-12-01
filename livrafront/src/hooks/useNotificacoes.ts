@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, createElement } from 'react';
 import { useNotificationsStore } from "@/stores/notificacoesStore";
 import { useNotPrefStore } from "@/stores/notificacoesStore";
 import { conectarNotificacoes, getNotificacoes } from "@/services/mensageria";
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { titleToSlug } from '@/lib/slugify';
+import InfoIcon from '@/components/icons/InfoIcon';
 
 //Solicita permissão de notificações do navegador (primeiro acesso)
 export function useSolicitaPermissao() {
@@ -69,7 +70,7 @@ export function useNotificacoes() {
                         adicionarNotificacao(novaNotificacao);
                         
                         // Mostrar toast de notificação clicável
-                        const toastId = toast.info(novaNotificacao.mensagem, {
+                        const toastId = toast(novaNotificacao.mensagem, {
                             position: 'top-right',
                             autoClose: 5000,
                             onClick: () => {
@@ -77,6 +78,8 @@ export function useNotificacoes() {
                                 navegarParaConteudo(novaNotificacao);
                             },
                             style: { cursor: 'pointer' },
+                            className: 'notificacao-sse-toast',
+                            icon: createElement(InfoIcon, { size: 24, className: 'text-primary-600' }),
                         });
                         
                         // Mostrar notificação do navegador
