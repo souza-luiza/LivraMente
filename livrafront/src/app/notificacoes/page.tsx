@@ -66,6 +66,7 @@ export default function NotificacoesPage() {
             const { marcarTodasComoLidas } = await import('@/services/mensageria');
             await marcarTodasComoLidas();
             marcarTodasComoLidasLocal();
+            toast.success('Todas as notificações foram marcadas como lidas.');
         } catch (error) {
             toast.error('Erro ao marcar todas como lidas.');
         }
@@ -76,6 +77,7 @@ export default function NotificacoesPage() {
             const { removerTodasNotificacoes } = await import('@/services/mensageria');
             await removerTodasNotificacoes();
             definirNotificacoes([]);
+            toast.success('Todas as notificações foram removidas.');
         } catch (error) {
             toast.error('Erro ao remover todas as notificações.');
         }
