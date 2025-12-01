@@ -6,12 +6,13 @@ import NotificacaoList from '@/components/notificacao-list';
 import Button from '@/components/button';
 import SearchBar from '@/components/searchbar';
 import CheckIcon from '@/components/icons/CheckIcon';
-import BlockIcon from '@/components/icons/BlockIcon';
+import TrashIcon from '@/components/icons/TrashIcon';
 import { getSessionInfos } from '@/services/auth';
 import { useRouter } from 'next/navigation';
 import LoadingPage from '@/components/loading';
 import { getNotificacoes } from '@/services/mensageria';
 import { toast } from 'react-toastify';
+import ToastNotification from '@/components/toast-notification';
 
 export default function NotificacoesPage() {
     const router = useRouter();
@@ -120,7 +121,7 @@ export default function NotificacoesPage() {
                                 />
                                 <Button
                                     text="Remover todas"
-                                    icon={<BlockIcon />}
+                                    icon={<TrashIcon />}
                                     size="small"
                                     colorScheme="light-green"
                                     onClick={handleRemoverTodasNotificacoes}
@@ -137,6 +138,7 @@ export default function NotificacoesPage() {
                 </div>
             </div>
             )}
+            <ToastNotification />
         </div>
     );
 }
