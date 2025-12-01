@@ -1,4 +1,5 @@
-import { Livro } from "./livros";
+import { Livro } from "./livro";
+import { Comentario } from "./comentario";
 
 export interface Resenha {
     _id: string;
@@ -13,4 +14,6 @@ export interface Resenha {
     spoiler: boolean;
     createdAt: string | Date;
     updatedAt: string | Date;
+    curtidas: string[];
+    comentarios: Comentario[]; 
 }
