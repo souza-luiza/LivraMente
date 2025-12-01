@@ -196,4 +196,25 @@ export class UsersController {
   async findReadlistsFavoritas(@CurrentUser() user: CurrentUserDto) {
     return this.usersService.findReadlistsFavoritas(user.userId);
   }
+
+  @Get('me/favoritar/:readlistId')
+  @ApiOperation({
+    summary: 'Verifica se readlist é favoritada',
+    description: 'Retorna se a readlist está favoritada pelo usuário autenticado'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado se readlist está favoritada retornado com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Sessão inválida'
+  })
+  async checkReadlistFav(@CurrentUser() user: CurrentUserDto, @Param('readlistId') readlistId: string) {
+    return this.usersService.checkReadlistFav(user.userId, readlistId);
+  }
 }
