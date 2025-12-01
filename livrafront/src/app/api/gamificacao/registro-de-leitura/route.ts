@@ -2,20 +2,8 @@ import { NextResponse } from 'next/server'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
-async function getAuthToken(request: Request): Promise<string | null> {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7)
-  }
-  return null
-}
-
 export async function PATCH(request: Request) {
   try {
-    const token = await getAuthToken(request)
-    if (!token) {
-      return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 })
-    }
 
     const { opcao, qtd } = await request.json()
 
@@ -23,7 +11,7 @@ export async function PATCH(request: Request) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        credentials: "include",
       },
       body: JSON.stringify({ opcao, qtd }),
     })

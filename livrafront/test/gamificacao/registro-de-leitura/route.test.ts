@@ -18,11 +18,9 @@ describe('PATCH /api/gamification/reading', () => {
   })
 
   const mockRequest = (options: {
-    token?: string
     body?: any
   }): Request => {
     const headers = new Headers()
-    if (options.token) headers.set('authorization', `Bearer ${options.token}`)
     const body = options.body ? JSON.stringify(options.body) : null
     return new Request('http://localhost/api/gamification/reading', {
       method: 'PATCH',
@@ -31,17 +29,6 @@ describe('PATCH /api/gamification/reading', () => {
     })
   }
 
-  it('should return 401 if no token is provided', async () => {
-    const request = mockRequest({ body: { opcao: 0, qtd: 10 } })
-    const response = await PATCH(request)
-
-    expect(NextResponse.json).toHaveBeenCalledWith(
-      { error: 'Token não fornecido' },
-      { status: 401 }
-    )
-    expect(response.status).toBe(401)
-  })
-
   it('should call backend with correct payload and headers', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -49,7 +36,6 @@ describe('PATCH /api/gamification/reading', () => {
     })
 
     const request = mockRequest({
-      token: 'fake-token',
       body: { opcao: 0, qtd: 25 },
     })
 
@@ -61,7 +47,7 @@ describe('PATCH /api/gamification/reading', () => {
         method: 'PATCH',
         headers: expect.objectContaining({
           'Content-Type': 'application/json',
-          Authorization: 'Bearer fake-token',
+          credentials: "include",
         }),
         body: JSON.stringify({ opcao: 0, qtd: 25 }),
       })
@@ -81,7 +67,6 @@ describe('PATCH /api/gamification/reading', () => {
     })
 
     const request = mockRequest({
-      token: 'fake-token',
       body: { opcao: 1, qtd: 10 },
     })
 
@@ -100,7 +85,6 @@ describe('PATCH /api/gamification/reading', () => {
     )
 
     const request = mockRequest({
-      token: 'fake-token',
       body: { opcao: 0, qtd: 15 },
     })
 
