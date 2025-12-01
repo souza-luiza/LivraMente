@@ -11,7 +11,6 @@ import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
 import { getSessionInfos, logoutUser } from "@/services/auth";
 import { toast } from "react-toastify";
-import ToastNotification from '@/components/toast-notification';
 import { useRouter } from "next/navigation";
 import { User } from "@/types/auth";
 
@@ -78,7 +77,6 @@ export default function Sidebar() {
                     />
                 </div>
             </div>
-            <ToastNotification />
         </nav>
     );
 }

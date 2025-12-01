@@ -20,7 +20,6 @@ import LoadingPage from '@/components/loading';
 import ErrorIcon from '@/components/icons/ErrorIcon';
 import { getSessionInfos } from '@/services/auth';
 import { toast } from 'react-toastify';
-import ToastNotification from '@/components/toast-notification';
 
 export default function ReadlistPage() {
   const router = useRouter();
@@ -548,7 +547,6 @@ export default function ReadlistPage() {
         </div>
 
       </div>
-      <ToastNotification/>
     </div>
   );
 }

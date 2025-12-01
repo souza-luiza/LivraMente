@@ -8,7 +8,6 @@ import TrashIcon from './icons/TrashIcon';
 import SaveIcon from './icons/SaveIcon';
 import AddIcon from './icons/AddIcon';
 import ReadlistCropModal from './ReadlistCropModal';
-import ToastNotification from './toast-notification';
 import { toast } from 'react-toastify';
 import { useParams } from 'next/navigation';
 import { updatePhoto } from '@/services/readlists';
@@ -358,7 +357,6 @@ export default function EditReadlistModal({
           onClose={handleCropCancel}
           onSave={handleCropSave}
         />
-        <ToastNotification />
       </div>
     </div>
   );

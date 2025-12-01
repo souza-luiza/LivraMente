@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import PasswordStrength from '@/components/password-strength'
 import PhoneInputComponent from '@/components/phone-input'
 import { CountryCode, isValidPhoneNumber } from 'libphonenumber-js'
-import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon'
 import Edit3Icon from '@/components/icons/Edit3Icon'
@@ -485,7 +484,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-      <ToastNotification />
     </main>
   )
 }

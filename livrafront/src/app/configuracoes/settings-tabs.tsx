@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
 import SingleUserIcon from "@/components/icons/SingleUserIcon";
@@ -464,7 +463,6 @@ export default function SettingsTabs() {
                 onClose={handleCropCancel}
                 onSave={handleCropSave}
             />
-            <ToastNotification />
         </>
     );
 }
