@@ -21,6 +21,7 @@ import ImageCropModal from '@/components/ImageCropModal';
 import BannerCropModal from '@/components/BannerCropModal';
 import ToastNotification from '@/components/toast-notification';
 import LoadingPage from '@/components/loading';
+import AddBook from '@/components/add-book-to-community';
 
 // Integração com a API
 import { communityService } from '@/services/comunidade';
@@ -32,8 +33,9 @@ import { CommunityTags, Comunidade, CreateCommunityData, UpdateCommunityData } f
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
 import SaveIcon from '@/components/icons/SaveIcon';
 import PopUp from '@/components/pop-up';
+import BookCard from '@/components/book';
+import { Livro } from '@/types/livros';
 import { set } from 'date-fns';
-import { boolean } from 'zod';
 
 export default function CreateCommunityPage() {
 
@@ -43,6 +45,7 @@ export default function CreateCommunityPage() {
 
   const [originalCommunityData, setOriginalCommunityData] = useState<Comunidade>();
   const [editedCommunityData, setEditedCommunityData] = useState<UpdateCommunityData>();
+  const [selectedBook, setSelectedBook] = useState<Livro>();
     
   // Carregando e Erros
   const [isLoading, setIsLoading] = useState(false);
@@ -66,6 +69,9 @@ export default function CreateCommunityPage() {
 
   // Apagar comunidade
   const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
+
+  // Adicionar Livro
+  const [showAddBookModal, setShowAddBookModal] = useState(false);
 
   useEffect(() => {
 
@@ -93,6 +99,7 @@ export default function CreateCommunityPage() {
           capaUrl: communityData.capaUrl === '/CommunityDefault.png' ? '' : communityData.capaUrl,
           bannerUrl: communityData.bannerUrl,
           tags: communityData.tags,
+          livro: communityData.livro,
           slug: communityData.slug
         });
 
@@ -269,6 +276,7 @@ export default function CreateCommunityPage() {
       tags: originalCommunityData.tags,
       capaUrl: originalCommunityData.capaUrl,
       bannerUrl: originalCommunityData.bannerUrl,
+      livro: originalCommunityData.livro,
       slug: originalCommunityData.slug
     });
     
@@ -316,6 +324,7 @@ export default function CreateCommunityPage() {
       nome: editedCommunityData.nome,
       descricao: editedCommunityData.descricao,
       tags: editedCommunityData.tags,
+      livro: editedCommunityData.livro,
       slug: editedCommunityData.slug
     };
 
@@ -323,6 +332,7 @@ export default function CreateCommunityPage() {
       nome: originalCommunityData.nome,
       descricao: originalCommunityData.descricao,
       tags: originalCommunityData.tags,
+      livro: originalCommunityData.livro,
       slug: originalCommunityData.slug
     };
     
@@ -350,10 +360,6 @@ export default function CreateCommunityPage() {
       const hasBannerChanged  = checkBanner();
       const hasBeenEdited     = checkEdits();
 
-      console.log("hasCoverChanged:", hasCoverChanged);
-      console.log("hasBannerChanged:", hasBannerChanged);
-      console.log("hasBeenEdited:", hasBeenEdited);
-
       if (!hasCoverChanged && !hasBannerChanged && !hasBeenEdited) {
         toast.info('Nenhuma alteração feita na comunidade.');
         router.back();
@@ -363,9 +369,10 @@ export default function CreateCommunityPage() {
       let payload: UpdateCommunityData = {
         descricao: editedCommunityData.descricao,
         tags: editedCommunityData.tags,
+        livro: editedCommunityData.livro, // TODO: ISSO AQUI É Livro E NÃO ID!!!! 
       };
 
-      // Tira lixo do nome da comunidade e atualiza o slug
+      // Tira lixo do nome da comunidade e atualiza a slug
       if (editedCommunityData.nome && editedCommunityData.nome !== originalCommunityData.nome) {
         const name = editedCommunityData.nome.trim();
         const slug = titleToSlug(name);
@@ -464,6 +471,15 @@ export default function CreateCommunityPage() {
 
       toast.error('Erro ao apagar comunidade.');
     }
+  }
+
+  const handleSelectBook = (book: Livro) => {
+    if (!editedCommunityData) return;
+    setSelectedBook(book);
+    setEditedCommunityData({
+      ...editedCommunityData,
+      livro: book._id
+    });
   }
 
   if (isRedirecting) return <LoadingPage />;
@@ -612,54 +628,76 @@ export default function CreateCommunityPage() {
               </div>
             </div>
           </div>
-
-          <div className="w-full flex flex-col gap-2">
-            <div className="w-full flex flex-row gap-4">
-              {/* Nome */}
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-h6">Nome</label>
-                <Input
-                  id="nome-comunidade"
-                  placeholder="Digite o nome da comunidade"
-                  className="w-full"
-                  disabled={isLoading || isRedirecting}
-                  value={editedCommunityData.nome}
-                  onChange={handleNameChange}
-                />
-                {errors.nome &&
-                <span className="text-red-500 text-b3">
-                    {errors.nome}
-                </span>}
+          
+          <div className="w-full flex flex-row gap-4">
+            <div className="w-3/5 flex flex-col gap-2">
+              <div className="w-full flex flex-row gap-4">
+                {/* Nome */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-h6">Nome</label>
+                  <Input
+                    id="nome-comunidade"
+                    placeholder="Digite o nome da comunidade"
+                    className="w-full"
+                    disabled={isLoading || isRedirecting}
+                    value={editedCommunityData.nome}
+                    onChange={handleNameChange}
+                  />
+                  {errors.nome &&
+                  <span className="text-red-500 text-b3">
+                      {errors.nome}
+                  </span>}
+                </div>
+                {/* Tags */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="text-h6">Tags</label>
+                  <TagsDropdown 
+                    id="tags-comunidade"
+                    tags={CommunityTags}
+                    selectedTags={editedCommunityData.tags ?? []}
+                    setSelectedTags={(selected) => handleTagsChange(selected)}
+                    placeholder="Selecione gêneros da comunidade"
+                    disabled={isLoading || isRedirecting}
+                  />
+                  {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
+                </div>
               </div>
-              {/* Tags */}
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-h6">Tags</label>
-                <TagsDropdown 
-                  id="tags-comunidade"
-                  tags={CommunityTags}
-                  selectedTags={editedCommunityData.tags ?? []}
-                  setSelectedTags={(selected) => handleTagsChange(selected)}
-                  placeholder="Selecione gêneros da comunidade"
+
+              {/* Descrição */}
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-h6">Descrição</label>
+                <textarea
+                  placeholder="Digite a descrição da comunidade"
+                  className="transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 text-gray-900 border border-gray-300 bg-white focus:ring-green-900 focus:border-green-900 hover:border-gray-400 medium-box text-b2 w-full light-neutral resize-none"
+                  value={editedCommunityData.descricao}
                   disabled={isLoading || isRedirecting}
+                  onChange={handleDescriptionChange}
                 />
-                {errors.tags && <span className="text-red-500 text-xs">{errors.tags}</span>}
+                {errors.descricao &&
+                <span className="text-red-500 text-xs">
+                  {errors.descricao}
+                </span>}
               </div>
             </div>
 
-            {/* Descrição */}
-            <div className="w-full flex flex-col gap-1">
-              <label className="text-h6">Descrição</label>
-              <textarea
-                placeholder="Digite a descrição da comunidade"
-                className="transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 text-gray-900 border border-gray-300 bg-white focus:ring-green-900 focus:border-green-900 hover:border-gray-400 medium-box text-b2 w-full light-neutral resize-none"
-                value={editedCommunityData.descricao}
-                disabled={isLoading || isRedirecting}
-                onChange={handleDescriptionChange}
-              />
-              {errors.descricao &&
-              <span className="text-red-500 text-xs">
-                {errors.descricao}
-              </span>}
+            {/*Livro da Comunidade*/}
+            <div className="w-2/5 flex flex-col gap-1">
+              <label className="text-h6">Livro</label>
+              {selectedBook ? (
+                <BookCard book={selectedBook} disabled={true} />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center medium-box border border-gray-300 hover:border-gray-400 bg-white gap-1">
+                  <p className="text-b2 body-quotation">Nenhum livro selecionado!</p>
+                  <Button
+                    type="button"
+                    text="Adicionar Livro à Comunidade"
+                    icon={<AddIcon />}
+                    colorScheme="dark-green"
+                    size="medium"
+                    onClick={() => setShowAddBookModal(true)} 
+                  />
+                </div>
+              )}
             </div>
           </div>
         </form>
@@ -718,6 +756,12 @@ export default function CreateCommunityPage() {
         onClose={() => setShowConfirmDeletePopUp(false)}
         button1={{text: "Cancelar", icon: <RemoveIcon />, colorScheme: "light-green", onClick: () => setShowConfirmDeletePopUp(false)}}
         button2={{text: "Apagar", icon: <TrashIcon />, colorScheme: "light-brown", onClick: handleDeleteCommunity}}
+      />
+      <AddBook
+        isOpen={showAddBookModal}
+        livroComunidade={editedCommunityData.livro}
+        onClose={() => setShowAddBookModal(false)}
+        onBookChange={(livroInfo) => handleSelectBook(livroInfo)}
       />
       <ToastNotification />
 

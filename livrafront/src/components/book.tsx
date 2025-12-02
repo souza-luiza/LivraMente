@@ -6,16 +6,18 @@ import { useRouter } from "next/navigation";
 
 interface BookCardProps {
     book: Livro;
+    disabled?: boolean;
 }
 
-export default function BookCard({ book }: BookCardProps) {
+export default function BookCard({ book, disabled = false }: BookCardProps) {
 
     const router = useRouter();
     
     return (
         <button
-            className="w-full flex flex-row light-neutral small-border-radius p-2 hover:cursor-pointer hover:shadow-lg gap-2"
+            className="w-full flex flex-row light-neutral small-border-radius p-2 hover:cursor-pointer hover:shadow-lg disabled:cursor-default gap-2"
             onClick={() => router.push(`/livro/${book.slug}`)}
+            disabled={disabled}
         >
             <div className="relative aspect-[2/3] w-24 overflow-hidden small-border-radius">
                 {book.capa_url && <Image

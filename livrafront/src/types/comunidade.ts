@@ -1,3 +1,5 @@
+import { Livro } from "./livros";
+
 export interface Comunidade {
     _id: string;
     nome: string;
@@ -9,6 +11,7 @@ export interface Comunidade {
     bannerUrl?: string;
     tags?: string[];
     slug?: string;
+    livro?: string;
     createdAt: string; 
     updatedAt: string;
 }
@@ -19,6 +22,7 @@ export interface CreateCommunityData {
     capaUrl?: string;
     bannerUrl?: string;
     tags?: string[];
+    livro?: string;
     slug?: string;
 }
 

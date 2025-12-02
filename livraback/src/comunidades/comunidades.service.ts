@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException, 
 import { InjectModel } from '@nestjs/mongoose';
 import { Comunidade, ComunidadeDocument } from './entities/comunidade.entity';
 import { Post } from '../schemas/post.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
@@ -50,11 +50,13 @@ export class ComunidadesService {
         const novaComunidade = await comunidade.save();
 
         if (createComunidadeDto.livro) {
-            const livro = await this.livroModel.findById(createComunidadeDto.livro).exec();
+            const livroId = new Types.ObjectId(createComunidadeDto.livro);
+
+            const livro = await this.livroModel.findById(livroId).exec();
             if (!livro) throw new NotFoundException('Livro principal não encontrado');
 
             await this.livroModel.findByIdAndUpdate(
-                createComunidadeDto.livro,
+                livroId,
                 { $addToSet: { comunidades: novaComunidade._id } },
                 { new: true }
             ).exec();
@@ -85,7 +87,7 @@ export class ComunidadesService {
             if (!livroAntigo) throw new NotFoundException('Livro não encontrado');
 
             const livro = await this.livroModel.findById(
-                updateComunidadeDto.livro,
+                new Types.ObjectId(updateComunidadeDto.livro),
                 { $addToSet: { comunidades: comunidade._id } },
                 { new: true }
             ).exec();
