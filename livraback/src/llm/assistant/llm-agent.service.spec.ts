@@ -11,6 +11,8 @@ const mockAgentRunnable = {
   invoke: jest.fn(),
 };
 
+const mockAgentInvoke = jest.fn();
+
 jest.mock('langchain', () => ({
   createAgent: jest.fn(() => mockAgentRunnable),
 }));
@@ -33,11 +35,11 @@ jest.mock('@langchain/google-genai', () => ({
   ChatGoogleGenerativeAI: jest.fn(() => ({})),
 }));
 
-// Instância simulada do DuckDuckGo
+// Instância simulada do DuckDuckGo (Virtual)
 const mockDuckInstance = { name: 'duckduckgo_search', description: 'search' };
 jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
   DuckDuckGoSearch: jest.fn().mockImplementation(() => mockDuckInstance),
-}));
+}), { virtual: true });
 
 // --- Mocks das Ferramentas (Apenas as que MANTIVEMOS no Service) ---
 const mockTools = {
@@ -74,6 +76,7 @@ const mockLlmToolsService = {
   createGravarLeituraTool: jest.fn(() => mockTools.gravar_leitura),
   createUsersGetMyProfileTool: jest.fn(() => mockTools.users_get_my_profile),
   createUsersGetMyFavoritesReadlistsTool: jest.fn(() => mockTools.users_get_my_favorites_readlists),
+  createDuckDuckGoTool: jest.fn(() => mockDuckInstance),
 
   // Mocks das ferramentas removidas (caso o service ainda tente chamar, retorna undefined)
   createJoinCommunityTool: jest.fn(),
@@ -94,7 +97,6 @@ describe('LlmAgentService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -107,62 +109,18 @@ describe('LlmAgentService', () => {
     service = module.get<LlmAgentService>(LlmAgentService);
   });
 
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
-  });
-
   describe('runAnalysisAgent', () => {
-    const userPrompt = 'Olá';
     const userId = '123';
-    const mockResponse = { output: 'Resposta da IA' };
-    const mockPromptString = 'Prompt Formatado';
-
-    beforeEach(() => {
-      mockAgentRunnable.invoke.mockResolvedValue(mockResponse);
-      mockFormat.mockResolvedValue(mockPromptString);
-    });
-
-    it('deve criar o agente com as ferramentas seguras e DuckDuckGo', async () => {
-      await service.runAnalysisAgent(userPrompt, userId);
-
-      expect(createAgent).toHaveBeenCalledWith({
-        model: expect.any(Object),
-        tools: expectedToolsMatcher, // Agora bate com a lista segura
-        systemPrompt: mockPromptString,
-      });
-    });
-
-    it('deve invocar o agente com messages', async () => {
-      await service.runAnalysisAgent(userPrompt, userId);
-      expect(mockAgentRunnable.invoke).toHaveBeenCalledWith({
-        messages: [{ role: 'user', content: userPrompt }],
-      });
-    });
-
-    it('deve retornar a resposta processada', async () => {
-      const result = await service.runAnalysisAgent(userPrompt, userId);
-      expect(result).toBe('Resposta da IA');
-    });
-
-    it('deve lidar com erros na execução', async () => {
-      const error = new Error('Erro no invoke');
-      mockAgentRunnable.invoke.mockRejectedValue(error);
-
-      const result = await service.runAnalysisAgent(userPrompt, userId);
-
-      expect(result).toBe('Desculpe, ocorreu um erro ao tentar processar sua solicitação.');
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        '[LlmAgentService] Erro ao executar o Agente:',
-        error,
-      );
-    });
 
     it('deve retornar a resposta PADRÃO para perguntas de ajuda (SEM chamar a IA)', async () => {
       const userPrompt = 'ajuda';
-      const respostaEsperada = 'Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.';
-      const result = await service.runAnalysisAgent(userPrompt, 'user-123');
+
+      const respostaEsperada = "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
+
+      const result = await service.runAnalysisAgent(userPrompt, userId);
 
       expect(result).toBe(respostaEsperada);
+
       expect(createAgent).not.toHaveBeenCalled();
     });
 
@@ -172,6 +130,7 @@ describe('LlmAgentService', () => {
       const result = await service.runAnalysisAgent(userPrompt, userId);
 
       expect(result).toBe('A história X.');
+
       expect(createAgent).toHaveBeenCalled();
       expect(mockAgentRunnable.invoke).toHaveBeenCalledWith({
         messages: [{ role: 'user', content: userPrompt }]

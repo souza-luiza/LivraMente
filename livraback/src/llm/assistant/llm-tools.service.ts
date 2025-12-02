@@ -7,6 +7,7 @@ import { ComunidadesService } from 'src/comunidades/comunidades.service';
 import { ReadlistsService } from 'src/readlists/readlists.service';
 import { UsersService } from 'src/users/users.service';
 import { DynamicStructuredTool } from '@langchain/core/tools';
+import { search, SafeSearchType } from 'duck-duck-scrape';
 
 @Injectable()
 export class LlmToolsService {
@@ -203,4 +204,36 @@ export class LlmToolsService {
       },
     });
   }
+
+  // Ferramenta de Busca na Web (Manual)
+  public createDuckDuckGoTool(): DynamicStructuredTool {
+    const toolSchema = z.object({
+      query: z.string().describe("A pergunta ou termo para pesquisar na internet"),
+    });
+
+    return new DynamicStructuredTool({
+      name: 'duckduckgo_search',
+      description: 'Pesquisa na internet por fatos atuais, notícias ou informações gerais que não estão no banco de dados.',
+      schema: toolSchema,
+      func: async ({ query }) => {
+        try {
+          const searchResults = await search(query, { safeSearch: SafeSearchType.MODERATE });
+
+          if (!searchResults.results || searchResults.results.length === 0) {
+            return "Nenhum resultado encontrado na internet para esta pesquisa.";
+          }
+
+          const topResults = searchResults.results
+            .slice(0, 3)
+            .map((r) => `Título: ${r.title}\nLink: ${r.url}\nResumo: ${r.description}`)
+            .join('\n\n---\n\n');
+
+          return `Resultados da busca no DuckDuckGo:\n${topResults}`;
+        } catch (e) {
+          return `Erro ao pesquisar na internet: ${e instanceof Error ? e.message : String(e)}`;
+        }
+      },
+    });
+  }
+
 }

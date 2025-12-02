@@ -155,8 +155,8 @@ export class LlmAgentService {
       systemPrompt: promptString, // pode ser string ou SystemMessage
     }) as unknown as any;
 
-    try {      
-       // chama o agente diretamente, passando a conversa como mensagens
+    try {
+      // chama o agente diretamente, passando a conversa como mensagens
       const result: any = await agent.invoke({
         messages: [{ role: 'user', content: userPrompt }],
       });

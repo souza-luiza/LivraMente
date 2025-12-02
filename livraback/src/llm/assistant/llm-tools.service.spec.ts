@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { ComunidadesService } from 'src/comunidades/comunidades.service';
 import { ReadlistsService } from 'src/readlists/readlists.service';
 import { UsersService } from 'src/users/users.service';
+import { search } from 'duck-duck-scrape';
 
 // --- Dados Falsos ---
 const mockStory = {
@@ -29,6 +30,11 @@ const mockReadlist = {
   criador: 'user123',
   livros: [],
 };
+
+jest.mock('duck-duck-scrape', () => ({
+  search: jest.fn(),
+  SafeSearchType: { MODERATE: 1 },
+}));
 
 // --- Mocks dos Models ---
 const mockStoryExec = jest.fn();
@@ -248,6 +254,56 @@ describe('LlmToolsService', () => {
 
       expect(mockUsersService.findReadlistsFavoritas).toHaveBeenCalledWith(userId);
       expect(result).toBe(JSON.stringify(mockFavorites));
+    });
+  });
+
+  // --- Teste da Ferramenta de Busca (DuckDuckGo) ---
+  describe('createDuckDuckGoTool', () => {
+    it('deve realizar uma busca e formatar os resultados corretamente', async () => {
+      const query = 'NestJS framework';
+
+      const mockResults = {
+        results: [
+          { title: 'NestJS Docs', url: 'https://nestjs.com', description: 'A progressive Node.js framework...' },
+          { title: 'NestJS GitHub', url: 'https://github.com/nestjs', description: 'Source code...' },
+          { title: 'Result 3', url: 'http://site.com', description: 'Desc 3' },
+          { title: 'Result 4', url: 'http://site.com', description: 'Este deve ser cortado pelo slice' },
+        ],
+      };
+
+      (search as jest.Mock).mockResolvedValue(mockResults);
+
+      const tool = service.createDuckDuckGoTool();
+      const result = await tool.func({ query });
+
+      expect(tool.name).toBe('duckduckgo_search');
+
+      expect(search).toHaveBeenCalledWith(query, expect.objectContaining({
+        safeSearch: 1,
+      }));
+
+      expect(result).toContain('Resultados da busca no DuckDuckGo:');
+      expect(result).toContain('Título: NestJS Docs');
+      expect(result).not.toContain('Result 4');
+    });
+
+    it('deve retornar mensagem amigável se não encontrar nada', async () => {
+      (search as jest.Mock).mockResolvedValue({ results: [] });
+
+      const tool = service.createDuckDuckGoTool();
+      const result = await tool.func({ query: 'algo_nada_ver' });
+
+      expect(result).toBe('Nenhum resultado encontrado na internet para esta pesquisa.');
+    });
+
+    it('deve tratar erros da biblioteca de busca', async () => {
+      const errorMessage = 'Erro de conexão';
+      (search as jest.Mock).mockRejectedValue(new Error(errorMessage));
+
+      const tool = service.createDuckDuckGoTool();
+      const result = await tool.func({ query: 'erro' });
+
+      expect(result).toContain(`Erro ao pesquisar na internet: ${errorMessage}`);
     });
   });
 });
