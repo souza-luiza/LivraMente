@@ -6,10 +6,13 @@ import { toast } from "react-toastify";
 import Image from "next/image";
 
 import { livrosService } from "@/services/livros";
+import { resenhasService } from "@/services/resenhas";
+import { getSessionInfos } from "@/services/auth";
 
 import ToastNotification from "@/components/toast-notification";
 import LoadingPage from "@/components/loading";
 import { Livro } from "@/types/livros";
+import { Resenha } from "@/types/resenha";
 import Sidebar from "@/components/sidebar";
 import SearchBar from "@/components/searchbar";
 import { TabProvider, TabPanel, TabList, Tab } from "@/components/tabs";
@@ -35,6 +38,9 @@ export default function LivroPage() {
     const [readlists, setReadlists] = useState<TypeReadlist[]>([]);
     const [communities, setCommunities] = useState<TypeCommunity[]>([]);
     const [showResenhaModal, setShowResenhaModal] = useState(false);
+    const [userId, setUserId] = useState<string>();
+    const [resenhas, setResenhas] = useState<Resenha[]>([]);
+    const [userResenhaId, setUserResenhaId] = useState<string | undefined>();
 
     const [value, setValue] = useState('resenhas');
     
@@ -43,12 +49,31 @@ export default function LivroPage() {
         async function fetchBookDetails() {
             
             try {
+                // buscar informações do usuário logado
+                let currentUserId: string | undefined;
+                try {
+                    const user = await getSessionInfos();
+                    currentUserId = user.userId;
+                    setUserId(user.userId);
+                } catch (error) {
+                    // Usuário não está logado, deixa userId undefined
+                }
+
                 // busca detalhes do livro
                 const book = await livrosService.getBookBySlug(bookslug);
                 setBook(book);
 
                 // buscar avaliações e resenhas do livro
-                // TODO: const reviews = await [INTEGRARA COM A PARTE DA ISABELE]
+                if (book._id) {
+                    const reviews = await resenhasService.getResenhasByBook(book._id);
+                    setResenhas(reviews);
+                    
+                    // verificar se o usuário já tem uma resenha
+                    if (currentUserId) {
+                        const userReview = reviews.find(r => r.autor._id === currentUserId);
+                        setUserResenhaId(userReview?._id);
+                    }
+                }
                 
                 // busca readlists que contém o livro
                 const readlists = await livrosService.getBookReadlists(bookslug);
@@ -73,7 +98,18 @@ export default function LivroPage() {
     }, [bookslug]);
 
     const handleRefreshReviews = async () => {
-        // buscar resenhas atualizadas
+        if (!book?._id) return;
+        
+        try {
+            const reviews = await resenhasService.getResenhasByBook(book._id);
+            setResenhas(reviews);
+            if (userId) {
+                const userReview = reviews.find(r => r.autor._id === userId);
+                setUserResenhaId(userReview?._id);
+            }
+        } catch (error) {
+            toast.error("Erro ao atualizar resenhas.");
+        }
     };
 
     if (!book) return null;
@@ -146,6 +182,7 @@ export default function LivroPage() {
                                         isOpen={showResenhaModal}
                                         onClose={() => setShowResenhaModal(false)}
                                         bookId={book._id}
+                                        resenhaId={userResenhaId}
                                         onSuccess={handleRefreshReviews}
                                     />
                                 )}
@@ -167,31 +204,22 @@ export default function LivroPage() {
 
                                     <TabPanel value='resenhas'>
                                         <div className="flex flex-col gap-2 pb-2 pr-1 overflow-y-auto">
-                                            {/* TODO: mudar essa lógica aqui */}
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
+                                            {resenhas.length > 0 ? (
+                                                resenhas.map((resenha) => (
+                                                    <ReviewComponent
+                                                        key={resenha._id}
+                                                        bookId={book._id}
+                                                        resenhaId={resenha._id}
+                                                        currentUserId={userId}
+                                                        onDelete={handleRefreshReviews}
+                                                        onUpdate={handleRefreshReviews}
+                                                    />
+                                                ))
+                                            ) : (
+                                                <span className="flex text-b1 body-quotation justify-center mt-4">
+                                                    Ainda não há avaliações para este livro. Seja o primeiro a avaliar!
+                                                </span>
+                                            )}
                                         </div>
                                     </TabPanel>
 
