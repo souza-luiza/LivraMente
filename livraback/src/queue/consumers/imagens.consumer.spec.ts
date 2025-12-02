@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { ImagensConsumer } from './imagens.consumer';
+import { FILAS, ROUTING_KEYS } from '../queue.constants';
 import * as amqp from 'amqp-connection-manager';
 import { ConsumeMessage } from 'amqplib';
 
@@ -63,6 +64,14 @@ describe('ImagensConsumer', () => {
     expect(consumer).toBeDefined();
   });
 
+  it('getQueueName deve retornar a fila correta', () => {
+    expect(consumer['getQueueName']()).toBe(FILAS.PROCESSAR_IMAGENS);
+  });
+
+  it('getPrefetchCount deve retornar 3', () => {
+    expect(consumer['getPrefetchCount']()).toBe(3);
+  });
+
   describe('inicializar', () => {
     it('deve conectar ao RabbitMQ e configurar prefetch de 3', async () => {
       await consumer.inicializar();
@@ -78,6 +87,76 @@ describe('ImagensConsumer', () => {
     });
   });
 
+  describe('processar', () => {
+    it('deve chamar processarImagensPost para routingKey IMAGEM_POST_UPLOAD', async () => {
+      const spy = jest.spyOn<any, any>(consumer, 'processarImagensPost').mockResolvedValue(undefined);
+      const dados = { postId: 'post123', imagens: ['img1.jpg'] };
+
+      await (consumer as any).processar(dados, ROUTING_KEYS.IMAGEM_POST_UPLOAD);
+
+      expect(spy).toHaveBeenCalledWith(dados);
+    });
+
+    it('deve chamar processarImagemPerfil para routingKey IMAGEM_USUARIO_UPLOAD', async () => {
+      const spy = jest.spyOn<any, any>(consumer, 'processarImagemPerfil').mockResolvedValue(undefined);
+      const dados = { userId: 'user123', imagemUrl: 'avatar.jpg' };
+
+      await (consumer as any).processar(dados, ROUTING_KEYS.IMAGEM_USUARIO_UPLOAD);
+
+      expect(spy).toHaveBeenCalledWith(dados);
+    });
+
+    it('deve chamar processarImagemComunidade para routingKey IMAGEM_COMUNIDADE_UPLOAD', async () => {
+      const spy = jest.spyOn<any, any>(consumer, 'processarImagemComunidade').mockResolvedValue(undefined);
+      const dados = { comunidadeId: 'com123', imagemUrl: 'banner.jpg' };
+
+      await (consumer as any).processar(dados, ROUTING_KEYS.IMAGEM_COMUNIDADE_UPLOAD);
+
+      expect(spy).toHaveBeenCalledWith(dados);
+    });
+
+    it('deve logar warning para routingKey desconhecida', async () => {
+      const loggerWarn = jest.spyOn((consumer as any).logger, 'warn').mockImplementation();
+
+      await (consumer as any).processar({}, 'ROTA_DESCONHECIDA');
+
+      expect(loggerWarn).toHaveBeenCalledWith(expect.stringContaining('Tipo de imagem não tratado'));
+    });
+  });
+
+  describe('processarImagensPost', () => {
+    it('deve logar processamento de imagens de post', async () => {
+      const loggerLog = jest.spyOn((consumer as any).logger, 'log').mockImplementation();
+      const dados = { postId: 'post123', imagens: ['img1.jpg', 'img2.jpg'] };
+
+      await (consumer as any).processarImagensPost(dados);
+
+      expect(loggerLog).toHaveBeenCalledWith('Processando imagens de post: post123');
+    });
+  });
+
+  describe('processarImagemPerfil', () => {
+    it('deve logar processamento de imagem de perfil', async () => {
+      const loggerLog = jest.spyOn((consumer as any).logger, 'log').mockImplementation();
+      const dados = { userId: 'user123', imagemUrl: 'avatar.jpg' };
+
+      await (consumer as any).processarImagemPerfil(dados);
+
+      expect(loggerLog).toHaveBeenCalledWith('Processando imagem de perfil: user123');
+    });
+  });
+
+  describe('processarImagemComunidade', () => {
+    it('deve logar processamento de imagem de comunidade', async () => {
+      const loggerLog = jest.spyOn((consumer as any).logger, 'log').mockImplementation();
+      const dados = { comunidadeId: 'com123', imagemUrl: 'banner.jpg' };
+
+      await (consumer as any).processarImagemComunidade(dados);
+
+      expect(loggerLog).toHaveBeenCalledWith('Processando imagem de comunidade: com123');
+    });
+  });
+
   describe('processarMensagem', () => {
     let consumeCallback: (msg: ConsumeMessage | null) => Promise<void>;
 
@@ -88,14 +167,13 @@ describe('ImagensConsumer', () => {
       consumeCallback = consumeCall[1];
     });
 
-    it('deve processar imagens de post', async () => {
+    it('deve processar imagens de post com routing key', async () => {
       const mensagem: Partial<ConsumeMessage> = {
         content: Buffer.from(JSON.stringify({
-          tipo: 'post',
           postId: 'post123',
           imagens: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
         })),
-        fields: {} as any,
+        fields: { routingKey: ROUTING_KEYS.IMAGEM_POST_UPLOAD } as any,
         properties: { headers: {} } as any,
       };
 
@@ -104,14 +182,13 @@ describe('ImagensConsumer', () => {
       expect(mockChannel.ack).toHaveBeenCalledWith(mensagem);
     });
 
-    it('deve processar imagem de perfil', async () => {
+    it('deve processar imagem de perfil com routing key', async () => {
       const mensagem: Partial<ConsumeMessage> = {
         content: Buffer.from(JSON.stringify({
-          tipo: 'perfil',
           userId: 'user123',
           imagemUrl: 'avatar.jpg',
         })),
-        fields: {} as any,
+        fields: { routingKey: ROUTING_KEYS.IMAGEM_USUARIO_UPLOAD } as any,
         properties: { headers: {} } as any,
       };
 
@@ -120,14 +197,13 @@ describe('ImagensConsumer', () => {
       expect(mockChannel.ack).toHaveBeenCalledWith(mensagem);
     });
 
-    it('deve processar imagem de comunidade', async () => {
+    it('deve processar imagem de comunidade com routing key', async () => {
       const mensagem: Partial<ConsumeMessage> = {
         content: Buffer.from(JSON.stringify({
-          tipo: 'comunidade',
           comunidadeId: 'com123',
           imagemUrl: 'banner.jpg',
         })),
-        fields: {} as any,
+        fields: { routingKey: ROUTING_KEYS.IMAGEM_COMUNIDADE_UPLOAD } as any,
         properties: { headers: {} } as any,
       };
 
@@ -141,7 +217,7 @@ describe('ImagensConsumer', () => {
         content: Buffer.from(JSON.stringify({
           tipo: 'tipo-desconhecido',
         })),
-        fields: {} as any,
+        fields: { routingKey: 'routing.desconhecida' } as any,
         properties: { headers: {} } as any,
       };
 
