@@ -19,11 +19,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { resenhasService } from "@/services/resenhas";
 import ResenhaModal from "./resenha-modal";
+import Rating from '@mui/material/Rating';
 
 interface ReviewComponentProps {
     // resenha:
     bookId: string;
     resenhaId: string;
+    currentUserId?: string;
     onDelete: () => void;
     onUpdate?: () => void;
 }
@@ -31,11 +33,16 @@ interface ReviewComponentProps {
 export default function ReviewComponent({
     bookId,
     resenhaId,
+    currentUserId,
     onDelete,
     onUpdate
 } : ReviewComponentProps) {
 
     const router = useRouter();
+
+    // Estado da resenha
+    const [review, setReview] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     // Gerenciamento do overflow do conteúdo do comentário
     const [isOverflowed, setIsOverflowed] = useState(false);
@@ -52,11 +59,29 @@ export default function ReviewComponent({
     const [showEditResenhaModal, setShowEditResenhaModal] = useState(false);
 
     // TODO: Mudar
-    const isOwner = true;
+    // const isOwner = true;
+
+    // buscar dados da resenha
+    useEffect(() => {
+        async function fetchResenha() {
+            try {
+                const data = await resenhasService.getResenha(resenhaId);
+                setReview(data);
+            } catch (error) {
+                toast.error("Erro ao carregar resenha.");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchResenha();
+    }, [resenhaId]);
+
+    // verificar se é o dono da resenha
+    const isOwner = currentUserId === review?.autor?._id;
 
     // TODO: Verificar se a resenha foi editada
     // const edited = (review.createdAt !== resenha.updatedAt);
-    const edited = true;
+    const edited = review?.createdAt !== review?.updatedAt;
 
     useEffect(() => {
         if (contentRef.current) {
@@ -66,7 +91,7 @@ export default function ReviewComponent({
             setMaxHeight(expanded ? `${el.scrollHeight}px` : `${maxVisibleHeight}px`);
             setIsOverflowed(el.scrollHeight > maxVisibleHeight);
         }
-    }, [expanded]);
+    }, [expanded, review]);
 
     useEffect(() => {
         if (showOptions && menuRef.current) {
@@ -116,18 +141,17 @@ export default function ReviewComponent({
     }
 
     const handleRedirectToProfile = () => {
-        router.push(`/${review.autor.username}`);
+        if (review?.autor?.username) {
+            router.push(`/${review.autor.username}`);
+        }
     }
 
-    const review = {
-        conteudo: 'Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários.',
-        avaliacao: 4,
-        spoiler: false,
-        createdAt: new Date().toDateString(),
-        autor: {
-            username: 'eu',
-            avatarUrl: '/AbstractUser.png'
-        }
+    if (loading || !review) {
+        return (
+            <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm">
+                <p className="text-b2 body-quotation">Carregando...</p>
+            </div>
+        );
     }
 
     return (
@@ -156,7 +180,17 @@ export default function ReviewComponent({
                     </div>}
                 </div>
 
-                {/*Avaliação...*/}
+                {/*Avaliação*/}
+                <div className="flex items-center gap-2">
+                    <Rating
+                        name="review-rating"
+                        value={review.avaliacao}
+                        readOnly
+                        precision={1.0}
+                        size="small"
+                    />
+                    <span className="text-b2 body-semibold">{review.avaliacao.toFixed(1)}</span>
+                </div>
 
                 {/*Corpo do Comentário*/}
                 <div className="flex-1 overflow-hidden">
