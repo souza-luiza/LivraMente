@@ -87,8 +87,8 @@ export class UsersService {
     return updated;
   }
 
-  async remove(id: string) {
-    return await this.userModel.deleteOne({
+  async remove(id: string): Promise<void> {
+    await this.userModel.deleteOne({
       _id: id,
     }).exec(); // para executar operacao
   }
