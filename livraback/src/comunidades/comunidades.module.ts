@@ -6,12 +6,14 @@ import { Comunidade, ComunidadeSchema } from './entities/comunidade.entity';
 import { Post, PostSchema } from '../schemas/post.schema';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { Comentario, ComentarioSchema } from 'src/schemas';
+import { Livro, LivroSchema } from 'src/livros/entities/livro.schema';
 
 @Module({
     imports: [MongooseModule.forFeature([
         { name: Comunidade.name, schema: ComunidadeSchema },
         { name: Post.name, schema: PostSchema },
-        { name: Comentario.name, schema: ComentarioSchema }
+        { name: Comentario.name, schema: ComentarioSchema },
+        { name: Livro.name, schema: LivroSchema },
     ]),
     CloudinaryModule
     ],

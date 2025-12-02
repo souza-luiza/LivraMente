@@ -201,7 +201,7 @@ export default function PostComponent({
 
     return (
         <motion.div onHoverEnd={() => setShowOptions(false)}>
-            <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
+            <div className="flex flex-col gap-3 light-neutral medium-box shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex flex-row items-center justify-between">
                     <div className="flex flex-row gap-2">
                         <div 
