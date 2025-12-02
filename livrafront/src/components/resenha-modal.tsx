@@ -68,14 +68,12 @@ export default function ResenhaModal({ isOpen, onClose, bookId, resenhaId, onSuc
           avaliacao,
           spoiler,
         });
-        toast.success("Resenha atualizada com sucesso!");
       } else {
         await resenhasService.createResenha(bookId, {
           conteudo: resenha,
           avaliacao,
           spoiler,
         });
-        toast.success("Resenha criada com sucesso!");
       }
       setAvaliacao(0);
       setResenha("");

@@ -138,8 +138,14 @@ export default function ReviewComponent({
         setShowEditResenhaModal(true);
     }
 
-    const handleEditSuccess = () => {
+    const handleEditSuccess = async () => {
         setShowEditResenhaModal(false);
+        try {
+            const data = await resenhasService.getResenha(resenhaId);
+            setReview(data);
+        } catch (error) {
+            toast.error("Erro ao atualizar resenha.");
+        }
         onUpdate && onUpdate();
     }
 
