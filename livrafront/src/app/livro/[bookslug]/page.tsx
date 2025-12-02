@@ -31,6 +31,7 @@ export default function LivroPage() {
 
     const [loading, setLoading] = useState(true);
     const [book, setBook] = useState<Livro>();
+    const [reviews, setReviews] = useState<any[]>([]);
     const [readlists, setReadlists] = useState<TypeReadlist[]>([]);
     const [communities, setCommunities] = useState<TypeCommunity[]>([]);
 
@@ -47,6 +48,8 @@ export default function LivroPage() {
 
                 // buscar avaliações e resenhas do livro
                 // TODO: const reviews = await [INTEGRARA COM A PARTE DA ISABELE]
+                const reviews: any[] = []; // substituir por dados reais
+                setReviews(reviews);
                 
                 // busca readlists que contém o livro
                 const readlists = await livrosService.getBookReadlists(bookslug);
@@ -155,33 +158,22 @@ export default function LivroPage() {
                                     </TabList>
 
                                     <TabPanel value='resenhas'>
+                                        {reviews.length > 0 ? (
                                         <div className="flex flex-col gap-2 pb-2 pr-1 overflow-y-auto">
                                             {/* TODO: mudar essa lógica aqui */}
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
-                                            <ReviewComponent
-                                                onDelete={handleRefreshReviews}
-                                                onUpdate={handleRefreshReviews}
-                                            />
+                                            {reviews.map((review) => (
+                                                <ReviewComponent
+                                                    key={review._id}
+                                                    onDelete={handleRefreshReviews}
+                                                    onUpdate={handleRefreshReviews}
+                                                />
+                                            ))}
                                         </div>
+                                        ) : (
+                                        <span className="flex text-b1 body-quotation justify-center mt-4">
+                                            Não há nenhuma avaliação ou resenha para este livro.
+                                        </span>
+                                        )}
                                     </TabPanel>
 
                                     <TabPanel value='readlists'>

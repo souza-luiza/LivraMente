@@ -383,7 +383,7 @@ export default function CommunityPage(){
                                         icon={<OpenBookIcon />}
                                         colorScheme="light-green"
                                         size="medium"
-                                        path={`/wiki/${communityInfo.nome}` /* PROVISÓRIO */}
+                                        path={communityInfo.livro ? `/livro/${communityInfo.livro.slug}` : ''}
                                     />
                                     {/* Modal de Criação de Post */}
                                     <CreatePostModal

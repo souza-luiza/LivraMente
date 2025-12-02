@@ -33,7 +33,7 @@ export class ComunidadesService {
                 { slug: comunidadeNome },
                 { nome: comunidadeNome }
             ]
-        });
+        }).populate('livro').exec();
 
         if (!comunidade) {
             throw new NotFoundException(`Comunidade "${comunidadeNome}" não encontrada`);
@@ -84,13 +84,13 @@ export class ComunidadesService {
                 { $pull: { comunidades: comunidade._id } },
                 { new: true }
             ).exec();
-            if (!livroAntigo) throw new NotFoundException('Livro não encontrado');
-
-            const livro = await this.livroModel.findById(
+            
+            const livro = await this.livroModel.findByIdAndUpdate(
                 new Types.ObjectId(updateComunidadeDto.livro),
                 { $addToSet: { comunidades: comunidade._id } },
                 { new: true }
             ).exec();
+            console.log('Livro Novo', livro);
             if (!livro) throw new NotFoundException('Livro não encontrado');
         }
         

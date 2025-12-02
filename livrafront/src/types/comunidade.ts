@@ -1,5 +1,3 @@
-import { Livro } from "./livros";
-
 export interface Comunidade {
     _id: string;
     nome: string;
