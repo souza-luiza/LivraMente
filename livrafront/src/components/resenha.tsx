@@ -50,6 +50,9 @@ export default function ReviewComponent({
     const [maxHeight, setMaxHeight] = useState<string | undefined>(undefined);
     const contentRef = useRef<HTMLParagraphElement>(null);
 
+    // Spoilers
+    const [spoilerRevealed, setSpoilerRevealed] = useState(false);
+
     // Mais Opções
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -194,13 +197,23 @@ export default function ReviewComponent({
 
                 {/*Corpo do Comentário*/}
                 <div className="flex-1 overflow-hidden">
-                    <p
-                        ref={contentRef}
-                        style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                        className="text-b2 whitespace-pre-line"
-                    >
-                        {review.conteudo}
-                    </p>
+                    <div className="relative">
+                        <p
+                            ref={contentRef}
+                            style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                            className="text-b2 whitespace-pre-line"
+                        >
+                            {review.conteudo}
+                        </p>
+                        {review.spoiler && !spoilerRevealed && (
+                            <div 
+                                className="absolute inset-0 bg-gray-400 hover:bg-gray-500 transition-colors cursor-pointer flex items-center justify-center"
+                                onClick={() => setSpoilerRevealed(true)}
+                            >
+                                <span className="text-b2 body-semibold text-white">Cuidado! Essa resenha contém spoilers.</span>
+                            </div>
+                        )}
+                    </div>
                     {isOverflowed && (
                         <span
                             className="text-b2 body-semibold text-[var(--primary-700)] hover:cursor-pointer"
