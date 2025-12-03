@@ -79,7 +79,7 @@ export default function LivroPage() {
                 // busca readlists que contém o livro
                 const readlists = await livrosService.getBookReadlists(bookslug);
                 setReadlists(readlists);
-                console.log(readlists);
+
                 // busca comunidades relacionadas ao livro
                 const communities = await livrosService.getBookCommunities(bookslug);
                 setCommunities(communities);
@@ -204,24 +204,18 @@ export default function LivroPage() {
                                     </TabList>
 
                                     <TabPanel value='resenhas'>
-                                        {reviews.length > 0 ? (
+                                        {resenhas.length > 0 ? (
                                         <div className="flex flex-col gap-2 pb-2 pr-1 overflow-y-auto">
-                                            {resenhas.length > 0 ? (
-                                                resenhas.map((resenha) => (
-                                                    <ReviewComponent
-                                                        key={resenha._id}
-                                                        bookId={book._id}
-                                                        resenhaId={resenha._id}
-                                                        currentUserId={userId}
-                                                        onDelete={handleRefreshReviews}
-                                                        onUpdate={handleRefreshReviews}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <span className="flex text-b1 body-quotation justify-center mt-4">
-                                                    Ainda não há avaliações para este livro. Seja o primeiro a avaliar!
-                                                </span>
-                                            )}
+                                            {resenhas.map((resenha) => (
+                                                <ReviewComponent
+                                                    key={resenha._id}
+                                                    bookId={book._id}
+                                                    resenhaId={resenha._id}
+                                                    currentUserId={userId}
+                                                    onDelete={handleRefreshReviews}
+                                                    onUpdate={handleRefreshReviews}
+                                                />
+                                            ))}
                                         </div>
                                         ) : (
                                         <span className="flex text-b1 body-quotation justify-center mt-4">

@@ -1,4 +1,4 @@
-import { Comunidade, CreateCommunityData, UpdateCommunityData } from '@/types/comunidade';
+import { Comunidade, CreateCommunityPayload, UpdateCommunityData, UpdateCommunityPayload } from '@/types/comunidade';
 import { BackendUser } from '@/types/users';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
@@ -96,7 +96,7 @@ export const communityService = {
     return res.json();
   },
 
-  async createCommunity(payload: CreateCommunityData) {
+  async createCommunity(payload: CreateCommunityPayload) {
     const response = await fetch(`${API_BASE_URL}/comunidades`, {
       method: 'POST',
       credentials: "include",
@@ -125,7 +125,7 @@ export const communityService = {
     return response.json()
   },
 
-  async updateCommunity(comunidadeNome: string, payload: UpdateCommunityData) {
+  async updateCommunity(comunidadeNome: string, payload: UpdateCommunityPayload) {
     const response = await fetch(`${API_BASE_URL}/comunidades/${encodeURIComponent(comunidadeNome)}`, {
       method: 'PATCH',
       credentials: "include",

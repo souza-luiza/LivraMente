@@ -1,3 +1,5 @@
+import { Livro } from "./livros";
+
 export interface Comunidade {
     _id: string;
     nome: string;
@@ -9,7 +11,7 @@ export interface Comunidade {
     bannerUrl?: string;
     tags?: string[];
     slug?: string;
-    livro?: string;
+    livro?: Livro;
     createdAt: string; 
     updatedAt: string;
 }
@@ -20,11 +22,23 @@ export interface CreateCommunityData {
     capaUrl?: string;
     bannerUrl?: string;
     tags?: string[];
+    livro?: Livro;
+    slug?: string;
+}
+
+export interface CreateCommunityPayload {
+    nome: string;
+    descricao?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
+    tags?: string[];
     livro?: string;
     slug?: string;
 }
 
 export type UpdateCommunityData = Partial<CreateCommunityData>;
+
+export type UpdateCommunityPayload = Partial<CreateCommunityPayload>;
 
 export const CommunityTags = [
     'romance',

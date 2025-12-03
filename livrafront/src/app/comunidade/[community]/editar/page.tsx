@@ -27,7 +27,7 @@ import AddBook from '@/components/add-book-to-community';
 import { communityService } from '@/services/comunidade';
 
 // Tipos
-import { CommunityTags, Comunidade, CreateCommunityData, UpdateCommunityData } from '@/types/comunidade';
+import { CommunityTags, Comunidade, UpdateCommunityData, UpdateCommunityPayload } from '@/types/comunidade';
 
 // Funções Auxiliares
 import { slugToTitle, titleToSlug } from '@/lib/slugify';
@@ -35,7 +35,7 @@ import SaveIcon from '@/components/icons/SaveIcon';
 import PopUp from '@/components/pop-up';
 import BookCard from '@/components/book';
 import { Livro } from '@/types/livros';
-import { set } from 'date-fns';
+import RefreshIcon from '@/components/icons/RefreshIcon';
 
 export default function CreateCommunityPage() {
 
@@ -50,7 +50,7 @@ export default function CreateCommunityPage() {
   // Carregando e Erros
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; capa?: string, banner?: string }>({});
+  const [errors, setErrors] = useState<{ nome?: string; descricao?: string; tags?: string; capa?: string, banner?: string, livro?: string }>({});
 
   // Refs para os inputs das imagens
   const fileCoverInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +72,7 @@ export default function CreateCommunityPage() {
 
   // Adicionar Livro
   const [showAddBookModal, setShowAddBookModal] = useState(false);
+  const [showChangeBookButton, setShowChangeBookButton] = useState(false);
 
   useEffect(() => {
 
@@ -102,6 +103,7 @@ export default function CreateCommunityPage() {
           livro: communityData.livro,
           slug: communityData.slug
         });
+        setSelectedBook(communityData.livro);
 
       } catch (err) {
 
@@ -366,10 +368,10 @@ export default function CreateCommunityPage() {
         return;
       }
 
-      let payload: UpdateCommunityData = {
+      let payload: UpdateCommunityPayload = {
         descricao: editedCommunityData.descricao,
         tags: editedCommunityData.tags,
-        livro: editedCommunityData.livro, // TODO: ISSO AQUI É Livro E NÃO ID!!!! 
+        livro: editedCommunityData.livro?._id,
       };
 
       // Tira lixo do nome da comunidade e atualiza a slug
@@ -441,7 +443,7 @@ export default function CreateCommunityPage() {
       }
 
       // Mudar para a página da comunidade
-      router.push(`/comunidade/${updatedCommunity.slug ?? titleToSlug(updatedCommunity.nome)}`);
+      router.push(`/comunidade/${titleToSlug(updatedCommunity.nome)}`);
 
     } catch (err) {
 
@@ -465,11 +467,16 @@ export default function CreateCommunityPage() {
       toast.success('Comunidade apagada com sucesso!');
 
       setIsRedirecting(true);
-      router.back();
 
     } catch (err) {
 
       toast.error('Erro ao apagar comunidade.');
+      router.back();
+
+    } finally {
+      
+      router.push('/comunidades');
+
     }
   }
 
@@ -478,7 +485,7 @@ export default function CreateCommunityPage() {
     setSelectedBook(book);
     setEditedCommunityData({
       ...editedCommunityData,
-      livro: book._id
+      livro: book
     });
   }
 
@@ -683,21 +690,47 @@ export default function CreateCommunityPage() {
             {/*Livro da Comunidade*/}
             <div className="w-2/5 flex flex-col gap-1">
               <label className="text-h6">Livro</label>
-              {selectedBook ? (
-                <BookCard book={selectedBook} disabled={true} />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center medium-box border border-gray-300 hover:border-gray-400 bg-white gap-1">
-                  <p className="text-b2 body-quotation">Nenhum livro selecionado!</p>
-                  <Button
-                    type="button"
-                    text="Adicionar Livro à Comunidade"
-                    icon={<AddIcon />}
-                    colorScheme="dark-green"
-                    size="medium"
-                    onClick={() => setShowAddBookModal(true)} 
-                  />
-                </div>
-              )}
+              <div
+                className="relative w-full h-full flex flex-col items-center justify-center medium-box border border-gray-300 hover:border-gray-400 bg-white overflow-hidden gap-1"
+                onMouseEnter={() => setShowChangeBookButton(true)}
+                onMouseLeave={() => setShowChangeBookButton(false)}
+              >
+                {selectedBook ? (
+                    <>
+                      <BookCard book={selectedBook} disabled={true} />
+                      {showChangeBookButton &&
+                      <div
+                        className="absolute w-full h-full inset-0 z-10 flex items-center justify-center"
+                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+                      >
+                        <Button
+                          type="button"
+                          text="Alterar Livro"
+                          icon={<RefreshIcon />}
+                          colorScheme="dark-green"
+                          size="medium"
+                          onClick={() => setShowAddBookModal(true)} 
+                        />
+                      </div>}
+                    </>
+                ) : (
+                    <>
+                      <p className="text-b2 body-quotation">Nenhum livro selecionado!</p>
+                      <Button
+                        type="button"
+                        text="Adicionar Livro à Comunidade"
+                        icon={<AddIcon />}
+                        colorScheme="dark-green"
+                        size="medium"
+                        onClick={() => setShowAddBookModal(true)} 
+                      />
+                    </>
+                  )}
+              </div>
+              {errors.livro &&
+              <span className="text-red-500 text-b3">
+                  {errors.livro}
+              </span>}
             </div>
           </div>
         </form>
@@ -759,7 +792,7 @@ export default function CreateCommunityPage() {
       />
       <AddBook
         isOpen={showAddBookModal}
-        livroComunidade={editedCommunityData.livro}
+        livroComunidade={editedCommunityData.livro?._id}
         onClose={() => setShowAddBookModal(false)}
         onBookChange={(livroInfo) => handleSelectBook(livroInfo)}
       />

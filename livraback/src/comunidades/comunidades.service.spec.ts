@@ -340,7 +340,7 @@ describe('ComunidadesService', () => {
         membros: ['user1', 'user2']
       };
       
-      comunidadeModel.findOne.mockResolvedValueOnce(comunidadeMock as any);
+      comunidadeModel.findOne.mockReturnValueOnce({ populate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeMock as any) }) } as any);
 
       const result = await service.findOne('fantasia');
 
@@ -354,8 +354,8 @@ describe('ComunidadesService', () => {
     });
 
     it('deve lançar NotFoundException quando comunidade não for encontrada', async () => {
-      // service.findOne awaits the result directly; simulate a null result
-      comunidadeModel.findOne.mockResolvedValueOnce(null as any);
+      // service.findOne awaits the result via populate().exec(); simulate a null result
+      comunidadeModel.findOne.mockReturnValueOnce({ populate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null as any) }) } as any);
 
       await expect(service.findOne('comunidade-inexistente'))
         .rejects.toThrow(NotFoundException);
@@ -1272,7 +1272,7 @@ describe('ComunidadesService', () => {
         slug: 'fantasia-slug',
       };
 
-      comunidadeModel.findOne.mockResolvedValueOnce(comunidadeMock);
+      comunidadeModel.findOne.mockReturnValueOnce({ populate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadeMock) }) } as any);
 
       const result = await service.findOne('fantasia-slug');
 
@@ -1292,7 +1292,7 @@ describe('ComunidadesService', () => {
         slug: 'fantasia',
       };
 
-      comunidadeModel.findOne.mockResolvedValueOnce(comunidadePorSlug);
+      comunidadeModel.findOne.mockReturnValueOnce({ populate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(comunidadePorSlug) }) } as any);
 
       const result = await service.findOne('fantasia');
 
@@ -1660,7 +1660,7 @@ describe('ComunidadesService', () => {
     it('deve ter mensagens de erro consistentes', async () => {
       const mockUser: CurrentUserDto = { userId: '123', email: 'test@email.com', username: 'testuser', avatarUrl: '', pronouns: 'she/her' };
       
-      comunidadeModel.findOne.mockResolvedValue(null);
+      comunidadeModel.findOne.mockReturnValue({ populate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) }) } as any);
       await expect(service.findOne('inexistente'))
         .rejects.toThrow('Comunidade "inexistente" não encontrada');
 

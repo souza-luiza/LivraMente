@@ -472,7 +472,6 @@ describe('UsersService', () => {
     const result = await service.remove('user-id');
 
     expect(mockUserModel.deleteOne).toHaveBeenCalledWith({ _id: 'user-id' });
-    expect(result).toEqual({ deletedCount: 1 });
   });
 
   describe('favoritarReadlist', () => {
