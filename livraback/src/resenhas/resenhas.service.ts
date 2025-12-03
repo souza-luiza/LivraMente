@@ -32,6 +32,12 @@ export class ResenhasService {
         const book = await this.livroModel.findById(bookId);
         if (!book) throw new NotFoundException('Livro não encontrado');
 
+        // verificar se o usuário já tem uma resenha para este livro
+        const existingResenha = await this.resenhaModel.findOne({
+            autor: userId,
+            livro: bookId
+        });
+
         const newResenha = await this.resenhaModel.create({
             ...createResenhaDto,
             livro: bookId,
@@ -48,17 +54,23 @@ export class ResenhasService {
 
     // Atualizar resenha
     async updateResenha(userId: string, resenhaId: string, updateResenhaDto: UpdateResenhaDto) {
-        const exists = await this.resenhaModel.exists({ _id: resenhaId });
-        if (!exists) throw new NotFoundException('Resenha não encontrada');
+        
+        // buscar a resenha primeiro
+        const resenha = await this.resenhaModel.findById(resenhaId);
+        if (!resenha) throw new NotFoundException('Resenha não encontrada');
+
+        // Verificar se o usuário é o autor
+        if (resenha.autor.toString() !== userId.toString()) {
+            throw new ForbiddenException('Somente o autor da resenha pode atualizá-la');
+        }
 
         const updated = await this.resenhaModel
-            .findOneAndUpdate(
-                { _id: new Types.ObjectId(resenhaId), autor: new Types.ObjectId(userId) },
+            .findByIdAndUpdate(
+                resenhaId,
                 { $set: updateResenhaDto },
                 { new: true }
-            );
-
-        if (!updated) throw new ForbiddenException('Somente o autor da resenha pode atualizá-la');
+            )
+            .populate('autor', 'username avatarUrl');
 
         return updated;
     }
@@ -83,5 +95,15 @@ export class ResenhasService {
         ]);
 
         return { message: 'Resenha apagada com sucesso' };
+    }
+    
+    // Buscar uma resenha por ID
+    async getResenhaById(resenhaId: string) {
+        const resenha = await this.resenhaModel
+            .findById(resenhaId)
+            .populate('autor', 'username avatarUrl')
+            .lean();
+        if (!resenha) throw new NotFoundException('Resenha não encontrada');
+            return resenha;
     }
 }

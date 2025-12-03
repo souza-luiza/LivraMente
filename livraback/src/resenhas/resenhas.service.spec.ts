@@ -16,9 +16,11 @@ describe('ResenhasService', () => {
   const mockResenhaModel = {
     find: jest.fn(),
     findById: jest.fn(),
+    findOne: jest.fn(),
     exists: jest.fn(),
     create: jest.fn(),
     findOneAndUpdate: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
     findByIdAndDelete: jest.fn(),
   };
 
@@ -133,6 +135,7 @@ describe('ResenhasService', () => {
       const newResenha = { ...mockResenha, _id: new Types.ObjectId() };
       
       mockLivroModel.findById.mockResolvedValue(mockBook);
+      mockResenhaModel.findOne.mockResolvedValue(null);
       mockResenhaModel.create.mockResolvedValue(newResenha);
       mockLivroModel.findByIdAndUpdate.mockResolvedValue(mockBook);
 
@@ -168,6 +171,7 @@ describe('ResenhasService', () => {
 
     it('should handle database errors during creation', async () => {
       mockLivroModel.findById.mockResolvedValue(mockBook);
+      mockResenhaModel.findOne.mockResolvedValue(null);
       mockResenhaModel.create.mockRejectedValue(new Error('Database error'));
 
       await expect(
@@ -180,8 +184,10 @@ describe('ResenhasService', () => {
     it('should update a resenha successfully', async () => {
       const updatedResenha = { ...mockResenha, ...mockUpdateResenhaDto };
       
-      mockResenhaModel.exists.mockResolvedValue(true);
-      mockResenhaModel.findOneAndUpdate.mockResolvedValue(updatedResenha);
+      mockResenhaModel.findById.mockResolvedValue(mockResenha);
+      mockResenhaModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(updatedResenha),
+      });
 
       const result = await service.updateResenha(
         mockUserId,
@@ -190,19 +196,16 @@ describe('ResenhasService', () => {
       );
 
       expect(result).toEqual(updatedResenha);
-      expect(mockResenhaModel.exists).toHaveBeenCalledWith({ _id: mockResenhaId });
-      expect(mockResenhaModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { 
-          _id: new Types.ObjectId(mockResenhaId), 
-          autor: new Types.ObjectId(mockUserId) 
-        },
+      expect(mockResenhaModel.findById).toHaveBeenCalledWith(mockResenhaId);
+      expect(mockResenhaModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        mockResenhaId,
         { $set: mockUpdateResenhaDto },
         { new: true },
       );
     });
 
     it('should throw NotFoundException when resenha does not exist', async () => {
-      mockResenhaModel.exists.mockResolvedValue(false);
+      mockResenhaModel.findById.mockResolvedValue(null);
 
       await expect(
         service.updateResenha(mockUserId, mockResenhaId, mockUpdateResenhaDto),
@@ -213,8 +216,12 @@ describe('ResenhasService', () => {
     });
 
     it('should throw ForbiddenException when user is not the author', async () => {
-      mockResenhaModel.exists.mockResolvedValue(true);
-      mockResenhaModel.findOneAndUpdate.mockResolvedValue(null);
+      const differentUserId = new Types.ObjectId().toString();
+      const resenhaWithDifferentAuthor = {
+        ...mockResenha,
+        autor: differentUserId,
+      };
+      mockResenhaModel.findById.mockResolvedValue(resenhaWithDifferentAuthor);
 
       await expect(
         service.updateResenha(mockUserId, mockResenhaId, mockUpdateResenhaDto),
@@ -228,8 +235,10 @@ describe('ResenhasService', () => {
       const partialUpdate = { conteudo: 'Only content updated' };
       const updatedResenha = { ...mockResenha, ...partialUpdate };
       
-      mockResenhaModel.exists.mockResolvedValue(true);
-      mockResenhaModel.findOneAndUpdate.mockResolvedValue(updatedResenha);
+      mockResenhaModel.findById.mockResolvedValue(mockResenha);
+      mockResenhaModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(updatedResenha),
+      });
 
       const result = await service.updateResenha(
         mockUserId,
@@ -238,11 +247,8 @@ describe('ResenhasService', () => {
       );
 
       expect(result).toEqual(updatedResenha);
-      expect(mockResenhaModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { 
-          _id: new Types.ObjectId(mockResenhaId), 
-          autor: new Types.ObjectId(mockUserId) 
-        },
+      expect(mockResenhaModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        mockResenhaId,
         { $set: partialUpdate },
         { new: true },
       );
@@ -252,8 +258,10 @@ describe('ResenhasService', () => {
       const emptyUpdate = {};
       const updatedResenha = { ...mockResenha };
       
-      mockResenhaModel.exists.mockResolvedValue(true);
-      mockResenhaModel.findOneAndUpdate.mockResolvedValue(updatedResenha);
+      mockResenhaModel.findById.mockResolvedValue(mockResenha);
+      mockResenhaModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(updatedResenha),
+      });
 
       const result = await service.updateResenha(
         mockUserId,
@@ -262,11 +270,8 @@ describe('ResenhasService', () => {
       );
 
       expect(result).toEqual(updatedResenha);
-      expect(mockResenhaModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { 
-          _id: new Types.ObjectId(mockResenhaId), 
-          autor: new Types.ObjectId(mockUserId) 
-        },
+      expect(mockResenhaModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        mockResenhaId,
         { $set: emptyUpdate },
         { new: true },
       );
@@ -352,12 +357,49 @@ describe('ResenhasService', () => {
       ).rejects.toThrow('Delete failed');
     });
   });
+  describe('getResenhaById', () => {
+      it('should return a resenha by id successfully', async () => {
+        mockResenhaModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue(mockResenha),
+          }),
+        });
+        const result = await service.getResenhaById(mockResenhaId);
+        expect(result).toEqual(mockResenha);
+        expect(mockResenhaModel.findById).toHaveBeenCalledWith(mockResenhaId);
+      });
+
+      it('should throw NotFoundException if resenha not found', async () => {
+        mockResenhaModel.findById.mockReturnValue({
+          populate: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue(null),
+          }),
+        });
+        await expect(service.getResenhaById(mockResenhaId)).rejects.toThrow(NotFoundException);
+        await expect(service.getResenhaById(mockResenhaId)).rejects.toThrow('Resenha não encontrada');
+      });
+    });
 
   describe('edge cases', () => {
     it('should handle different user ObjectId formats', async () => {
       const userIdAsObjectId = new Types.ObjectId();
-      mockResenhaModel.exists.mockResolvedValue(true);
-      mockResenhaModel.findOneAndUpdate.mockResolvedValue(mockResenha);
+      const updatedResenha = {
+        _id: mockResenhaId,
+        conteudo: mockUpdateResenhaDto.conteudo,
+        avaliacao: mockUpdateResenhaDto.avaliacao,
+        livro: mockBookId,
+        autor: userIdAsObjectId.toString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      mockResenhaModel.findById.mockResolvedValue({
+        autor: userIdAsObjectId.toString(),
+        _id: mockResenhaId,
+      });
+      mockResenhaModel.findByIdAndUpdate.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(updatedResenha),
+      });
 
       const result = await service.updateResenha(
         userIdAsObjectId.toString(),
@@ -365,7 +407,8 @@ describe('ResenhasService', () => {
         mockUpdateResenhaDto,
       );
 
-      expect(result).toEqual(mockResenha);
+      expect(result.autor).toEqual(userIdAsObjectId.toString());
+      expect(result.conteudo).toEqual(mockUpdateResenhaDto.conteudo);
     });
 
     it('should handle resenha with string autor comparison', async () => {

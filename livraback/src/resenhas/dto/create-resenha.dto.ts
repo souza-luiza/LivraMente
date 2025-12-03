@@ -11,7 +11,7 @@ export class CreateResenhaDto {
     @Max(5)
     avaliacao: number;
     
-    @ApiProperty({ description: 'Conteúdo do comentário' })
+    @ApiProperty({ description: 'Conteúdo do comentário', required: false })
     @IsOptional()
     @IsString()
     conteudo?: string;

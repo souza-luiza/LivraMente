@@ -16,6 +16,7 @@ describe('ResenhasController', () => {
     createResenha: jest.fn(),
     updateResenha: jest.fn(),
     deleteResenha: jest.fn(),
+    getResenhaById: jest.fn(),
   };
 
   const mockCurrentUser: CurrentUserDto = {
@@ -97,6 +98,43 @@ describe('ResenhasController', () => {
       );
 
       await expect(controller.getResenhasByBook(bookId)).rejects.toThrow(
+        Error,
+      );
+    });
+  });
+
+  describe('getResenha', () => {
+    it('should return a resenha by id successfully', async () => {
+      const resenhaId = 'resenha-123';
+      const expectedResult = mockResenha;
+      mockResenhasService.getResenhaById.mockResolvedValue(expectedResult);
+
+      const result = await controller.getResenha(resenhaId);
+
+      expect(result).toEqual(expectedResult);
+      expect(service.getResenhaById).toHaveBeenCalledWith(resenhaId);
+      expect(service.getResenhaById).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle service throwing NotFoundException', async () => {
+      const resenhaId = 'non-existent-resenha';
+      mockResenhasService.getResenhaById.mockRejectedValue(
+        new NotFoundException('Resenha não encontrada'),
+      );
+
+      await expect(controller.getResenha(resenhaId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(service.getResenhaById).toHaveBeenCalledWith(resenhaId);
+    });
+
+    it('should handle service throwing other errors', async () => {
+      const resenhaId = 'resenha-123';
+      mockResenhasService.getResenhaById.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      await expect(controller.getResenha(resenhaId)).rejects.toThrow(
         Error,
       );
     });

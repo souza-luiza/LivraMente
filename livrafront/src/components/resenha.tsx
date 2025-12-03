@@ -17,19 +17,32 @@ import PopUp from "./pop-up";
 import EditCommentModal from "./EditCommentModal";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { resenhasService } from "@/services/resenhas";
+import ResenhaModal from "./resenha-modal";
+import Rating from '@mui/material/Rating';
 
 interface ReviewComponentProps {
     // resenha:
+    bookId: string;
+    resenhaId: string;
+    currentUserId?: string;
     onDelete: () => void;
     onUpdate?: () => void;
 }
 
 export default function ReviewComponent({
+    bookId,
+    resenhaId,
+    currentUserId,
     onDelete,
     onUpdate
 } : ReviewComponentProps) {
 
     const router = useRouter();
+
+    // Estado da resenha
+    const [review, setReview] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     // Gerenciamento do overflow do conteúdo do comentário
     const [isOverflowed, setIsOverflowed] = useState(false);
@@ -37,19 +50,41 @@ export default function ReviewComponent({
     const [maxHeight, setMaxHeight] = useState<string | undefined>(undefined);
     const contentRef = useRef<HTMLParagraphElement>(null);
 
+    // Spoilers
+    const [spoilerRevealed, setSpoilerRevealed] = useState(false);
+
     // Mais Opções
     const [showOptions, setShowOptions] = useState(false);
     const [clickPosition, setClickPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [showConfirmDeletePopUp, setShowConfirmDeletePopUp] = useState(false);
     const [showEditCommentModal, setShowEditCommentModal] = useState(false);
+    const [showEditResenhaModal, setShowEditResenhaModal] = useState(false);
 
     // TODO: Mudar
-    const isOwner = true;
+    // const isOwner = true;
+
+    // buscar dados da resenha
+    useEffect(() => {
+        async function fetchResenha() {
+            try {
+                const data = await resenhasService.getResenha(resenhaId);
+                setReview(data);
+            } catch (error) {
+                toast.error("Erro ao carregar resenha.");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchResenha();
+    }, [resenhaId]);
+
+    // verificar se é o dono da resenha
+    const isOwner = currentUserId === review?.autor?._id;
 
     // TODO: Verificar se a resenha foi editada
     // const edited = (review.createdAt !== resenha.updatedAt);
-    const edited = true;
+    const edited = review?.createdAt !== review?.updatedAt;
 
     useEffect(() => {
         if (contentRef.current) {
@@ -59,7 +94,7 @@ export default function ReviewComponent({
             setMaxHeight(expanded ? `${el.scrollHeight}px` : `${maxVisibleHeight}px`);
             setIsOverflowed(el.scrollHeight > maxVisibleHeight);
         }
-    }, [expanded]);
+    }, [expanded, review]);
 
     useEffect(() => {
         if (showOptions && menuRef.current) {
@@ -89,8 +124,7 @@ export default function ReviewComponent({
 
     const handleDeleteReview = async () => {
         try {
-            // await commentsService.deleteComment(post._id, comment._id);
-
+            await resenhasService.removeResenha(resenhaId);
         } catch (error) {
             toast.error("Erro ao excluir resenha.");
 
@@ -101,30 +135,36 @@ export default function ReviewComponent({
     }
     const handleShowEditReviewModal = () => {
         setShowOptions(false);
-        setShowEditCommentModal(true);
+        setShowEditResenhaModal(true);
     }
 
-    const handleEditSuccess = () => {
-        setShowEditCommentModal(false);
+    const handleEditSuccess = async () => {
+        setShowEditResenhaModal(false);
+        try {
+            const data = await resenhasService.getResenha(resenhaId);
+            setReview(data);
+        } catch (error) {
+            toast.error("Erro ao atualizar resenha.");
+        }
         onUpdate && onUpdate();
     }
 
     const handleRedirectToProfile = () => {
-        router.push(`/${review.autor.username}`);
-    }
-
-    const review = {
-        conteudo: 'Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários. Texto muito legal sobre o livro. Gostei bastante dos conceitos abordados e da forma como o autor desenvolve a narrativa. Recomendo a todos que gostam de uma boa leitura e querem expandir seus horizontes literários.',
-        avaliacao: 4,
-        spoiler: false,
-        createdAt: new Date().toDateString(),
-        autor: {
-            username: 'eu',
-            avatarUrl: '/AbstractUser.png'
+        if (review?.autor?.username) {
+            router.push(`/${review.autor.username}`);
         }
     }
 
+    if (loading || !review) {
+        return (
+            <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm">
+                <p className="text-b2 body-quotation">Carregando...</p>
+            </div>
+        );
+    }
+
     return (
+        <>
         <motion.div onHoverEnd={() => setShowOptions(false)}>
             <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm hover:shadow-md">
                 {/*Cabeçalho do Comentário*/}
@@ -149,17 +189,37 @@ export default function ReviewComponent({
                     </div>}
                 </div>
 
-                {/*Avaliação...*/}
+                {/*Avaliação*/}
+                <div className="flex items-center gap-2">
+                    <Rating
+                        name="review-rating"
+                        value={review.avaliacao}
+                        readOnly
+                        precision={1.0}
+                        size="small"
+                    />
+                    <span className="text-b2 body-semibold">{review.avaliacao.toFixed(1)}</span>
+                </div>
 
                 {/*Corpo do Comentário*/}
                 <div className="flex-1 overflow-hidden">
-                    <p
-                        ref={contentRef}
-                        style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                        className="text-b2 whitespace-pre-line"
-                    >
-                        {review.conteudo}
-                    </p>
+                    <div className="relative">
+                        <p
+                            ref={contentRef}
+                            style={{ maxHeight, overflow: 'hidden', transition: 'max-height 0.3s ease', wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                            className="text-b2 whitespace-pre-line"
+                        >
+                            {review.conteudo}
+                        </p>
+                        {review.spoiler && !spoilerRevealed && (
+                            <div 
+                                className="absolute inset-0 bg-gray-400 hover:bg-gray-500 transition-colors cursor-pointer flex items-center justify-center"
+                                onClick={() => setSpoilerRevealed(true)}
+                            >
+                                <span className="text-b2 body-semibold text-white">Cuidado! Essa resenha contém spoilers.</span>
+                            </div>
+                        )}
+                    </div>
                     {isOverflowed && (
                         <span
                             className="text-b2 body-semibold text-[var(--primary-700)] hover:cursor-pointer"
@@ -176,13 +236,13 @@ export default function ReviewComponent({
                     </p>
                 </div>
             </div>
-            {/*<EditReviewModal
-                post={post}
-                comment={comment}
-                isOpen={isOwner && showEditCommentModal}
-                onClose={() => setShowEditCommentModal(false)}
+            <ResenhaModal
+                isOpen={isOwner && showEditResenhaModal}
+                onClose={() => setShowEditResenhaModal(false)}
+                bookId={bookId}
+                resenhaId={resenhaId}
                 onSuccess={handleEditSuccess}
-            />*/}
+            />
             <PopUp 
                 title={`Excluir Comentário${!isOwner ? ` de @${review.autor.username}` : ''}?`}
                 description="Esta ação não pode ser desfeita."
@@ -225,5 +285,6 @@ export default function ReviewComponent({
                 </motion.div>}
             </AnimatePresence>
         </motion.div>
+        </>
     );
 }
