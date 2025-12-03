@@ -62,9 +62,6 @@ export default function ReviewComponent({
     const [showEditCommentModal, setShowEditCommentModal] = useState(false);
     const [showEditResenhaModal, setShowEditResenhaModal] = useState(false);
 
-    // TODO: Mudar
-    // const isOwner = true;
-
     // buscar dados da resenha
     useEffect(() => {
         async function fetchResenha() {
@@ -80,11 +77,10 @@ export default function ReviewComponent({
         fetchResenha();
     }, [resenhaId]);
 
-    // verificar se é o dono da resenha
+    // verifica se é o dono da resenha
     const isOwner = currentUserId === review?.autor?._id;
 
-    // TODO: Verificar se a resenha foi editada
-    // const edited = (review.createdAt !== resenha.updatedAt);
+    // Verifica se a resenha foi editada
     const edited = review?.createdAt !== review?.updatedAt;
 
     useEffect(() => {
@@ -156,13 +152,7 @@ export default function ReviewComponent({
         }
     }
 
-    if (loading || !review) {
-        return (
-            <div className="flex flex-col gap-3 medium-box light-neutral shadow-sm">
-                <p className="text-b2 body-quotation">Carregando...</p>
-            </div>
-        );
-    }
+    if (loading || !review) return null;
 
     return (
         <>
