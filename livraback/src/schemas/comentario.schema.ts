@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { CloudinaryImage, CloudinaryImageSchema } from 'src/cloudinary/entities/image.schema';
+import { CloudinaryImage, CloudinaryImageSchema } from '../cloudinary/entities/image.schema';
 
 // timestamps: createdAt e updatedAt automáticos 
 @Schema({ timestamps: true })

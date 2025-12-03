@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, NotFoundException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { Livro, LivroDocument } from "src/livros/entities/livro.schema";
+import { Livro, LivroDocument } from "../livros/entities/livro.schema";
 import { Resenha, ResenhaDocument } from "./entities/resenha.schema";
 import { CreateResenhaDto } from "./dto/create-resenha.dto";
 import { UpdateResenhaDto } from "./dto/update-resenha.dto";

@@ -8,8 +8,8 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { CloudinaryImage } from 'src/cloudinary/entities/image.schema';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { CloudinaryImage } from '../cloudinary/entities/image.schema';
 
 @Injectable()
 export class PostsService {

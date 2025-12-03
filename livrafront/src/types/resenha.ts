@@ -12,8 +12,8 @@ export interface Resenha {
     avaliacao: number;
     conteudo: string;
     spoiler: boolean;
-    createdAt: string | Date;
-    updatedAt: string | Date;
+    createdAt: string;
+    updatedAt: string;
     curtidas: string[];
     comentarios: Comentario[]; 
 }

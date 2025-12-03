@@ -1,4 +1,4 @@
-import { Comunidade, CreateCommunityPayload, UpdateCommunityData, UpdateCommunityPayload } from '@/types/comunidade';
+import { Comunidade, CreateCommunityPayload, UpdateCommunityPayload } from '@/types/comunidade';
 import { BackendUser } from '@/types/users';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'

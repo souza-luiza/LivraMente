@@ -57,7 +57,6 @@ export default function UserProfilePage(){
                 // Carrega perfil + readlists:
                 const data = await getProfile(username);
                 setUserData(data);
-                console.log("User data:", data);
                 const userReadlists = own ? await getOwnReadlists() : await getPublicReadlists(username);
                 setReadlists(userReadlists);
                 const userPosts = await postsService.getUserPosts(info.userId);

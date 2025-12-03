@@ -5,10 +5,10 @@ import { Post } from '../schemas/post.schema';
 import { Model, Types } from 'mongoose';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Logger } from '@nestjs/common';
-import { Comentario } from 'src/schemas/comentario.schema';
-import { Livro } from 'src/livros/entities/livro.schema';
+import { Comentario } from '../schemas/comentario.schema';
+import { Livro } from '../livros/entities/livro.schema';
 
 @Injectable()
 export class ComunidadesService {

@@ -6,7 +6,7 @@ import { Comentario, ComentarioSchema } from '../schemas/comentario.schema';
 import { Post, PostSchema } from '../schemas/post.schema';
 import { User, UserSchema } from '../users/entities/user.entity';
 import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
     imports: [

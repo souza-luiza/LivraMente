@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import { resenhasService } from "@/services/resenhas";
 import ResenhaModal from "./resenha-modal";
 import Rating from '@mui/material/Rating';
+import { Resenha } from "@/types/resenha";
 
 interface ReviewComponentProps {
     // resenha:
@@ -41,7 +42,7 @@ export default function ReviewComponent({
     const router = useRouter();
 
     // Estado da resenha
-    const [review, setReview] = useState<any>(null);
+    const [review, setReview] = useState<Resenha>();
     const [loading, setLoading] = useState(true);
 
     // Gerenciamento do overflow do conteúdo do comentário
@@ -102,8 +103,8 @@ export default function ReviewComponent({
             const menuWidth = rect.width;
 
             setClickPosition((prev) => {
-                let x = prev.x - menuWidth;
-                let y = prev.y + 10;
+                const x = prev.x - menuWidth;
+                const y = prev.y + 10;
 
                 return { x, y };
             });

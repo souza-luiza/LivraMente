@@ -4,9 +4,9 @@ import { ComunidadesService } from './comunidades.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Comunidade, ComunidadeSchema } from './entities/comunidade.entity';
 import { Post, PostSchema } from '../schemas/post.schema';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
-import { Comentario, ComentarioSchema } from 'src/schemas';
-import { Livro, LivroSchema } from 'src/livros/entities/livro.schema';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { Comentario, ComentarioSchema } from '../schemas';
+import { Livro, LivroSchema } from '../livros/entities/livro.schema';
 
 @Module({
     imports: [MongooseModule.forFeature([

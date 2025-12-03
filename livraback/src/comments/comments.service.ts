@@ -7,8 +7,8 @@ import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
-import { CloudinaryImage } from 'src/cloudinary/entities/image.schema';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryImage } from '../cloudinary/entities/image.schema';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class CommentsService {

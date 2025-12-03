@@ -295,7 +295,6 @@ export default function CommunityPage(){
 
     if (loading) return <LoadingPage />;
 
-    // MUDAR ISSO AQUIII
     if (!communityInfo || !userInfo) return null;
 
     const communityTitle = slugToTitle(community);

@@ -3,8 +3,8 @@ import { ResenhasService } from "./resenhas.service";
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { CreateResenhaDto } from "./dto/create-resenha.dto";
-import { CurrentUserDto } from "src/auth/dto/current-user.dto";
-import { CurrentUser } from "src/auth/decorators/current-user.decorator";
+import { CurrentUserDto } from "../auth/dto/current-user.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { UpdateResenhaDto } from "./dto/update-resenha.dto";
 
 @ApiTags('Resenhas')

@@ -7,7 +7,9 @@ export interface Readlist {
   publica: boolean;
   descricao?: string;
   capa_url?: string;
-  criador: string;
+  criador: {
+    username: string;
+  }
   livros: Array<Livro>;
   createdAt?: string | Date;
   updatedAt?: string | Date;

@@ -35,7 +35,6 @@ export default function LivroPage() {
 
     const [loading, setLoading] = useState(true);
     const [book, setBook] = useState<Livro>();
-    const [reviews, setReviews] = useState<any[]>([]);
     const [readlists, setReadlists] = useState<TypeReadlist[]>([]);
     const [communities, setCommunities] = useState<TypeCommunity[]>([]);
     const [showResenhaModal, setShowResenhaModal] = useState(false);
