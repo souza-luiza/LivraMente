@@ -3,8 +3,22 @@
 import { useRouter } from "next/navigation";
 import SearchIcon from "./icons/SearchIcon";
 import { InputHTMLAttributes, useState, KeyboardEvent } from 'react';
+  
 
-export default function SearchBar({ className, defaultValue, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {
+  backgroundcolor?: string;
+  divider?: boolean;
+  defaultValue?: string;
+}
+
+export default function SearchBar({
+  className,
+  backgroundcolor = "#FFFFFF",
+  divider = true,
+  defaultValue,
+  ...props
+}: SearchBarProps) {
+
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState(defaultValue?.toString() || '');
   
@@ -19,17 +33,6 @@ export default function SearchBar({ className, defaultValue, ...props }: InputHT
       handleSearch();
     }
   }
-
-interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {
-  backgroundcolor?: string;
-  divider?: boolean;
-}
-
-export default function SearchBar({
-  backgroundcolor = "#FFFFFF",
-  divider = true,
-  ...props
-}: SearchBarProps) {
   
   return (
     <div 

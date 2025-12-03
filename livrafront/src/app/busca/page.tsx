@@ -22,71 +22,38 @@ interface SearchPageProps {
     searchParams: Promise<{q?: string}>;
 }
 
+// Tipos para os resultados
+type ResultType = "book" | "user" | "community" | "readlist";
+
+interface RelatedResult {
+    type: ResultType;
+    title: string;
+    subtitle: string;
+    href: string;
+    imageSrc: string;
+    extra?: string; // número de páginas, membros, etc.
+}
+
 export default async function SearchPage({ searchParams }:SearchPageProps){
     const { q } = await searchParams;
 
     if (!q || q.trim() === '') {
         const genres = [
-            {
-                name: "Romance", 
-                icon: HeartIcon
-            },
-            {
-                name: "Aventura",
-                icon: AdventureIcon
-            },
-            {
-                name: "Terror",
-                icon: TerrorIcon
-            },
-            {
-                name: "Suspense",
-                icon: SuspenseIcon
-            },
-            {
-                name: "Autoajuda",
-                icon: HelpIcon
-            },
-            {
-                name: "Fantasia",
-                icon: HeartIcon // Falta o UnicornIcon
-            },
-            {
-                name: "Biografia",
-                icon: OpenBookIcon
-            },
-            {
-                name: "Clássicos",
-                icon: HeartIcon // Falta o ClassicIcon
-            },
-            {
-                name: "Comédia",
-                icon: ComedyIcon
-            },
-            {
-                name: "Infantil",
-                icon: HeartIcon // Falta o ChildIcon
-            },
-            {
-                name: "Religião",
-                icon: HeartIcon // Falta o ReligionIcon
-            },
-            {
-                name: "Distopia",
-                icon: DystopiaIcon
-            },
-            {
-                name: "Drama",
-                icon: DramaIcon
-            },
-            {
-                name: "Mistério",
-                icon: MysteryIcon
-            },
-            {
-                name: "História",
-                icon: HeartIcon // Falta o HistoryIcon
-            },
+            { name: "Romance", icon: HeartIcon },
+            { name: "Aventura", icon: AdventureIcon },
+            { name: "Terror", icon: TerrorIcon },
+            { name: "Suspense", icon: SuspenseIcon },
+            { name: "Autoajuda", icon: HelpIcon },
+            { name: "Fantasia", icon: HeartIcon },
+            { name: "Biografia", icon: OpenBookIcon },
+            { name: "Clássicos", icon: HeartIcon },
+            { name: "Comédia", icon: ComedyIcon },
+            { name: "Infantil", icon: HeartIcon },
+            { name: "Religião", icon: HeartIcon },
+            { name: "Distopia", icon: DystopiaIcon },
+            { name: "Drama", icon: DramaIcon },
+            { name: "Mistério", icon: MysteryIcon },
+            { name: "História", icon: HeartIcon },
         ];
         
         return(
@@ -112,80 +79,59 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
         )
     }
 
-    const relatedBooks = [
+    // Melhor resultado (pode ser qualquer tipo)
+    const bestMatch = {
+        type: "book" as ResultType,
+        title: "Jogos Vorazes",
+        subtitle: "Suzanne Collins",
+        href: "#",
+        imageSrc: "/JogosVorazes.jpg",
+    };
+
+    // Resultados relacionados mistos
+    const relatedResults: RelatedResult[] = [
         { 
+            type: "book",
             title: "Livro Exemplo 1", 
-            author: "Autor Exemplo 1", 
+            subtitle: "Autor Exemplo 1", 
             href: "#", 
-            numberOfPages: 400,
-            imageSrc: "/JogosVorazes.jpg"
+            imageSrc: "/JogosVorazes.jpg",
+            extra: "400 págs."
         },
         { 
-            title: "Livro Exemplo 2", 
-            author: "Autor Exemplo 2", 
+            type: "user",
+            title: "@UserExemplo1", 
+            subtitle: "Usuário", 
             href: "#", 
-            numberOfPages: 350,
-            imageSrc: "/JogosVorazes.jpg"
+            imageSrc: "/AbstractUser.png",
         },
         { 
-            title: "Livro Exemplo 3", 
-            author: "Autor Exemplo 3", 
+            type: "community",
+            title: "Comunidade Exemplo 1", 
+            subtitle: "1.2k membros", 
             href: "#", 
-            numberOfPages: 280,
-            imageSrc: "/JogosVorazes.jpg"
+            imageSrc: "/Readlist.svg",
+        },
+        { 
+            type: "readlist",
+            title: "Readlist Exemplo 1", 
+            subtitle: "@AutorReadlist1", 
+            href: "#", 
+            imageSrc: "/Readlist.svg",
+            extra: "12 livros"
         },
     ];
 
     const relatedReadlists = [
-        {  
-            title: "Readlist Exemplo 1", 
-            author: "@AutorReadlist1", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist1/ReadlistExemplo1",
-        },
-        { 
-            title: "Readlist Exemplo 2", 
-            author: "@AutorReadlist2", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist2/ReadlistExemplo2",
-        },
-        { 
-            title: "Readlist Exemplo 3", 
-            author: "@AutorReadlist3", 
-            image: "/Readlist.svg", 
-            link: "/AutorReadlist3/ReadlistExemplo3",
-        },
-        { 
-            title: "Readlist Exemplo 4", 
-            author: "@AutorReadlist4", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist4/ReadlistExemplo4",
-        },
-        { 
-            title: "Readlist Exemplo 5", 
-            author: "@AutorReadlist6", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist5/ReadlistExemplo5",
-        },
-        { 
-            title: "Readlist Exemplo 6", 
-            author: "@AutorReadlist5", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist6/ReadlistExemplo6",
-        },
-        {
-            title: "Readlist Exemplo 7", 
-            author: "@AutorReadlist7", 
-            image: "/Readlist.svg",
-            link: "/AutorReadlist7/ReadlistExemplo7"
-        },
-        {
-            title: "Readlist Exemplo 8",
-            author: "@AutorReadlist8",
-            image: "/Readlist.svg",
-            link: "/AutorReadlist8/ReadlistExemplo8"
-        }
-    ]
+        { title: "Readlist Exemplo 1", author: "@AutorReadlist1", image: "/Readlist.svg", link: "/AutorReadlist1/ReadlistExemplo1" },
+        { title: "Readlist Exemplo 2", author: "@AutorReadlist2", image: "/Readlist.svg", link: "/AutorReadlist2/ReadlistExemplo2" },
+        { title: "Readlist Exemplo 3", author: "@AutorReadlist3", image: "/Readlist.svg", link: "/AutorReadlist3/ReadlistExemplo3" },
+        { title: "Readlist Exemplo 4", author: "@AutorReadlist4", image: "/Readlist.svg", link: "/AutorReadlist4/ReadlistExemplo4" },
+        { title: "Readlist Exemplo 5", author: "@AutorReadlist6", image: "/Readlist.svg", link: "/AutorReadlist5/ReadlistExemplo5" },
+        { title: "Readlist Exemplo 6", author: "@AutorReadlist5", image: "/Readlist.svg", link: "/AutorReadlist6/ReadlistExemplo6" },
+        { title: "Readlist Exemplo 7", author: "@AutorReadlist7", image: "/Readlist.svg", link: "/AutorReadlist7/ReadlistExemplo7" },
+        { title: "Readlist Exemplo 8", author: "@AutorReadlist8", image: "/Readlist.svg", link: "/AutorReadlist8/ReadlistExemplo8" }
+    ];
 
     const relatedUsers = [
         { id: "1", username: "@UserExemplo1", avatarUrl: "/AbstractUser.png" },
@@ -209,6 +155,36 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
         { id: "8", name: "Comunidade Exemplo 8", coverImageUrl: "/Readlist.svg" },
     ];
 
+    // Função para obter o label do tipo
+    const getTypeLabel = (type: ResultType) => {
+        switch (type) {
+            case "book": return "Livro";
+            case "user": return "Usuário";
+            case "community": return "Comunidade";
+            case "readlist": return "Readlist";
+        }
+    };
+
+    // Função para determinar o formato da imagem
+    const getImageClasses = (type: ResultType) => {
+        switch (type) {
+            case "book": return "w-12 h-16 rounded-lg"; // Retangular
+            case "user": 
+            case "community": return "w-12 h-12 rounded-full"; // Circular
+            case "readlist": return "w-12 h-12 rounded-lg"; // Quadrada
+        }
+    };
+
+    // Função para determinar o formato da imagem do melhor resultado
+    const getBestMatchImageClasses = (type: ResultType) => {
+        switch (type) {
+            case "book": return "h-[248px] w-auto rounded-lg";
+            case "user": 
+            case "community": return "w-[200px] h-[200px] rounded-full";
+            case "readlist": return "w-[200px] h-[200px] rounded-lg";
+        }
+    };
+
     return (
         <div className="min-h-screen flex bg-[#E5EEDF]">
             <Sidebar />
@@ -221,59 +197,65 @@ export default async function SearchPage({ searchParams }:SearchPageProps){
                         </Link>
                         
                         <Link 
-                            href="#" 
+                            href={bestMatch.href} 
                             className="flex flex-col sm:flex-row p-4 bg-[var(--primary-700)] dark-green rounded-xl hover:brightness-90 transition-all gap-4 relative group"
                         >
-                            <div className="flex-shrink-0 w-full sm:w-auto h-[248px]"> {/*Mesmo tamanho do Livros Relacionados*/}
+                            <div className={`flex-shrink-0 ${bestMatch.type === "book" ? "w-full sm:w-auto" : "flex items-center justify-center"}`}>
                                 <Image 
-                                    className="rounded-lg h-full w-full sm:w-auto object-cover" 
-                                    src="/JogosVorazes.jpg" 
-                                    alt="Jogos Vorazes" 
-                                    width={140} 
-                                    height={160}
+                                    className={`${getBestMatchImageClasses(bestMatch.type)} object-cover`}
+                                    src={bestMatch.imageSrc} 
+                                    alt={bestMatch.title} 
+                                    width={bestMatch.type === "book" ? 140 : 200} 
+                                    height={bestMatch.type === "book" ? 248 : 200}
                                 />
                             </div>
                             
                             <div className="flex flex-col justify-between overflow-hidden">
                                 <h4 className="text-h4 line-clamp-3 mt-2 hover:underline">
-                                    Jogos Vorazes ahindhusa hansfuas iuansdia isdnaion ndadia ndian unadywbm asas
+                                    {bestMatch.title}
                                 </h4>
                                 
                                 <div className="flex flex-wrap gap-2 mb-2 items-center">
-                                    <span className="text-h6 brightness-90" style={{fontWeight: "lighter"}}>Livro</span>
+                                    <span className="text-h6 brightness-90" style={{fontWeight: "lighter"}}>
+                                        {getTypeLabel(bestMatch.type)}
+                                    </span>
                                     <span className="text-h6 brightness-90">•</span>
                                     <span className="text-h6 brightness-90 hover:brightness-100 hover:underline cursor-pointer">
-                                        Suzanne Collins
+                                        {bestMatch.subtitle}
                                     </span>
                                 </div>
                             </div>
                         </Link>
                     </div>
                     <div className="flex flex-col w-full lg:w-1/2">
-                        <h4 className="flex text-h4 items-center pb-6">Livros Relacionados</h4>
+                        <h4 className="flex text-h4 items-center pb-6">Resultados Relacionados</h4>
                         <div className="flex flex-col gap-4 bg-white p-4 rounded-xl">
-                            {relatedBooks.map((book) => (
+                            {relatedResults.map((result, index) => (
                                 <Link 
-                                    key={book.title}
-                                    href={book.href} 
+                                    key={`${result.type}-${index}`}
+                                    href={result.href} 
                                     className="flex items-center gap-4 p-1 rounded-lg hover:bg-gray-50 transition-all"
                                 >
-                                    <div className="w-12 h-16 flex-shrink-0">
+                                    <div className={`${getImageClasses(result.type)} flex-shrink-0 overflow-hidden`}>
                                         <Image 
-                                            className="rounded-lg object-cover w-full h-full"
-                                            src={book.imageSrc} 
-                                            alt={book.title} 
+                                            className="object-cover w-full h-full"
+                                            src={result.imageSrc} 
+                                            alt={result.title} 
                                             width={48}
-                                            height={64}
+                                            height={result.type === "book" ? 64 : 48}
                                         />
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-h6 text-black truncate">{book.title}</span>
-                                        <span className="text-b2 text-gray-600 truncate">{book.author}</span>
+                                        <span className="text-h6 text-black truncate">{result.title}</span>
+                                        <span className="text-b2 text-gray-600 truncate">
+                                            {getTypeLabel(result.type)} • {result.subtitle}
+                                        </span>
                                     </div>
-                                    <div className="flex-shrink-0">
-                                        <span className="font-semibold text-gray-700 text-sm">{book.numberOfPages} págs.</span>
-                                    </div>
+                                    {result.extra && (
+                                        <div className="flex-shrink-0">
+                                            <span className="font-semibold text-gray-700 text-sm">{result.extra}</span>
+                                        </div>
+                                    )}
                                 </Link>
                             ))}
                         </div>

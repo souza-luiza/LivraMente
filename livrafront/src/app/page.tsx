@@ -23,6 +23,7 @@ import SearchIcon from '@/components/icons/SearchIcon';
 import RegistroLeitura from '@/components/registro-leitura';
 import FireIcon from '@/components/icons/FireIcon';
 import Feed from '@/components/Feed';
+import ClosedBookIcon from '@/components/icons/ClosedBookIcon';
 
 export default function HomePage() {
 
@@ -238,7 +239,7 @@ export default function HomePage() {
                 <Sidebar />
                 <div className='w-full flex flex-col'>
                     <nav className=''>
-                        <SearchBar/>
+                        <SearchBar backgroundcolor="#E5EEDF"/>
                     </nav>
                     <main className="flex-1 flex flex-col items-center">
                         <div className="flex w-full p-4">
@@ -260,7 +261,7 @@ export default function HomePage() {
                                     onClick={() => setShowRegistroLeitura(true)}
                                 />
                                 <ActionButton icon={<CommunityIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/comunidades" text="Comunidades" />
-                                <ActionButton icon={<SearchIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/busca' text='Pesquisar'/>
+                                <ActionButton icon={<ClosedBookIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/livros' text='Livros'/>
                                 <ActionButton icon={<OpenBookIcon />} colorScheme="dark-green" size='large' fullwidth={true} path="/criar-historia" text="Criar História" />
                                 <ActionButton icon={<LogoIcon/>} colorScheme='dark-green' size='large' fullwidth={true} path='/livratime' text='Créditos'/>
                             </div>  
