@@ -6,7 +6,6 @@ import Input from '@/components/general-input';
 import Button from '@/components/button';
 import TrashIcon from './icons/TrashIcon';
 import SaveIcon from './icons/SaveIcon';
-import AddIcon from './icons/AddIcon';
 import ReadlistCropModal from './ReadlistCropModal';
 import ToastNotification from './toast-notification';
 import { toast } from 'react-toastify';
@@ -42,6 +41,7 @@ export default function EditReadlistModal({
   const [title, setTitle] = useState(readlist.title);
   const [description, setDescription] = useState(readlist.description);
   const [coverImage, setCoverImage] = useState(readlist.coverImage);
+  const [previewImage, setPreviewImage] = useState(readlist.coverImage);
   const [isPrivate, setIsPrivate] = useState(readlist.isPrivate);
   const [titleError, setTitleError] = useState('');
   const [isTitleFocused, setIsTitleFocused] = useState(false);
@@ -111,7 +111,7 @@ export default function EditReadlistModal({
 
     const reader = new FileReader();
     reader.onload = () => {
-      setCoverImage(reader.result as string);
+      setPreviewImage(reader.result as string);
       setShowCropModal(true);
     };
     reader.readAsDataURL(file);
@@ -127,17 +127,26 @@ export default function EditReadlistModal({
 
   const handleCropCancel = () => {
     setShowCropModal(false);
-    setCoverImage("");
+    setPreviewImage("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleCancel = () => {
+    setTitle(readlist.title);
+    setDescription(readlist.description);
+    setCoverImage(readlist.coverImage);
+    setPreviewImage(readlist.coverImage);
+    setIsPrivate(readlist.isPrivate);
+    onClose();
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-      onClick={onClose}
+      onClick={handleCancel}
     >
       <div
         className="relative w-full max-w-lg large-padding large-border-radius"
@@ -154,7 +163,7 @@ export default function EditReadlistModal({
           className="text-h4 mb-6"
           style={{ color: 'var(--secondary-800)' }}
         >
-          Editar detalhes 
+          Editar Readlist 
         </h4>
 
         {/* Container Principal com Imagem e Campos */}
@@ -294,39 +303,6 @@ export default function EditReadlistModal({
             Tornar readlist privada
           </label>
         </div>
-        
-        
-        {/* Seção de Gerenciamento de Livros */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h5 className="text-b1 body-semibold" style={{ color: 'var(--secondary-800)' }}>
-              Livros na readlist
-            </h5>
-          </div>
-          
-          {/* Botão de Adicionar Livro */}
-          <button
-            onClick={() => {
-              // TODO: Implementar busca/seleção de livros
-              console.log('Adicionar livro clicado');
-            }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-200 hover:opacity-80"
-            style={{
-              backgroundColor: 'var(--primary-300)',
-              border: '2px dashed var(--primary-600)',
-            }}
-          >
-            <AddIcon size={20} style={{ color: 'var(--primary-700)' }} />
-            <span className="text-b2 body-semibold" style={{ color: 'var(--primary-700)' }}>
-              Adicionar livro
-            </span>
-          </button>
-
-          {/* Lista de livros (placeholder) */}
-          <p className="text-b3 text-center mt-3" style={{ color: 'var(--secondary-600)' }}>
-            Adicione livros à sua readlist
-          </p>
-        </div>
 
         <div className='flex flex-row items-center justify-center gap-2'>
           {/* Botão de Fechar */}
@@ -336,7 +312,7 @@ export default function EditReadlistModal({
               icon={<TrashIcon />}
               size="medium"
               colorScheme="dark-brown"
-              onClick={onClose}
+              onClick={handleCancel}
               aria-label="Fechar"
             />
           </div>
@@ -354,7 +330,7 @@ export default function EditReadlistModal({
         </div>
         <ReadlistCropModal
           isOpen={showCropModal}
-          imageUrl={coverImage}
+          imageUrl={previewImage}
           onClose={handleCropCancel}
           onSave={handleCropSave}
         />

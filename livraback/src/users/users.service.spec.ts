@@ -472,7 +472,6 @@ describe('UsersService', () => {
     const result = await service.remove('user-id');
 
     expect(mockUserModel.deleteOne).toHaveBeenCalledWith({ _id: 'user-id' });
-    expect(result).toEqual({ deletedCount: 1 });
   });
 
   describe('favoritarReadlist', () => {
@@ -676,4 +675,41 @@ describe('UsersService', () => {
       expect(result).toEqual({ username: 'john' });
     });
   });
+
+  describe('checkReadlistFav', () => {
+    it('deve retornar true se a readlist estiver favoritada', async () => {
+      const userMock = {
+        _id: 'user-id',
+        readlists_favoritas: ['readlist-id', 'outra-readlist'],
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+
+      const result = await service.checkReadlistFav('user-id', 'readlist-id');
+
+      expect(service.findOne).toHaveBeenCalledWith('user-id');
+      expect(result).toEqual({ isFavorited: true });
+    });
+
+    it('deve retornar false se a readlist não estiver favoritada', async () => {
+      const userMock = {
+        _id: 'user-id',
+        readlists_favoritas: ['outra-readlist'],
+      };
+
+      jest.spyOn(service, 'findOne').mockResolvedValueOnce(userMock as any);
+
+      const result = await service.checkReadlistFav('user-id', 'readlist-id');
+
+      expect(service.findOne).toHaveBeenCalledWith('user-id');
+      expect(result).toEqual({ isFavorited: false });
+    });
+
+    it('deve lançar NotFoundException se o usuário não existir', async () => {
+      jest.spyOn(service, 'findOne').mockRejectedValueOnce(new NotFoundException('Usuário não encontrado'));
+
+      await expect(service.checkReadlistFav('user-id-invalido', 'readlist-id')).rejects.toThrow(NotFoundException);
+    });
+  });
+
 });

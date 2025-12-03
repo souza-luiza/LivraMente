@@ -1,4 +1,5 @@
 import { Post } from "./post";
+import { Imagens } from "./post";
 
 export interface Comentario {
     _id: string;
@@ -9,7 +10,7 @@ export interface Comentario {
     };
     post: string | Post;
     conteudo: string;
-    imagens: string[];
+    imagens: Imagens[];
     curtidas: string[];
     mencoes: string[];
     createdAt: string;
@@ -18,7 +19,7 @@ export interface Comentario {
 
 export interface CreateCommentData {
     conteudo: string;
-    imagens: string[];
+    imagens: File[];
 }
 
 export type UpdateCommentData = Partial<CreateCommentData>;

@@ -13,13 +13,7 @@ import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
-
-// Mock the external utility
-jest.mock('../common/utils/text.utils', () => ({
-  extractMentions: jest.fn(),
-}));
-
-import { extractMentions } from '../common/utils/text.utils';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('CommentsService', () => {
   let service: CommentsService;
@@ -79,6 +73,14 @@ describe('CommentsService', () => {
           provide: getModelToken(User.name),
           useValue: mockUserModel,
         },
+        // provide a simple CloudinaryService mock so the service's constructor can resolve
+        {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue(true),
+          },
+        },
       ],
     }).compile();
 
@@ -88,13 +90,18 @@ describe('CommentsService', () => {
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
 
+    // default comentarioModel.find to an empty array to avoid undefined
+    // when other services call .find(...).flatMap(...) on the result
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
+
     jest.clearAllMocks();
   });
 
   describe('createComment', () => {
     const createCommentDto: CreateCommentDto = {
       conteudo: 'This is a test comment',
-      imagens: ['image1.jpg', 'image2.jpg'],
     };
 
     const mockPost = {
@@ -110,8 +117,6 @@ describe('CommentsService', () => {
     beforeEach(() => {
       mockPostModel.findById.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-      (extractMentions as jest.Mock).mockReturnValue([]);
-      // userModel.find(...).select(...) should resolve to an array
       mockUserModel.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
     });
 
@@ -164,7 +169,7 @@ describe('CommentsService', () => {
     it('should throw ForbiddenException when user is not a member', async () => {
       const comunidadeWithoutUser = {
         ...mockComunidade,
-        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')], // Different user
+        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')],
       };
       mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
 
@@ -186,9 +191,9 @@ describe('CommentsService', () => {
         ...createCommentDto,
         imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
       };
-
+      // pass imagens as the fourth argument (files) so the service checks length
       await expect(
-        service.createComment(mockUserId, mockPostId, invalidDto)
+        service.createComment(mockUserId, mockPostId, invalidDto, invalidDto.imagens as any)
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -207,11 +212,10 @@ describe('CommentsService', () => {
 
     const mockComunidade = {
       _id: new Types.ObjectId(mockComunidadeId),
-      moderadores: [new Types.ObjectId('507f1f77bcf86cd799439099')], // Different user (not moderator)
+      moderadores: [new Types.ObjectId('507f1f77bcf86cd799439099')],
     };
 
     beforeEach(() => {
-      // service.deleteComment expects chainable .populate() after findById
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockComment) });
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
@@ -244,7 +248,6 @@ describe('CommentsService', () => {
     });
 
     it('should throw NotFoundException when comment is not found', async () => {
-      // For delete flow, findById returns a chainable with populate(); simulate not found by resolving populate to null
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
 
       await expect(
@@ -253,7 +256,6 @@ describe('CommentsService', () => {
     });
 
     it('should throw NotFoundException when post is not found', async () => {
-      // postModel.findById is chained with populate in delete flow
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
 
       await expect(
@@ -264,9 +266,8 @@ describe('CommentsService', () => {
     it('should throw ForbiddenException when user is not owner or moderator', async () => {
       const commentWithDifferentOwner = {
         ...mockComment,
-        autor: new Types.ObjectId('507f1f77bcf86cd799439099'), // Different user
+        autor: new Types.ObjectId('507f1f77bcf86cd799439099'),
       };
-      // findById in delete flow is chained with populate()
       mockComentarioModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(commentWithDifferentOwner) });
 
       await expect(
@@ -291,8 +292,8 @@ describe('CommentsService', () => {
         curtidas: [new Types.ObjectId(mockUserId)],
         length: 1,
       };
-      mockComentarioModel.findById.mockResolvedValueOnce(mockComment); // First call
-      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment); // Second call
+      mockComentarioModel.findById.mockResolvedValueOnce(mockComment);
+      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await service.likeComment(mockUserId, mockCommentId);
@@ -316,8 +317,8 @@ describe('CommentsService', () => {
         length: 0,
       };
       
-      mockComentarioModel.findById.mockResolvedValueOnce(commentWithLike); // First call
-      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment); // Second call
+      mockComentarioModel.findById.mockResolvedValueOnce(commentWithLike);
+      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await service.likeComment(mockUserId, mockCommentId);
@@ -369,7 +370,6 @@ describe('CommentsService', () => {
     it('should successfully update a comment', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Updated content',
-        imagens: ['new-image.jpg'],
       };
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
@@ -398,7 +398,7 @@ describe('CommentsService', () => {
           post: new Types.ObjectId(mockPostId),
           autor: new Types.ObjectId(mockUserId),
         },
-        { $set: updateCommentDto },
+        { $set: { conteudo: updateCommentDto.conteudo } },
         { new: true }
       );
 
@@ -512,21 +512,31 @@ describe('CommentsService', () => {
       expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when there are more than 4 images', async () => {
+    it('should ignore imagens field and update when imagens provided in dto', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Valid content',
         imagens: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'],
-      };
+      } as any;
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
       mockPostModel.findOne.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
 
-      await expect(
-        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto)
-      ).rejects.toThrow(BadRequestException);
+      mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockUpdatedComment) });
 
-      expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
+      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
+
+      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: new Types.ObjectId(mockCommentId),
+          post: new Types.ObjectId(mockPostId),
+          autor: new Types.ObjectId(mockUserId),
+        },
+        { $set: { conteudo: updateCommentDto.conteudo } },
+        { new: true }
+      );
+
+      expect(result.comment).toBeDefined();
     });
 
     it('should handle updating only content without images', async () => {
@@ -561,7 +571,7 @@ describe('CommentsService', () => {
       expect(result.comment!.conteudo).toBe('Updated content only');
     });
 
-    it('should handle updating only images without content', async () => {
+    it('should reject when attempting to update only images without content', async () => {
       const updateCommentDto: UpdateCommentDto = {
         imagens: ['new-image1.jpg', 'new-image2.jpg'],
       };
@@ -577,20 +587,9 @@ describe('CommentsService', () => {
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockComentarioModel.findOneAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedCommentImagesOnly) });
 
-      const result = await service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto);
-
-      expect(mockComentarioModel.findOneAndUpdate).toHaveBeenCalledWith(
-        {
-          _id: new Types.ObjectId(mockCommentId),
-          post: new Types.ObjectId(mockPostId),
-          autor: new Types.ObjectId(mockUserId),
-        },
-        { $set: updateCommentDto },
-        { new: true }
-      );
-
-      expect(result.comment).toBeDefined();
-      expect(result.comment!.imagens).toEqual(['new-image1.jpg', 'new-image2.jpg']);
+      await expect(
+        service.updateComment(mockUserId, mockPostId, mockCommentId, updateCommentDto as any)
+      ).rejects.toThrow();
     });
 
     it('should handle ObjectId conversion errors gracefully', async () => {
@@ -606,103 +605,6 @@ describe('CommentsService', () => {
       expect(mockComentarioModel.findOne).not.toHaveBeenCalled();
     });
   });
-
-  describe('createComment - Mentions', () => {
-      it('should extract and save mentions when content contains usernames', async () => {
-          const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello @user1 and @user2!',
-          imagens: [],
-          };
-
-          const mockPost = {
-          _id: new Types.ObjectId(mockPostId),
-          comunidade: new Types.ObjectId(mockComunidadeId),
-          };
-
-          const mockComunidade = {
-          _id: new Types.ObjectId(mockComunidadeId),
-          membros: [new Types.ObjectId(mockUserId)],
-          };
-
-          const mentionedUsers = [
-          { _id: new Types.ObjectId('507f1f77bcf86cd799439021') },
-          { _id: new Types.ObjectId('507f1f77bcf86cd799439022') },
-          ];
-
-          mockPostModel.findById.mockResolvedValue(mockPost);
-          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-          (extractMentions as jest.Mock).mockReturnValue(['user1', 'user2']);
-          mockUserModel.find.mockReturnValue({
-          select: jest.fn().mockResolvedValue(mentionedUsers),
-          });
-
-          const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: mentionedUsers.map(u => u._id),
-          save: jest.fn().mockResolvedValue(true),
-          };
-
-          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-          mockComentarioModel.mockImplementation(() => ({
-          ...mockComment,
-          save: jest.fn().mockResolvedValue(mockComment),
-          }));
-
-          const result = await service.createComment(mockUserId, mockPostId, createCommentDto);
-
-          expect(extractMentions).toHaveBeenCalledWith(createCommentDto.conteudo);
-          expect(userModel.find).toHaveBeenCalledWith({
-          username: { $in: ['user1', 'user2'] }
-          });
-          expect(result.comment!.mencoes).toHaveLength(2);
-      });
-
-      it('should handle empty mentions array when no usernames found', async () => {
-          const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello world!',
-          imagens: [],
-          };
-
-          const mockPost = {
-          _id: new Types.ObjectId(mockPostId),
-          comunidade: new Types.ObjectId(mockComunidadeId),
-          };
-
-          const mockComunidade = {
-          _id: new Types.ObjectId(mockComunidadeId),
-          membros: [new Types.ObjectId(mockUserId)],
-          };
-
-          mockPostModel.findById.mockResolvedValue(mockPost);
-          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-          (extractMentions as jest.Mock).mockReturnValue([]);
-          mockUserModel.find.mockReturnValue({
-          select: jest.fn().mockResolvedValue([]),
-          });
-
-          const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: [],
-          save: jest.fn().mockResolvedValue(true),
-          };
-
-          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-          mockComentarioModel.mockImplementation(() => ({
-          ...mockComment,
-          save: jest.fn().mockResolvedValue(mockComment),
-          }));
-
-          await service.createComment(mockUserId, mockPostId, createCommentDto);
-
-          expect(userModel.find).toHaveBeenCalledWith({ username: { $in: [] } });
-      });
-    });
 
     describe('deleteComment - Edge cases', () => {
         it('should throw NotFoundException when comunidade is not found', async () => {
@@ -839,7 +741,6 @@ describe('CommentsService', () => {
 
             const expectedFilteredUpdate = {
             conteudo: 'Updated content',
-            imagens: ['image1.jpg'],
             };
 
             mockPostModel.findById.mockResolvedValue(mockPost);
@@ -937,7 +838,6 @@ describe('CommentsService', () => {
 
             mockPostModel.findById.mockResolvedValue(mockPost);
             mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-            (extractMentions as jest.Mock).mockReturnValue([]);
             mockUserModel.find.mockReturnValue({
             select: jest.fn().mockResolvedValue([]),
             });

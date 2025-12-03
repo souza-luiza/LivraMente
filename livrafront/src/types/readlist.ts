@@ -1,31 +1,16 @@
-/* Dados de um livro populado na readlist */
-export interface PopulatedBook {
-  _id: string;
-  titulo: string;
-  isbn: string;
-  autores: Array<{ _id: string; nome: string }>;
-  ano_publicacao?: number;
-  sinopse?: string;
-  numero_paginas?: number;
-  generos?: string[];
-  editora?: string;
-  capa_url?: string;
-  avaliacoes_count?: number;
-  avaliacoes_media?: number;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-}
+import { Livro } from "./livros";
 
 /* Dados da readlist */
 export interface Readlist {
   _id: string;
   nome: string;
-  favorito: boolean;
   publica: boolean;
   descricao?: string;
   capa_url?: string;
-  criador: string;
-  livros: Array<string | PopulatedBook>;
+  criador: {
+    username: string;
+  }
+  livros: Array<Livro>;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   slug: string;
@@ -35,57 +20,14 @@ export interface Readlist {
 export interface FavoriteReadlist {
   _id: string;
   nome: string;
-  favorito: boolean;
   publica: boolean;
   descricao?: string;
   capa_url?: string;
   criador: {
     username: string;
   }
-  livros: Array<string | PopulatedBook>;
+  livros: Array<Livro>;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   slug: string;
-}
-
-/* Dados para criar uma nova readlist */
-export interface CreateReadlistData {
-  nome: string
-  favorito?: boolean
-  publica?: boolean
-  descricao?: string
-  capa_url?: string
-}
-
-/* Dados para atualizar uma readlist */
-export interface UpdateReadlistData {
-  nome?: string
-  favorito?: boolean
-  publica?: boolean
-  descricao?: string
-  capa_url?: string
-}
-
-/* Resposta da API ao buscar readlists do usuário */
-export interface UserReadlistsResponse {
-  readlists: Readlist[]
-}
-
-/* Resposta da API ao buscar uma readlist específica */
-export interface ReadlistDetailResponse {
-  _id: string
-  nome: string
-  favorito: boolean
-  publica: boolean
-  descricao?: string
-  capa_url?: string
-  criador: {
-    _id: string
-    username?: string
-  }
-  livros: PopulatedBook[] // Quando buscar detalhes, os livros vêm populados
-  contribuidores?: Array<{ _id: string; username?: string }>
-  createdAt?: string | Date
-  updatedAt?: string | Date
-  favoritadoPor?: string[]
 }

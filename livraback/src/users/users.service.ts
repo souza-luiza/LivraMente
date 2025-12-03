@@ -87,8 +87,8 @@ export class UsersService {
     return updated;
   }
 
-  async remove(id: string): Promise<{ deletedCount: number }> {
-    return await this.userModel.deleteOne({
+  async remove(id: string): Promise<void> {
+    await this.userModel.deleteOne({
       _id: id,
     }).exec(); // para executar operacao
   }
@@ -169,9 +169,18 @@ export class UsersService {
   }
 
   async findReadlistsFavoritas(userId: string) {
-    const user = await this.userModel.findById(userId).populate({ path: 'readlists_favoritas', select: '-favorito', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
-    if (!user) throw new NotFoundException('Usuário não encontrado');
+    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
+    if(!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
+  }
+
+  async checkReadlistFav(userId: string, readlistId: string) {
+    const user = await this.findOne(userId);
+
+    const readlistsFav = user.readlists_favoritas.map((r) => r.toString());
+    const isFavorited = readlistsFav.includes(readlistId);
+
+    return { isFavorited };
   }
 
   async updateAvatar(id: string, file: Express.Multer.File, session: Record<string, any>) {

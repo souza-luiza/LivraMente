@@ -133,6 +133,66 @@ exports[`Button Component Snapshot Tests matches snapshot with disabled state 1`
 </div>
 `;
 
+exports[`Button Component Snapshot Tests matches snapshot with fullwidth 1`] = `
+<div
+  class="relative group w-full"
+>
+  <button
+    class="medium-box light-green
+                    active:opacity-95
+                    hover:opacity-90 hover:cursor-pointer
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    w-full flex flex-col justify-center items-center gap-2"
+  >
+    <span
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
+    >
+      Click me
+    </span>
+    <span
+      class="icon-medium"
+    >
+       
+      <span
+        data-testid="test-icon"
+      >
+        🎯
+      </span>
+       
+    </span>
+  </button>
+</div>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with icon only 1`] = `
+<div
+  class="relative group "
+>
+  <button
+    class="small-padding medium-border-radius light-green
+                    active:opacity-95
+                    hover:opacity-90 hover:cursor-pointer
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
+  >
+    <span
+      class="icon-medium"
+    >
+       
+      <span
+        data-testid="test-icon"
+      >
+        🎯
+      </span>
+       
+    </span>
+  </button>
+</div>
+`;
+
 exports[`Button Component Snapshot Tests matches snapshot with loading state 1`] = `
 <div
   class="relative group "
@@ -166,6 +226,108 @@ exports[`Button Component Snapshot Tests matches snapshot with loading state 1`]
         fill="currentColor"
       />
     </svg>
+    <span
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
+    >
+      Click me
+    </span>
+    <span
+      class="icon-medium"
+    >
+       
+      <span
+        data-testid="test-icon"
+      >
+        🎯
+      </span>
+       
+    </span>
+  </button>
+</div>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with tooltip 1`] = `
+<div
+  class="relative group "
+>
+  <button
+    class="medium-box light-green
+                    active:opacity-95
+                    hover:opacity-90 hover:cursor-pointer
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
+  >
+    <span
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
+    >
+      Click me
+    </span>
+    <span
+      class="icon-medium"
+    >
+       
+      <span
+        data-testid="test-icon"
+      >
+        🎯
+      </span>
+       
+    </span>
+  </button>
+  <div
+    data-testid="animate-presence"
+  />
+</div>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with variant aprovar 1`] = `
+<div
+  class="relative group "
+>
+  <button
+    class="medium-box bg-[var(--success-100)] text-[var(--success-600)]
+                    active:opacity-95
+                    hover:opacity-90 hover:cursor-pointer
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
+  >
+    <span
+      class="text-h6 line-clamp-1"
+      style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"
+    >
+      Click me
+    </span>
+    <span
+      class="icon-medium"
+    >
+       
+      <span
+        data-testid="test-icon"
+      >
+        🎯
+      </span>
+       
+    </span>
+  </button>
+</div>
+`;
+
+exports[`Button Component Snapshot Tests matches snapshot with variant rejeitar 1`] = `
+<div
+  class="relative group "
+>
+  <button
+    class="medium-box bg-[var(--error-100)] text-[var(--error-600)]
+                    active:opacity-95
+                    hover:opacity-90 hover:cursor-pointer
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black
+                    flex flex-col justify-center items-center gap-2"
+  >
     <span
       class="text-h6 line-clamp-1"
       style="overflow: hidden; word-break: break-all; overflow-wrap: break-word;"

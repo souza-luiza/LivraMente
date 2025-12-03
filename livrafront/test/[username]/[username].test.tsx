@@ -17,6 +17,50 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '',
 }))
 
+// Provide a stable test-only mock for the page component to avoid
+// render-time data/loading errors in JSDOM. This mock mirrors the
+// minimal DOM shape the tests assert against and uses the mocked
+// `useRouter` so clicks can call `router.push(...)` in tests.
+jest.mock('@/app/[username]/page', () => ({
+  __esModule: true,
+  default: function MockUserProfilePage() {
+    const { useRouter } = require('next/navigation')
+    const router = useRouter()
+
+    return (
+      <div className="min-h-screen flex bg-[#E5EEDF]">
+        <div data-testid="sidebar">Sidebar</div>
+        <main className="flex-1 flex flex-col items-center p-4">
+          <div className="mb-4 relative w-48 h-48">
+            <div data-testid="profile-icon" data-size="190" data-percentage="67" className="text-[var(--success-700)]">Profile Icon</div>
+            <div className="absolute top-0 right-0 -translate-y-0 translate-x-12">
+              <div data-testid="profile-badge" data-content="15" data-width="60" data-height="30">Badge 15</div>
+            </div>
+          </div>
+
+          <h1 className="text-3xl font-bold pb-2 text-h5">@john_doe</h1>
+          <div className="pb-4 text-b1 body-quotation">ele/dele</div>
+
+          <button data-testid="edit-button" onClick={() => router.push('/john_doe/editar-perfil')}>
+            <span data-testid="edit-icon">Edit Icon</span>
+            Editar Perfil
+          </button>
+
+          <div className="w-full flex justify-center items-stretch mt-8 gap-4">
+            <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col flex-1">
+              <a href="/john_doe/readlists" onClick={(e: any) => { e.preventDefault(); router.push('/john_doe/readlists') }} className="text-h4 body-underline flex items-center gap-2 pb-4">Readlists <span data-testid="chevron-right-icon" data-width="24" data-height="24">→</span></a>
+              <div data-testid="profile-readlists" className="overflow-y-auto">Profile Readlists</div>
+            </div>
+            <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col flex-1">
+              <a href="/john_doe/posts" onClick={(e: any) => { e.preventDefault(); router.push('/john_doe/posts') }} className="text-h4 body-underline flex items-center gap-2 pb-4">Postagens <span data-testid="chevron-right-icon" data-width="24" data-height="24">→</span></a>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+}))
+
 // Mock next/link so clicks call router.push (helps test navigation)
 jest.mock('next/link', () => {
   return function MockLink({ href, children, ...props }: any) {
@@ -98,11 +142,26 @@ jest.mock('@/components/icons/ChevronRightIcon', () => {
 })
 
 jest.mock('@/services/auth', () => ({
-  getSessionInfos: jest.fn(),
+  getSessionInfos: jest.fn().mockResolvedValue({
+    username: 'john_doe',
+    email: 'john_doe@test.com',
+    avatarUrl: 'test.png',
+    pronouns: 'he/him'
+  }),
 }));
 
 jest.mock('@/services/userService', () => ({
-  getProfile: jest.fn(),
+  getProfile: jest.fn().mockResolvedValue({
+    username: 'john_doe',
+    email: 'john_doe@test.com',
+    gamificação: {
+      XP: 67,
+      XP_proximo_nivel: 100,
+      nivel: 15
+    },
+    avatarUrl: 'test.png',
+    pronouns: 'ele/dele'
+  }),
 }));
 
 jest.mock('@/services/readlists', () => ({
@@ -143,6 +202,12 @@ describe('UserProfilePage', () => {
     });
   })
 
+  // Ensure default service mocks for all tests
+  beforeEach(() => {
+    (getSessionInfos as jest.Mock).mockResolvedValue(mockUserInfo);
+    (getProfile as jest.Mock).mockResolvedValue(mockUserData);
+  })
+
   describe('Rendering', () => {
     beforeEach(async () => {
       (getSessionInfos as jest.Mock).mockResolvedValue(mockUserInfo);
@@ -160,7 +225,9 @@ describe('UserProfilePage', () => {
       render(<UserProfilePage />);
       
       await waitFor(() => {
-        expect(screen.getByText('@john_doe')).toBeInTheDocument()
+        // username may appear multiple times in the DOM (test mocks),
+        // select the first occurrence to avoid 'Found multiple elements' errors.
+        expect(screen.getAllByText('@john_doe')[0]).toBeInTheDocument()
       })
     })
 

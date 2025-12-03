@@ -11,10 +11,6 @@ export class Comunidade {
   @Prop()
   descricao?: string;
 
-  /*@Prop({ type: Types.ObjectId, ref: 'User' })
-  criador: Types.ObjectId;*/ // acho que nao precisa
-
-  // Moderadores da comunidade
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   moderadores: Types.ObjectId[];
 
@@ -24,31 +20,26 @@ export class Comunidade {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Post' }], default: [] })
   posts: Types.ObjectId[];
 
-  @Prop()
-  imagem_url?: string;
+  @Prop({ required: false, default: '/CommunityDefault.png' })
+  capaUrl?: string;
 
-  /*// Comunidade pública ou privada
-  @Prop({ default: true })
-  publica: boolean;*/ // todas serem públicas
+  @Prop({ required: false, default: '' })
+  capaPublicId?: string;
 
-  // Regras da comunidade
-  /*@Prop({ type: [String], default: [] })
-  regras?: string[]; */ // nao ter isso (moderadores aprovam se quiserem)
+  @Prop({ required: false, default: '' })
+  bannerUrl?: string;
 
-  // Tags/categorias da comunidade (gêneros)
+  @Prop({ required: false, default: '' })
+  bannerPublicId?: string;
+  
   @Prop({ type: [String], default: [] })
   tags?: string[];
 
-  // Slug da comunidade (para a url)
   @Prop()
   slug?: string;
 
-  // Livro principal da comunidade 
-  /*@Prop({ type: Types.ObjectId, ref: 'Livro' })
-  livro_principal?: Types.ObjectId; // nao precisa
-
-  @Prop({ type: Types.ObjectId, ref: 'Saga' })
-  saga_principal?: Types.ObjectId;*/ //acredito que nao precisa disso
+  @Prop({ type: Types.ObjectId, ref: 'Livro' })
+  livro?: Types.ObjectId;
 }
 
 export const ComunidadeSchema = SchemaFactory.createForClass(Comunidade);

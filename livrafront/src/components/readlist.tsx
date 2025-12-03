@@ -6,7 +6,7 @@ export default function Readlist({ title, author, image, link }: { title?: strin
         <Link href={link || "#"} className="w-full items-center flex flex-col p-2 pb-4 hover:shadow-md transition-shadow rounded-lg">
             <div className="relative w-full aspect-[4/4]">
                 <Image 
-                    src={image || "/Readlist.svg"} 
+                    src={image || "/ReadlistDefault.png"}
                     alt={`Capa da Readlist ${title}`}
                     fill
                     className="object-cover rounded-lg"
