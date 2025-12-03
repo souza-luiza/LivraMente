@@ -13,7 +13,7 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly cloudinary: CloudinaryService,
     private readonly readlistsService: ReadlistsService
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto) {
     const user = new this.userModel(createUserDto); // insere variaveis no modelo
@@ -48,20 +48,20 @@ export class UsersService {
     const { email, username } = updateUserDto;
 
     // Verifica se já existe user com msm email:
-    if(email) { // se quer atualizar email
+    if (email) { // se quer atualizar email
       const userComEmail = await this.getByEmail(email);
-      if(userComEmail) {
-        if(userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
+      if (userComEmail) {
+        if (userComEmail._id.toString() !== id) { // se outra pessoa esta usando o email
           throw new ConflictException('Email em uso');
         }
       }
     }
 
     // Verifica se já existe user com msm username:
-    if(username) { // se quer atualizar username
+    if (username) { // se quer atualizar username
       const userComUsername = await this.getByUsername(username);
-      if(userComUsername) {
-        if(userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
+      if (userComUsername) {
+        if (userComUsername._id.toString() !== id) { // se outra pessoa esta usando o username
           throw new ConflictException('Nome de usuário em uso');
         }
       }
@@ -70,7 +70,7 @@ export class UsersService {
     const updated = await this.userModel.findByIdAndUpdate(
       {
         _id: id,
-      }, 
+      },
       {
         $set: updateUserDto,
       },
@@ -83,12 +83,12 @@ export class UsersService {
     if (!updated) throw new NotFoundException('Usuário não encontrado');
 
     session.user = { userId: updated._id, username: updated.username, email: updated.email, avatarUrl: updated.avatarUrl, pronouns: updated.pronouns };
-    
+
     return updated;
   }
 
-  async remove(id: string): Promise<void> {
-    await this.userModel.deleteOne({
+  async remove(id: string): Promise<{ deletedCount: number }> {
+    return await this.userModel.deleteOne({
       _id: id,
     }).exec(); // para executar operacao
   }
@@ -97,20 +97,20 @@ export class UsersService {
     const user = await this.findOne(id);
     //if(!user) throw new NotFoundException('Usuário não encontrado'); isso ja eh verificado na funcao findOne
 
-    if(!user.gamificação) { // inicializa xp/nivel
+    if (!user.gamificação) { // inicializa xp/nivel
       user.gamificação = { nivel: 1, XP: 0, XP_proximo_nivel: 100 }
     }
 
     let ganhoXP: number = 0; // XP ganho por leitura
 
-    if(opcao === 0) { // opcao de paginas lidas
+    if (opcao === 0) { // opcao de paginas lidas
       ganhoXP = qtd; // +1 XP por pagina
     }
     else if (opcao === 1) { // opcao de minutos lidos
-      ganhoXP = Math.floor(qtd/2); // +1 XP por 2 minutos, arredondado para baixo
+      ganhoXP = Math.floor(qtd / 2); // +1 XP por 2 minutos, arredondado para baixo
     }
 
-    if(ganhoXP > 60) { // limite de XP diario
+    if (ganhoXP > 60) { // limite de XP diario
       ganhoXP = 60;
     }
 
@@ -139,7 +139,7 @@ export class UsersService {
     const user = await this.findOne(userId);
 
     const readlist = await this.readlistsService.findOnePublic(username, readlistSlug);
-    
+
     if (!readlist) throw new NotFoundException('Readlist não encontrada ou não é pública');
     if (readlist.criador.toString() === userId) throw new BadRequestException('Readlist é do próprio usuário');
 
@@ -147,10 +147,10 @@ export class UsersService {
 
     await this.userModel.updateOne(
       { _id: userId },
-      { $addToSet: { readlists_favoritas: readlist._id }}
+      { $addToSet: { readlists_favoritas: readlist._id } }
     );
 
-    return { message: 'Readlist favoritada com sucesso' }; 
+    return { message: 'Readlist favoritada com sucesso' };
   }
 
   async desfavoritarReadlist(userId: string, readlistSlug: string, username: string) {
@@ -162,15 +162,15 @@ export class UsersService {
 
     await this.userModel.updateOne(
       { _id: userId },
-      { $pull: { readlists_favoritas: readlist._id }}
+      { $pull: { readlists_favoritas: readlist._id } }
     );
 
     return { message: 'Readlist removida dos favoritos com sucesso' };
   }
 
   async findReadlistsFavoritas(userId: string) {
-    const user = await this.userModel.findById(userId).populate({ path:'readlists_favoritas', select: '-favorito', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
-    if(!user) throw new NotFoundException('Usuário não encontrado');
+    const user = await this.userModel.findById(userId).populate({ path: 'readlists_favoritas', select: '-favorito', populate: { path: 'criador', select: 'username -_id' } }).select('readlists_favoritas').exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado');
     return user.readlists_favoritas;
   }
 
