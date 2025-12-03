@@ -3,7 +3,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
-import { SearchPostsDto } from './dto/search-posts.dto';
+import { FeedPostsDto } from './dto/search-posts.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
@@ -16,92 +16,27 @@ import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  // BUSCAR TODOS OS POSTS (FEED PÚBLICO)
+  // FEED PÚBLICO - Posts mais recentes (rolagem infinita)
   @Get('feed')
   @ApiOperation({
-    summary: 'Busca todos os posts públicos para o feed',
-    description: 'Retorna posts de todas as comunidades com suporte a paginação, filtros por categoria/comunidade e ordenação.'
+    summary: 'Feed público com posts mais recentes',
+    description: 'Retorna posts públicos de todas as comunidades ordenados por data de criação (mais recentes primeiro). Usa paginação por cursor para rolagem infinita.'
   })
-  @ApiQuery({ name: 'q', required: false, description: 'Termo de busca (conteúdo ou tags)' })
-  @ApiQuery({ name: 'page', required: false, description: 'Número da página (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Posts por página (default: 10)' })
-  @ApiQuery({ name: 'categoria', required: false, description: 'Filtrar por categoria', enum: ['geral', 'fanart', 'fanfic'] })
-  @ApiQuery({ name: 'comunidade', required: false, description: 'Filtrar por comunidade (nome ou ID)' })
-  @ApiQuery({ name: 'sort', required: false, description: 'Ordenação: recent ou popular', enum: ['recent', 'popular'] })
+  @ApiQuery({ name: 'cursor', required: false, description: 'ID do último post carregado.' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Posts por requisição (default: 10)' })
   @ApiResponse({
     status: 200,
     description: 'Posts retornados com sucesso',
     schema: {
       properties: {
         posts: { type: 'array', description: 'Lista de posts' },
-        total: { type: 'number', description: 'Total de posts encontrados' },
-        page: { type: 'number', description: 'Página atual' },
-        limit: { type: 'number', description: 'Posts por página' },
-        totalPages: { type: 'number', description: 'Total de páginas' }
+        nextCursor: { type: 'string', description: 'Cursor para a próxima requisição (ID do último post)', nullable: true },
+        hasMore: { type: 'boolean', description: 'Indica se há mais posts para carregar' }
       }
     }
   })
-  async searchPosts(@Query() searchPostsDto: SearchPostsDto) {
-    return this.postsService.searchPosts(searchPostsDto);
-  }
-
-  // BUSCAR POSTS DO FEED DO USUÁRIO (COMUNIDADES QUE FAZ PARTE)
-  @Get('meu-feed')
-  @ApiOperation({
-    summary: 'Busca posts do feed personalizado do usuário',
-    description: 'Retorna posts das comunidades das quais o usuário é membro.'
-  })
-  @ApiQuery({ name: 'q', required: false, description: 'Termo de busca (conteúdo ou tags)' })
-  @ApiQuery({ name: 'page', required: false, description: 'Número da página (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Posts por página (default: 10)' })
-  @ApiQuery({ name: 'categoria', required: false, description: 'Filtrar por categoria', enum: ['geral', 'fanart', 'fanfic'] })
-  @ApiQuery({ name: 'sort', required: false, description: 'Ordenação: recent ou popular', enum: ['recent', 'popular'] })
-  @ApiResponse({
-    status: 200,
-    description: 'Posts do feed do usuário retornados com sucesso'
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Token JWT inválido'
-  })
-  async getMyFeed(@CurrentUser() user: CurrentUserDto, @Query() searchPostsDto: SearchPostsDto) {
-    return this.postsService.getFeedPosts(user.userId, searchPostsDto);
-  }
-
-  // BUSCAR POSTS EM ALTA (TRENDING)
-  @Get('trending')
-  @ApiOperation({
-    summary: 'Busca posts em alta (trending)',
-    description: 'Retorna os posts mais populares das últimas 24 horas baseado em curtidas e comentários.'
-  })
-  @ApiQuery({ name: 'limit', required: false, description: 'Número de posts a retornar (default: 10)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Posts em alta retornados com sucesso'
-  })
-  async getTrendingPosts(@Query('limit') limit?: number) {
-    return this.postsService.getTrendingPosts(limit || 10);
-  }
-
-  // BUSCAR POSTS POR TAG
-  @Get('tag/:tag')
-  @ApiOperation({
-    summary: 'Busca posts por tag',
-    description: 'Retorna todos os posts que possuem uma tag específica.'
-  })
-  @ApiParam({ name: 'tag', description: 'Tag para buscar' })
-  @ApiQuery({ name: 'page', required: false, description: 'Número da página (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Posts por página (default: 10)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Posts com a tag retornados com sucesso'
-  })
-  async getPostsByTag(
-    @Param('tag') tag: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number
-  ) {
-    return this.postsService.getPostsByTag(tag, page || 1, limit || 10);
+  async getFeedPublico(@Query() feedPostsDto: FeedPostsDto) {
+    return this.postsService.getFeedPublico(feedPostsDto);
   }
 
   // CRIAR POSTAGENS
