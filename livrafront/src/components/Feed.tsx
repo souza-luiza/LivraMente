@@ -185,9 +185,9 @@ export default function Feed({ showTrending = true }: FeedProps) {
 
             {/* Coluna de Trending Topics */}
             {showTrending && (
-                <div className="w-80 flex-shrink-0">
-                    <div className="bg-[var(--secondary-100)] medium-border-width medium-box sticky top-4">
-                        <h4 className="text-h4 mb-4" style={{ color: "var(--secondary-800)" }}>
+                <div className="w-90 flex-shrink-0">
+                    <div className="bg-[var(--secondary-100)] medium-box sticky top-4">
+                        <h4 className="text-h4 mb-4 pt-4 pb-4 text-center" style={{ color: "var(--secondary-800)" }}>
                             Trending Topics
                         </h4>
                         <div className="flex flex-col gap-3">
@@ -196,7 +196,7 @@ export default function Feed({ showTrending = true }: FeedProps) {
                                     key={index}
                                     className="flex flex-col bg-[var(--secondary-200)] p-2 rounded-lg cursor-pointer transition-colors"
                                 >
-                                    <span className="text-b3 text-gray-500">
+                                    <span className="text-b3 text-[var(--secondary-600)]">
                                         {topic.saga} • Trending
                                     </span>
                                     <span
@@ -205,7 +205,7 @@ export default function Feed({ showTrending = true }: FeedProps) {
                                     >
                                         {topic.hashtag}
                                     </span>
-                                    <span className="text-b3 text-gray-400">
+                                    <span className="text-b3 text-[var(--secondary-500)]">
                                         {topic.postCount}
                                     </span>
                                 </div>
