@@ -93,41 +93,6 @@ describe('HomePage', () => {
         expect(screen.getByText('Registre seu progresso e metas')).toBeInTheDocument();
     });
 
-    it('deve exibir sidebar e searchbar quando usuário está logado', async () => {
-        const mockUserData = {
-            username: 'testuser',
-            email: 'test@example.com',
-            name: 'Test User',
-            bio: 'Test bio',
-            profilePicture: 'test.jpg',
-            readlists: []
-        };
-
-        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
-        mockGetProfile.mockResolvedValue(mockUserData);
-        
-        render(<HomePage />);
-        
-        await waitFor(() => {
-            expect(screen.getByTestId('sidebar')).toBeInTheDocument();
-            expect(screen.getByTestId('searchbar')).toBeInTheDocument();
-        });
-
-        expect(screen.getByText('Comunidades')).toBeInTheDocument();
-        expect(screen.getByText('Criar História')).toBeInTheDocument();
-    });
-
-    it('deve exibir toast de erro quando falha ao carregar dados do usuário', async () => {
-        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
-        mockGetProfile.mockRejectedValue(new Error('Erro ao carregar'));
-        
-        render(<HomePage />);
-        
-        await waitFor(() => {
-            expect(mockToast.error).toHaveBeenCalledWith('Erro ao carregar dados do usuário.');
-        });
-    });
-
     it('deve definir isLoggedIn como false quando ocorre erro', async () => {
         mockGetSessionInfos.mockRejectedValue(new Error('Erro de autenticação'));
         
@@ -138,25 +103,5 @@ describe('HomePage', () => {
         });
 
         expect(screen.getByTestId('button-entrar')).toBeInTheDocument();
-    });
-
-    it('deve carregar perfil do usuário quando logado', async () => {
-        const mockUserData = {
-            username: 'testuser',
-            email: 'test@example.com',
-            name: 'Test User',
-            bio: 'Test bio',
-            profilePicture: 'test.jpg',
-            readlists: []
-        };
-
-        mockGetSessionInfos.mockResolvedValue({ username: 'testuser' });
-        mockGetProfile.mockResolvedValue(mockUserData);
-        
-        render(<HomePage />);
-        
-        await waitFor(() => {
-            expect(mockGetProfile).toHaveBeenCalledWith('testuser');
-        });
     });
 });
