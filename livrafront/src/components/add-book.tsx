@@ -1,4 +1,3 @@
-import { Livro } from "@/types/livro";
 import Input from "./general-input";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,6 +10,7 @@ import ToastNotification from "@/components/toast-notification";
 import { toast } from "react-toastify";
 import LoadingComponent from "./portable-loading";
 import { addBookToReadlist } from "@/services/readlists";
+import { Livro } from "@/types/livros";
 
 interface AddBookProps {
     isOpen: boolean;
@@ -31,7 +31,7 @@ export default function AddBook({ isOpen, onClose, readlistId, onSave, livrosRea
 
         const fetchBooks = async () => {
             try {
-                const totalLivros = await livrosService.getLivros();
+                const totalLivros = await livrosService.getBooks();
                 const livrosFilt = totalLivros.filter((livro) => !livrosReadlist.some(l => l._id === livro._id)); // elimina do total os livros que ja estao na readlist
 
                 setLivros(livrosFilt);

@@ -116,10 +116,12 @@ export default function PostComponent({
     }, [showOptions]);
 
     const handleRedirectToCommunity = () => {
+        setLoading(true);
         router.push(`/comunidade/${titleToSlug(post.comunidade.nome)}`);
     }
 
     const handleRedirectToProfile = () => {
+        setLoading(true);
         router.push(`/${post.autor.username}`);
     }
 
@@ -130,6 +132,8 @@ export default function PostComponent({
 
     const handleLikePost = async () => {
         try {
+            setLoading(true);
+            
             // Curtir/descurtir post
             const { liked, likeAmount } = await postsService.likePost(post._id);
 
@@ -137,7 +141,12 @@ export default function PostComponent({
             setLikeAmount(likeAmount);
 
         } catch (error) {
+
             console.error("Erro ao curtir/descurtir o post:", error);
+
+        } finally {
+
+            setLoading(false);
         }
     }
 
@@ -191,7 +200,7 @@ export default function PostComponent({
 
     return (
         <motion.div onHoverEnd={() => setShowOptions(false)}>
-            <div className="flex flex-col gap-3 light-neutral medium-border-width medium-box hover:shadow-lg transition-shadow">
+            <div className="flex flex-col gap-3 light-neutral medium-box shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex flex-row items-center justify-between">
                     <div className="flex flex-row gap-2">
                         <div 
@@ -220,7 +229,7 @@ export default function PostComponent({
                             </h6>
                         </div>
                     </div>
-                    {(isOwner || isModerator) && !disableActions && <div onClick={handleMoreOptions}>
+                    {(isOwner || isModerator) && !disableActions && <div data-testid="botao-mais-opcoes" onClick={handleMoreOptions}>
                         <MoreHorizontalIcon size={24} />
                     </div>}
                 </div>
@@ -245,14 +254,14 @@ export default function PostComponent({
                 {/*Imagens*/}
                 {post.imagens && post.imagens.length > 0 && (
                 <div className="flex flex-nowrap gap-2 overflow-x-auto">
-                    {post.imagens.map((imgUrl, index) => (
+                    {post.imagens.map((img, index) => (
                     <div 
                         key={index} 
                         className="relative w-32 h-32 medium-border-radius overflow-hidden cursor-pointer"
-                        onClick={() => handleOpenImageModal(imgUrl)}
+                        onClick={() => handleOpenImageModal(img.secure_url)}
                     >
                         <Image
-                            src={imgUrl}
+                            src={img.secure_url}
                             alt={`Imagem do post ${index + 1}`}
                             fill
                             className="object-cover"
@@ -326,6 +335,7 @@ export default function PostComponent({
                     onMouseLeave={() => setShowOptions(false)}
                 >
                     <Button
+                        data-testid="botao-deletar"
                         text="Excluir"
                         icon={<TrashIcon />}
                         size="small"

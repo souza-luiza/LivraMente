@@ -1,13 +1,17 @@
+import { Livro } from "./livros";
+
 export interface Comunidade {
     _id: string;
     nome: string;
-    slug?: string;
     descricao?: string;
     moderadores: string[];
     membros: string[];
     posts: string[];
-    imagem_url?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
     tags?: string[];
+    slug?: string;
+    livro?: Livro;
     createdAt: string; 
     updatedAt: string;
 }
@@ -15,20 +19,34 @@ export interface Comunidade {
 export interface CreateCommunityData {
     nome: string;
     descricao?: string;
-    imagem_url?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
     tags?: string[];
+    livro?: Livro;
+    slug?: string;
+}
+
+export interface CreateCommunityPayload {
+    nome: string;
+    descricao?: string;
+    capaUrl?: string;
+    bannerUrl?: string;
+    tags?: string[];
+    livro?: string;
     slug?: string;
 }
 
 export type UpdateCommunityData = Partial<CreateCommunityData>;
 
+export type UpdateCommunityPayload = Partial<CreateCommunityPayload>;
+
 export const CommunityTags = [
-    'Romance',
-    'Aventura',
-    'Fantasia',
-    'Drama',
-    'Terror',
-    'Suspense',
-    'Comédia',
-    'Distopia',
+    'romance',
+    'aventura',
+    'fantasia',
+    'drama',
+    'terror',
+    'suspense',
+    'comedia',
+    'distopia',
 ]

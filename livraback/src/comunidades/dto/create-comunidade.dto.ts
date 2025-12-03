@@ -13,13 +13,18 @@ export class CreateComunidadeDto {
     @IsOptional()
     descricao?: string;
 
-    @ApiProperty({ description: 'Imagem da comunidade'} )
+    @ApiProperty({ description: 'Imagem de capa da comunidade'} )
     @IsOptional()
     @IsUrl()
-    imagem_url?: string;
+    capaUrl?: string;
+
+    @ApiProperty({ description: 'Banner da comunidade'} )
+    @IsOptional()
+    @IsUrl()
+    bannerUrl?: string;
 
     @ApiProperty({ description: 'Tags/Categorias da comunidade'} )
-    @IsOptional() // é opcional
+    @IsOptional()
     @IsArray()
     tags?: string[];
 
@@ -27,4 +32,9 @@ export class CreateComunidadeDto {
     @IsOptional()
     @IsString()
     slug?: string;
+
+    @ApiProperty({ description: 'ID do livro principal da comunidade'} )
+    @IsOptional()
+    @IsString()
+    livro?: string;
 }
