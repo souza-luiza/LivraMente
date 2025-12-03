@@ -62,9 +62,9 @@ export default function HomePage() {
         },
         {
             imageUrl: 'https://picsum.photos/1424/400',
-            title: 'Acompanhe sua Leitura',
-            description: 'Registre seu progresso e ganhe XP',
-            path: '/leitura',
+            title: 'Explore Livros',
+            description: 'Descubra novos livros para suas leituras',
+            path: '/livros',
         },
     ]
 
