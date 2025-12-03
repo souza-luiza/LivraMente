@@ -111,5 +111,14 @@ export const postsService = {
 
     if (!response.ok) throw new Error('Erro ao encontrar comentários');
     return response.json();
+  },
+
+  async getUserPosts(userId: string): Promise<Post[]> {
+    const response = await fetch(`${API_BASE_URL}/posts/usuario/${encodeURIComponent(userId)}`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error('Erro ao encontrar postagens do usuário');
+    return response.json();
   }
 };

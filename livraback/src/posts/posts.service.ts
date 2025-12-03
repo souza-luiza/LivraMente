@@ -304,4 +304,17 @@ export class PostsService {
 
     return comments;
   }
+
+  async getUserPosts(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+
+    const posts = await this.postModel.find({ autor: user._id })
+    .populate('autor', 'username avatarUrl')
+    .populate("comunidade", "nome")
+    .sort({ createdAt: -1 })
+    .lean();
+
+    return posts;
+  }
 }

@@ -237,4 +237,20 @@ export class PostsController {
   async getComments(@Param('id') postId: string){
     return this.postsService.getComments(postId);
   }
+
+  @Get('usuario/:userId')
+  @ApiOperation({
+    summary: 'Retorna todas as postagens de um usuário'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Postagens retornadas com sucesso'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuário não encontrado'
+  })
+  async getUserPosts(@Param('userId') username: string) {
+    return this.postsService.getUserPosts(username);
+  }
 }

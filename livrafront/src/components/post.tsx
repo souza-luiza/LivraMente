@@ -30,7 +30,6 @@ import { postsService } from "@/services/posts";
 // Funções Auxiliares
 import { getTimeAgo } from "@/lib/time";
 import { titleToSlug } from "@/lib/slugify";
-import { set } from "date-fns";
 
 interface PostProps {
     post: Post;
