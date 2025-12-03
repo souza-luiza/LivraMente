@@ -39,6 +39,7 @@ export class LlmController {
     const agentResponse = await this.agentService.runAnalysisAgent(
       agentInputDto.userPrompt,
       user.userId,
+      agentInputDto.history || [],
     );
 
     return { response: agentResponse };

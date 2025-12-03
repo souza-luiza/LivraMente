@@ -65,7 +65,7 @@ describe('LlmController', () => {
       mockAgentService.runAnalysisAgent.mockResolvedValue(expectedResponse);
       const result = await controller.PromptAnalise(dto, mockUser as any);
 
-      expect(agentService.runAnalysisAgent).toHaveBeenCalledWith(dto.userPrompt, mockUser.userId);
+      expect(agentService.runAnalysisAgent).toHaveBeenCalledWith(dto.userPrompt, mockUser.userId, []);
       expect(result).toEqual({ response: expectedResponse });
     });
   });
