@@ -90,7 +90,7 @@ export class ComunidadesService {
                 { $addToSet: { comunidades: comunidade._id } },
                 { new: true }
             ).exec();
-            console.log('Livro Novo', livro);
+            
             if (!livro) throw new NotFoundException('Livro não encontrado');
         }
         
