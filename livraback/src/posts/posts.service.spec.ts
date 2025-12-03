@@ -664,4 +664,168 @@ describe('PostsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('getFeedPublico', () => {
+    const mockPosts = [
+      {
+        _id: new Types.ObjectId(),
+        conteudo: 'Post 1',
+        curtidas: [new Types.ObjectId(), new Types.ObjectId()],
+        comentarios: [new Types.ObjectId()],
+        createdAt: new Date('2025-12-03'),
+      },
+      {
+        _id: new Types.ObjectId(),
+        conteudo: 'Post 2',
+        curtidas: [],
+        comentarios: [],
+        createdAt: new Date('2025-12-02'),
+      },
+      {
+        _id: new Types.ObjectId(),
+        conteudo: 'Post 3',
+        curtidas: [new Types.ObjectId()],
+        comentarios: [new Types.ObjectId(), new Types.ObjectId()],
+        createdAt: new Date('2025-12-01'),
+      },
+    ];
+
+    beforeEach(() => {
+      mockPostModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            populate: jest.fn().mockReturnValue({
+              populate: jest.fn().mockReturnValue({
+                lean: jest.fn().mockResolvedValue(mockPosts),
+              }),
+            }),
+          }),
+        }),
+      });
+    });
+
+    it('should return posts without cursor (first request)', async () => {
+      const result = await service.getFeedPublico({ limit: 10 });
+
+      expect(mockPostModel.find).toHaveBeenCalledWith({
+        status: 'publicado',
+        publico: true,
+      });
+      expect(result.posts).toHaveLength(3);
+      expect(result.hasMore).toBe(false);
+      expect(result.nextCursor).toBe(mockPosts[2]._id.toString());
+    });
+
+    it('should return posts with correct totalCurtidas and totalComentarios', async () => {
+      const result = await service.getFeedPublico({ limit: 10 });
+
+      expect(result.posts[0].totalCurtidas).toBe(2);
+      expect(result.posts[0].totalComentarios).toBe(1);
+      expect(result.posts[1].totalCurtidas).toBe(0);
+      expect(result.posts[1].totalComentarios).toBe(0);
+      expect(result.posts[2].totalCurtidas).toBe(1);
+      expect(result.posts[2].totalComentarios).toBe(2);
+    });
+
+    it('should return hasMore true when there are more posts than limit', async () => {
+      // Simular que há mais posts (limit + 1)
+      const postsWithExtra = [...mockPosts, {
+        _id: new Types.ObjectId(),
+        conteudo: 'Post 4',
+        curtidas: [],
+        comentarios: [],
+        createdAt: new Date('2025-11-30'),
+      }];
+
+      mockPostModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            populate: jest.fn().mockReturnValue({
+              populate: jest.fn().mockReturnValue({
+                lean: jest.fn().mockResolvedValue(postsWithExtra),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await service.getFeedPublico({ limit: 3 });
+
+      expect(result.hasMore).toBe(true);
+      expect(result.posts).toHaveLength(3); // Não deve incluir o post extra
+    });
+
+    it('should filter by cursor when provided', async () => {
+      const cursorId = new Types.ObjectId().toString();
+      const cursorDate = new Date('2025-12-02');
+
+      mockPostModel.findById = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({ createdAt: cursorDate }),
+        }),
+      });
+
+      await service.getFeedPublico({ cursor: cursorId, limit: 10 });
+
+      expect(mockPostModel.findById).toHaveBeenCalledWith(cursorId);
+      expect(mockPostModel.find).toHaveBeenCalledWith({
+        status: 'publicado',
+        publico: true,
+        createdAt: { $lt: cursorDate },
+      });
+    });
+
+    it('should not filter by cursor when cursor post is not found', async () => {
+      const cursorId = new Types.ObjectId().toString();
+
+      mockPostModel.findById = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(null),
+        }),
+      });
+
+      await service.getFeedPublico({ cursor: cursorId, limit: 10 });
+
+      expect(mockPostModel.find).toHaveBeenCalledWith({
+        status: 'publicado',
+        publico: true,
+      });
+    });
+
+    it('should not filter by cursor when cursor is invalid ObjectId', async () => {
+      await service.getFeedPublico({ cursor: 'invalid-id', limit: 10 });
+
+      expect(mockPostModel.findById).not.toHaveBeenCalled();
+      expect(mockPostModel.find).toHaveBeenCalledWith({
+        status: 'publicado',
+        publico: true,
+      });
+    });
+
+    it('should return null nextCursor when no posts', async () => {
+      mockPostModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            populate: jest.fn().mockReturnValue({
+              populate: jest.fn().mockReturnValue({
+                lean: jest.fn().mockResolvedValue([]),
+              }),
+            }),
+          }),
+        }),
+      });
+
+      const result = await service.getFeedPublico({ limit: 10 });
+
+      expect(result.posts).toHaveLength(0);
+      expect(result.nextCursor).toBeNull();
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('should use default limit of 10 when not provided', async () => {
+      await service.getFeedPublico({});
+
+      expect(mockPostModel.find().sort().limit).toHaveBeenCalledWith(11); // limit + 1
+    });
+  });
 });

@@ -19,6 +19,7 @@ describe('PostsController', () => {
     moderatePost: jest.fn(),
     getPostById: jest.fn(),
     getComments: jest.fn(),
+    getFeedPublico: jest.fn(),
   };
 
   const mockUser: CurrentUserDto = {
@@ -282,6 +283,93 @@ describe('PostsController', () => {
       await controller.getComments(longPostId);
 
       expect(service.getComments).toHaveBeenCalledWith(longPostId);
+    });
+  });
+
+  describe('getFeedPublico', () => {
+    const mockFeedResponse = {
+      posts: [
+        {
+          _id: 'post1',
+          conteudo: 'Post 1',
+          totalCurtidas: 5,
+          totalComentarios: 2,
+        },
+        {
+          _id: 'post2',
+          conteudo: 'Post 2',
+          totalCurtidas: 3,
+          totalComentarios: 1,
+        },
+      ],
+      nextCursor: 'post2',
+      hasMore: true,
+    };
+
+    it('should call service.getFeedPublico without cursor (first request)', async () => {
+      mockPostsService.getFeedPublico.mockResolvedValue(mockFeedResponse);
+
+      const result = await controller.getFeedPublico({ limit: 10 });
+
+      expect(service.getFeedPublico).toHaveBeenCalledWith({ limit: 10 });
+      expect(result).toEqual(mockFeedResponse);
+    });
+
+    it('should call service.getFeedPublico with cursor (subsequent request)', async () => {
+      const feedDto = { cursor: 'abc123', limit: 10 };
+      mockPostsService.getFeedPublico.mockResolvedValue(mockFeedResponse);
+
+      const result = await controller.getFeedPublico(feedDto);
+
+      expect(service.getFeedPublico).toHaveBeenCalledWith(feedDto);
+      expect(result).toEqual(mockFeedResponse);
+    });
+
+    it('should return posts with correct structure', async () => {
+      mockPostsService.getFeedPublico.mockResolvedValue(mockFeedResponse);
+
+      const result = await controller.getFeedPublico({ limit: 10 });
+
+      expect(result).toHaveProperty('posts');
+      expect(result).toHaveProperty('nextCursor');
+      expect(result).toHaveProperty('hasMore');
+      expect(Array.isArray(result.posts)).toBe(true);
+    });
+
+    it('should handle empty feed', async () => {
+      const emptyResponse = {
+        posts: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockPostsService.getFeedPublico.mockResolvedValue(emptyResponse);
+
+      const result = await controller.getFeedPublico({ limit: 10 });
+
+      expect(result.posts).toHaveLength(0);
+      expect(result.nextCursor).toBeNull();
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('should use default limit when not provided', async () => {
+      mockPostsService.getFeedPublico.mockResolvedValue(mockFeedResponse);
+
+      await controller.getFeedPublico({});
+
+      expect(service.getFeedPublico).toHaveBeenCalledWith({});
+    });
+
+    it('should handle last page (hasMore false)', async () => {
+      const lastPageResponse = {
+        posts: [{ _id: 'lastPost', conteudo: 'Last post' }],
+        nextCursor: 'lastPost',
+        hasMore: false,
+      };
+      mockPostsService.getFeedPublico.mockResolvedValue(lastPageResponse);
+
+      const result = await controller.getFeedPublico({ cursor: 'previousPost', limit: 10 });
+
+      expect(result.hasMore).toBe(false);
     });
   });
 });
