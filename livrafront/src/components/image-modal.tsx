@@ -7,12 +7,13 @@ import RemoveIcon from './icons/RemoveIcon';
 import CodeIcon from './icons/CodeIcon';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { Imagens } from '@/types/post';
 
 interface PostImageProps {
     comunidade?: string;
     autor: string;
     imagem: string;
-    imagens: string[];
+    imagens: Imagens[];
     onClose: () => void;
 }
 
@@ -20,7 +21,7 @@ export default function ImageModal({ comunidade, autor, imagem, imagens, onClose
     const router = useRouter();
 
     const [selectedImage, setSelectedImage] = useState<string>(imagem);
-    const [imageArray, setSelectedImageArray] = useState<string[]>(imagens);
+    const [imageArray, setSelectedImageArray] = useState<Imagens[]>(imagens);
 
     useEffect(() => {
         // Desabilita scrollagem da página ao abrir o modal
@@ -35,17 +36,17 @@ export default function ImageModal({ comunidade, autor, imagem, imagens, onClose
             } else if (e.key === 'ArrowRight') {
                 // Seta direita: próxima imagem
                 setSelectedImage((prev) => {
-                    const current = imageArray.findIndex((img) => img === prev);
+                    const current = imageArray.findIndex((img) => img.secure_url === prev);
                     const next = (current + 1) % imageArray.length;
-                    return imageArray[next];
+                    return imageArray[next].secure_url;
                 });
 
             } else if (e.key === 'ArrowLeft') {
                 // Seta esquerda: imagem anterior
                 setSelectedImage((prev) => {
-                    const current = imageArray.findIndex((img) => img === prev);
+                    const current = imageArray.findIndex((img) => img.secure_url === prev);
                     const next = (current - 1 + imageArray.length) % imageArray.length;
-                    return imageArray[next];
+                    return imageArray[next].secure_url;
                 });
             }
         };
@@ -117,14 +118,14 @@ export default function ImageModal({ comunidade, autor, imagem, imagens, onClose
                     </h6>
                 </div>
                 <div className="flex flex-row gap-2">
-                    {imageArray.map((imgUrl, index) => (
+                    {imageArray.map((img, index) => (
                         <div 
                             key={index} 
-                            className={`relative w-24 h-24 medium-border-radius overflow-hidden hover:cursor-pointer ${imgUrl === selectedImage && 'large-border-width border-[var(--primary-700)]'}`}
-                            onClick={(e) => {e.stopPropagation(); e.preventDefault(); handleSelectImage(imgUrl)}}
+                            className={`relative w-24 h-24 medium-border-radius overflow-hidden hover:cursor-pointer ${img.secure_url === selectedImage && 'large-border-width border-[var(--primary-700)]'}`}
+                            onClick={(e) => {e.stopPropagation(); e.preventDefault(); handleSelectImage(img.secure_url)}}
                         >
                             <Image
-                                src={imgUrl}
+                                src={img.secure_url}
                                 alt={`Imagem do post ${index + 1}`}
                                 fill
                                 className="object-cover"

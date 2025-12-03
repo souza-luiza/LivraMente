@@ -11,9 +11,10 @@ interface TagsDropdownProps {
   setSelectedTags: (tags: string[]) => void;
   placeholder?: string;
   id?: string;
+  disabled?: boolean;
 }
 
-export default function TagsDropdown({ tags, selectedTags, setSelectedTags, placeholder = 'Selecione as tags', id }: TagsDropdownProps) {
+export default function TagsDropdown({ tags, selectedTags, setSelectedTags, placeholder = 'Selecione as tags', id, disabled }: TagsDropdownProps) {
   const [open, setOpen] = useState(false);
   const [hoverInfo, setHoverInfo] = useState<{isHovered: boolean, tag: string}>({isHovered: false, tag: ""});
   const ref = useRef<HTMLDivElement | null>(null);
@@ -100,6 +101,7 @@ export default function TagsDropdown({ tags, selectedTags, setSelectedTags, plac
                   onChange={() => toggle(opt)}
                   className="w-4 h-4"
                   aria-label={opt}
+                  disabled={disabled}
                 />
                 <span className="text-b2">{opt}</span>
               </label>

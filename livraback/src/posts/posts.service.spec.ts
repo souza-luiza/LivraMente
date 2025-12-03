@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('PostsService', () => {
   let service: PostsService;
@@ -57,6 +58,7 @@ describe('PostsService', () => {
   const mockComentarioModel: any = {
     find: jest.fn(),
     lean: jest.fn(),
+    deleteMany: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -79,6 +81,13 @@ describe('PostsService', () => {
           provide: getModelToken(Comentario.name),
           useValue: mockComentarioModel,
         },
+        {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue(true),
+          },
+        },
       ],
     }).compile();
 
@@ -87,6 +96,12 @@ describe('PostsService', () => {
     comunidadeModel = module.get<Model<Comunidade>>(getModelToken(Comunidade.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
+
+    // Ensure .find resolves to an array by default to avoid errors
+    // in service code that calls .find(...).flatMap(...) or similar
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
 
     jest.clearAllMocks();
   });
@@ -184,8 +199,9 @@ describe('PostsService', () => {
         imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
       };
 
+      // Pass imagens as the third arg (files) to trigger the service-side length check
       await expect(
-        service.createPost(mockUserId, invalidDto)
+        service.createPost(mockUserId, invalidDto, invalidDto.imagens as any)
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -328,6 +344,8 @@ describe('PostsService', () => {
       mockPostModel.findByIdAndDelete.mockResolvedValue({});
       mockComunidadeModel.updateOne.mockResolvedValue({});
       mockUserModel.updateOne.mockResolvedValue({});
+      // default comentarioModel.find to an empty array to avoid undefined in flatMap
+      mockComentarioModel.find.mockResolvedValue([]);
     });
 
     it('should remove post successfully when user is owner', async () => {
@@ -372,7 +390,6 @@ describe('PostsService', () => {
   describe('updatePost', () => {
     const updatePostDto: UpdatePostDto = {
       conteudo: 'Updated content',
-      imagens: ['updated.jpg'],
       tags: ['updated'],
       publico: false,
     };

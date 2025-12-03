@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Livro } from "@/types/livro";
 import LivrosReadlist from "@/components/livros-readlist";
+import { Livro } from "@/types/livros";
 
 const mockLivro: Livro = {
     _id: "123",

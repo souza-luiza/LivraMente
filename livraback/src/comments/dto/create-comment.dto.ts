@@ -6,14 +6,4 @@ export class CreateCommentDto {
     @IsNotEmpty()
     @IsString()
     conteudo: string;
-
-    @ApiProperty({
-        description: 'URLs das imagens associadas ao comentário',
-        required: false,
-        type: [String]
-    })
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    imagens?: string[];
 }

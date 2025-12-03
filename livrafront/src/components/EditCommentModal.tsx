@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SaveIcon from './icons/SaveIcon';
 import { Comentario } from '@/types/comentario';
 import { commentsService } from '@/services/comentarios';
-import { Post } from '@/types/post';
+import { Imagens, Post } from '@/types/post';
 
 interface EditPostModalProps {
     post: Post;
@@ -28,12 +28,11 @@ export default function EditCommentModal({
 }: EditPostModalProps) {
 
   const [content, setContent] = useState(comment.conteudo);
-  const [images, setImages] = useState<string[]>(comment.imagens);
+  const [images, setImages] = useState<Imagens[]>(comment.imagens);
   const [isContentFocused, setIsContentFocused] = useState(false);
   const [contentError, setContentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isOpen && comment) {
@@ -85,7 +84,7 @@ export default function EditCommentModal({
     setSubmitError('');
 
     try {
-      await commentsService.updateComment(post._id, comment._id, {conteudo: content, imagens: images});
+      await commentsService.updateComment(post._id, comment._id, { conteudo: content });
 
       // Reset do modal
       setContent('');
@@ -98,6 +97,7 @@ export default function EditCommentModal({
       }
       
       onClose();
+
     } catch (error: unknown) {
       console.error('Erro ao criar post:', error);
       const message = error instanceof Error ? error.message : String(error);
@@ -109,86 +109,12 @@ export default function EditCommentModal({
     }
   };
 
-  // Função para comprimir imagem
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement('img');
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Falha ao criar contexto canvas'));
-            return;
-          }
-
-          // Definir tamanho máximo
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
-
-          // Calcular novas dimensões mantendo aspect ratio
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Comprimir para JPEG com 70% de qualidade
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(compressedDataUrl);
-        };
-        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const remainingSlots = 4 - images.length;
-      const filesToProcess = Array.from(files).slice(0, remainingSlots);
-
-      Promise.all(filesToProcess.map(compressImage))
-        .then((newImages) => {
-          setImages([...images, ...newImages]);
-        })
-        .catch((error: unknown) => {
-          console.error('Erro ao processar imagens:', error);
-          setSubmitError('Erro ao processar imagens. Tente novamente.');
-        });
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
   const handleCancel = () => {
     setContent('');
     setImages([]);
     setContentError('');
     setSubmitError('');
     onClose();
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
   };
 
   return (
@@ -254,7 +180,7 @@ export default function EditCommentModal({
 
           {/* Preview de Imagens */}
           {images.length > 0 && (
-            <div className="mb-6">
+            <div className="mb-6 hover:cursor-not-allowed">
               <h5 className="text-b2 mb-2" style={{ color: 'var(--secondary-800)' }}>
                 Imagens ({images.length}/4)
               </h5>
@@ -269,21 +195,11 @@ export default function EditCommentModal({
                     }}
                   >
                     <Image
-                      src={image}
+                      src={image.secure_url}
                       alt={`Preview ${index + 1}`}
                       fill
                       className="object-cover"
                     />
-                    {/* Botão para remover imagem */}
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          icon={<TrashIcon />}
-                          colorScheme="dark-brown"
-                          size="small"
-                          onClick={() => removeImage(index)}
-                          aria-label="Remover imagem"
-                        />
-                    </div>
                   </div>
                 ))}
               </div>
@@ -298,52 +214,28 @@ export default function EditCommentModal({
           )}
 
           {/* Botões de Ação */}
-          <div className="flex flex-row items-center gap-10">
-            {/* Botão de Adicionar Imagem */}
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"  
-                multiple
-                onChange={handleImageChange}
-                disabled={images.length >= 4}
-                style={{ display: "none" }}
-              />
-              <Button
-                text={`${images.length === 0 ? 'Adicionar ' : ''}Imagens ${images.length > 0 ? `(${images.length}/4)` : ''}`}
-                icon={<ImageIcon />}
-                size="medium"
-                colorScheme="light-green"
-                onClick={handleButtonClick}
-                aria-label="Adicionar imagens"
-                disabled={images.length >= 4 || isSubmitting}
-              />
-            </div>
+          <div className="flex flex-row items-center justify-end gap-1">
+            {/* Botão de Cancelar */}
+            <Button
+              text="Cancelar"
+              icon={<TrashIcon />}
+              size="medium"
+              colorScheme="light-brown"
+              onClick={handleCancel}
+              aria-label="Cancelar"
+              disabled={isSubmitting}
+            />
 
-            <div className="flex gap-1">
-              {/* Botão de Cancelar */}
-              <Button
-                text="Cancelar"
-                icon={<TrashIcon />}
-                size="medium"
-                colorScheme="light-brown"
-                onClick={handleCancel}
-                aria-label="Cancelar"
-                disabled={isSubmitting}
-              />
-
-              {/* Botão de Postar */}
-              <Button
-                text={isSubmitting ? "Salvando..." : "Salvar Alterações"}
-                icon={<SaveIcon />}
-                size="medium"
-                colorScheme="light-green"
-                onClick={handleUpdate}
-                aria-label="Salvar Alterações"
-                disabled={isSubmitting}
-              />
-            </div>
+            {/* Botão de Postar */}
+            <Button
+              text={isSubmitting ? "Salvando..." : "Salvar Alterações"}
+              icon={<SaveIcon />}
+              size="medium"
+              colorScheme="light-green"
+              onClick={handleUpdate}
+              aria-label="Salvar Alterações"
+              disabled={isSubmitting}
+            />
           </div>
         </div>
       </motion.div>

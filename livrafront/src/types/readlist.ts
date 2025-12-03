@@ -1,4 +1,4 @@
-import { Livro } from "./livro";
+import { Livro } from "./livros";
 
 /* Dados da readlist */
 export interface Readlist {

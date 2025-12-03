@@ -28,6 +28,9 @@ async function bootstrap() {
       whitelist: true, // remove propriedades não permitidas
       forbidNonWhitelisted: true, // lança erro se propriedades extras forem passadas
       transform: true, // transforma tipos automaticamente (ex: string para number)
+      // Ao habilitar a conversão implícita, valores vindos via FormData (strings)
+      // poderão ser convertidos para o tipo esperado no DTO (ex: 'true' -> boolean)
+      transformOptions: { enableImplicitConversion: true },
     })
   )
 
