@@ -647,7 +647,5 @@ export default function CreateCommunityPage() {
       <ToastNotification />
 
     </div>
-    <WidgetChat />
-    </>
   );
 }
