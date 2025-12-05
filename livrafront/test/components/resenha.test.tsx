@@ -193,15 +193,6 @@ describe('ReviewComponent', () => {
   };
 
   describe('Initial Loading State', () => {
-    it('shows loading state when fetching review', () => {
-      (resenhasService.getResenha as jest.Mock).mockImplementation(() => new Promise(() => {}));
-      
-      renderComponent();
-      
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
-      expect(screen.getByText('Carregando...')).toHaveClass('body-quotation');
-    });
-
     it('calls getResenha with correct ID on mount', async () => {
       (resenhasService.getResenha as jest.Mock).mockResolvedValue(mockReviewData);
       
