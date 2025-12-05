@@ -100,7 +100,6 @@ export default function UserProfilePage(){
                         </div>
                     </div>
                 </main>
-                <WidgetChat />
             </div>
         );
     }
@@ -128,7 +127,6 @@ export default function UserProfilePage(){
                         </Link>
                     </div>
                 </main>
-                <WidgetChat />
             </div>
         );
     }
@@ -190,7 +188,6 @@ export default function UserProfilePage(){
                 </div>
             </main>
             <ToastNotification/>
-            <WidgetChat />
         </div>
     );
 }

@@ -1,7 +1,6 @@
 "use client";
 import Sidebar from "@/components/sidebar";
 import SettingsTabs from "./settings-tabs";
-import WidgetChat from '@/components/widget-chat';
 
 export default function SettingsProfilePage(){
     return (
@@ -11,7 +10,6 @@ export default function SettingsProfilePage(){
                 <h2 className="text-h2">Configurações</h2>
                 <SettingsTabs />
             </main>
-            <WidgetChat />
         </div>
     );
 }

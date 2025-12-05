@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import WidgetChat from '@/components/widget-chat';
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import Button from "@/components/button";
@@ -277,7 +276,6 @@ export default function EditProfilePage() {
           onSave={handleCropSave}
         />
         <ToastNotification />
-        <WidgetChat />
       </div>
   );
 }
