@@ -47,7 +47,6 @@ describe('PostsService', () => {
     comunidade: mockComunidadeObjectId,
     conteudo: 'Test content',
     curtidas: [],
-    status: PostStatus.ATIVO,
     populate: jest.fn().mockReturnThis(),
   };
 
@@ -64,7 +63,6 @@ describe('PostsService', () => {
     _id: mockPostObjectId,
     autor: { _id: mockObjectId },
     comunidade: { _id: mockComunidadeObjectId },
-    status: PostStatus.ATIVO,
   };
 
   const mockUpdatedPost = {
@@ -362,6 +360,13 @@ describe('PostsService', () => {
       mockPostModel.findByIdAndDelete.mockResolvedValue({});
       mockComunidadeModel.updateOne.mockResolvedValue({});
       mockUserModel.updateOne.mockResolvedValue({});
+    });
+
+    it('should remove post successfully when user is owner', async () => {
+      const result = await service.removePost(mockUserId, mockPostId);
+
+      expect(postModel.findByIdAndDelete).toHaveBeenCalledWith(mockPostId);
+      expect(result.message).toBe('Post removido com sucesso');
     });
 
     it('should remove post successfully when user is moderator', async () => {

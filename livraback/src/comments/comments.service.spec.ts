@@ -120,20 +120,22 @@ describe('CommentsService', () => {
             deleteImage: jest.fn().mockResolvedValue(true),
           },
         },
+        // provide a simple CloudinaryService mock so the service's constructor can resolve
+        {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue(true),
+          },
+        },
         ],
       }).compile();
 
-      service = module.get<CommentsService>(CommentsService);
-      postModel = module.get<Model<Post>>(getModelToken(Post.name));
-      comunidadeModel = module.get<Model<Comunidade>>(getModelToken(Comunidade.name));
-      comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
-      userModel = module.get<Model<User>>(getModelToken(User.name));
-
-    // default comentarioModel.find to an empty array to avoid undefined
-    // when other services call .find(...).flatMap(...) on the result
-    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
-      mockComentarioModel.find.mockResolvedValue([]);
-    }
+    service = module.get<CommentsService>(CommentsService);
+    postModel = module.get<Model<Post>>(getModelToken(Post.name));
+    comunidadeModel = module.get<Model<Comunidade>>(getModelToken(Comunidade.name));
+    comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
+    userModel = module.get<Model<User>>(getModelToken(User.name));
 
       jest.clearAllMocks();
     });
@@ -248,7 +250,6 @@ describe('CommentsService', () => {
       post: new Types.ObjectId(mockPostId),
       conteudo: 'Test content',
       imagens: [],
-      conteudo: 'Test content',
     };
 
     const mockPost = {
@@ -583,7 +584,7 @@ describe('CommentsService', () => {
       expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should ignore imagens field and update when imagens provided in dto', async () => {
+    it('should throw BadRequestException when there are more than 4 images', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Valid content',
       };
@@ -646,7 +647,7 @@ describe('CommentsService', () => {
       } as any;
       const updatedCommentImagesOnly = {
         ...mockUpdatedComment,
-        conteudo: mockComment.conteudo,
+        conteudo: mockComment.post,
         imagens: ['new-image1.jpg', 'new-image2.jpg'],
       };
 
