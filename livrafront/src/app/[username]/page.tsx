@@ -18,6 +18,11 @@ import { Gamificacao, UserProfile } from "@/types/users";
 import { getSessionInfos } from "@/services/auth";
 import { toast } from "react-toastify";
 import { getProfile } from "@/services/userService";
+import { Post } from "@/types/post";
+import { postsService } from "@/services/posts";
+import { set } from "date-fns";
+import PostComponent from "@/components/post";
+import { User } from "@/types/auth";
 
 export default function UserProfilePage(){
     const router = useRouter();
@@ -27,8 +32,10 @@ export default function UserProfilePage(){
     const [isLoading, setIsLoading] = useState(true);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     
+    const [user, setUser] = useState<User>();
     const [userData, setUserData] = useState<UserProfile | null>(null);
     const [readlists, setReadlists] = useState<Readlist[]>([]);
+    const [posts, setPosts] = useState<Post[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -44,12 +51,15 @@ export default function UserProfilePage(){
                 }
                 const own = info.username === username;
                 setIsOwnProfile(own);
+                setUser(info);
 
                 // Carrega perfil + readlists:
                 const data = await getProfile(username);
                 setUserData(data);
                 const userReadlists = own ? await getOwnReadlists() : await getPublicReadlists(username);
                 setReadlists(userReadlists);
+                const userPosts = await postsService.getUserPosts(info.userId);
+                setPosts(userPosts);
             } catch (error) {
                 toast.error("Erro ao carregar dados do usuário.");
                 setError(error instanceof Error ? error.message : 'Erro ao carregar perfil do usuário');
@@ -70,6 +80,13 @@ export default function UserProfilePage(){
         router.back();
     };
 
+    const handleRefreshPosts = async () => {
+        if (!user) return;
+
+        const updatedPosts = await postsService.getUserPosts(user!.userId);
+        setPosts(updatedPosts);
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex bg-[#E5EEDF]">
@@ -86,7 +103,7 @@ export default function UserProfilePage(){
         );
     }
 
-    if (error || !userData) {
+    if (error || !userData || !user) {
         return (
             <div className="min-h-screen flex bg-[#E5EEDF]">
                 <Sidebar />
@@ -151,10 +168,20 @@ export default function UserProfilePage(){
                         </div>
                     </div>
                     <div className="w-1/2 bg-white rounded-lg p-4 my-4 flex flex-col">
-                        <Link className="text-h4 body-underline flex items-center gap-2 pb-4" href={`/${username}/posts`}>
-                            Postagens<ChevronRightIcon width={24} height={24}/>
-                        </Link>
-                        <div className="flex-1 overflow-y-auto">
+                        <h4 className="text-h4 body-underline flex items-center gap-2 pb-4">Postagens</h4>
+                        <div
+                            className="flex flex-col max-h-[80vh] flex-1 overflow-y-auto gap-2"
+                            style={{ maxHeight: 'min(500px, 80vh)' }}
+                        >
+                            {posts.map((post) => (
+                                <PostComponent
+                                    key={post._id}
+                                    post={post}
+                                    currentUserId={user.userId}
+                                    onDelete={handleRefreshPosts}
+                                    onUpdate={handleRefreshPosts}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

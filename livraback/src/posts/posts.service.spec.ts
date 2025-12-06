@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { QueueProducerService } from '../queue/queue.producer.service';
 import { ROUTING_KEYS, FILAS } from '../queue/queue.constants';
 
@@ -34,6 +35,42 @@ describe('PostsService', () => {
   const mockObjectId = new Types.ObjectId(mockUserId);
   const mockPostObjectId = new Types.ObjectId(mockPostId);
   const mockComunidadeObjectId = new Types.ObjectId(mockComunidadeId);
+
+  const mockComunidade = {
+    _id: mockComunidadeObjectId,
+    membros: [mockObjectId],
+  };
+
+  const mockSavedPost = {
+    _id: mockPostObjectId,
+    autor: mockObjectId,
+    comunidade: mockComunidadeObjectId,
+    conteudo: 'Test content',
+    curtidas: [],
+    status: PostStatus.ATIVO,
+    populate: jest.fn().mockReturnThis(),
+  };
+
+  const createPostDto: CreatePostDto = {
+    conteudo: 'Test content',
+    comunidade: mockComunidadeId,
+  };
+
+  const updatePostDto: UpdatePostDto = {
+    conteudo: 'Updated content',
+  };
+
+  const mockPost = {
+    _id: mockPostObjectId,
+    autor: { _id: mockObjectId },
+    comunidade: { _id: mockComunidadeObjectId },
+    status: PostStatus.ATIVO,
+  };
+
+  const mockUpdatedPost = {
+    ...mockPost,
+    conteudo: 'Updated content',
+  };
 
   const mockPostModel: any = jest.fn();
   mockPostModel.findById = jest.fn();
@@ -58,6 +95,7 @@ describe('PostsService', () => {
   const mockComentarioModel: any = {
     find: jest.fn(),
     lean: jest.fn(),
+    deleteMany: jest.fn(),
   };
 
   const mockQueueProducer = {
@@ -86,6 +124,13 @@ describe('PostsService', () => {
           useValue: mockComentarioModel,
         },
         {
+          provide: CloudinaryService,
+          useValue: {
+            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
+            deleteImage: jest.fn().mockResolvedValue(true),
+          },
+        },
+        {
           provide: QueueProducerService,
           useValue: mockQueueProducer,
         },
@@ -97,186 +142,168 @@ describe('PostsService', () => {
     comunidadeModel = module.get<Model<Comunidade>>(getModelToken(Comunidade.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
+
+    // Ensure .find resolves to an array by default to avoid errors
+    // in service code that calls .find(...).flatMap(...) or similar
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
     queueProducer = module.get(QueueProducerService) as jest.Mocked<QueueProducerService>;
 
     jest.clearAllMocks();
   });
 
   describe('createPost', () => {
-    const createPostDto: CreatePostDto = {
-      conteudo: 'Test post content',
-      comunidade: mockComunidadeId,
-      imagens: ['image1.jpg', 'image2.jpg'],
-      tags: ['tag1', 'tag2'],
-      publico: true,
-    };
+        // ...existing code...
 
-    const mockComunidade = {
-      _id: mockComunidadeObjectId,
-      membros: [mockObjectId],
-    };
+        beforeEach(() => {
+          mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
+          mockComunidadeModel.findOne.mockResolvedValue(null);
+        });
 
-    const mockSavedPost = {
-      _id: mockPostObjectId,
-      ...createPostDto,
-      autor: mockObjectId,
-      comunidade: mockComunidadeObjectId,
-      status: PostStatus.PUBLICADO,
-      populate: jest.fn().mockReturnThis(),
-    };
+        it('should create a post successfully with comunidade ID', async () => {
+          const postInstance = {
+            ...mockSavedPost,
+            save: jest.fn().mockResolvedValue(mockSavedPost),
+          };
 
-    beforeEach(() => {
-      mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-      mockComunidadeModel.findOne.mockResolvedValue(null);
-    });
+          (postModel as any).mockImplementation(() => postInstance);
+          mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
+          mockUserModel.findByIdAndUpdate.mockResolvedValue({});
 
-    it('should create a post successfully with comunidade ID', async () => {
-      const postInstance = {
-        ...mockSavedPost,
-        save: jest.fn().mockResolvedValue(mockSavedPost),
-      };
+          const result = await service.createPost(mockUserId, createPostDto, []);
 
-      (postModel as any).mockImplementation(() => postInstance);
-      mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
-      mockUserModel.findByIdAndUpdate.mockResolvedValue({});
-
-      const result = await service.createPost(mockUserId, createPostDto);
-
-      expect(comunidadeModel.findById).toHaveBeenCalledWith(mockComunidadeId);
-      expect(comunidadeModel.findOne).not.toHaveBeenCalled();
-      expect(postInstance.save).toHaveBeenCalled();
+          expect(comunidadeModel.findById).toHaveBeenCalledWith(mockComunidadeId);
+          expect(comunidadeModel.findOne).not.toHaveBeenCalled();
+          expect(postInstance.save).toHaveBeenCalled();
       
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
-        expect.objectContaining({
-          postId: mockPostId,
-          autorId: mockUserId,
-          comunidadeId: mockComunidadeId,
-        })
-      );
-      expect(queueProducer.publish).toHaveBeenCalledWith(
-        ROUTING_KEYS.METRICAS_POST_CRIADO,
-        expect.objectContaining({
-          postId: mockPostId,
-          comunidadeId: mockComunidadeId,
-        })
-      );
-      expect(queueProducer.publicarNaFila).toHaveBeenCalledWith(
-        FILAS.PROCESSAR_IMAGENS,
-        expect.objectContaining({
-          postId: mockPostId,
-          tipo: 'post',
-        })
-      );
-    });
+          expect(queueProducer.publish).toHaveBeenCalledWith(
+            ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
+            expect.objectContaining({
+              postId: mockPostId,
+              autorId: mockUserId,
+              comunidadeId: mockComunidadeId,
+            })
+          );
+          expect(queueProducer.publish).toHaveBeenCalledWith(
+            ROUTING_KEYS.METRICAS_POST_CRIADO,
+            expect.objectContaining({
+              postId: mockPostId,
+              comunidadeId: mockComunidadeId,
+            })
+          );
+          // No images provided, so publicarNaFila should not be called
+          expect(queueProducer.publicarNaFila).not.toHaveBeenCalled();
+        });
 
-    it('should create a post successfully with comunidade name when ID not found', async () => {
-      mockComunidadeModel.findById.mockResolvedValue(null);
-      mockComunidadeModel.findOne.mockResolvedValue(mockComunidade);
+        it('should create a post successfully with comunidade name when ID not found', async () => {
+          mockComunidadeModel.findById.mockResolvedValue(null);
+          mockComunidadeModel.findOne.mockResolvedValue(mockComunidade);
 
-      const postInstance = {
-        ...mockSavedPost,
-        save: jest.fn().mockResolvedValue(mockSavedPost),
-      };
+          const postInstance = {
+            ...mockSavedPost,
+            save: jest.fn().mockResolvedValue(mockSavedPost),
+          };
 
-      (postModel as any).mockImplementation(() => postInstance);
-      mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
-      mockUserModel.findByIdAndUpdate.mockResolvedValue({});
+          (postModel as any).mockImplementation(() => postInstance);
+          mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
+          mockUserModel.findByIdAndUpdate.mockResolvedValue({});
 
-      const result = await service.createPost(mockUserId, {
-        ...createPostDto,
-        comunidade: 'community-name',
-      });
+          const result = await service.createPost(mockUserId, {
+            ...createPostDto,
+            comunidade: 'community-name',
+          }, []);
 
-      expect(comunidadeModel.findById).not.toHaveBeenCalled();
-      expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'community-name' });
-    });
+          expect(comunidadeModel.findById).not.toHaveBeenCalled();
+          expect(comunidadeModel.findOne).toHaveBeenCalledWith({ nome: 'community-name' });
+        });
 
-    it('should throw NotFoundException when comunidade is not found', async () => {
-      mockComunidadeModel.findById.mockResolvedValue(null);
-      mockComunidadeModel.findOne.mockResolvedValue(null);
+        it('should throw NotFoundException when comunidade is not found', async () => {
+          mockComunidadeModel.findById.mockResolvedValue(null);
+          mockComunidadeModel.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.createPost(mockUserId, createPostDto)
-      ).rejects.toThrow(NotFoundException);
-    });
+          await expect(
+            service.createPost(mockUserId, createPostDto, [])
+          ).rejects.toThrow(NotFoundException);
+        });
 
-    it('should throw ForbiddenException when user is not a member', async () => {
-      const comunidadeWithoutUser = {
-        ...mockComunidade,
-        membros: [new Types.ObjectId('507f1f77bcf86cd799439099')],
-      };
-      mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
+        it('should throw ForbiddenException when user is not a member', async () => {
+          const comunidadeWithoutUser = {
+            ...mockComunidade,
+            membros: [new Types.ObjectId('507f1f77bcf86cd799439099')],
+          };
+          mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
 
-      await expect(
-        service.createPost(mockUserId, createPostDto)
-      ).rejects.toThrow(ForbiddenException);
-    });
+          await expect(
+            service.createPost(mockUserId, createPostDto, [])
+          ).rejects.toThrow(ForbiddenException);
+        });
 
-    it('should throw BadRequestException when more than 4 images are provided', async () => {
-      const invalidDto = {
-        ...createPostDto,
-        imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
-      };
+        it('should throw BadRequestException when more than 4 images are provided', async () => {
+          const invalidDto = {
+            ...createPostDto,
+            imagens: ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'],
+          };
 
-      await expect(
-        service.createPost(mockUserId, invalidDto)
-      ).rejects.toThrow(BadRequestException);
-    });
+          // Pass imagens as the third arg (files) to trigger the service-side length check
+          await expect(
+            service.createPost(mockUserId, invalidDto, invalidDto.imagens as any)
+          ).rejects.toThrow(BadRequestException);
+        });
 
-    it('should set status to PENDENTE_MODERACAO when solicitacao_revisao is true', async () => {
-      const dtoWithReview = {
-        ...createPostDto,
-        solicitacao_revisao: true,
-        categoria: PostCategoria.GERAL,
-      };
+        it('should set status to PENDENTE_MODERACAO when solicitacao_revisao is true', async () => {
+          const dtoWithReview = {
+            ...createPostDto,
+            solicitacao_revisao: true,
+            categoria: PostCategoria.GERAL,
+          };
 
-      const postInstance = {
-        save: jest.fn().mockResolvedValue({
-          ...mockSavedPost,
-          status: PostStatus.PENDENTE_MODERACAO,
-          categoria: PostCategoria.GERAL,
-          populate: jest.fn().mockReturnThis(),
-        }),
-      };
+          const postInstance = {
+            save: jest.fn().mockResolvedValue({
+              ...mockSavedPost,
+              status: PostStatus.PENDENTE_MODERACAO,
+              categoria: PostCategoria.GERAL,
+              populate: jest.fn().mockReturnThis(),
+            }),
+          };
 
-      (postModel as any).mockImplementation(() => postInstance);
-      mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
-      mockUserModel.findByIdAndUpdate.mockResolvedValue({});
+          (postModel as any).mockImplementation(() => postInstance);
+          mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
+          mockUserModel.findByIdAndUpdate.mockResolvedValue({});
 
-      await service.createPost(mockUserId, dtoWithReview);
+          await service.createPost(mockUserId, dtoWithReview, []);
 
-      expect(postInstance.save).toHaveBeenCalled();
-      expect(queueProducer.publish).not.toHaveBeenCalledWith(
-        ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
-        expect.anything()
-      );
-    });
+          expect(postInstance.save).toHaveBeenCalled();
+          expect(queueProducer.publish).not.toHaveBeenCalledWith(
+            ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
+            expect.anything()
+          );
+        });
 
-    it('should use default values when optional fields are not provided', async () => {
-      const minimalDto = {
-        conteudo: 'Test content',
-        comunidade: mockComunidadeId,
-      };
+        it('should use default values when optional fields are not provided', async () => {
+          const minimalDto = {
+            conteudo: 'Test content',
+            comunidade: mockComunidadeId,
+          };
 
-      const postInstance = {
-        save: jest.fn().mockResolvedValue({
-          ...mockSavedPost,
-          imagens: [],
-          tags: [],
-          publico: true,
-          populate: jest.fn().mockReturnThis(),
-        }),
-      };
+          const postInstance = {
+            save: jest.fn().mockResolvedValue({
+              ...mockSavedPost,
+              imagens: [],
+              tags: [],
+              publico: true,
+              populate: jest.fn().mockReturnThis(),
+            }),
+          };
 
-      (postModel as any).mockImplementation(() => postInstance);
-      mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
-      mockUserModel.findByIdAndUpdate.mockResolvedValue({});
+          (postModel as any).mockImplementation(() => postInstance);
+          mockComunidadeModel.findByIdAndUpdate.mockResolvedValue({});
+          mockUserModel.findByIdAndUpdate.mockResolvedValue({});
 
-      await service.createPost(mockUserId, minimalDto);
+          await service.createPost(mockUserId, minimalDto, []);
 
-      expect(postInstance.save).toHaveBeenCalled();
-    });
+          expect(postInstance.save).toHaveBeenCalled();
+        });
   });
 
   describe('likePost', () => {
@@ -316,6 +343,7 @@ describe('PostsService', () => {
       expect(queueProducer.publish).not.toHaveBeenCalled();
     });
 
+  });
   describe('removePost', () => {
     const mockPost = {
       _id: mockPostObjectId,
@@ -369,29 +397,7 @@ describe('PostsService', () => {
   });
 
   describe('updatePost', () => {
-    const updatePostDto: UpdatePostDto = {
-      conteudo: 'Updated content',
-      imagens: ['updated.jpg'],
-      tags: ['updated'],
-      publico: false,
-    };
-
-    const mockPost = {
-      _id: mockPostObjectId,
-      autor: { _id: mockObjectId },
-      comunidade: { _id: mockComunidadeObjectId },
-      status: PostStatus.PUBLICADO,
-    };
-
-    const mockComunidade = {
-      _id: mockComunidadeObjectId,
-      membros: [mockObjectId],
-    };
-
-    const mockUpdatedPost = {
-      ...mockPost,
-      ...updatePostDto,
-    };
+    // ...existing code...
 
     beforeEach(() => {
       mockPostModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(mockPost) });
@@ -676,5 +682,4 @@ describe('PostsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
-});
 });

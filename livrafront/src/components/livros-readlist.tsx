@@ -1,12 +1,12 @@
 "use client";
 
-import { Livro } from "@/types/livro";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 import Button from "./button";
 import ClosedBookIcon from "./icons/ClosedBookIcon";
 import RemoveIcon from "./icons/RemoveIcon";
+import { Livro } from "@/types/livros";
 
 interface LivrosReadlistProps {
     livro: Livro;

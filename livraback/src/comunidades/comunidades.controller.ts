@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ComunidadesService } from './comunidades.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -6,6 +6,8 @@ import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { CreateComunidadeDto } from './dto/create-comunidade.dto';
 import { UpdateComunidadeDto } from './dto/update-comunidade.dto';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @ApiBearerAuth()
 @UseGuards(SessionAuthGuard)
@@ -309,5 +311,85 @@ export class ComunidadesController {
     })
     async delete(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string) {
         return this.comunidadesService.deleteCommunity(user.userId, comunidadeNome);
+    }
+
+    @Patch(':comunidadeNome/capa')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: memoryStorage(),
+            fileFilter: (req, file, cb) => {
+            if (!file) return cb(null, true);
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+            const ok = allowedTypes.includes(file.mimetype);
+            if (!ok) return cb(new BadRequestException('Formato de imagem inválido'), false);
+            cb(null, true);
+            },
+            limits: {
+            fileSize: 5 * 1024 * 1024,
+            },
+        }),
+    )
+    @ApiOperation({
+        summary: 'Faz upload da capa da comunidade',
+        description: 'Faz upload da capa da comunidade pelo nome, sendo o usuário autenticado um moderador'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Capa da comunidade atualizada com sucesso'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Arquivo inválido'
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Usuário não é moderador'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    async uploadCapa(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string, @UploadedFile() file: Express.Multer.File) {
+        return this.comunidadesService.uploadCapa(user.userId, comunidadeNome, file);
+    }
+
+    @Patch(':comunidadeNome/banner')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: memoryStorage(),
+            fileFilter: (req, file, cb) => {
+            if (!file) return cb(null, true);
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+            const ok = allowedTypes.includes(file.mimetype);
+            if (!ok) return cb(new BadRequestException('Formato de imagem inválido'), false);
+            cb(null, true);
+            },
+            limits: {
+            fileSize: 5 * 1024 * 1024,
+            },
+        }),
+    )
+    @ApiOperation({
+        summary: 'Faz upload do banner da comunidade',
+        description: 'Faz upload do banner da comunidade pelo nome, sendo o usuário autenticado um moderador'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Banner da comunidade atualizado com sucesso'
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Arquivo inválido'
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Usuário não é moderador'
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Comunidade não encontrada'
+    })
+    async uploadBanner(@CurrentUser() user: CurrentUserDto, @Param('comunidadeNome') comunidadeNome: string, @UploadedFile() file: Express.Multer.File) {
+        return this.comunidadesService.uploadBanner(user.userId, comunidadeNome, file);
     }
 }

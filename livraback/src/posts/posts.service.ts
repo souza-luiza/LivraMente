@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post, PostCategoria, PostStatus } from '../schemas/post.schema';
@@ -8,6 +8,8 @@ import { User } from '../users/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { CloudinaryImage } from '../cloudinary/entities/image.schema';
 import { QueueProducerService } from '../queue/queue.producer.service';
 import { FILAS, ROUTING_KEYS } from '../queue/queue.constants';
 
@@ -18,10 +20,11 @@ export class PostsService {
     @InjectModel(Comunidade.name) private comunidadeModel: Model<Comunidade>,
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
+    private readonly cloudinary: CloudinaryService,
     private readonly queueProducer: QueueProducerService,
   ) {}
 
-  async createPost(userId: string, createPostDto: CreatePostDto) {
+  async createPost(userId: string, createPostDto: CreatePostDto, imagens: Express.Multer.File[]) {
     let comunidade;
     
     // Tentar buscar por ID primeiro
@@ -48,8 +51,24 @@ export class PostsService {
     }
 
     // Validar número de imagens (máximo 4)
-    if (createPostDto.imagens && createPostDto.imagens.length > 4) {
+    if (imagens && imagens.length > 4) {
       throw new BadRequestException('Máximo de 4 imagens por post');
+    }
+
+    // Upload das imagens para o Cloudinary
+    let imagesInfo: CloudinaryImage[] = [];
+
+    if (imagens) {
+      try {
+        imagesInfo = await Promise.all(
+          imagens.map((file) => this.cloudinary.uploadImage(file.buffer, 'livra/posts/imagens'))
+        );
+      } catch (error) {
+        await Promise.all(
+          imagesInfo.map(img => this.cloudinary.deleteImage(img.public_id))
+        );
+        throw new InternalServerErrorException('Falha ao enviar imagens para o servidor');
+      }
     }
 
     // Determinar status do post
@@ -63,14 +82,16 @@ export class PostsService {
     }
 
     const post = new this.postModel({
-      ...createPostDto,
+      conteudo: createPostDto.conteudo,
+      solicitacao_revisao: createPostDto.solicitacao_revisao || false,
       autor: new Types.ObjectId(userId),
       comunidade: comunidade._id, 
       categoria,
       status,
-      imagens: createPostDto.imagens || [],
+      imagens: imagesInfo,
       tags: createPostDto.tags || [],
-      publico: createPostDto.publico !== undefined ? createPostDto.publico : true,
+      livro_referenciado: createPostDto.livro_referenciado ? new Types.ObjectId(createPostDto.livro_referenciado) : undefined,
+      publico: createPostDto.publico ?? true,
     });
 
     const savedPost = await post.save();
@@ -114,10 +135,10 @@ export class PostsService {
       }
 
       // Processar imagens se houver
-      if (createPostDto.imagens && createPostDto.imagens.length > 0) {
+      if (imagesInfo && imagesInfo.length > 0) {
         await this.queueProducer.publicarNaFila(FILAS.PROCESSAR_IMAGENS, {
           postId: (savedPost._id as Types.ObjectId).toString(),
-          imagens: createPostDto.imagens,
+          imagens: imagesInfo,
           tipo: 'post',
         });
       }
@@ -193,6 +214,23 @@ export class PostsService {
 
     if (!isOwner && !isModerator) throw new ForbiddenException('Usuário não tem permissão para deletar este post');
 
+    // apagar imagens dos comentários associados
+    const comentarios = await this.comentarioModel.find({ post: post._id }, 'imagens' );
+    const imagesToDelete = comentarios.flatMap(c => c.imagens.map(img => img.public_id));
+
+    if (imagesToDelete.length > 0)
+      await Promise.all(imagesToDelete.map(id => this.cloudinary.deleteImage(id)));
+
+    // apagar comentários
+    await this.comentarioModel.deleteMany({ post: post._id });
+        
+    // apagar imagens do cloudinary
+    if (post.imagens && post.imagens.length > 0) {
+      await Promise.all(
+        post.imagens.map(img => this.cloudinary.deleteImage(img.public_id))
+      );
+    }
+
     await Promise.all([
       this.postModel.findByIdAndDelete(postId),
       this.comunidadeModel.updateOne(
@@ -228,7 +266,7 @@ export class PostsService {
     if (post.status === PostStatus.PENDENTE_MODERACAO) throw new ForbiddenException('Posts pendentes de moderação não podem ser editados');
     
     // Atualizar post
-    const allowedFields: (keyof UpdatePostDto)[] = ['conteudo', 'imagens', 'solicitacao_revisao', 'publico', 'tags', 'livro_referenciado'];
+    const allowedFields: (keyof UpdatePostDto)[] = ['conteudo', 'solicitacao_revisao', 'publico', 'tags', 'livro_referenciado'];
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updatePostDto).filter(([key]) =>
@@ -340,5 +378,18 @@ export class PostsService {
     .lean();
 
     return comments;
+  }
+
+  async getUserPosts(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+
+    const posts = await this.postModel.find({ autor: user._id })
+    .populate('autor', 'username avatarUrl')
+    .populate("comunidade", "nome")
+    .sort({ createdAt: -1 })
+    .lean();
+
+    return posts;
   }
 }

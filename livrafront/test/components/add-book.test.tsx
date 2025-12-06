@@ -8,7 +8,7 @@ import AddBook from "@/components/add-book";
 // Mock dos serviços externos
 jest.mock("@/services/livros", () => ({
   livrosService: {
-    getLivros: jest.fn(),
+    getBooks: jest.fn(),
   }
 }));
 
@@ -49,7 +49,7 @@ describe("AddBook Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (livrosService.getLivros as jest.Mock).mockResolvedValue(mockLivros);
+    (livrosService.getBooks as jest.Mock).mockResolvedValue(mockLivros);
     (addBookToReadlist as jest.Mock).mockResolvedValue({});
   });
 

@@ -7,6 +7,7 @@ import { Comunidade, ComunidadeSchema } from '../comunidades/entities/comunidade
 import { User, UserSchema } from '../users/entities/user.entity';
 import { Comentario, ComentarioSchema } from '../schemas/comentario.schema';
 import { QueueModule } from '../queue/queue.module'; 
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { QueueModule } from '../queue/queue.module';
       { name: User.name, schema: UserSchema },
       { name: Comentario.name, schema: ComentarioSchema}
     ]),
+    CloudinaryModule,
     QueueModule,
   ],
   controllers: [PostsController],
