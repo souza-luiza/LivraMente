@@ -223,7 +223,7 @@ describe('NotificacaoItem', () => {
         expect(mockPush).toHaveBeenCalledWith('/comunidade/comunidade-teste/postagem/post-456');
     });
 
-    it('deve exibir inicial do username se não houver foto de perfil', () => {
+    it('deve exibir imagem padrão se não houver foto de perfil', () => {
         const notifSemFoto: Notificacao = {
             ...notificacaoNaoLida,
             remetente: {
@@ -234,7 +234,8 @@ describe('NotificacaoItem', () => {
 
         render(<NotificacaoItem notificacao={notifSemFoto} />);
 
-        expect(screen.getByText('J')).toBeInTheDocument();
+        const img = screen.getByAltText('@joao');
+        expect(img).toHaveAttribute('src', '/AbstractUser.png');
     });
 
     it('deve exibir ícone de info quando não houver remetente', () => {

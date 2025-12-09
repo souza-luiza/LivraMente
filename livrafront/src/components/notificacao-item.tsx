@@ -97,17 +97,11 @@ export default function NotificacaoItem({
                         onClick={navegarParaPerfil}
                         title={`Ver perfil de @${notificacao.remetente.username}`}
                     >
-                        {notificacao.remetente.foto_perfil ? (
-                            <img 
-                                src={notificacao.remetente.foto_perfil} 
-                                alt={`@${notificacao.remetente.username}`}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-primary-300 text-primary-800 font-semibold">
-                                {notificacao.remetente.username.charAt(0).toUpperCase()}
-                            </div>
-                        )}
+                        <img 
+                            src={notificacao.remetente.foto_perfil || '/AbstractUser.png'} 
+                            alt={`@${notificacao.remetente.username}`}
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                 ) : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary-300">
