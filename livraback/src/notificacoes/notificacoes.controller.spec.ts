@@ -124,6 +124,33 @@ describe('NotificacoesController', () => {
     });
   });
 
+  describe('removerTodas', () => {
+    it('deve remover todas as notificações do usuário', async () => {
+      service.removerTodas = jest.fn().mockResolvedValue(5);
+
+      const result = await controller.removerTodas(mockRequest);
+
+      expect(service.removerTodas).toHaveBeenCalledWith(
+        mockRequest.session.user.userId
+      );
+      expect(result).toEqual({ 
+        message: 'Todas as notificações removidas',
+        count: 5 
+      });
+    });
+
+    it('deve retornar count 0 se não houver notificações', async () => {
+      service.removerTodas = jest.fn().mockResolvedValue(0);
+
+      const result = await controller.removerTodas(mockRequest);
+
+      expect(result).toEqual({ 
+        message: 'Todas as notificações removidas',
+        count: 0 
+      });
+    });
+  });
+
   describe('streamNotificacoes (SSE)', () => {
     it('deve retornar Observable de MessageEvent', (done) => {
       const subject = new Subject();

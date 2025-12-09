@@ -248,6 +248,52 @@ describe('NotificacoesService', () => {
       const deleteCall = model.deleteOne.mock.calls[0][0];
       expect(deleteCall).toHaveProperty('usuario');
     });
+
+    it('deve lançar NotFoundException se notificação não existir', async () => {
+      const notificacaoId = '507f1f77bcf86cd799439011';
+      const userId = '507f1f77bcf86cd799439012';
+
+      model.deleteOne.mockResolvedValue({ deletedCount: 0 } as any);
+
+      await expect(service.remover(notificacaoId, userId)).rejects.toThrow('Notificação não encontrada');
+    });
+  });
+
+  describe('removerTodas', () => {
+    it('deve remover todas as notificações do usuário', async () => {
+      const userId = '507f1f77bcf86cd799439011';
+
+      model.deleteMany = jest.fn().mockResolvedValue({ deletedCount: 5 } as any);
+
+      const result = await service.removerTodas(userId);
+
+      expect(model.deleteMany).toHaveBeenCalledWith({
+        usuario: expect.any(Types.ObjectId),
+      });
+      expect(result).toBe(5);
+    });
+
+    it('deve retornar 0 se não houver notificações para remover', async () => {
+      const userId = '507f1f77bcf86cd799439011';
+
+      model.deleteMany = jest.fn().mockResolvedValue({ deletedCount: 0 } as any);
+
+      const result = await service.removerTodas(userId);
+
+      expect(result).toBe(0);
+    });
+
+    it('deve usar ObjectId correto para o usuário', async () => {
+      const userId = '507f1f77bcf86cd799439011';
+
+      model.deleteMany = jest.fn().mockResolvedValue({ deletedCount: 3 } as any);
+
+      await service.removerTodas(userId);
+
+      const deleteCall = (model.deleteMany as jest.Mock).mock.calls[0][0];
+      expect(deleteCall.usuario).toBeInstanceOf(Types.ObjectId);
+      expect(deleteCall.usuario.toString()).toBe(userId);
+    });
   });
 
   describe('SSE - registrarClienteSSE', () => {
