@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Sidebar from '../../src/components/sidebar'
+import { logoutUser } from '@/services/auth'
 
 jest.mock('../../src/components/icons/LogoIcon', () => ({
   __esModule: true,
@@ -59,6 +60,27 @@ jest.mock('../../src/components/button', () => ({
     )
   },
 }))
+
+const mockResetChat = jest.fn();
+
+jest.mock('@/contexts/chat-context', () => ({
+  useChat: () => ({
+    resetChat: mockResetChat
+  })
+}));
+
+jest.mock('@/services/auth', () => ({
+  logoutUser: jest.fn().mockResolvedValue(true),
+  getSessionInfos: jest.fn().mockResolvedValue({ 
+    username: 'teste', 
+    avatarUrl: 'img.png' 
+  })
+}));
+
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush })
+}));
 
 describe('Sidebar Component', () => {
   beforeEach(() => {
@@ -214,6 +236,19 @@ describe('Sidebar Component', () => {
       
       await user.hover(profileButton)
       expect(profileButton).toBeInTheDocument()
+    })
+
+    it('chama resetChat e logoutUser quando o botão de sair é clicado', async () => {
+      const user = userEvent.setup()
+      render(<Sidebar />)
+
+      const logoutButton = screen.getByTestId('button-sair')
+      await user.click(logoutButton)
+      
+      expect(mockResetChat).toHaveBeenCalledTimes(1)
+
+      expect(logoutUser).toHaveBeenCalledTimes(1)
+      expect(mockPush).toHaveBeenCalledWith('/entrar')
     })
   })
 

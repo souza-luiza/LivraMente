@@ -94,16 +94,28 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     pendingCount.current += 1;
     if (isMounted.current) setIsLoading(true);
 
-    setMessages((prev) =>
-      trim([
-        ...prev,
-        { id: crypto.randomUUID(), role: 'user', content: userPrompt, ts: Date.now() },
-      ]),
-    );
+    const newMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: userPrompt,
+      ts: Date.now()
+    };
+
+    setMessages((prev) => trim([...prev, newMessage]));
 
     try {
-      const response = await postAnalyzeAgent({ userPrompt } as AgentInputDTO);
+      const historyPayload = messages.map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      }));
+
+      const response = await postAnalyzeAgent({
+        userPrompt,
+        history: historyPayload
+      } as AgentInputDTO);
+
       if (!isMounted.current) return;
+
       setMessages((prev) =>
         trim([
           ...prev,
@@ -118,19 +130,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages((prev) =>
         trim([
           ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: `Ops: ${errorMessage}`,
-            ts: Date.now(),
-          },
+          { id: crypto.randomUUID(), role: 'assistant', content: `Ops: ${errorMessage}`, ts: Date.now() },
         ]),
       );
     } finally {
       pendingCount.current = Math.max(0, pendingCount.current - 1);
       if (isMounted.current && pendingCount.current === 0) setIsLoading(false);
     }
-  }, []);
+  }, [messages]);
 
   const value = useMemo<ChatContextValue>(
     () => ({ messages, isOpen, isLoading, toggleOpen, sendMessage, resetChat }),

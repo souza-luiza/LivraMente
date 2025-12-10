@@ -14,10 +14,12 @@ import { toast } from "react-toastify";
 import ToastNotification from '@/components/toast-notification';
 import { useRouter } from "next/navigation";
 import { User } from "@/types/auth";
+import { useChat } from "@/contexts/chat-context";
 
 export default function Sidebar() {
     const router = useRouter();
     const [userInfo, setUserInfo] = useState<User | null>(null);
+    const { resetChat } = useChat();
 
     useEffect(() => {
         async function fetchUserInfo() {
@@ -31,6 +33,7 @@ export default function Sidebar() {
 
     const handleClick = async () => {
         try {
+            resetChat();
             await logoutUser();
             router.push('/entrar');
         } catch(error) {
