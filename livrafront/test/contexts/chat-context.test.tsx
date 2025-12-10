@@ -97,6 +97,7 @@ it('retorna fallback seguro quando usado fora de um ChatProvider e não lança',
     expect(mockedPostAnalyzeAgent).toHaveBeenCalledTimes(1);
     expect(mockedPostAnalyzeAgent).toHaveBeenCalledWith({
       userPrompt: 'Oi, assistente!',
+      history: [],
     });
   });
 
@@ -129,6 +130,7 @@ it('retorna fallback seguro quando usado fora de um ChatProvider e não lança',
     expect(mockedPostAnalyzeAgent).toHaveBeenCalledTimes(1);
     expect(mockedPostAnalyzeAgent).toHaveBeenCalledWith({
       userPrompt: 'Oi sem sessão',
+      history: [],
     });
   });
 
