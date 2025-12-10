@@ -140,7 +140,7 @@ export class LlmAgentService {
     ];
 
     if (frasesDeAjuda.includes(prompt)) {
-      return "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
+      return "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
     }
 
     const historyLimit = maxHistoryMessages ?? this.MAX_HISTORY_MESSAGES;
