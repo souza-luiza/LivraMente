@@ -96,6 +96,7 @@ describe('WidgetChat', () => {
     // garante que o serviço foi chamado corretamente (sem token)
     expect(postAnalyzeAgent).toHaveBeenCalledWith({
       userPrompt: 'Oi, assistente!',
+      history: [],
     });
   });
 
@@ -129,6 +130,7 @@ describe('WidgetChat', () => {
 
     expect(postAnalyzeAgent).toHaveBeenCalledWith({
       userPrompt: 'Oi sem sessão',
+      history: [],
     });
   });
 });
