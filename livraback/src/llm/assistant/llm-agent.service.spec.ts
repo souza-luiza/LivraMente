@@ -39,7 +39,7 @@ jest.mock('@langchain/community/tools/duckduckgo_search', () => ({
 const mockTools = {
   get_user_stories: { name: 'get_user_stories' },
   get_recent_stories: { name: 'get_recent_stories' },
-  get_popular_posts_in_community: { name: 'get_popular_posts_in_community' },
+  //get_popular_posts_in_community: { name: 'get_popular_posts_in_community' },
   get_community: { name: 'get_community' },
   get_popular_communities: { name: 'get_popular_communities' },
   find_readlist_by_name: { name: 'find_readlist_by_name' },
@@ -52,7 +52,7 @@ const mockTools = {
 const mockLlmToolsService = {
   createGetUserStoriesTool: jest.fn(() => mockTools.get_user_stories),
   createGetRecentStoriesTool: jest.fn(() => mockTools.get_recent_stories),
-  createGetPopularPostsInCommunityTool: jest.fn(() => mockTools.get_popular_posts_in_community),
+  //createGetPopularPostsInCommunityTool: jest.fn(() => mockTools.get_popular_posts_in_community),
   createGetCommunitiesTool: jest.fn(() => mockTools.get_community),
   createGetPopularCommunitiesTool: jest.fn(() => mockTools.get_popular_communities),
   createFindReadlistByNameTool: jest.fn(() => mockTools.find_readlist_by_name),
@@ -97,7 +97,7 @@ describe('LlmAgentService', () => {
 
   describe('Respostas Hardcoded (Frases de Ajuda)', () => {
     const userId = '123';
-    const respostaEsperada = "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, posts populares em comunidades, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
+    const respostaEsperada = "Eu posso te ajudar a encontrar informações sobre histórias, comunidades e readlists. Posso buscar suas histórias criadas, histórias recentes do site, comunidades populares, detalhes de comunidades específicas, suas readlists e readlists favoritas. Também posso registrar seu progresso de leitura. No entanto, não posso criar, deletar, adicionar ou remover itens. Para essas ações, você precisará usar a interface do site.";
 
     const frasesDeAjuda = [
       'ajuda',

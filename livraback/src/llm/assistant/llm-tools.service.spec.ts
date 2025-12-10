@@ -179,6 +179,7 @@ describe('LlmToolsService', () => {
       expect(result).toBe(JSON.stringify(mockCommunity));
     });
 
+    /*
     it('createGetPopularPostsInCommunityTool: should delegate to findAllPosts', async () => {
       const communityName = 'Ficção';
       mockComunidadesService.findAllPosts.mockResolvedValue([mockStory]);
@@ -189,6 +190,7 @@ describe('LlmToolsService', () => {
       expect(mockComunidadesService.findAllPosts).toHaveBeenCalledWith(communityName);
       expect(result).toBe(JSON.stringify([mockStory]));
     });
+    */
   });
 
   // --- Testes de Ferramentas de Readlist ---

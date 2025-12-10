@@ -101,6 +101,7 @@ export class LlmToolsService {
     });
   }
 
+  /*
   public createGetPopularPostsInCommunityTool(): DynamicStructuredTool {
     const toolSchema = z.object({
       communityName: z.string().describe('O nome ou slug da comunidade'),
@@ -118,6 +119,7 @@ export class LlmToolsService {
       },
     });
   }
+  */
 
   // --- Ferramentas de Readlist ---
 
