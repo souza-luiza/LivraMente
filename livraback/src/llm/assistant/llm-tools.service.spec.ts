@@ -284,7 +284,7 @@ describe('LlmToolsService', () => {
         safeSearch: 1,
       }));
 
-      expect(result).toContain('Resultados da busca no DuckDuckGo:');
+      expect(result).toContain('Resultados encontrados:');
       expect(result).toContain('Título: NestJS Docs');
       expect(result).not.toContain('Result 4');
     });
@@ -295,7 +295,7 @@ describe('LlmToolsService', () => {
       const tool = service.createDuckDuckGoTool();
       const result = await tool.func({ query: 'algo_nada_ver' });
 
-      expect(result).toBe('Nenhum resultado encontrado na internet para esta pesquisa.');
+      expect(result).toBe('Nenhum resultado encontrado. Tente reformular a pergunta.');
     });
 
     it('deve tratar erros da biblioteca de busca', async () => {
@@ -305,7 +305,7 @@ describe('LlmToolsService', () => {
       const tool = service.createDuckDuckGoTool();
       const result = await tool.func({ query: 'erro' });
 
-      expect(result).toContain(`Erro ao pesquisar na internet: ${errorMessage}`);
+      expect(result).toContain(`Não foi possível realizar a busca no momento. Por favor, tente novamente.`);
     });
   });
 });
