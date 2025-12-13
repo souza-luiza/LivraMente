@@ -229,9 +229,9 @@ describe('LlmAgentService', () => {
       );
     });
 
-    it('deve limitar o histórico ao padrão de 10 mensagens', async () => {
-      // Cria 20 mensagens de histórico
-      const history = Array.from({ length: 20 }, (_, i) => ({
+    it('deve limitar o histórico ao padrão de 5 mensagens', async () => {
+      // Cria 10 mensagens de histórico
+      const history = Array.from({ length: 10 }, (_, i) => ({
         role: i % 2 === 0 ? 'user' : 'assistant',
         content: `Mensagem ${i + 1}`
       }));
@@ -241,17 +241,17 @@ describe('LlmAgentService', () => {
       const invokeCall = mockAgentRunnable.invoke.mock.calls[0][0];
       const sentMessages = invokeCall.messages;
 
-      // Deve ter 11 mensagens: 10 do histórico + 1 nova
-      expect(sentMessages).toHaveLength(11);
+      // Deve ter 6 mensagens: 5 do histórico + 1 nova
+      expect(sentMessages).toHaveLength(6);
       
-      // Deve ter as 10 ÚLTIMAS mensagens do histórico
-      expect(sentMessages[0].content).toContain('Mensagem 11'); // Primeira das últimas 10
-      expect(sentMessages[9].content).toContain('Mensagem 20'); // Última do histórico
-      expect(sentMessages[10].content).toBe('Nova pergunta'); // Nova mensagem
+      // Deve ter as 5 ÚLTIMAS mensagens do histórico
+      expect(sentMessages[0].content).toContain('Mensagem 6'); // Primeira das últimas 5
+      expect(sentMessages[4].content).toContain('Mensagem 10'); // Última do histórico
+      expect(sentMessages[5].content).toBe('Nova pergunta'); // Nova mensagem
     });
 
     it('deve respeitar o parâmetro maxHistoryMessages customizado', async () => {
-      const history = Array.from({ length: 10 }, (_, i) => ({
+      const history = Array.from({ length: 5 }, (_, i) => ({
         role: i % 2 === 0 ? 'user' : 'assistant',
         content: `Mensagem ${i + 1}`
       }));
@@ -264,7 +264,7 @@ describe('LlmAgentService', () => {
 
       // Deve ter 5 mensagens: 4 do histórico + 1 nova
       expect(sentMessages).toHaveLength(5);
-      expect(sentMessages[0].content).toContain('Mensagem 7'); // Primeira das últimas 4
+      expect(sentMessages[0].content).toContain('Mensagem 2'); // Primeira das últimas 4
     });
 
     it('deve logar estatísticas do histórico', async () => {
