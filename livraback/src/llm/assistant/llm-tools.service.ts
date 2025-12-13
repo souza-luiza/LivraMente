@@ -215,24 +215,32 @@ export class LlmToolsService {
 
     return new DynamicStructuredTool({
       name: 'duckduckgo_search',
-      description: 'Pesquisa na internet por fatos atuais, notícias ou informações gerais que não estão no banco de dados.',
+      description: 'Pesquisa na internet por fatos atuais, notícias ou informações gerais.',
       schema: toolSchema,
       func: async ({ query }) => {
         try {
-          const searchResults = await search(query, { safeSearch: SafeSearchType.MODERATE });
+          console.log(`[DuckDuckGo] Pesquisando: ${query}`);
+
+          const searchResults = await Promise.race([
+            search(query, { safeSearch: SafeSearchType.MODERATE }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Timeout')), 10000)
+            )
+          ]) as any;
 
           if (!searchResults.results || searchResults.results.length === 0) {
-            return "Nenhum resultado encontrado na internet para esta pesquisa.";
+            return "Nenhum resultado encontrado. Tente reformular a pergunta.";
           }
 
           const topResults = searchResults.results
             .slice(0, 3)
-            .map((r) => `Título: ${r.title}\nLink: ${r.url}\nResumo: ${r.description}`)
+            .map((r) => `Título: ${r.title}\nResumo: ${r.description}`)
             .join('\n\n---\n\n');
 
-          return `Resultados da busca no DuckDuckGo:\n${topResults}`;
+          return `Resultados encontrados:\n${topResults}`;
         } catch (e) {
-          return `Erro ao pesquisar na internet: ${e instanceof Error ? e.message : String(e)}`;
+          console.error('[DuckDuckGo] Erro:', e);
+          return `Não foi possível realizar a busca no momento. Por favor, tente novamente.`;
         }
       },
     });

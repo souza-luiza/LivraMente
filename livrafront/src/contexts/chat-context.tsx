@@ -104,10 +104,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages((prev) => trim([...prev, newMessage]));
 
     try {
-      const historyPayload = messages.map(msg => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
-      }));
+      const historyPayload = messages
+        .filter(msg => !msg.content.startsWith('Desculpe, ocorreu um erro') &&
+          !msg.content.startsWith('Ops:'))
+        .map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        }));
 
       const response = await postAnalyzeAgent({
         userPrompt,
