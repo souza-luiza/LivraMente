@@ -5,7 +5,7 @@ import { conectarNotificacoes, getNotificacoes } from "@/services/mensageria";
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { titleToSlug } from '@/lib/slugify';
-import InfoIcon from '@/components/icons/InfoIcon';
+import { Notificacao } from '@/types/notificacao';
 
 //Solicita permissão de notificações do navegador (primeiro acesso)
 export function useSolicitaPermissao() {
@@ -24,7 +24,7 @@ export function useNotificacoes() {
     const { deveNotificar } = useNotPrefStore();
     const router = useRouter();
     
-    const navegarParaConteudo = (notificacao: any) => {
+    const navegarParaConteudo = (notificacao: Notificacao) => {
         switch (notificacao.tipo) {
             case 'novo_seguidor':
             case 'entrar_comunidade':
@@ -79,7 +79,6 @@ export function useNotificacoes() {
                             },
                             style: { cursor: 'pointer' },
                             className: 'notificacao-sse-toast',
-                            icon: createElement(InfoIcon, { size: 24, className: 'text-primary-600' }),
                         });
                         
                         // Mostrar notificação do navegador
