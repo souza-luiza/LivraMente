@@ -415,14 +415,3 @@ input {
   border-right: 10px solid rgb(229, 231, 235); /* border-gray-200 */
   border-bottom: 14px solid transparent;
 }
-
-/* Personalização das notificações toast */
-.notificacao-sse-toast {
-  background-color: white !important;
-  border-left: 4px solid var(--primary-600) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.notificacao-sse-toast .Toastify__progress-bar {
-  background: var(--primary-600) !important;
-}

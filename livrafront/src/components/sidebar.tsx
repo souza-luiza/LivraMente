@@ -11,6 +11,7 @@ import SettingsIcon from "./icons/SettingsIcon";
 import LogoutIcon from "./icons/LogoutIcon";
 import { getSessionInfos, logoutUser } from "@/services/auth";
 import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 import { useRouter } from "next/navigation";
 import { User } from "@/types/auth";
 
@@ -64,7 +65,7 @@ export default function Sidebar() {
                             path={userInfo?.username? `/${userInfo.username}` : "/perfil"}
                             tooltip="Perfil"
                         />
-                    <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" path="/notificacoes" tooltip="Notificações" />
+                    <Button icon={<NotificationsIcon />} colorScheme="light-green" size="large" path="/" tooltip="Notificações" />
                     <Button icon={<SettingsIcon />} colorScheme="light-green" size="large" path="/configuracoes" tooltip="Configurações" />
                 </div>
                 <div>
@@ -77,6 +78,7 @@ export default function Sidebar() {
                     />
                 </div>
             </div>
+            <ToastNotification />
         </nav>
     );
 }

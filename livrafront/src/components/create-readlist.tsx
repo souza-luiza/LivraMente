@@ -7,6 +7,7 @@ import { createReadlistSchema } from '@/lib/validations/create-readlist';
 import { ZodError } from 'zod';
 import Image from 'next/image';
 import { toast } from "react-toastify";
+import ToastNotification from "./toast-notification";
 import EditIcon from "./icons/EditIcon";
 import ReadlistCropModal from "./ReadlistCropModal";
 
@@ -293,6 +294,7 @@ export function CreateReadlist({
         onClose={handleCropCancel}
         onSave={handleCropSave}
       />
+      <ToastNotification />
     </div>
   );
 }

@@ -955,7 +955,7 @@ describe('CreateCommunityPage', () => {
       
       const longName = 'A'.repeat(100);
       const nameInput = screen.getByTestId('nome-comunidade');
-      fireEvent.change(nameInput, { target: { value: longName } });
+      await userEvent.type(nameInput, longName);
 
       expect(nameInput).toHaveValue(longName);
     });

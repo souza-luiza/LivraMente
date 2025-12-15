@@ -6,6 +6,7 @@ import Button from "@/components/button";
 import Image from "next/image";
 import Input from "@/components/general-input";
 import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 import TrashIcon from "@/components/icons/TrashIcon";
 import SaveIcon from "@/components/icons/SaveIcon";
 import EditIcon from "@/components/icons/EditIcon";
@@ -274,6 +275,7 @@ export default function EditProfilePage() {
         onClose={handleCropCancel}
         onSave={handleCropSave}
       />
+      <ToastNotification />
     </div>
   );
 }

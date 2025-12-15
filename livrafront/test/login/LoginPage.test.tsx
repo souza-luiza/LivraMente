@@ -4,20 +4,12 @@ import '@testing-library/jest-dom'
 import LoginPage from '@/app/entrar/page'
 import { loginUser } from '@/services/auth'
 import { useRouter } from 'next/navigation' 
-import { toast } from 'react-toastify'
 
 jest.mock('@/services/auth')
 const mockLoginUser = loginUser as jest.MockedFunction<typeof loginUser>
 const mockPush = jest.fn()
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
-}))
-
-jest.mock('react-toastify', () => ({
-  toast: {
-    error: jest.fn(),
-    success: jest.fn(),
-  },
 }))
 
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
@@ -69,12 +61,12 @@ describe('LoginPage', () => {
     mockLoginUser.mockRejectedValueOnce(new Error('Credenciais inválidas'))
     
     render(<LoginPage />)
-    await user.type(screen.getByLabelText('E-mail'), 'wrong@email.com')
-    await user.type(screen.getByLabelText('Senha'), 'wrongpass')
-    await user.click(screen.getByText('Entrar'))
+  await user.type(screen.getByLabelText('E-mail'), 'wrong@email.com')
+  await user.type(screen.getByLabelText('Senha'), 'wrongpass')
+  await user.click(screen.getByText('Entrar'))
     
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Credenciais inválidas')
+      expect(screen.getByText(/Credenciais inválidas/)).toBeInTheDocument()
     })
   })
   // Removed redundant test: "deve fazer login e redirecionar para página principal/feed"

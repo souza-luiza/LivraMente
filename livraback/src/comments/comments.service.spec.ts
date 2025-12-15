@@ -13,7 +13,6 @@ import { Comunidade } from '../comunidades/entities/comunidade.entity';
 import { Comentario } from '../schemas/comentario.schema';
 import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
-import { QueueProducerService } from '../queue/queue.producer.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 describe('CommentsService', () => {
@@ -42,19 +41,7 @@ describe('CommentsService', () => {
   };
 
   const mockComentarioModel: any = jest.fn();
-  // Mock para findById com populate e autor.toString
-  mockComentarioModel.findById = jest.fn(() => ({
-    populate: jest.fn().mockImplementation((...args) => {
-      // Simula o comentário retornado pelo populate
-      return Promise.resolve({
-        _id: mockCommentId,
-        autor: { toString: () => mockUserId },
-        post: { _id: mockPostId, comunidade: { nome: 'Comunidade Teste' }, autor: { toString: () => mockUserId } },
-        curtidas: [],
-      });
-    })
-  }));
-
+  mockComentarioModel.findById = jest.fn();
   mockComentarioModel.findOne = jest.fn();
   mockComentarioModel.findOneAndUpdate = jest.fn();
   mockComentarioModel.find = jest.fn();
@@ -66,59 +53,25 @@ describe('CommentsService', () => {
     find: jest.fn(),
   };
 
-  const mockQueueProducer = {
-    publish: jest.fn().mockResolvedValue(undefined),
-  };
-
-    beforeEach(async () => {
-      // Sempre retorna objeto com método populate e propriedades esperadas
-      mockComentarioModel.findById.mockImplementation((id) => ({
-        populate: jest.fn().mockImplementation(() => {
-          if (id === 'notfound' || id === undefined || id === null) return Promise.resolve(null);
-          return Promise.resolve({
-            _id: mockCommentId,
-            autor: {
-              toString: () => mockUserId,
-              equals: (uid: any) => uid.toString() === mockUserId,
-              _id: { equals: (uid: any) => uid.toString() === mockUserId }
-            },
-            post: {
-              _id: mockPostId,
-              comunidade: { nome: 'Comunidade Teste', _id: 'comunidadeId' },
-              autor: { toString: () => mockUserId, equals: (uid: any) => uid.toString() === mockUserId }
-            },
-            curtidas: [
-              { equals: (uid: any) => uid.toString() === mockUserId }
-            ],
-          });
-        })
-      }));
-      // Para postModel.findById usado em createComment
-      mockPostModel.findById.mockImplementation((id) => {
-        if (id === 'notfound' || id === undefined || id === null) return null;
-        return {
-          autor: { toString: () => mockUserId, equals: (uid: any) => uid.toString() === mockUserId, _id: { equals: (uid: any) => uid.toString() === mockUserId } },
-          comentarios: [],
-          save: jest.fn(),
-          comunidade: { nome: 'Comunidade Teste', _id: 'comunidadeId' },
-        };
-      });
-
-      const module = await Test.createTestingModule({
-        providers: [
-          CommentsService,
-          { provide: getModelToken(Post.name), useValue: mockPostModel },
-          { provide: getModelToken(Comunidade.name), useValue: mockComunidadeModel },
-          { provide: getModelToken(Comentario.name), useValue: mockComentarioModel },
-          { provide: getModelToken(User.name), useValue: mockUserModel },
-          { provide: QueueProducerService, useValue: mockQueueProducer },
-        // provide a simple CloudinaryService mock so the service's constructor can resolve
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CommentsService,
         {
-          provide: CloudinaryService,
-          useValue: {
-            uploadImage: jest.fn().mockResolvedValue({ secure_url: 'https://example.com/img.jpg', public_id: 'public-id' }),
-            deleteImage: jest.fn().mockResolvedValue(true),
-          },
+          provide: getModelToken(Post.name),
+          useValue: mockPostModel,
+        },
+        {
+          provide: getModelToken(Comunidade.name),
+          useValue: mockComunidadeModel,
+        },
+        {
+          provide: getModelToken(Comentario.name),
+          useValue: mockComentarioModel,
+        },
+        {
+          provide: getModelToken(User.name),
+          useValue: mockUserModel,
         },
         // provide a simple CloudinaryService mock so the service's constructor can resolve
         {
@@ -128,8 +81,8 @@ describe('CommentsService', () => {
             deleteImage: jest.fn().mockResolvedValue(true),
           },
         },
-        ],
-      }).compile();
+      ],
+    }).compile();
 
     service = module.get<CommentsService>(CommentsService);
     postModel = module.get<Model<Post>>(getModelToken(Post.name));
@@ -137,8 +90,14 @@ describe('CommentsService', () => {
     comentarioModel = module.get<Model<Comentario>>(getModelToken(Comentario.name));
     userModel = module.get<Model<User>>(getModelToken(User.name));
 
-      jest.clearAllMocks();
-    });
+    // default comentarioModel.find to an empty array to avoid undefined
+    // when other services call .find(...).flatMap(...) on the result
+    if (mockComentarioModel && typeof mockComentarioModel.find === 'function') {
+      mockComentarioModel.find.mockResolvedValue([]);
+    }
+
+    jest.clearAllMocks();
+  });
 
   describe('createComment', () => {
     const createCommentDto: CreateCommentDto = {
@@ -156,11 +115,7 @@ describe('CommentsService', () => {
     };
 
     beforeEach(() => {
-      // Mock post com autor.toString para evitar erro em post.autor.toString()
-      mockPostModel.findById.mockResolvedValue({
-        ...mockPost,
-        autor: { toString: () => mockUserId },
-      });
+      mockPostModel.findById.mockResolvedValue(mockPost);
       mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
       mockUserModel.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
     });
@@ -185,7 +140,7 @@ describe('CommentsService', () => {
       // make the injected referencia point to the same mock function
       comentarioModel = mockComentarioModel;
 
-      const result = await service.createComment(mockUserId, mockPostId, createCommentDto, []);
+      const result = await service.createComment(mockUserId, mockPostId, createCommentDto);
 
       expect(postModel.findById).toHaveBeenCalledWith(mockPostId);
       // The service may call findById with an ObjectId instance; compare string form
@@ -199,7 +154,7 @@ describe('CommentsService', () => {
       mockPostModel.findById.mockResolvedValue(null);
 
       await expect(
-        service.createComment(mockUserId, mockPostId, createCommentDto, [])
+        service.createComment(mockUserId, mockPostId, createCommentDto)
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -207,7 +162,7 @@ describe('CommentsService', () => {
       mockComunidadeModel.findById.mockResolvedValue(null);
 
       await expect(
-        service.createComment(mockUserId, mockPostId, createCommentDto, [])
+        service.createComment(mockUserId, mockPostId, createCommentDto)
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -219,7 +174,7 @@ describe('CommentsService', () => {
       mockComunidadeModel.findById.mockResolvedValue(comunidadeWithoutUser);
 
       await expect(
-        service.createComment(mockUserId, mockPostId, createCommentDto, [])
+        service.createComment(mockUserId, mockPostId, createCommentDto)
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -227,7 +182,7 @@ describe('CommentsService', () => {
       const invalidDto = { ...createCommentDto, conteudo: '' };
 
       await expect(
-        service.createComment(mockUserId, mockPostId, invalidDto, [])
+        service.createComment(mockUserId, mockPostId, invalidDto)
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -248,8 +203,6 @@ describe('CommentsService', () => {
       _id: new Types.ObjectId(mockCommentId),
       autor: new Types.ObjectId(mockUserId),
       post: new Types.ObjectId(mockPostId),
-      conteudo: 'Test content',
-      imagens: [],
     };
 
     const mockPost = {
@@ -330,9 +283,7 @@ describe('CommentsService', () => {
     };
 
     beforeEach(() => {
-      mockComentarioModel.findById.mockImplementation(() => ({
-        populate: jest.fn().mockResolvedValue(mockComment)
-      }));
+      mockComentarioModel.findById.mockResolvedValue(mockComment);
     });
 
     it('should like a comment when user has not liked it before', async () => {
@@ -342,14 +293,6 @@ describe('CommentsService', () => {
         length: 1,
       };
       mockComentarioModel.findById.mockResolvedValueOnce(mockComment);
-      // Mock the populate chain for notification
-      mockComentarioModel.findById.mockReturnValueOnce({
-        populate: jest.fn().mockResolvedValue({
-          ...updatedComment,
-          post: { comunidade: { _id: 'comunidadeId', nome: 'comunidade' } },
-          autor: { _id: mockUserId, username: 'author', equals: jest.fn().mockReturnValue(false) }
-        })
-      });
       mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
@@ -374,11 +317,8 @@ describe('CommentsService', () => {
         length: 0,
       };
       
-      // First findById: check if user has liked (returns commentWithLike)
       mockComentarioModel.findById.mockResolvedValueOnce(commentWithLike);
-      // No populate call in unlike path, go straight to second findById for final result
-      // Second findById: get updated comment after unlike
-      mockComentarioModel.findById.mockResolvedValueOnce({ ...updatedComment, curtidas: [] });
+      mockComentarioModel.findById.mockResolvedValueOnce(updatedComment);
       mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
 
       const result = await service.likeComment(mockUserId, mockCommentId);
@@ -392,8 +332,7 @@ describe('CommentsService', () => {
     });
 
     it('should throw NotFoundException when comment is not found', async () => {
-      // First findById returns null, should throw NotFoundException immediately
-      mockComentarioModel.findById.mockResolvedValueOnce(null);
+      mockComentarioModel.findById.mockResolvedValue(null);
 
       await expect(
         service.likeComment(mockUserId, mockCommentId)
@@ -406,25 +345,26 @@ describe('CommentsService', () => {
       _id: new Types.ObjectId(mockCommentId),
       autor: new Types.ObjectId(mockUserId),
       post: new Types.ObjectId(mockPostId),
+      conteudo: 'Old content',
+      imagens: ['old-image.jpg'],
     };
 
-    // Add missing mocks for tests
     const mockPost = {
       _id: new Types.ObjectId(mockPostId),
       comunidade: new Types.ObjectId(mockComunidadeId),
-      autor: { toString: () => mockUserId },
-      comentarios: [],
     };
 
     const mockComunidade = {
       _id: new Types.ObjectId(mockComunidadeId),
       membros: [new Types.ObjectId(mockUserId)],
+      moderadores: [],
     };
 
     const mockUpdatedComment = {
-      ...mockComment,
+      _id: new Types.ObjectId(mockCommentId),
+      autor: { username: 'testuser' },
       conteudo: 'Updated content',
-      imagens: ['image1.jpg'],
+      imagens: ['new-image.jpg'],
     };
 
     it('should successfully update a comment', async () => {
@@ -467,18 +407,6 @@ describe('CommentsService', () => {
         comment: mockUpdatedComment,
       });
     });
-
-  beforeEach(() => {
-    // Sempre retorna objeto com método populate
-    mockComentarioModel.findById.mockImplementation(() => ({
-      populate: jest.fn().mockImplementation(() => Promise.resolve({
-        _id: mockCommentId,
-        autor: { toString: () => mockUserId },
-        post: { _id: mockPostId, comunidade: { nome: 'Comunidade Teste' }, autor: { toString: () => mockUserId } },
-        curtidas: [],
-      }))
-    }));
-  });
 
     it('should throw NotFoundException when comment is not found', async () => {
       const updateCommentDto: UpdateCommentDto = {
@@ -552,7 +480,6 @@ describe('CommentsService', () => {
       expect(mockPostModel.findOne).toHaveBeenCalled();
       expect(mockComunidadeModel.findById).toHaveBeenCalled();
     });
-      // Broken or duplicate test blocks removed due to syntax errors. Restore or rewrite as needed.
 
     it('should throw BadRequestException when there is nothing to update', async () => {
       const updateCommentDto: UpdateCommentDto = {};
@@ -571,6 +498,7 @@ describe('CommentsService', () => {
     it('should throw BadRequestException when content is empty', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: '',
+        imagens: ['image.jpg'],
       };
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
@@ -584,10 +512,11 @@ describe('CommentsService', () => {
       expect(mockComentarioModel.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when there are more than 4 images', async () => {
+    it('should ignore imagens field and update when imagens provided in dto', async () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Valid content',
-      };
+        imagens: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg'],
+      } as any;
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
       mockPostModel.findOne.mockResolvedValue(mockPost);
@@ -614,10 +543,11 @@ describe('CommentsService', () => {
       const updateCommentDto: UpdateCommentDto = {
         conteudo: 'Updated content only',
       };
+
       const updatedCommentContentOnly = {
         ...mockUpdatedComment,
         conteudo: 'Updated content only',
-        imagens: [],
+        imagens: mockComment.imagens,
       };
 
       mockComentarioModel.findOne.mockResolvedValue(mockComment);
@@ -643,11 +573,12 @@ describe('CommentsService', () => {
 
     it('should reject when attempting to update only images without content', async () => {
       const updateCommentDto: UpdateCommentDto = {
-        // No conteudo, only imagens (should fail)
-      } as any;
+        imagens: ['new-image1.jpg', 'new-image2.jpg'],
+      };
+
       const updatedCommentImagesOnly = {
         ...mockUpdatedComment,
-        conteudo: mockComment.post,
+        conteudo: mockComment.conteudo,
         imagens: ['new-image1.jpg', 'new-image2.jpg'],
       };
 
@@ -673,70 +604,7 @@ describe('CommentsService', () => {
       ).rejects.toThrow();
       expect(mockComentarioModel.findOne).not.toHaveBeenCalled();
     });
-
-  describe('createComment - Mentions', () => {
-      it('should extract and save mentions when content contains usernames', async () => {
-        const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello @user1 and @user2!',
-        };
-        // ...existing code...
-        const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: [new Types.ObjectId('507f1f77bcf86cd799439021'), new Types.ObjectId('507f1f77bcf86cd799439022')],
-          save: jest.fn().mockResolvedValue(true),
-        };
-        // ...existing code...
-        const result = await service.createComment(mockUserId, mockPostId, createCommentDto, []);
-        // ...existing code...
-      });
-
-      it('should handle empty mentions array when no usernames found', async () => {
-        const createCommentDto: CreateCommentDto = {
-          conteudo: 'Hello world!',
-        };
-
-        // Ensure autor property with toString for notification logic
-        const mockPost = {
-          _id: new Types.ObjectId(mockPostId),
-          comunidade: new Types.ObjectId(mockComunidadeId),
-          autor: { toString: () => mockUserId },
-        };
-
-        const mockComunidade = {
-          _id: new Types.ObjectId(mockComunidadeId),
-          membros: [new Types.ObjectId(mockUserId)],
-        };
-
-        mockPostModel.findById.mockResolvedValue(mockPost);
-        mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
-        mockUserModel.find.mockReturnValue({
-          select: jest.fn().mockResolvedValue([]),
-        });
-
-        const mockComment = {
-          _id: new Types.ObjectId(mockCommentId),
-          ...createCommentDto,
-          autor: new Types.ObjectId(mockUserId),
-          post: new Types.ObjectId(mockPostId),
-          mencoes: [],
-          save: jest.fn().mockResolvedValue(true),
-        };
-
-        mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-        mockComentarioModel.mockImplementation(() => ({
-          ...mockComment,
-          save: jest.fn().mockResolvedValue(mockComment),
-        }));
-
-        await service.createComment(mockUserId, mockPostId, createCommentDto, []);
-
-        // Mentions feature not implemented yet
-        expect(userModel.find).not.toHaveBeenCalled();
-      });
-    });
+  });
 
     describe('deleteComment - Edge cases', () => {
         it('should throw NotFoundException when comunidade is not found', async () => {
@@ -802,22 +670,47 @@ describe('CommentsService', () => {
 
     describe('likeComment - Edge cases', () => {
         it('should handle case where updated comment is not found after like operation', async () => {
-          mockComentarioModel.findById
-            .mockImplementationOnce(() => ({
-              populate: jest.fn().mockImplementation(() => Promise.resolve({
-                _id: mockCommentId,
-                autor: { toString: () => mockUserId },
-                post: { _id: mockPostId, comunidade: { nome: 'Comunidade Teste' }, autor: { toString: () => mockUserId } },
-                curtidas: [ { equals: (id: any) => id.toString() === mockUserId } ],
-              }))
-            }))
-            .mockImplementationOnce(() => ({
-              populate: jest.fn().mockImplementation(() => Promise.resolve({ _id: mockCommentId, curtidas: undefined }))
-            }));
-          mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
-          await expect(
+            const mockComment = {
+            _id: new Types.ObjectId(mockCommentId),
+            curtidas: [],
+            };
+
+            mockComentarioModel.findById
+            .mockResolvedValueOnce(mockComment) // First call - comment exists
+            .mockResolvedValueOnce(null); // Second call - updated comment not found
+
+            mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+            await expect(
             service.likeComment(mockUserId, mockCommentId)
-          ).rejects.toThrow(TypeError);
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('should handle ObjectId comparison correctly for existing likes', async () => {
+            const existingLikeUserId = new Types.ObjectId(mockUserId);
+            const mockComment = {
+            _id: new Types.ObjectId(mockCommentId),
+            curtidas: [existingLikeUserId],
+            };
+
+            const updatedComment = {
+            ...mockComment,
+            curtidas: [],
+            length: 0,
+            };
+
+            mockComentarioModel.findById
+            .mockResolvedValueOnce(mockComment)
+            .mockResolvedValueOnce(updatedComment);
+            mockComentarioModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+            const result = await service.likeComment(mockUserId, mockCommentId);
+
+            expect(result.liked).toBe(false);
+            expect(comentarioModel.updateOne).toHaveBeenCalledWith(
+            { _id: mockComment._id },
+            { $pull: { curtidas: existingLikeUserId } }
+            );
         });
     });
 
@@ -920,51 +813,49 @@ describe('CommentsService', () => {
 
     describe('createComment - Post reference', () => {
         it('should add comment reference to post after creation', async () => {
-          const createCommentDto: CreateCommentDto = {
+            const createCommentDto: CreateCommentDto = {
             conteudo: 'Test comment',
-          };
+            imagens: [],
+            };
 
-          // Ensure autor property with toString for notification logic
-          const mockPost = {
+            const mockPost = {
             _id: new Types.ObjectId(mockPostId),
             comunidade: new Types.ObjectId(mockComunidadeId),
-            autor: { toString: () => mockUserId },
-          };
+            };
 
-          const mockComunidade = {
+            const mockComunidade = {
             _id: new Types.ObjectId(mockComunidadeId),
             membros: [new Types.ObjectId(mockUserId)],
-          };
+            };
 
-          const mockComment = {
+            const mockComment = {
             _id: new Types.ObjectId(mockCommentId),
             ...createCommentDto,
             autor: new Types.ObjectId(mockUserId),
             post: new Types.ObjectId(mockPostId),
             save: jest.fn().mockResolvedValue(true),
-          };
+            };
 
             mockPostModel.findById.mockResolvedValue(mockPost);
             mockComunidadeModel.findById.mockResolvedValue(mockComunidade);
             mockUserModel.find.mockReturnValue({
             select: jest.fn().mockResolvedValue([]),
-          });
+            });
 
-          mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
-          mockComentarioModel.mockImplementation(() => ({
+            mockComentarioModel.prototype.save = jest.fn().mockResolvedValue(mockComment);
+            mockComentarioModel.mockImplementation(() => ({
             ...mockComment,
             save: jest.fn().mockResolvedValue(mockComment),
-          }));
+            }));
 
-          mockPostModel.findByIdAndUpdate.mockResolvedValue({});
+            mockPostModel.findByIdAndUpdate.mockResolvedValue({});
 
-          await service.createComment(mockUserId, mockPostId, createCommentDto, []);
+            await service.createComment(mockUserId, mockPostId, createCommentDto);
 
-          expect(postModel.findByIdAndUpdate).toHaveBeenCalledWith(
+            expect(postModel.findByIdAndUpdate).toHaveBeenCalledWith(
             mockPostId,
             { $push: { comentarios: mockComment._id } }
-          );
+            );
         });
     });
-  });
 });

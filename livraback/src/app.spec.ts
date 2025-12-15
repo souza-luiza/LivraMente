@@ -15,11 +15,6 @@ import { LlmModule } from './llm/llm.module';
 import { SearchModule } from './search/search.module';
 import { LivrosModule } from './livros/livros.module';
 import { LlmApiService } from './llm/llm.api.service';
-import { QueueProducerService } from './queue/queue.producer.service';
-import { NotificacoesModule } from './notificacoes/notificacoes.module';
-import { NotificacoesConsumer } from './queue/consumers/notificacoes.consumer';
-import { ImagensConsumer } from './queue/consumers/imagens.consumer';
-import { MetricasConsumer } from './queue/consumers/metricas.consumer';
 
 describe('App Integration with Mocks', () => {
   let app: INestApplication;
@@ -30,7 +25,6 @@ describe('App Integration with Mocks', () => {
       const testEnv = {
         DB_URL: 'mongodb://localhost:27017/testdb',
         JWT_SECRET: 'my-super-secret',
-        RABBITMQ_URL: 'amqp://localhost:5672',
       };
       if (testEnv[key]) return testEnv[key];
       throw new Error(`Config key ${key} not mocked`);
@@ -39,7 +33,6 @@ describe('App Integration with Mocks', () => {
       const testEnv = {
         DB_URL: 'mongodb://localhost:27017/testdb',
         JWT_SECRET: 'my-super-secret',
-        RABBITMQ_URL: 'amqp://localhost:5672',
       };
       return testEnv[key] || null;
     },
@@ -132,56 +125,10 @@ describe('App Integration with Mocks', () => {
     }),
   };
 
-  const mockNotificacaoModel = {
-    find: jest.fn().mockReturnValue({
-      populate: jest.fn().mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([]),
-        }),
-      }),
-    }),
-    findOne: jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue(null),
-    }),
-    create: jest.fn().mockImplementation((dto) => Promise.resolve({ 
-      _id: 'mockNotificacaoId', 
-      ...dto,
-      populate: jest.fn().mockResolvedValue({ _id: 'mockNotificacaoId', ...dto }),
-    })),
-    updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 }),
-    updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
-    deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
-    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
-  };
-
   const mockLlmApiService = {
     onModuleInit: jest.fn(),
     generate: jest.fn().mockResolvedValue('mocked response'),
   };
-
-  const mockQueueProducer = {
-    publish: jest.fn().mockResolvedValue(undefined),
-    publicarNaFila: jest.fn().mockResolvedValue(undefined),
-    connect: jest.fn().mockResolvedValue(undefined),
-    setupExchangesAndQueues: jest.fn().mockResolvedValue(undefined),
-  };
-
-  const mockNotificacoesConsumer = {
-    inicializar: jest.fn().mockResolvedValue(undefined),
-    onModuleDestroy: jest.fn().mockResolvedValue(undefined),
-  };
-
-  const mockImagensConsumer = {
-    inicializar: jest.fn().mockResolvedValue(undefined),
-    onModuleDestroy: jest.fn().mockResolvedValue(undefined),
-  };
-
-  const mockMetricasConsumer = {
-    inicializar: jest.fn().mockResolvedValue(undefined),
-    onModuleDestroy: jest.fn().mockResolvedValue(undefined),
-  };
-
-  
 
   beforeAll(async () => {
     jest.setTimeout(10000); // caso precise de mais tempo para iniciar
@@ -198,12 +145,9 @@ describe('App Integration with Mocks', () => {
         LlmModule,
         SearchModule,
         LivrosModule,
-        NotificacoesModule,
       ],
       controllers: [AppController],
-      providers: [
-        AppService,
-      ],
+      providers: [AppService],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)
@@ -223,18 +167,8 @@ describe('App Integration with Mocks', () => {
       .useValue(mockLivroModel)
       .overrideProvider(getModelToken('Autor'))
       .useValue(mockAutorModel)
-      .overrideProvider(getModelToken('Notificacao'))
-      .useValue(mockNotificacaoModel)
       .overrideProvider(LlmApiService)
       .useValue(mockLlmApiService)
-      .overrideProvider(QueueProducerService)
-      .useValue(mockQueueProducer)
-      .overrideProvider(NotificacoesConsumer)
-      .useValue(mockNotificacoesConsumer)
-      .overrideProvider(ImagensConsumer)
-      .useValue(mockImagensConsumer)
-      .overrideProvider(MetricasConsumer)
-      .useValue(mockMetricasConsumer)
       .compile();
 
     app = moduleFixture.createNestApplication();

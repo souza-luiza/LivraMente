@@ -17,6 +17,7 @@ import ErrorIcon from "@/components/icons/ErrorIcon";
 import { Gamificacao, UserProfile } from "@/types/users";
 import { getSessionInfos } from "@/services/auth";
 import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 import { getProfile } from "@/services/userService";
 import { Post } from "@/types/post";
 import { postsService } from "@/services/posts";
@@ -186,6 +187,7 @@ export default function UserProfilePage(){
                     </div>
                 </div>
             </main>
+            <ToastNotification/>
         </div>
     );
 }

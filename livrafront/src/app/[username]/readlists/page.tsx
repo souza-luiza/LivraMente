@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { getSessionInfos } from "@/services/auth";
 import { getFavoriteReadlists, getOwnReadlists, getPublicReadlists } from "@/services/readlists";
 import { toast } from "react-toastify";
+import ToastNotification from '@/components/toast-notification';
 import LogoIcon from "@/components/icons/LogoIcon";
 import PlusCheckboxIcon from "@/components/icons/PlusCheckboxIcon";
 import Button from "@/components/button";
@@ -168,6 +169,7 @@ export default function ReadlistsPage() {
           </div>
         </TabProvider>
       </main>
+      <ToastNotification/>
     </div>
   )
 }
