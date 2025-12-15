@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import ToastNotification from '@/components/toast-notification'
 import { toast } from 'react-toastify'
 import { TabProvider, TabList, Tab, TabPanel } from "@/components/tabs";
 import SingleUserIcon from "@/components/icons/SingleUserIcon";
@@ -31,10 +30,12 @@ import { User } from "@/types/auth";
 import { updateAvatar, updateProfile } from "@/services/userService";
 import { useRouter } from "next/navigation";
 import LoadingPage from "@/components/loading";
+import { useNotPrefStore } from "@/stores/notificacoesStore";
 
 export default function SettingsTabs() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { preferencias, alterarPreferencia } = useNotPrefStore();
     
     const [value, setValue] = useState('profile');
     const [isLoading, setIsLoading] = useState(true);
@@ -367,12 +368,12 @@ export default function SettingsTabs() {
                             
                             <div className="space-y-3">
                                 {[
-                                    { icon: <HeartIcon size={40}/>, title: "Curtidas", desc: "Quando alguém curtir sua publicação" },
-                                    { icon: <CommentIcon size={40}/>, title: "Comentários", desc: "Quando alguém comentar suas publicações" },
-                                    { icon: <MentionIcon size={40}/>, title: "Menções", desc: "Quando alguém mencionar você" },
-                                    { icon: <SingleUserIcon size={40}/>, title: "Novos seguidores", desc: "Quando alguém começar a seguir você" }
-                                ].map((item, index) => (
-                                    <div key={index} className="flex items-center justify-between p-5 border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-colors">
+                                    { key: 'curtidas' as const, icon: <HeartIcon size={40}/>, title: "Curtidas", desc: "Quando alguém curtir sua publicação" },
+                                    { key: 'comentarios' as const, icon: <CommentIcon size={40}/>, title: "Comentários", desc: "Quando alguém comentar suas publicações" },
+                                    { key: 'mencoes' as const, icon: <MentionIcon size={40}/>, title: "Menções", desc: "Quando alguém mencionar você" },
+                                    { key: 'novosSeguidores' as const, icon: <SingleUserIcon size={40}/>, title: "Novos seguidores", desc: "Quando alguém começar a seguir você" }
+                                ].map((item) => (
+                                    <div key={item.key} className="flex items-center justify-between p-5 border border-[#e5e7eb] rounded-lg hover:border-[#4a5d3c] transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className="text-[#4a5d3c]">{item.icon}</div>
                                             <div>
@@ -381,7 +382,13 @@ export default function SettingsTabs() {
                                             </div>
                                         </div>
                                         <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" defaultChecked className="sr-only peer" />
+                                            <input 
+                                                type="checkbox" 
+                                                checked={preferencias[item.key]} 
+                                                onChange={(e) => alterarPreferencia(item.key, e.target.checked)}
+                                                className="sr-only peer" 
+                                                aria-label={`Ativar notificações de ${item.title.toLowerCase()}`}
+                                            />
                                             <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#4a5d3c] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4a5d3c]"></div>
                                         </label>
                                     </div>
@@ -456,7 +463,6 @@ export default function SettingsTabs() {
                 onClose={handleCropCancel}
                 onSave={handleCropSave}
             />
-            <ToastNotification />
         </>
     );
 }

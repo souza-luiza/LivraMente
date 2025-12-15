@@ -11,7 +11,6 @@ import Input from '@/components/general-input';
 import LoginIcon from '@/components/icons/LoginIcon';
 import { motion } from 'framer-motion';
 import { toast } from "react-toastify";
-import ToastNotification from '@/components/toast-notification';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -167,7 +166,6 @@ export default function LoginPage() {
           </form>
           </div>
         </div>
-        <ToastNotification />
       </div>
   );
 }

@@ -19,6 +19,8 @@ import { LlmModule } from './llm/llm.module';
 import { SearchModule } from './search/search.module';
 import { LivrosModule } from './livros/livros.module';
 import { ResenhasModule } from './resenhas/resenhas.module';
+import { QueueModule } from './queue/queue.module';
+import { NotificacoesModule } from './notificacoes/notificacoes.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { ResenhasModule } from './resenhas/resenhas.module';
     SearchModule,
     LivrosModule,
     ResenhasModule,
+    QueueModule,
+    NotificacoesModule,
   ],                                                                                
   controllers: [AppController],
   providers: [AppService],

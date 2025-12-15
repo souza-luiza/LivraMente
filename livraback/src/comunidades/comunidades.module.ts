@@ -19,6 +19,6 @@ import { Livro, LivroSchema } from '../livros/entities/livro.schema';
     ],
     controllers: [ComunidadesController],
     providers: [ComunidadesService],
-    exports: [MongooseModule]
+    exports: [MongooseModule, ComunidadesService],
 })
 export class ComunidadesModule {}

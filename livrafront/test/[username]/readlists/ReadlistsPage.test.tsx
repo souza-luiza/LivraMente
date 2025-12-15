@@ -20,6 +20,13 @@ jest.mock("@/services/readlists", () => ({
   getFavoriteReadlists: jest.fn(),
 }));
 
+jest.mock('react-toastify', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
+}));
+
 describe("ReadlistsPage", () => {
   let mockRouter: any;
 
@@ -63,6 +70,7 @@ describe("ReadlistsPage", () => {
   });
 
   it("should display an error message if there's an error fetching readlists", async () => {
+    const { toast } = require('react-toastify');
     (getSessionInfos as jest.Mock).mockResolvedValue({ username: "testUser" });
     (getOwnReadlists as jest.Mock).mockRejectedValue(new Error("Failed to fetch"));
 
@@ -72,7 +80,7 @@ describe("ReadlistsPage", () => {
     render(<ReadlistsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Erro ao carregar readlists do usuário.")).toBeInTheDocument();
+      expect(toast.error).toHaveBeenCalledWith("Erro ao carregar readlists do usuário.");
     });
   });
 });

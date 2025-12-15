@@ -9,6 +9,8 @@ import { Post } from '../schemas/post.schema';
 import { User } from '../users/entities/user.entity';
 import { CloudinaryImage } from '../cloudinary/entities/image.schema';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { QueueProducerService } from '../queue/queue.producer.service';
+import { ROUTING_KEYS } from '../queue/queue.constants';
 
 @Injectable()
 export class CommentsService {
@@ -18,6 +20,7 @@ export class CommentsService {
         @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
         @InjectModel(User.name) private userModel: Model<User>,
         private readonly cloudinary: CloudinaryService,
+        private readonly queueProducer: QueueProducerService,
     ) {}
 
     async createComment(userId: string, postId: string, createCommentDto: CreateCommentDto, imagens: Express.Multer.File[]) {
@@ -66,6 +69,25 @@ export class CommentsService {
             postId,
             { $push: { comentarios: comment._id } }
         )
+
+        // Notificar autor do post sobre novo comentário
+        if (post.autor.toString() !== userId) {
+            try {
+                await this.queueProducer.publish(
+                    ROUTING_KEYS.NOTIFICAR_COMENTARIO_CRIADO,
+                    {
+                        comentarioId: (comment._id as Types.ObjectId).toString(),
+                        postId: postId,
+                        autorComentarioId: userId,
+                        autorPostId: post.autor.toString(),
+                        conteudo: createCommentDto.conteudo.substring(0, 100),
+                        comunidadeNome: comunidade.nome,
+                    }
+                );
+            } catch (error) {
+                console.error('Erro ao publicar notificação de comentário:', error);
+            }
+        }
 
         return {
             message: 'Comentário criado com sucesso',
@@ -123,6 +145,34 @@ export class CommentsService {
                 { _id: comment._id },
                 { $addToSet: { curtidas: id } }
             )
+
+            // Notificar autor do comentário sobre curtida
+            const fullComment = await this.comentarioModel.findById(commentId).populate({
+                path: 'post',
+                populate: {
+                    path: 'comunidade',
+                    select: 'nome'
+                }
+            });
+            if (fullComment && !fullComment.autor.equals(id)) {
+                try {
+                    const post = fullComment.post as any;
+                    const comunidadeNome = post?.comunidade?.nome;
+
+                    await this.queueProducer.publish(
+                        ROUTING_KEYS.NOTIFICAR_COMENTARIO_CURTIDO,
+                        {
+                            comentarioId: commentId,
+                            postId: post._id.toString(),
+                            userId: userId,
+                            autorId: fullComment.autor.toString(),
+                            comunidadeNome: comunidadeNome,
+                        }
+                    );
+                } catch (error) {
+                    console.error('Erro ao publicar notificação de curtida em comentário:', error);
+                }
+            }
         }
 
         const updatedComment = await this.comentarioModel.findById(commentId, 'curtidas');

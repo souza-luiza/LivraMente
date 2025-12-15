@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins, Judson } from "next/font/google";
 import "./globals.css";
+import NotificacoesProvider from "@/components/notificacoes-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${judson.variable} antialiased`}
       >
-        {children}
+        <NotificacoesProvider>
+          {children}
+        </NotificacoesProvider>
       </body>
     </html>
   );

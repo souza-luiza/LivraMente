@@ -4,6 +4,27 @@ import '@testing-library/jest-dom';
 import SettingsTabs from '@/app/configuracoes/settings-tabs';
 import { act } from '@testing-library/react';
 
+// Mock do store de preferências de notificações
+let mockPreferencias = {
+  curtidas: true,
+  comentarios: true,
+  mencoes: true,
+  novosSeguidores: true,
+};
+
+const mockAlterarPreferencia = jest.fn((tipo, valor) => {
+  mockPreferencias = { ...mockPreferencias, [tipo]: valor };
+});
+
+jest.mock('@/stores/notificacoesStore', () => ({
+  useNotPrefStore: () => ({
+    get preferencias() {
+      return mockPreferencias;
+    },
+    alterarPreferencia: mockAlterarPreferencia,
+  }),
+}));
+
 // Mock dos componentes de ícones
 jest.mock('@/components/icons/SingleUserIcon', () => ({
   __esModule: true,
@@ -330,11 +351,20 @@ describe('SettingsTabs', () => {
     });
   });
 
+
   describe('Notifications Tab', () => {
     beforeEach(async () => {
+      mockPreferencias = {
+        curtidas: true,
+        comentarios: true,
+        mencoes: true,
+        novosSeguidores: true,
+      };
+      mockAlterarPreferencia.mockClear();
+      
       render(<SettingsTabs />);
       await waitFor(() => {
-        expect(screen.getByText('Restrições')).toBeInTheDocument();
+        expect(screen.queryByTestId('loading-main')).not.toBeInTheDocument();
       });
       await act(async () => {
         fireEvent.click(screen.getByText('Notificações'));
@@ -372,14 +402,18 @@ describe('SettingsTabs', () => {
       const checkboxes = screen.getAllByRole('checkbox');
       const firstCheckbox = checkboxes[0] as HTMLInputElement;
       
-      await act(async () => {
-        fireEvent.click(firstCheckbox);
-      });
-      expect(firstCheckbox).not.toBeChecked();
-      await act(async () => {
-        fireEvent.click(firstCheckbox);
-      });
       expect(firstCheckbox).toBeChecked();
+      
+      fireEvent.click(firstCheckbox);
+      expect(mockAlterarPreferencia).toHaveBeenCalledWith('curtidas', false);
+      
+      mockPreferencias.curtidas = false;
+
+      fireEvent.click(screen.getByText('Meu Perfil'));
+      fireEvent.click(screen.getByText('Notificações'));
+      
+      const updatedCheckboxes = screen.getAllByRole('checkbox');
+      expect(updatedCheckboxes[0]).not.toBeChecked();
     });
   });
 

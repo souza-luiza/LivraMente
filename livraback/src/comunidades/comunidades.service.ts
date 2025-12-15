@@ -9,6 +9,8 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Logger } from '@nestjs/common';
 import { Comentario } from '../schemas/comentario.schema';
 import { Livro } from '../livros/entities/livro.schema';
+import { QueueProducerService } from '../queue/queue.producer.service';
+import { ROUTING_KEYS } from '../queue/queue.constants';
 
 @Injectable()
 export class ComunidadesService {
@@ -17,6 +19,7 @@ export class ComunidadesService {
     constructor(
         @InjectModel(Comunidade.name) private readonly comunidadeModel: Model<ComunidadeDocument>,
         @InjectModel(Post.name) private postModel: Model<Post>,
+        private readonly queueProducer: QueueProducerService,
         @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
         @InjectModel(Livro.name) private livroModel: Model<Livro>,
         private readonly cloudinary: CloudinaryService,
@@ -39,6 +42,14 @@ export class ComunidadesService {
             throw new NotFoundException(`Comunidade "${comunidadeNome}" não encontrada`);
         }
 
+        return comunidade;
+    }
+
+    async findById(comunidadeId: string) {
+        const comunidade = await this.comunidadeModel.findById(comunidadeId).exec();
+        if (!comunidade) {
+            throw new NotFoundException(`Comunidade não encontrada`);
+        }
         return comunidade;
     }
 
@@ -161,6 +172,20 @@ export class ComunidadesService {
             ).exec();
 
             if (!updated) throw new NotFoundException('Comunidade não encontrada');
+            
+            // notificar moderadores sobre novo membro
+            try {
+                await this.queueProducer.publish(
+                    ROUTING_KEYS.NOTIFICAR_MEMBRO_ENTROU,
+                    {
+                        userId,
+                        comunidadeId: updated._id.toString(),
+                        comunidadeNome: updated.nome,
+                    }
+                );
+            } catch (error) {
+                // Silenciar erro - fire and forget pattern
+            }
             
             return { message: 'Usuário adicionado à comunidade com sucesso' };
 

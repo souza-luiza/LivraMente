@@ -10,6 +10,8 @@ import { ModerarPostDto } from './dto/moderar-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CloudinaryImage } from '../cloudinary/entities/image.schema';
+import { QueueProducerService } from '../queue/queue.producer.service';
+import { FILAS, ROUTING_KEYS } from '../queue/queue.constants';
 
 @Injectable()
 export class PostsService {
@@ -19,6 +21,7 @@ export class PostsService {
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Comentario.name) private comentarioModel: Model<Comentario>,
     private readonly cloudinary: CloudinaryService,
+    private readonly queueProducer: QueueProducerService,
   ) {}
 
   async createPost(userId: string, createPostDto: CreatePostDto, imagens: Express.Multer.File[]) {
@@ -105,6 +108,44 @@ export class PostsService {
       ),
     ]);
 
+    // Publicar eventos assíncronos 
+    try {
+      // Notificar membros sobre novo post 
+      if (status === PostStatus.PUBLICADO) {
+        await this.queueProducer.publish(
+          ROUTING_KEYS.NOTIFICAR_POST_CRIADO,
+          {
+            postId: (savedPost._id as Types.ObjectId).toString(),
+            autorId: userId,
+            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
+            comunidadeNome: comunidade.nome,
+            conteudo: createPostDto.conteudo,
+          }
+        );
+
+        // Atualizar métricas da comunidade
+        await this.queueProducer.publish(
+          ROUTING_KEYS.METRICAS_POST_CRIADO,
+          {
+            postId: (savedPost._id as Types.ObjectId).toString(),
+            comunidadeId: (comunidade._id as Types.ObjectId).toString(),
+            categoria,
+          }
+        );
+      }
+
+      // Processar imagens se houver
+      if (imagesInfo && imagesInfo.length > 0) {
+        await this.queueProducer.publicarNaFila(FILAS.PROCESSAR_IMAGENS, {
+          postId: (savedPost._id as Types.ObjectId).toString(),
+          imagens: imagesInfo,
+          tipo: 'post',
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao publicar eventos do post:', error);
+    }
+
     return savedPost.populate('autor', 'username nome_exibicao imagem_perfil');
   }
 
@@ -124,6 +165,24 @@ export class PostsService {
       // Curtir
       await this.postModel.updateOne({ _id: postId }, { $addToSet: { curtidas: id } });
 
+      // Notificar autor do post 
+      const fullPost = await this.postModel.findById(postId).populate('comunidade', 'nome');
+      if (fullPost && !fullPost.autor.equals(id)) {
+        try {
+          const comunidadeNome = (fullPost.comunidade as any)?.nome;
+          await this.queueProducer.publish(
+            ROUTING_KEYS.NOTIFICAR_POST_CURTIDO,
+            {
+              postId: postId,
+              autorId: fullPost.autor.toString(),
+              userId: userId,
+              comunidadeNome: comunidadeNome,
+            }
+          );
+        } catch (error) {
+          console.error('Erro ao publicar notificação de curtida:', error);
+        }
+      }
     }
 
     const updatedPost = await this.postModel.findById(postId, 'curtidas');
@@ -269,6 +328,22 @@ export class PostsService {
           { $pull: { posts: post._id } }
         ),
       ]);
+    }
+
+    // Notificar autor sobre resultado da moderação
+    try {
+      await this.queueProducer.publish(
+        ROUTING_KEYS.NOTIFICAR_POST_MODERADO,
+        {
+          postId: postId,
+          autorId: post.autor._id.toString(),
+          aprovado: moderarPostDto.aprovar,
+          categoria: moderarPostDto.aprovar ? moderarPostDto.categoria : null,
+          comunidadeNome: (post.comunidade as any).nome,
+        }
+      );
+    } catch (error) {
+      console.error('Erro ao publicar notificação de moderação:', error);
     }
 
     return { 
