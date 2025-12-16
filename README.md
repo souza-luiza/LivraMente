@@ -65,7 +65,8 @@ es-unifesp-2025-2-grupo-alpha/
 
 ## System Design
 
-<img width="1172" height="945" alt="image" src="https://github.com/user-attachments/assets/cd6431d2-7710-4f87-a9b1-3dfbbf1a3ad9" />
+<img width="1047" height="711" alt="image" src="https://github.com/user-attachments/assets/423e790f-9caf-4876-b14b-bb9f4e0ac94d" />
+
 
 
 
