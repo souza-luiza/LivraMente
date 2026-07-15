@@ -1,53 +1,81 @@
-<!-- [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3MvknvtX) -->
-
 # LivraMente - A rede social dos leitores brasileiros
 <img width="1800" height="234" alt="banner-readme" src="https://github.com/user-attachments/assets/0167a5ad-2194-4ead-b57e-13cf8aaca00e" />
 
-<!-- ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue&style=for-the-badge) -->
-![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=Status&message=Em%20Desenvolvimento&color=blue)
+![Badge Inativo](http://img.shields.io/static/v1?label=Status&message=Inativo&color=blue)
 
+> Uma rede social para leitores brasileiros, unindo descoberta de livros, comunidades, listas personalizadas e escrita colaborativa.
 
-## 📚 Sobre o Projeto
-O Livramente consiste em ser uma rede social criada por leitores para amantes de leitura, onde os usuários podem:
+🌐 **Acesso em:** https://livramente.vercel.app/
 
-- Acompanhar e Compartilhar o progresso na leitura de livros
-- Descobrir novas leituras por meio de sistema de recomendação e também através da comunidade
-- Compartilhar e Visualizar resenhas e avaliações de livros
-- Conectar-se com amigos e outros leitores
-- Criação de Listas Personalizadas (ReadLists)
+## 📖 Sobre o Projeto
+O LivraMente foi desenvolvido durante a disciplina de **Engenharia de Software**, ministrada no ICT-UNIFESP, de acordo com a metodologia ágil Scrum.
 
-Acesso em: https://livramente.vercel.app/
+O objetivo do projeto foi criar uma plataforma onde leitores possam descobrir novos livros, compartilhar experiências de leitura e participar de comunidades temáticas, oferecendo uma experiência que vai além de um catálogo de livros tradicional.
 
+## ✨ Principais funcionalidades
+### 🔐 Autenticação
+- Cadastro e login de usuários.
+- Sessões armazenadas em cookies HttpOnly.
+
+### 📖 Readlists
+- Criação de listas personalizadas de livros.
+- Possibilidade de favoritar e explorar listas criadas por outros usuários.
+
+### 👤 Perfil do Usuário
+- Personalização com foto, nome de usuário e pronomes.
+- Visualização das próprias readlists e postagens em comunidades.
+
+### 👥 Comunidades
+- Criação e participação em comunidades de leitores.
+- Publicação de posts, comentários e curtidas.
+- Sistema de moderação com gerenciamento de membros, revisão de conteúdo e aprovação de posts.
+
+### ✍️ Criador de História
+- Escrita de histórias colaborativa entre usuário e inteligência artificial, utilizando Google Gemini.
+
+### 📚 Catálogo de Livros
+- Catálogo com mais de 100 livros obtidos pela Google Books API.
+- Filtros por título, autor e ano de publicação.
+- Página dedicada para cada livro contendo sinopse, gênero, avaliações, readlists e comunidades relacionadas.
 
 ## 🏗️ Estrutura de Projeto
 ```
 es-unifesp-2025-2-grupo-alpha/
 ├── .github/workflows/                        
-# Testes automatizados
+# Testes automatizados usando GitHub Actions (CI/CD)
 |
 ├── documentation/         
-# Documentação do projeto
+# Documentação do projeto, incluindo designs do Figma e PDFs de estudos
 |
 ├── livraback/                          
-# Backend da aplicação (Nest.js)
+# Backend da aplicação em NestJS e MongoDB
 |
 ├── livrafront/                         
-# Frontend da aplicação (Next.js)
+# Frontend da aplicação em Next.js e Tailwind CSS
 |
-└── README.md                           
-# Documentação principal do projeto
+└── README.md
+# Documentação principal do projeto                 
 ```
 
+## 🛠️ Tecnologias
 
-### 📝 Descrição dos Componentes
+### Front-end (`livrafront/`)
+- Next.js (TypeScript)
+- Tailwind CSS
+- Jest (testes)
 
-- **.github/workflows/**: Seção dedicada aos testes automatizados
-- **documentation/**: Documentação completa incluindo designs do Figma e PDFs de estudos realizados
-- **livraback/**: Backend em NestJS e MongoDB
-- **livrafront/**: Frontend em Next.js 15 com TypeScript e Tailwind CSS
+### Back-end (`livraback/`)
+- NestJS (TypeScript)
+- Swagger (documentação da API)
+- MongoDB (Mongoose)
+- Cloudinary (imagens), Google Gemini (criador de história), RabbitMQ (mensageria)
+- Jest (testes)
 
+### System Design
 
-## 💻 Pré-requisitos (até o momento)
+<img width="1105" height="699" alt="image" src="https://github.com/user-attachments/assets/0c1090a5-32d0-4329-8b05-74c6468c579e" />
+
+## 💻 Pré-requisitos
 
 - Node.js (versão 18 ou superior)
 - Npm
@@ -62,13 +90,5 @@ es-unifesp-2025-2-grupo-alpha/
 - **Loren Peña Rodriguez Lorenzetto** - [@Loworen](https://github.com/Loworen)
 - **Luiza de Souza Ferreira** - [@souza-luiza](https://github.com/souza-luiza)
 - **Viviane Flor Park** - [@parkvivi](https://github.com/parkvivi)
-
-## System Design
-
-<img width="1105" height="699" alt="image" src="https://github.com/user-attachments/assets/0c1090a5-32d0-4329-8b05-74c6468c579e" />
-
-
-
-
 
 
